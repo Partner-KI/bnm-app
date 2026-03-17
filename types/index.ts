@@ -1,0 +1,78 @@
+export type UserRole = "admin" | "mentor" | "mentee";
+export type Gender = "male" | "female";
+export type MentorshipStatus = "active" | "completed" | "cancelled";
+export type ContactPreference = "phone" | "whatsapp" | "telegram" | "email";
+export type SessionMode = "online" | "offline";
+
+export interface User {
+  id: string;
+  email: string;
+  role: UserRole;
+  gender: Gender;
+  name: string;
+  phone?: string;
+  city: string;
+  age: number;
+  contact_preference: ContactPreference;
+  avatar_url?: string;
+  created_at: string;
+}
+
+export interface Mentorship {
+  id: string;
+  mentor_id: string;
+  mentee_id: string;
+  status: MentorshipStatus;
+  assigned_by: string;
+  assigned_at: string;
+  completed_at?: string;
+  mentor?: User;
+  mentee?: User;
+}
+
+export interface SessionType {
+  id: string;
+  name: string;
+  sort_order: number;
+  is_default: boolean;
+  description: string;
+}
+
+export interface Session {
+  id: string;
+  mentorship_id: string;
+  session_type_id: string;
+  date: string;
+  is_online: boolean;
+  details?: string;
+  documented_by: string;
+  session_type?: SessionType;
+  mentorship?: Mentorship;
+}
+
+export interface Feedback {
+  id: string;
+  mentorship_id: string;
+  submitted_by: string;
+  rating: number;
+  comments?: string;
+  created_at: string;
+}
+
+export interface Message {
+  id: string;
+  mentorship_id: string;
+  sender_id: string;
+  content: string;
+  read_at?: string;
+  created_at: string;
+  sender?: User;
+}
+
+export interface AuthContextValue {
+  user: User | null;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<boolean>;
+  loginAs: (role: UserRole) => void;
+  logout: () => void;
+}
