@@ -98,10 +98,8 @@ export default function ProfileScreen() {
     <Container>
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Profil</Text>
-
-        {/* Avatar + Name Card */}
-        <View style={styles.avatarCard}>
+        {/* Hero-Header mit dunklem Blau */}
+        <View style={styles.heroHeader}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>{initials}</Text>
           </View>
@@ -151,7 +149,7 @@ export default function ProfileScreen() {
                 <Text style={styles.statLabel}>Abgeschlossen</Text>
               </View>
               <View style={styles.statItem}>
-                <Text style={[styles.statValue, { color: COLORS.primary }]}>{mentorStats.totalSessions}</Text>
+                <Text style={[styles.statValue, { color: COLORS.gradientStart }]}>{mentorStats.totalSessions}</Text>
                 <Text style={styles.statLabel}>Sessions gesamt</Text>
               </View>
               <View style={styles.statItem}>
@@ -233,41 +231,46 @@ function InfoRow({
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 24 },
-  avatarCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    padding: 24,
+  heroHeader: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
+    padding: 28,
     alignItems: "center",
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
   avatarCircle: {
     width: 80,
     height: 80,
-    borderRadius: 9999,
-    backgroundColor: COLORS.primary,
+    borderRadius: 40,
+    backgroundColor: COLORS.gold,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
   },
-  avatarText: { color: COLORS.white, fontSize: 24, fontWeight: "bold" },
-  userName: { fontSize: 20, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
-  roleBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  avatarText: { color: COLORS.white, fontSize: 28, fontWeight: "700" },
+  userName: { fontSize: 22, fontWeight: "700", color: COLORS.white, marginBottom: 8 },
+  roleBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 4 },
   roleBadgeText: { fontSize: 12, fontWeight: "600" },
   genderBadge: { marginTop: 8 },
-  genderText: { color: COLORS.tertiary, fontSize: 12 },
+  genderText: { color: COLORS.white, opacity: 0.75, fontSize: 13 },
   infoCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionLabel: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     color: COLORS.tertiary,
     letterSpacing: 1,
@@ -292,12 +295,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
-  menuItemText: { color: COLORS.primary },
-  menuArrow: { color: COLORS.tertiary },
+  menuItemText: { color: COLORS.primary, fontSize: 15 },
+  menuArrow: { color: COLORS.tertiary, fontSize: 18 },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -308,19 +311,21 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: "40%",
     backgroundColor: COLORS.bg,
-    borderRadius: 10,
+    borderRadius: 8,
     padding: 12,
     alignItems: "center",
+    borderLeftWidth: 3,
+    borderLeftColor: COLORS.gold,
   },
-  statValue: { fontSize: 24, fontWeight: "bold", color: COLORS.primary },
+  statValue: { fontSize: 24, fontWeight: "700", color: COLORS.primary },
   statLabel: { color: COLORS.tertiary, fontSize: 11, marginTop: 2, textAlign: "center" },
   rankHint: { color: COLORS.tertiary, fontSize: 11, textAlign: "center", marginTop: 4 },
   logoutButton: {
     backgroundColor: "#fef2f2",
     borderWidth: 1,
     borderColor: "#fecaca",
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderRadius: 5,
+    paddingVertical: 14,
     alignItems: "center",
     marginBottom: 16,
   },

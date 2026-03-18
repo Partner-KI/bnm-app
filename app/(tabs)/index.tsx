@@ -46,13 +46,13 @@ function AdminDashboard() {
 
         {/* KPI Karten – Reihe 1 */}
         <View style={styles.row3}>
-          <StatCard label="Aktive Betreuungen" value={activeMentorships.length} color={COLORS.primary} />
+          <StatCard label="Aktive Betreuungen" value={activeMentorships.length} color={COLORS.gradientStart} />
           <StatCard label="Abgeschlossen" value={completedMentorships.length} color={COLORS.cta} />
         </View>
 
         {/* KPI Karten – Reihe 2 */}
         <View style={[styles.row3, { marginBottom: 24 }]}>
-          <StatCard label="Mentoren" value={allMentors.length} color={COLORS.primary} />
+          <StatCard label="Mentoren" value={allMentors.length} color={COLORS.gradientStart} />
           <StatCard label="Mentees gesamt" value={allMentees.length} color={COLORS.gold} />
         </View>
 
@@ -87,7 +87,7 @@ function AdminDashboard() {
         {/* Admin-Aktionen */}
         <View style={styles.row3}>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: COLORS.primary }]}
+            style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
             onPress={() => router.push("/admin/session-types")}
           >
             <Text style={styles.actionButtonText}>Session-Typen verwalten</Text>
@@ -117,7 +117,7 @@ function AdminDashboard() {
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
 
-        {/* FIX 11: Feedback-Übersicht */}
+        {/* Feedback-Übersicht */}
         <TouchableOpacity
           style={styles.applicationsButton}
           onPress={() => router.push("/admin/feedback-overview")}
@@ -194,7 +194,7 @@ function MentorDashboard() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        {/* Begrüssung */}
+        {/* Begrüssung – Hero mit dunklem Blau */}
         <View style={styles.greetingCard}>
           <Text style={styles.greetingSmall}>Salam Aleikum,</Text>
           <Text style={styles.greetingName}>{user.name}</Text>
@@ -205,7 +205,7 @@ function MentorDashboard() {
 
         {/* Stats */}
         <View style={[styles.row3, { marginBottom: 24 }]}>
-          <StatCard label="Aktive Mentees" value={activeMentorships.length} color={COLORS.primary} />
+          <StatCard label="Aktive Mentees" value={activeMentorships.length} color={COLORS.gradientStart} />
           <StatCard label="Abgeschlossen" value={completedMentorships.length} color={COLORS.cta} />
         </View>
 
@@ -312,7 +312,7 @@ function MenteeDashboard() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        {/* Begrüssung */}
+        {/* Begrüssung – Hero */}
         <View style={styles.greetingCard}>
           <Text style={styles.greetingSmall}>Salam Aleikum,</Text>
           <Text style={styles.greetingName}>{user.name}</Text>
@@ -343,7 +343,7 @@ function MenteeDashboard() {
             {/* Betreuungsdetails + Chat */}
             <View style={[styles.row3, { marginBottom: 24 }]}>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: COLORS.primary }]}
+                style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
                 onPress={() =>
                   router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
                 }
@@ -426,7 +426,7 @@ function MenteeDashboard() {
               })}
             </View>
 
-            {/* FIX 12: Hadithe-Card */}
+            {/* Hadithe-Card */}
             {(() => {
               const today = new Date();
               const dayOfYear = Math.floor(
@@ -538,7 +538,7 @@ function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
                       styles.bar,
                       {
                         height: barHeight,
-                        backgroundColor: COLORS.cta,
+                        backgroundColor: COLORS.gradientStart,
                       },
                     ]}
                   />
@@ -556,46 +556,61 @@ function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
-  pageSubtitle: { color: COLORS.secondary, marginBottom: 24 },
-  sectionTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  pageTitle: { fontSize: 28, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
+  pageSubtitle: { color: COLORS.secondary, fontSize: 15, marginBottom: 24 },
+  sectionTitle: { fontSize: 20, fontWeight: "600", color: COLORS.primary, marginBottom: 12 },
   row3: { flexDirection: "row", gap: 12, marginBottom: 12 },
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  cardTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  cardTitle: { fontWeight: "600", fontSize: 15, color: COLORS.primary, marginBottom: 12 },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
   listItem: { paddingVertical: 12 },
   listItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
   rowBetweenMb2: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
   rowBetweenMb3: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },
   semiboldPrimary: { fontWeight: "600", color: COLORS.primary },
-  boldPrimary: { fontWeight: "bold", color: COLORS.primary },
+  boldPrimary: { fontWeight: "700", color: COLORS.primary },
   tertiaryXs: { color: COLORS.tertiary, fontSize: 12 },
-  percentBadge: { backgroundColor: COLORS.bg, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
-  percentBadgeText: { color: COLORS.primary, fontSize: 12, fontWeight: "bold" },
-  statCard: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    borderRadius: 12,
-    padding: 16,
+  percentBadge: {
+    backgroundColor: COLORS.bg,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
     borderWidth: 1,
     borderColor: COLORS.border,
   },
-  statLabel: { color: COLORS.tertiary, fontSize: 12, marginBottom: 4 },
-  statValue: { fontSize: 30, fontWeight: "bold" },
-  progressTrack: { height: 8, backgroundColor: COLORS.bg, borderRadius: 9999, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  percentBadgeText: { color: COLORS.primary, fontSize: 12, fontWeight: "700" },
+  statCard: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  statLabel: { color: COLORS.secondary, fontSize: 13, marginBottom: 4 },
+  statValue: { fontSize: 30, fontWeight: "700" },
+  progressTrack: { height: 8, backgroundColor: COLORS.bg, borderRadius: 4, overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 4 },
   amberBox: {
     backgroundColor: "#fffbeb",
     borderWidth: 1,
     borderColor: "#fde68a",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 24,
   },
@@ -610,96 +625,118 @@ const styles = StyleSheet.create({
   },
   menteeNameText: { color: COLORS.primary, fontWeight: "500" },
   menteeSubText: { color: COLORS.tertiary, fontSize: 12 },
-  assignButton: { backgroundColor: COLORS.primary, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 8 },
+  assignButton: {
+    backgroundColor: COLORS.gradientStart,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+  },
   assignButtonText: { color: COLORS.white, fontSize: 12, fontWeight: "600" },
   actionButton: {
     flex: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: "center",
     marginBottom: 24,
   },
-  actionButtonText: { color: COLORS.white, fontSize: 12, fontWeight: "600", textAlign: "center" },
+  actionButtonText: { color: COLORS.white, fontSize: 13, fontWeight: "600", textAlign: "center" },
   actionButtonGold: {
     flex: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: "center",
     marginBottom: 24,
-    backgroundColor: "rgba(238,167,27,0.2)",
     borderWidth: 1,
-    borderColor: "rgba(238,167,27,0.4)",
+    borderColor: COLORS.gold,
+    backgroundColor: "rgba(238,167,27,0.08)",
   },
-  actionButtonTextDark: { color: COLORS.primary, fontSize: 12, fontWeight: "600", textAlign: "center" },
+  actionButtonTextDark: { color: COLORS.primary, fontSize: 13, fontWeight: "600", textAlign: "center" },
   applicationsButton: {
     backgroundColor: COLORS.white,
-    borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    marginBottom: 24,
+    marginBottom: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
   },
   applicationsButtonContent: { flex: 1 },
   applicationsButtonText: { fontWeight: "600", color: COLORS.primary, fontSize: 14 },
   applicationsButtonSub: { color: COLORS.tertiary, fontSize: 12, marginTop: 2 },
   applicationsBadge: {
     backgroundColor: COLORS.error,
-    borderRadius: 9999,
+    borderRadius: 4,
     minWidth: 24,
     height: 24,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 6,
   },
-  applicationsBadgeText: { color: COLORS.white, fontSize: 12, fontWeight: "bold" },
+  applicationsBadgeText: { color: COLORS.white, fontSize: 12, fontWeight: "700" },
   applicationsArrow: { color: COLORS.tertiary, fontSize: 18 },
   blueBox: {
-    backgroundColor: "#eff6ff",
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: 12,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
     padding: 16,
   },
-  blueTitle: { color: "#1e40af", fontWeight: "600", fontSize: 14, marginBottom: 4 },
-  blueText: { color: "#2563eb", fontSize: 12 },
+  blueTitle: { color: COLORS.white, fontWeight: "600", fontSize: 14, marginBottom: 4 },
+  blueText: { color: COLORS.white, opacity: 0.8, fontSize: 13 },
   greetingCard: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
+    padding: 24,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  greetingSmall: { color: COLORS.white, fontSize: 14, opacity: 0.7, marginBottom: 4 },
-  greetingName: { color: COLORS.white, fontSize: 20, fontWeight: "bold" },
-  greetingMeta: { color: COLORS.white, opacity: 0.6, fontSize: 14, marginTop: 4 },
+  greetingSmall: { color: COLORS.white, fontSize: 15, opacity: 0.75, marginBottom: 4 },
+  greetingName: { color: COLORS.white, fontSize: 28, fontWeight: "700" },
+  greetingMeta: { color: COLORS.white, opacity: 0.65, fontSize: 14, marginTop: 4 },
   menteeCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   stepsBadge: {
     backgroundColor: COLORS.bg,
-    paddingHorizontal: 12,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 9999,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
-  stepsBadgeText: { color: COLORS.primary, fontSize: 14, fontWeight: "bold" },
+  stepsBadgeText: { color: COLORS.primary, fontSize: 14, fontWeight: "700" },
   nextStepRow: { marginTop: 12, flexDirection: "row", alignItems: "center" },
-  goldDot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: COLORS.gold, marginRight: 8 },
+  goldDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold, marginRight: 8 },
   nextStepText: { color: COLORS.secondary, fontSize: 12 },
   actionRow: { flexDirection: "row", gap: 8, marginTop: 12 },
   docButton: {
     flex: 1,
-    backgroundColor: "rgba(39,174,96,0.1)",
+    backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
-    borderRadius: 8,
+    borderRadius: 5,
     paddingVertical: 8,
     alignItems: "center",
   },
@@ -709,34 +746,34 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 8,
+    borderRadius: 5,
     paddingVertical: 8,
     alignItems: "center",
   },
   chatButtonText: { color: COLORS.secondary, fontSize: 12, fontWeight: "600" },
   goldBox: {
-    backgroundColor: "rgba(238,167,27,0.1)",
+    backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.3)",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginTop: 8,
   },
-  goldBoxHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
+  goldBoxHeader: { flexDirection: "row", alignItems: "center", marginBottom: 6 },
   goldStar: { color: COLORS.gold, fontSize: 18, marginRight: 8 },
-  goldBoxTitle: { fontWeight: "bold", color: COLORS.primary },
+  goldBoxTitle: { fontWeight: "700", color: COLORS.primary, fontSize: 15 },
   goldBoxText: { color: COLORS.secondary, fontSize: 14 },
-  goldBold: { color: COLORS.gold, fontWeight: "bold" },
+  goldBold: { color: COLORS.gold, fontWeight: "700" },
   secondaryButton: {
     flex: 1,
-    backgroundColor: COLORS.bg,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: "center",
   },
-  secondaryButtonText: { color: COLORS.secondary, fontSize: 12, fontWeight: "600" },
+  secondaryButtonText: { color: COLORS.gradientStart, fontSize: 13, fontWeight: "600" },
   stepRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -747,24 +784,32 @@ const styles = StyleSheet.create({
   stepIndicator: {
     width: 32,
     height: 32,
-    borderRadius: 9999,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
-  stepIndicatorTextWhite: { color: COLORS.white, fontSize: 14, fontWeight: "bold" },
-  stepIndicatorTextTertiary: { color: COLORS.tertiary, fontSize: 14, fontWeight: "bold" },
-  stepName: { fontWeight: "500" },
+  stepIndicatorTextWhite: { color: COLORS.white, fontSize: 14, fontWeight: "700" },
+  stepIndicatorTextTertiary: { color: COLORS.tertiary, fontSize: 14, fontWeight: "700" },
+  stepName: { fontWeight: "500", fontSize: 15 },
   currentStepLabel: { color: COLORS.secondary, fontSize: 12, marginTop: 2 },
-  doneChip: { backgroundColor: "#dcfce7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  doneChip: {
+    backgroundColor: "#dcfce7",
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 4,
+  },
   doneChipText: { color: "#15803d", fontSize: 12 },
   chartCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   chartArea: {
     flexDirection: "row",
@@ -814,17 +859,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   hadithCard: {
-    backgroundColor: "rgba(238,167,27,0.1)",
+    backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.3)",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginTop: 8,
     marginBottom: 8,
   },
   hadithCardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   hadithStar: { color: COLORS.gold, fontSize: 16, marginRight: 6 },
-  hadithCardLabel: { fontWeight: "bold", color: COLORS.primary, fontSize: 13 },
+  hadithCardLabel: { fontWeight: "700", color: COLORS.primary, fontSize: 13 },
   hadithCardText: { color: COLORS.secondary, fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 6 },
   hadithCardQuelle: { color: COLORS.tertiary, fontSize: 11, marginBottom: 8 },
   hadithCardLink: { color: COLORS.link, fontSize: 13, fontWeight: "600" },

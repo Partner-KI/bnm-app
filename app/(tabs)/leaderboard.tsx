@@ -33,7 +33,6 @@ export default function LeaderboardScreen() {
   const { user } = useAuth();
   const { users, mentorships, sessions, mentorOfMonthVisible } = useData();
 
-  // FIX 4: Admin hat Geschlechter-Filter-Toggle
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
 
   const allScored: MentorScore[] = useMemo(() => {
@@ -59,17 +58,14 @@ export default function LeaderboardScreen() {
       .sort((a, b) => b.score - a.score);
   }, [users, mentorships, sessions]);
 
-  // FIX 4: Mentor/Mentee sieht nur gleiches Geschlecht
   const ranked: MentorScore[] = useMemo(() => {
     if (user?.role === "mentor" || user?.role === "mentee") {
       return allScored.filter((m) => m.gender === user.gender);
     }
-    // Admin: Filter-Toggle
     if (genderFilter === "all") return allScored;
     return allScored.filter((m) => m.gender === genderFilter);
   }, [allScored, user, genderFilter]);
 
-  // FIX 4: Mentor des Monats nach Geschlecht getrennt
   const mentorOfMonthMale = useMemo(() => {
     const males = allScored.filter((m) => m.gender === "male" && m.score > 0);
     return males.length > 0 ? males[0] : null;
@@ -80,12 +76,10 @@ export default function LeaderboardScreen() {
     return females.length > 0 ? females[0] : null;
   }, [allScored]);
 
-  // Für Mentor/Mentee: nur eigenes Geschlecht
   const mentorOfMonthForUser = useMemo(() => {
     if (user?.role === "mentor" || user?.role === "mentee") {
       return user.gender === "male" ? mentorOfMonthMale : mentorOfMonthFemale;
     }
-    // Admin: nach Filter
     if (genderFilter === "male") return mentorOfMonthMale;
     if (genderFilter === "female") return mentorOfMonthFemale;
     return ranked.length > 0 && ranked[0].score > 0 ? ranked[0] : null;
@@ -115,7 +109,7 @@ export default function LeaderboardScreen() {
             Score = Abschlüsse × 10 + Sessions × 3
           </Text>
 
-          {/* FIX 4: Admin-Filter für Geschlecht */}
+          {/* Admin-Filter für Geschlecht */}
           {isAdmin && (
             <View style={styles.filterCard}>
               <Text style={styles.filterLabel}>{"ANZEIGE"}</Text>
@@ -161,7 +155,7 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
-          {/* FIX 7: Mentor des Monats (wenn sichtbar) */}
+          {/* Mentor des Monats */}
           {mentorOfMonthVisible && mentorOfMonthForUser && (
             <View style={styles.momBanner}>
               <View style={styles.momHeader}>
@@ -301,82 +295,98 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
+  pageTitle: { fontSize: 28, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
   pageSubtitle: { color: COLORS.secondary, marginBottom: 24, fontSize: 13 },
 
   filterCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   filterLabel: { fontSize: 11, fontWeight: "600", color: COLORS.tertiary, letterSpacing: 1, marginBottom: 10 },
   filterRow: { flexDirection: "row", gap: 8 },
-  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1 },
-  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 5, borderWidth: 1 },
+  filterChipActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   filterChipInactive: { backgroundColor: COLORS.bg, borderColor: COLORS.border },
   filterChipTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   filterChipTextInactive: { color: COLORS.secondary, fontSize: 13 },
 
   genderHintBox: {
-    backgroundColor: "#eff6ff",
-    borderWidth: 1,
-    borderColor: "#dbeafe",
-    borderRadius: 10,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
-  genderHintText: { color: "#1e40af", fontSize: 13 },
+  genderHintText: { color: COLORS.white, opacity: 0.9, fontSize: 13 },
 
   momBanner: {
-    backgroundColor: "rgba(238,167,27,0.12)",
+    backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.4)",
-    borderRadius: 16,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+    borderRadius: 8,
     padding: 20,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
   momHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   momStar: { color: COLORS.gold, fontSize: 22, marginRight: 8 },
-  momTitle: { fontWeight: "bold", color: COLORS.primary, fontSize: 15 },
-  momName: { fontSize: 22, fontWeight: "bold", color: COLORS.primary, marginBottom: 16 },
+  momTitle: { fontWeight: "700", color: COLORS.primary, fontSize: 15 },
+  momName: { fontSize: 22, fontWeight: "700", color: COLORS.primary, marginBottom: 16 },
   momStatsRow: { flexDirection: "row", gap: 12 },
   momStatPill: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 12,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.3)",
   },
-  momStatValue: { fontSize: 20, fontWeight: "bold", color: COLORS.gold },
+  momStatValue: { fontSize: 20, fontWeight: "700", color: COLORS.gold },
   momStatLabel: { color: COLORS.secondary, fontSize: 11, marginTop: 2 },
 
   myPositionCard: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  myPositionLabel: { color: COLORS.white, opacity: 0.7, fontSize: 13 },
-  myPositionRank: { color: COLORS.gold, fontWeight: "bold", fontSize: 20 },
-  myPositionScore: { color: COLORS.white, fontWeight: "bold", fontSize: 16 },
+  myPositionLabel: { color: COLORS.white, opacity: 0.75, fontSize: 13 },
+  myPositionRank: { color: COLORS.gold, fontWeight: "700", fontSize: 20 },
+  myPositionScore: { color: COLORS.white, fontWeight: "700", fontSize: 16 },
 
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  cardTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 16, fontSize: 15 },
+  cardTitle: { fontWeight: "700", color: COLORS.primary, marginBottom: 16, fontSize: 15 },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
 
   rankRow: {
@@ -388,7 +398,7 @@ const styles = StyleSheet.create({
   rankRowBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
   rankRowHighlight: {
     backgroundColor: "#eff6ff",
-    borderRadius: 10,
+    borderRadius: 6,
     marginHorizontal: -8,
     paddingHorizontal: 8,
   },
@@ -396,13 +406,13 @@ const styles = StyleSheet.create({
   rankBadge: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
   rankBadgeTextWhite: { fontSize: 20 },
-  rankBadgeTextDark: { color: COLORS.secondary, fontWeight: "bold", fontSize: 14 },
+  rankBadgeTextDark: { color: COLORS.secondary, fontWeight: "700", fontSize: 14 },
 
   rankInfo: { flex: 1 },
   rankNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
@@ -411,29 +421,34 @@ const styles = StyleSheet.create({
     backgroundColor: "#dbeafe",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 9999,
+    borderRadius: 4,
   },
   meChipText: { color: "#1d4ed8", fontSize: 11, fontWeight: "600" },
-  medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
   medalChipText: { color: COLORS.white, fontSize: 11, fontWeight: "600" },
   rankSub: { color: COLORS.tertiary, fontSize: 12 },
   rankDetail: { color: COLORS.secondary, fontSize: 12, marginTop: 2 },
 
   scoreBox: { alignItems: "center" },
-  scoreValue: { fontSize: 22, fontWeight: "bold", color: COLORS.primary },
+  scoreValue: { fontSize: 22, fontWeight: "700", color: COLORS.primary },
   scoreLabel: { color: COLORS.tertiary, fontSize: 11 },
 
   legendCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
     padding: 16,
     marginBottom: 8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 1,
   },
-  legendTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  legendTitle: { fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
   legendRow: { flexDirection: "row", alignItems: "center", marginBottom: 8, gap: 8 },
   legendDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold },
   legendText: { color: COLORS.secondary, fontSize: 13 },
-  legendBold: { fontWeight: "bold", color: COLORS.primary },
+  legendBold: { fontWeight: "700", color: COLORS.primary },
 });

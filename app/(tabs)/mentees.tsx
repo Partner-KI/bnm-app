@@ -247,7 +247,10 @@ function AdminMenteesView() {
             return (
               <TouchableOpacity
                 key={mentee.id}
-                style={styles.menteeCard}
+                style={[
+                  styles.menteeCard,
+                  mentorship ? styles.menteeCardAssigned : styles.menteeCardUnassigned,
+                ]}
                 onPress={() =>
                   router.push({ pathname: "/mentee/[id]", params: { id: mentee.id } })
                 }
@@ -316,7 +319,7 @@ function MentorMenteesView() {
           {myMentorships.filter((m) => m.status === "active").length} aktive Betreuungen
         </Text>
 
-        {/* FIX 5: Mentor kann selbst Mentee übernehmen */}
+        {/* Mentor kann selbst Mentee übernehmen */}
         <TouchableOpacity
           style={styles.selfAssignButton}
           onPress={() => router.push("/assign")}
@@ -355,7 +358,10 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
 
   return (
     <TouchableOpacity
-      style={styles.menteeCard}
+      style={[
+        styles.menteeCard,
+        mentorship.status === "active" ? styles.menteeCardAssigned : styles.menteeCardUnassigned,
+      ]}
       onPress={() =>
         router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
       }
@@ -482,7 +488,7 @@ function MenteeProgressView() {
         <Text style={styles.pageTitle}>Mein Fortschritt</Text>
         <Text style={styles.pageSubtitle}>Mentor: {mentorship.mentor?.name}</Text>
 
-        {/* Gesamtfortschritt */}
+        {/* Gesamtfortschritt – dunkle Hero-Card */}
         <View style={styles.progressHeaderCard}>
           <Text style={styles.progressHeaderLabel}>Gesamtfortschritt</Text>
           <Text style={styles.progressHeaderValue}>{totalProgress}%</Text>
@@ -566,7 +572,7 @@ function MenteeProgressView() {
                       <Text style={{ color: COLORS.tertiary, fontSize: 12 }}>Gesperrt</Text>
                     )}
                     {isCurrent && (
-                      <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 }}>
+                      <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
                         <Text style={{ color: "#b45309", fontSize: 12, fontWeight: "500" }}>Aktuell</Text>
                       </View>
                     )}
@@ -592,18 +598,19 @@ function MenteeProgressView() {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
-  pageSubtitle: { color: COLORS.secondary, marginBottom: 24 },
-  sectionTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  pageTitle: { fontSize: 28, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
+  pageSubtitle: { color: COLORS.secondary, fontSize: 15, marginBottom: 24 },
+  sectionTitle: { fontSize: 20, fontWeight: "600", color: COLORS.primary, marginBottom: 12 },
   searchInput: {
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 5,
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: COLORS.primary,
     marginBottom: 16,
+    fontSize: 15,
   },
   filterGroupLabel: {
     fontSize: 11,
@@ -613,57 +620,72 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
-  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1 },
-  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 5, borderWidth: 1 },
+  filterChipActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   filterChipInactive: { backgroundColor: COLORS.white, borderColor: COLORS.border },
-  filterChipTextActive: { color: COLORS.white, fontSize: 14, fontWeight: "500" },
-  filterChipTextInactive: { color: COLORS.secondary, fontSize: 14, fontWeight: "500" },
+  filterChipTextActive: { color: COLORS.white, fontSize: 13, fontWeight: "500" },
+  filterChipTextInactive: { color: COLORS.secondary, fontSize: 13, fontWeight: "500" },
   emptyCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 32,
     alignItems: "center",
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    elevation: 1,
   },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, marginTop: 8 },
   menteeCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  menteeCardAssigned: {
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+  },
+  menteeCardUnassigned: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
   },
   menteeCardHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 },
-  meneeName: { fontWeight: "bold", color: COLORS.primary },
+  meneeName: { fontWeight: "700", color: COLORS.primary, fontSize: 15 },
   menteeSubText: { color: COLORS.tertiary, fontSize: 12 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 4 },
   statusText: { fontSize: 12, fontWeight: "500" },
   mentorLabel: { color: COLORS.tertiary, fontSize: 12, marginBottom: 8 },
   progressRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  progressTrack: { flex: 1, height: 6, backgroundColor: COLORS.bg, borderRadius: 9999, overflow: "hidden" },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressTrack: { flex: 1, height: 6, backgroundColor: COLORS.bg, borderRadius: 3, overflow: "hidden" },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 3 },
   progressText: { color: COLORS.secondary, fontSize: 12 },
   assignButton: {
     marginTop: 8,
-    backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    paddingVertical: 8,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
     alignItems: "center",
   },
   assignButtonText: { color: COLORS.white, fontSize: 14, fontWeight: "600" },
   stepSectionLabel: {
     color: COLORS.tertiary,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "600",
     marginTop: 12,
     marginBottom: 8,
     letterSpacing: 1,
   },
   stepChipRow: { flexDirection: "row", flexWrap: "wrap", gap: 4, marginBottom: 12 },
-  stepChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  stepChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4 },
   stepChipText: { fontSize: 12 },
   cardFooter: {
     borderTopWidth: 1,
@@ -675,41 +697,44 @@ const styles = StyleSheet.create({
   },
   sessionCount: { color: COLORS.tertiary, fontSize: 12 },
   docChipButton: {
-    backgroundColor: "rgba(39,174,96,0.1)",
+    backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: 5,
   },
   docChipText: { color: COLORS.cta, fontSize: 12, fontWeight: "600" },
   selfAssignButton: {
-    backgroundColor: "#eff6ff",
-    borderWidth: 1,
-    borderColor: "#bfdbfe",
-    borderRadius: 10,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 16,
     alignItems: "center",
   },
-  selfAssignText: { color: "#1d4ed8", fontWeight: "600", fontSize: 14 },
+  selfAssignText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   progressHeaderCard: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
+    padding: 24,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  progressHeaderLabel: { color: COLORS.white, opacity: 0.7, fontSize: 14, marginBottom: 4 },
-  progressHeaderValue: { color: COLORS.white, fontSize: 36, fontWeight: "bold", marginBottom: 12 },
-  progressTrackWhite: { height: 12, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 9999, overflow: "hidden" },
-  progressFillGold: { height: "100%", backgroundColor: COLORS.gold, borderRadius: 9999 },
-  progressHeaderSub: { color: COLORS.white, opacity: 0.6, fontSize: 12, marginTop: 8 },
+  progressHeaderLabel: { color: COLORS.white, opacity: 0.75, fontSize: 14, marginBottom: 4 },
+  progressHeaderValue: { color: COLORS.white, fontSize: 36, fontWeight: "700", marginBottom: 12 },
+  progressTrackWhite: { height: 12, backgroundColor: "rgba(255,255,255,0.2)", borderRadius: 6, overflow: "hidden" },
+  progressFillGold: { height: "100%", backgroundColor: COLORS.gold, borderRadius: 6 },
+  progressHeaderSub: { color: COLORS.white, opacity: 0.65, fontSize: 12, marginTop: 8 },
   detailsButton: {
-    backgroundColor: "rgba(39,174,96,0.1)",
+    backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
-    borderRadius: 12,
+    borderRadius: 5,
     paddingVertical: 12,
     paddingHorizontal: 16,
     marginBottom: 24,
@@ -724,14 +749,14 @@ const styles = StyleSheet.create({
   stepIndicator: {
     width: 36,
     height: 36,
-    borderRadius: 9999,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
     flexShrink: 0,
   },
-  stepIndicatorTextWhite: { color: COLORS.white, fontWeight: "bold" },
-  stepIndicatorTextTertiary: { color: COLORS.tertiary, fontSize: 14, fontWeight: "bold" },
-  stepDetailName: { fontWeight: "600" },
+  stepIndicatorTextWhite: { color: COLORS.white, fontWeight: "700" },
+  stepIndicatorTextTertiary: { color: COLORS.tertiary, fontSize: 14, fontWeight: "700" },
+  stepDetailName: { fontWeight: "600", fontSize: 15 },
   stepDetailDesc: { color: COLORS.tertiary, fontSize: 12 },
 });

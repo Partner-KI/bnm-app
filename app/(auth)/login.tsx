@@ -50,7 +50,7 @@ export default function LoginScreen() {
         contentContainerStyle={{ flexGrow: 1 }}
         keyboardShouldPersistTaps="handled"
       >
-        {/* Header Banner */}
+        {/* Hero Header – dunkelblaues NGO-Design */}
         <View style={styles.header}>
           <View style={styles.logoBox}>
             <Text style={styles.logoLetter}>B</Text>
@@ -59,9 +59,11 @@ export default function LoginScreen() {
           <Text style={styles.logoSubtitle}>
             Betreuung neuer Muslime
           </Text>
+          {/* Gold-Linie als Trenner */}
+          <View style={styles.goldDivider} />
         </View>
 
-        {/* Login Card */}
+        {/* Login-Formular */}
         <View style={styles.formContainer}>
           <Text style={styles.welcomeTitle}>
             Willkommen
@@ -187,37 +189,49 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
   },
   header: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.gradientStart,
     paddingTop: 64,
     paddingBottom: 40,
     paddingHorizontal: 24,
     alignItems: "center",
   },
   logoBox: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
+    width: 72,
+    height: 72,
+    borderRadius: 8,
     backgroundColor: COLORS.gold,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   logoLetter: {
     color: COLORS.white,
-    fontSize: 30,
-    fontWeight: "bold",
+    fontSize: 32,
+    fontWeight: "700",
   },
   logoTitle: {
     color: COLORS.white,
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontSize: 32,
+    fontWeight: "700",
+    marginBottom: 6,
   },
   logoSubtitle: {
     color: COLORS.white,
-    opacity: 0.7,
-    fontSize: 14,
+    opacity: 0.75,
+    fontSize: 15,
     textAlign: "center",
+  },
+  goldDivider: {
+    marginTop: 24,
+    width: 60,
+    height: 3,
+    backgroundColor: COLORS.gold,
+    borderRadius: 2,
   },
   formContainer: {
     flex: 1,
@@ -226,36 +240,42 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     color: COLORS.primary,
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 4,
+    fontSize: 28,
+    fontWeight: "700",
+    marginBottom: 6,
   },
   welcomeSubtitle: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: 15,
     marginBottom: 24,
   },
   fieldLabel: {
     color: COLORS.secondary,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
-    marginBottom: 4,
+    marginBottom: 6,
   },
   input: {
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 5,
     paddingHorizontal: 16,
     paddingVertical: 12,
     color: COLORS.primary,
     marginBottom: 16,
+    fontSize: 15,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 1,
   },
   errorBox: {
     backgroundColor: "#fef2f2",
     borderWidth: 1,
     borderColor: "#fecaca",
-    borderRadius: 12,
+    borderRadius: 5,
     paddingHorizontal: 16,
     paddingVertical: 12,
     marginBottom: 16,
@@ -265,15 +285,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   loginButton: {
-    backgroundColor: COLORS.cta,
-    borderRadius: 12,
-    paddingVertical: 16,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: "center",
     marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    elevation: 3,
   },
   loginButtonText: {
     color: COLORS.white,
-    fontWeight: "bold",
+    fontWeight: "700",
     fontSize: 16,
   },
   registerRow: {
@@ -283,10 +309,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   publicRegisterButton: {
-    backgroundColor: "rgba(238,167,27,0.12)",
+    backgroundColor: "rgba(238,167,27,0.10)",
     borderWidth: 1,
-    borderColor: "rgba(238,167,27,0.4)",
-    borderRadius: 12,
+    borderColor: COLORS.gold,
+    borderRadius: 5,
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -308,14 +334,14 @@ const styles = StyleSheet.create({
   quickSection: {
     borderTopWidth: 1,
     borderTopColor: COLORS.border,
-    paddingTop: 24,
+    paddingTop: 20,
     marginBottom: 32,
   },
   quickLabel: {
     color: COLORS.tertiary,
-    fontSize: 12,
+    fontSize: 11,
     textAlign: "center",
-    marginBottom: 12,
+    marginBottom: 10,
     letterSpacing: 1,
   },
   quickRow: {
@@ -327,13 +353,13 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
-    paddingVertical: 12,
+    borderRadius: 5,
+    paddingVertical: 10,
     alignItems: "center",
   },
   quickButtonText: {
-    color: COLORS.primary,
+    color: COLORS.secondary,
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: "500",
   },
 });

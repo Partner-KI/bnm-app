@@ -7,6 +7,7 @@ export const COLORS = {
   link: "#444CE7",
   gradientStart: "#0A3A5A",
   gradientEnd: "#012A46",
+  progressGreen: "#2d802f",
   bg: "#F9FAFB",
   card: "#FFFFFF",
   border: "#e5e7eb",

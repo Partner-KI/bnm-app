@@ -36,7 +36,6 @@ export default function ReportsScreen() {
   const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible, toggleMentorOfMonth } = useData();
 
   const now = new Date();
-  // FIX 6: Zeitraum-Auswahl
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
   const [selectedMonth, setSelectedMonth] = useState(now.getMonth());
   const [selectedQuarter, setSelectedQuarter] = useState(getQuarterIndex(now.getMonth()));
@@ -44,7 +43,6 @@ export default function ReportsScreen() {
 
   const years = [2024, 2025, 2026];
 
-  // Hilfsfunktion: ist ein Datum im gewählten Zeitraum?
   const inPeriod = useMemo(() => {
     return (dateStr: string): boolean => {
       const d = new Date(dateStr);
@@ -53,7 +51,7 @@ export default function ReportsScreen() {
       if (year !== selectedYear) return false;
       if (periodMode === "month") return month === selectedMonth;
       if (periodMode === "quarter") return QUARTERS[selectedQuarter].months.includes(month);
-      return true; // year
+      return true;
     };
   }, [periodMode, selectedMonth, selectedQuarter, selectedYear]);
 
@@ -72,7 +70,6 @@ export default function ReportsScreen() {
     return { totalAssigned, firstContacts, firstMeetings, bnmBoxes, totalSessions, completions, cancellations };
   }, [inPeriod, mentorships, sessions, sessionTypes]);
 
-  // FIX 7: Mentor des Monats (nur wenn sichtbar)
   const mentorOfMonth = useMemo(() => {
     if (!mentorOfMonthVisible) return null;
     const mentors = users.filter((u) => u.role === "mentor");
@@ -89,10 +86,8 @@ export default function ReportsScreen() {
     return best && best.count > 0 ? best : null;
   }, [inPeriod, users, mentorships, sessions, mentorOfMonthVisible]);
 
-  // FIX 6: Balkendiagramm nach Periode
   const barChartData = useMemo(() => {
     if (periodMode === "month") {
-      // Wochen-Ansicht
       const weeks: { label: string; count: number }[] = [
         { label: "W1", count: 0 },
         { label: "W2", count: 0 },
@@ -108,7 +103,6 @@ export default function ReportsScreen() {
       });
       return weeks;
     } else if (periodMode === "quarter") {
-      // Monats-Ansicht innerhalb Quartal
       return QUARTERS[selectedQuarter].months.map((mIdx) => {
         const count = sessions.filter((s) => {
           const d = new Date(s.date);
@@ -117,7 +111,6 @@ export default function ReportsScreen() {
         return { label: MONTHS[mIdx].slice(0, 3), count };
       });
     } else {
-      // Jahres-Ansicht: alle 12 Monate
       return MONTHS.map((m, idx) => {
         const count = sessions.filter((s) => {
           const d = new Date(s.date);
@@ -130,7 +123,6 @@ export default function ReportsScreen() {
 
   const maxBarValue = Math.max(...barChartData.map((w) => w.count), 1);
 
-  // FIX 10: Monatliche Spender-Zahlen (Sessions pro Monat im Jahr)
   const monthlyData = useMemo(() => {
     return MONTHS.map((m, idx) => {
       const count = sessions.filter((s) => {
@@ -180,7 +172,6 @@ export default function ReportsScreen() {
     }
   }
 
-  // FIX 10: Spender-Bericht
   function handleSpendenReport() {
     const header = "Monat,Sessions";
     const rows = monthlyData.map((d) => `"${d.month} ${selectedYear}",${d.count}`).join("\n");
@@ -225,7 +216,7 @@ export default function ReportsScreen() {
           <Text style={styles.pageTitle}>Berichte</Text>
           <Text style={styles.pageSubtitle}>KPIs und Statistiken auf einen Blick</Text>
 
-          {/* FIX 6: Zeitraum-Modus */}
+          {/* Zeitraum-Auswahl */}
           <View style={styles.card}>
             <Text style={styles.cardSectionLabel}>{"ZEITRAUM WÄHLEN"}</Text>
 
@@ -331,10 +322,10 @@ export default function ReportsScreen() {
           {/* Ausgewählter Zeitraum */}
           <Text style={styles.periodTitle}>{periodLabel}</Text>
 
-          {/* KPI-Karten */}
+          {/* KPI-Karten mit Gold-Border links */}
           <View style={styles.kpiRow}>
-            <KpiCard label="Neue Betreuungen" value={kpis.totalAssigned} color={COLORS.primary} />
-            <KpiCard label="Sessions gesamt" value={kpis.totalSessions} color={COLORS.primary} />
+            <KpiCard label="Neue Betreuungen" value={kpis.totalAssigned} color={COLORS.gradientStart} />
+            <KpiCard label="Sessions gesamt" value={kpis.totalSessions} color={COLORS.gradientStart} />
           </View>
           <View style={styles.kpiRow}>
             <KpiCard label="Erstkontakte" value={kpis.firstContacts} color={COLORS.gold} />
@@ -353,8 +344,8 @@ export default function ReportsScreen() {
             </View>
           )}
 
-          {/* Balkendiagramm */}
-          <View style={styles.card}>
+          {/* Balkendiagramm – dunkler Hintergrund */}
+          <View style={styles.chartCard}>
             <Text style={styles.chartTitle}>
               Sessions{periodMode === "month" ? " nach Woche" : periodMode === "quarter" ? " nach Monat" : " nach Monat (Jahresübersicht)"}
             </Text>
@@ -379,7 +370,7 @@ export default function ReportsScreen() {
             </View>
           </View>
 
-          {/* FIX 7: Mentor des Monats (wenn sichtbar) */}
+          {/* Mentor des Monats */}
           {mentorOfMonth ? (
             <View style={styles.goldBox}>
               <View style={styles.goldBoxHeader}>
@@ -401,7 +392,7 @@ export default function ReportsScreen() {
             )
           )}
 
-          {/* FIX 7: Mentor des Monats Toggle */}
+          {/* Mentor des Monats Toggle */}
           <TouchableOpacity
             style={styles.toggleMomButton}
             onPress={toggleMentorOfMonth}
@@ -413,7 +404,7 @@ export default function ReportsScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* Export-Button */}
+          {/* Export-Button – Primär */}
           <TouchableOpacity
             style={styles.exportButton}
             onPress={handleExport}
@@ -423,7 +414,7 @@ export default function ReportsScreen() {
             </Text>
           </TouchableOpacity>
 
-          {/* FIX 10: Spender-Bericht */}
+          {/* Spender-Bericht – Sekundär (Outline) */}
           <TouchableOpacity
             style={styles.spendenButton}
             onPress={handleSpendenReport}
@@ -460,54 +451,62 @@ const styles = StyleSheet.create({
   centerContainer: { flex: 1, backgroundColor: COLORS.bg, alignItems: "center", justifyContent: "center", padding: 24 },
   accessDeniedText: { color: COLORS.primary, fontWeight: "600" },
   page: { padding: 24 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
-  pageSubtitle: { color: COLORS.secondary, marginBottom: 24 },
+  pageTitle: { fontSize: 28, fontWeight: "700", color: COLORS.primary, marginBottom: 4 },
+  pageSubtitle: { color: COLORS.secondary, fontSize: 15, marginBottom: 24 },
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  cardSectionLabel: { fontSize: 12, fontWeight: "600", color: COLORS.tertiary, letterSpacing: 1, marginBottom: 12 },
+  cardSectionLabel: { fontSize: 11, fontWeight: "600", color: COLORS.tertiary, letterSpacing: 1, marginBottom: 12 },
   modeRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  modeButton: { flex: 1, paddingVertical: 10, borderRadius: 8, borderWidth: 1, alignItems: "center" },
-  modeButtonActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  modeButton: { flex: 1, paddingVertical: 10, borderRadius: 5, borderWidth: 1, alignItems: "center" },
+  modeButtonActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   modeButtonInactive: { backgroundColor: COLORS.bg, borderColor: COLORS.border },
   modeTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   modeTextInactive: { color: COLORS.secondary, fontSize: 13 },
   yearRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  yearButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1 },
-  yearButtonActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  yearButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 5, borderWidth: 1 },
+  yearButtonActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   yearButtonInactive: { backgroundColor: COLORS.bg, borderColor: COLORS.border },
   yearButtonTextActive: { color: COLORS.white, fontSize: 14, fontWeight: "600" },
   yearButtonTextInactive: { color: COLORS.secondary, fontSize: 14, fontWeight: "600" },
   monthRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  monthChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 9999, borderWidth: 1 },
+  monthChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 4, borderWidth: 1 },
   monthChipActive: { backgroundColor: COLORS.gold, borderColor: COLORS.gold },
   monthChipInactive: { backgroundColor: COLORS.bg, borderColor: COLORS.border },
   monthChipTextActive: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   monthChipTextInactive: { color: COLORS.secondary, fontSize: 12, fontWeight: "500" },
   quarterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  quarterChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 9999, borderWidth: 1 },
-  periodTitle: { color: COLORS.primary, fontWeight: "bold", fontSize: 18, marginBottom: 16 },
+  quarterChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 4, borderWidth: 1 },
+  periodTitle: { color: COLORS.primary, fontWeight: "700", fontSize: 20, marginBottom: 16 },
   kpiRow: { flexDirection: "row", gap: 12, marginBottom: 12 },
   kpiCard: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    borderLeftWidth: 4,
+    borderLeftColor: COLORS.gold,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 2,
   },
-  kpiLabel: { color: COLORS.tertiary, fontSize: 12, marginBottom: 4 },
-  kpiValue: { fontSize: 30, fontWeight: "bold" },
+  kpiLabel: { color: COLORS.secondary, fontSize: 13, marginBottom: 4 },
+  kpiValue: { fontSize: 30, fontWeight: "700" },
   cancellationBox: {
     backgroundColor: "#fef2f2",
     borderWidth: 1,
     borderColor: "#fecaca",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 24,
     flexDirection: "row",
@@ -515,8 +514,19 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   cancellationLabel: { color: "#b91c1c", fontWeight: "600" },
-  cancellationValue: { color: "#b91c1c", fontWeight: "bold", fontSize: 24 },
-  chartTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 16 },
+  cancellationValue: { color: "#b91c1c", fontWeight: "700", fontSize: 24 },
+  chartCard: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  chartTitle: { fontWeight: "700", color: COLORS.white, marginBottom: 16, fontSize: 15 },
   barChartContainer: {
     flexDirection: "row",
     alignItems: "flex-end",
@@ -525,59 +535,65 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
   },
   barColumn: { alignItems: "center", flex: 1 },
-  barValueText: { color: COLORS.secondary, fontSize: 11, marginBottom: 4 },
+  barValueText: { color: "rgba(255,255,255,0.8)", fontSize: 11, marginBottom: 4 },
   barTrack: {
     width: "100%",
-    backgroundColor: COLORS.bg,
+    backgroundColor: "rgba(255,255,255,0.15)",
     borderRadius: 4,
     overflow: "hidden",
     height: 96,
     justifyContent: "flex-end",
   },
-  barFill: { width: "100%", backgroundColor: COLORS.primary, borderRadius: 4 },
-  barLabel: { color: COLORS.tertiary, fontSize: 11, marginTop: 4 },
+  barFill: { width: "100%", backgroundColor: COLORS.gold, borderRadius: 4 },
+  barLabel: { color: "rgba(255,255,255,0.65)", fontSize: 11, marginTop: 4 },
   goldBox: {
-    backgroundColor: "rgba(238,167,27,0.1)",
+    backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.4)",
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
   goldBoxHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   goldStar: { color: COLORS.gold, fontSize: 24, marginRight: 8 },
-  goldBoxTitle: { fontWeight: "bold", color: COLORS.primary },
-  goldMentorName: { fontSize: 20, fontWeight: "bold", color: COLORS.primary, marginBottom: 2 },
+  goldBoxTitle: { fontWeight: "700", color: COLORS.primary },
+  goldMentorName: { fontSize: 20, fontWeight: "700", color: COLORS.primary, marginBottom: 2 },
   goldMentorSub: { color: COLORS.secondary, fontSize: 14 },
   emptyMonthBox: {
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
   emptyMonthText: { color: COLORS.tertiary, fontSize: 14, textAlign: "center" },
   toggleMomButton: {
-    backgroundColor: COLORS.bg,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    borderRadius: 10,
+    borderColor: COLORS.gradientStart,
+    borderRadius: 5,
     paddingVertical: 12,
     alignItems: "center",
     marginBottom: 12,
   },
-  toggleMomText: { color: COLORS.secondary, fontWeight: "600", fontSize: 14 },
-  exportButton: { backgroundColor: COLORS.primary, borderRadius: 12, paddingVertical: 16, alignItems: "center", marginBottom: 12 },
-  exportButtonText: { color: COLORS.white, fontWeight: "bold" },
+  toggleMomText: { color: COLORS.gradientStart, fontWeight: "600", fontSize: 14 },
+  exportButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  exportButtonText: { color: COLORS.white, fontWeight: "700" },
   spendenButton: {
-    backgroundColor: "rgba(238,167,27,0.15)",
     borderWidth: 1,
-    borderColor: "rgba(238,167,27,0.4)",
-    borderRadius: 12,
-    paddingVertical: 16,
+    borderColor: COLORS.gold,
+    borderRadius: 5,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     alignItems: "center",
     marginBottom: 24,
   },
-  spendenButtonText: { color: COLORS.gold, fontWeight: "bold" },
+  spendenButtonText: { color: COLORS.gold, fontWeight: "700" },
 });
