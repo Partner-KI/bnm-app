@@ -226,6 +226,7 @@ const tr: Record<TranslationKeys, string> = {
   "register.errorPassword": "En az 8 karakter gereklidir.",
   "register.errorPasswordMatch": "Şifreler eşleşmiyor.",
   "register.errorEmailTaken": "Bu e-posta zaten kayıtlı.",
+  "register.errorPhoneTaken": "Bu telefon numarası zaten kayıtlı.",
   "register.errorUnexpected": "Beklenmeyen bir hata oluştu.",
 
   // Register Mentor

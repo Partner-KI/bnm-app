@@ -66,9 +66,30 @@ export default function RegisterPublicScreen() {
     setIsSubmitting(true);
     try {
       const emailLower = email.trim().toLowerCase();
+      const phoneClean = phone.trim();
       const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
-      // Account direkt erstellen via Supabase Auth
+      // Duplikats-Check via DB-Funktion (E-Mail + Telefon)
+      const { data: dupCheck } = await supabase.rpc("check_duplicate_registration", {
+        check_email: emailLower,
+        check_phone: phoneClean,
+      });
+
+      if (dupCheck) {
+        const dup = dupCheck as { email_exists: boolean; phone_exists: boolean };
+        if (dup.email_exists) {
+          setErrors((prev) => ({ ...prev, email: t("register.errorEmailTaken") }));
+          setIsSubmitting(false);
+          return;
+        }
+        if (dup.phone_exists) {
+          setErrors((prev) => ({ ...prev, phone: t("register.errorPhoneTaken") }));
+          setIsSubmitting(false);
+          return;
+        }
+      }
+
+      // Account erstellen via Supabase Auth
       const { error } = await supabase.auth.signUp({
         email: emailLower,
         password: password,

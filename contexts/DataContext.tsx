@@ -170,9 +170,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     loadAllData();
-    const cleanup = subscribeToMessages();
+    const cleanupMessages = subscribeToMessages();
+    const cleanupProfiles = subscribeToProfiles();
+    const cleanupMentorships = subscribeToMentorships();
     return () => {
-      cleanup();
+      cleanupMessages();
+      cleanupProfiles();
+      cleanupMentorships();
     };
   }, [authUser?.id]);
 
@@ -425,6 +429,82 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .subscribe();
 
     realtimeChannelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+
+  // ─── Realtime: Profiles (neue User sofort sichtbar für Admin) ────────────────
+
+  function subscribeToProfiles(): () => void {
+    const channel = supabase
+      .channel("profiles-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const newUser = mapProfile(payload.new as Record<string, unknown>);
+            setUsers((prev) => {
+              if (prev.some((u) => u.id === newUser.id)) return prev;
+              return [...prev, newUser];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            const updated = mapProfile(payload.new as Record<string, unknown>);
+            setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)));
+          } else if (payload.eventType === "DELETE") {
+            const id = (payload.old as Record<string, unknown>).id as string;
+            setUsers((prev) => prev.filter((u) => u.id !== id));
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+
+  // ─── Realtime: Mentorships (Zuweisungen sofort sichtbar) ───────────────────
+
+  function subscribeToMentorships(): () => void {
+    const channel = supabase
+      .channel("mentorships-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "mentorships" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const row = payload.new as Record<string, unknown>;
+            const newM: Mentorship = {
+              id: row.id as string,
+              mentor_id: row.mentor_id as string,
+              mentee_id: row.mentee_id as string,
+              status: row.status as MentorshipStatus,
+              assigned_by: row.assigned_by as string,
+              assigned_at: row.assigned_at as string,
+              completed_at: (row.completed_at as string) ?? undefined,
+              mentor: users.find((u) => u.id === row.mentor_id),
+              mentee: users.find((u) => u.id === row.mentee_id),
+            };
+            setMentorships((prev) => {
+              if (prev.some((m) => m.id === newM.id)) return prev;
+              return [...prev, newM];
+            });
+          } else if (payload.eventType === "UPDATE") {
+            const row = payload.new as Record<string, unknown>;
+            setMentorships((prev) =>
+              prev.map((m) =>
+                m.id === row.id
+                  ? { ...m, status: row.status as MentorshipStatus, completed_at: (row.completed_at as string) ?? undefined }
+                  : m
+              )
+            );
+          }
+        }
+      )
+      .subscribe();
 
     return () => {
       supabase.removeChannel(channel);

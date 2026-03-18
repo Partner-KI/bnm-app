@@ -226,6 +226,7 @@ const en: Record<TranslationKeys, string> = {
   "register.errorPassword": "At least 8 characters required.",
   "register.errorPasswordMatch": "Passwords do not match.",
   "register.errorEmailTaken": "This email is already registered.",
+  "register.errorPhoneTaken": "This phone number is already registered.",
   "register.errorUnexpected": "An unexpected error occurred.",
 
   // Register Mentor

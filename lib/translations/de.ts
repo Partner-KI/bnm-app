@@ -224,6 +224,7 @@ const de = {
   "register.errorPassword": "Mindestens 8 Zeichen.",
   "register.errorPasswordMatch": "Passwörter stimmen nicht überein.",
   "register.errorEmailTaken": "Diese E-Mail ist bereits registriert.",
+  "register.errorPhoneTaken": "Diese Telefonnummer ist bereits registriert.",
   "register.errorUnexpected": "Ein unerwarteter Fehler ist aufgetreten.",
 
   // Register Mentor
