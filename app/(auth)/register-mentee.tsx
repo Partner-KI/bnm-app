@@ -8,8 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Pressable,
 } from "react-native";
-import { showError, showSuccess } from "../../lib/errorHandler";
+import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
@@ -18,6 +19,8 @@ import { supabase } from "../../lib/supabase";
 interface MenteeFormData {
   name: string;
   email: string;
+  password: string;
+  passwordConfirm: string;
   gender: Gender | "";
   city: string;
   age: string;
@@ -28,6 +31,8 @@ interface MenteeFormData {
 interface MenteeFormErrors {
   name?: string;
   email?: string;
+  password?: string;
+  passwordConfirm?: string;
   gender?: string;
   city?: string;
   age?: string;
@@ -50,9 +55,13 @@ const CONTACT_OPTIONS: { value: ContactPreference; label: string }[] = [
 export default function RegisterMenteeScreen() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [form, setForm] = useState<MenteeFormData>({
     name: "",
     email: "",
+    password: "",
+    passwordConfirm: "",
     gender: "",
     city: "",
     age: "",
@@ -67,6 +76,12 @@ export default function RegisterMenteeScreen() {
     if (!form.email.trim()) newErrors.email = "Pflichtfeld";
     else if (!/\S+@\S+\.\S+/.test(form.email))
       newErrors.email = "Ungültige E-Mail";
+    if (!form.password) newErrors.password = "Pflichtfeld";
+    else if (form.password.length < 8)
+      newErrors.password = "Mindestens 8 Zeichen";
+    if (!form.passwordConfirm) newErrors.passwordConfirm = "Pflichtfeld";
+    else if (form.password !== form.passwordConfirm)
+      newErrors.passwordConfirm = "Passwörter stimmen nicht überein";
     if (!form.gender) newErrors.gender = "Pflichtfeld";
     if (!form.city.trim()) newErrors.city = "Pflichtfeld";
     if (!form.age.trim()) newErrors.age = "Pflichtfeld";
@@ -85,23 +100,11 @@ export default function RegisterMenteeScreen() {
     try {
       const emailLower = form.email.trim().toLowerCase();
 
-      // Duplikats-Check via Supabase
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", emailLower)
-        .maybeSingle();
-
-      if (existing) {
-        setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
-        setIsSubmitting(false);
-        return;
-      }
-
       // Mentee-Registrierung: Direkt als Supabase Auth User anlegen
+      // signUp meldet den User automatisch an und gibt Fehler bei doppelter E-Mail
       const { error } = await supabase.auth.signUp({
         email: emailLower,
-        password: Math.random().toString(36).slice(-10) + "A1!", // Temp-Passwort, wird via E-Mail zurückgesetzt
+        password: form.password,
         options: {
           data: {
             name: form.name.trim(),
@@ -123,7 +126,9 @@ export default function RegisterMenteeScreen() {
         return;
       }
 
-      showSuccess("Vielen Dank! Deine Registrierung wurde eingereicht. Das BNM-Team wird sich bald bei dir melden.", () => router.replace("/(auth)/login"));
+      // Nach erfolgreicher Registrierung direkt zum Dashboard navigieren
+      // (supabase.auth.signUp loggt den User automatisch ein)
+      router.replace("/(app)/(mentee)/dashboard");
     } catch {
       showError("Ein unerwarteter Fehler ist aufgetreten.");
     } finally {
@@ -174,6 +179,38 @@ export default function RegisterMenteeScreen() {
             value={form.email}
             onChangeText={(v) => update("email", v)}
           />
+
+          {/* Passwort */}
+          <FieldLabel label="Passwort" error={errors.password} />
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.input, styles.passwordInput, errors.password ? styles.inputError : styles.inputNormal]}
+              placeholder="Mindestens 8 Zeichen"
+              placeholderTextColor="#98A2B3"
+              secureTextEntry={!showPassword}
+              value={form.password}
+              onChangeText={(v) => update("password", v)}
+            />
+            <Pressable style={styles.eyeButton} onPress={() => setShowPassword((v) => !v)}>
+              <Text style={styles.eyeText}>{showPassword ? "Verbergen" : "Zeigen"}</Text>
+            </Pressable>
+          </View>
+
+          {/* Passwort Bestätigung */}
+          <FieldLabel label="Passwort bestätigen" error={errors.passwordConfirm} />
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={[styles.input, styles.passwordInput, errors.passwordConfirm ? styles.inputError : styles.inputNormal]}
+              placeholder="Passwort wiederholen"
+              placeholderTextColor="#98A2B3"
+              secureTextEntry={!showPasswordConfirm}
+              value={form.passwordConfirm}
+              onChangeText={(v) => update("passwordConfirm", v)}
+            />
+            <Pressable style={styles.eyeButton} onPress={() => setShowPasswordConfirm((v) => !v)}>
+              <Text style={styles.eyeText}>{showPasswordConfirm ? "Verbergen" : "Zeigen"}</Text>
+            </Pressable>
+          </View>
 
           {/* Telefon */}
           <FieldLabel label="Telefonnummer (optional)" />
@@ -385,6 +422,23 @@ const styles = StyleSheet.create({
   },
   chipTextInactive: {
     color: COLORS.secondary,
+  },
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  passwordInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  eyeButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+  },
+  eyeText: {
+    color: COLORS.link,
+    fontSize: 12,
   },
   submitButton: {
     backgroundColor: COLORS.cta,

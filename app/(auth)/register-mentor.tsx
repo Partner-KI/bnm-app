@@ -81,19 +81,6 @@ export default function RegisterMentorScreen() {
     try {
       const emailLower = form.email.trim().toLowerCase();
 
-      // Duplikats-Check: Existiert diese E-Mail bereits in profiles?
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", emailLower)
-        .maybeSingle();
-
-      if (existingProfile) {
-        setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
-        setIsSubmitting(false);
-        return;
-      }
-
       // Prüfen ob bereits eine pending Bewerbung existiert
       const { data: existingApp } = await supabase
         .from("mentor_applications")
@@ -129,7 +116,7 @@ export default function RegisterMentorScreen() {
       }
 
       // E-Mail-Benachrichtigung an Admin
-      sendNewMentorApplicationNotification(
+      await sendNewMentorApplicationNotification(
         form.name.trim(),
         emailLower,
         form.city.trim(),

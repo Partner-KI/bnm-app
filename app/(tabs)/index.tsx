@@ -685,7 +685,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "center",
   },
   actionButtonText: { color: COLORS.white, fontSize: 13, fontWeight: "600", textAlign: "center" },
   actionButtonGold: {
@@ -819,6 +819,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
+    justifyContent: "center",
   },
   secondaryButtonText: { color: COLORS.gradientStart, fontSize: 13, fontWeight: "600" },
   stepRow: {

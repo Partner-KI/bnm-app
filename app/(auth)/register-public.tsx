@@ -57,22 +57,15 @@ export default function RegisterPublicScreen() {
     setIsSubmitting(true);
     try {
       const emailLower = email.trim().toLowerCase();
+      const contactLabel =
+        contactPref === "whatsapp" ? "WhatsApp" :
+        contactPref === "phone" ? "Telefon" :
+        contactPref === "telegram" ? "Telegram" :
+        contactPref === "email" ? "E-Mail" : "";
 
-      // Duplikats-Check via Supabase
-      const { data: existing } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("email", emailLower)
-        .maybeSingle();
-
-      if (existing) {
-        setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
-        setIsSubmitting(false);
-        return;
-      }
-
-      // Öffentliche Anmeldung: Als mentee_registrations via mentor_applications speichern
+      // Öffentliche Anmeldung: Als Mentee-Anmeldung via mentor_applications speichern
       // (Das BNM-Team bearbeitet diese dann manuell)
+      // contact_preference wird in experience codiert, da das DB-Feld noch nicht existiert
       const { error } = await supabase.from("mentor_applications").insert({
         name: `${firstName.trim()} ${lastName.trim()}`,
         email: emailLower,
@@ -80,8 +73,7 @@ export default function RegisterPublicScreen() {
         gender: gender,
         city: city.trim(),
         age: parseInt(age, 10),
-        contact_preference: contactPref,
-        experience: "",
+        experience: contactLabel ? `Kontakt: ${contactLabel}` : "",
         motivation: "Anmeldung als neuer Muslim (öffentliches Formular)",
         status: "pending",
       });
@@ -93,7 +85,7 @@ export default function RegisterPublicScreen() {
       }
 
       // E-Mail-Benachrichtigung an Admin
-      sendNewMenteeRegistrationNotification(
+      await sendNewMenteeRegistrationNotification(
         `${firstName.trim()} ${lastName.trim()}`,
         emailLower,
         city.trim(),
