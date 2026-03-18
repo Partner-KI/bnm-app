@@ -1,52 +1,73 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import Svg, { Circle, Path } from "react-native-svg";
 import { COLORS } from "../constants/Colors";
 
 interface BNMLogoProps {
   size?: number;
   showSubtitle?: boolean;
+  color?: string;
 }
 
-export function BNMLogo({ size = 60, showSubtitle = false }: BNMLogoProps) {
-  const containerSize = size;
-  const borderRadius = size * 0.2;
-  const letterFontSize = size * 0.45;
-  const titleFontSize = size * 0.4;
-  const subtitleFontSize = size * 0.18;
+export function BNMLogo({
+  size = 60,
+  showSubtitle = false,
+  color = COLORS.gradientStart,
+}: BNMLogoProps) {
+  const iconSize = size;
+  const textSize = size * 0.22;
+  const subSize = size * 0.14;
 
   return (
     <View style={styles.wrapper}>
-      {/* Logo-Box: dunkelblaues abgerundetes Quadrat mit Gold-Buchstaben */}
-      <View
-        style={[
-          styles.logoBox,
-          {
-            width: containerSize,
-            height: containerSize,
-            borderRadius,
-          },
-        ]}
-      >
-        {/* Dezenter Gold-Strich oben links als Akzent */}
-        <View
-          style={[
-            styles.accentBar,
-            { width: containerSize * 0.25, borderRadius: 2 },
-          ]}
-        />
-        <Text style={[styles.logoLetters, { fontSize: letterFontSize }]}>
-          BNM
-        </Text>
-      </View>
+      <Svg width={iconSize} height={iconSize} viewBox="0 0 100 100">
+        {/* Linke Person — Kopf */}
+        <Circle cx="32" cy="22" r="10" fill={color} />
+        {/* Rechte Person — Kopf */}
+        <Circle cx="68" cy="22" r="10" fill={color} />
 
-      {/* Subtitle */}
+        {/* Verbindungskurve — Infinity/Mentoring-Symbol */}
+        {/* Linke Person geht nach rechts unten, kreuzt, rechte Person geht nach links unten */}
+        <Path
+          d="M 22 38 C 22 58, 50 58, 50 48 C 50 38, 78 38, 78 58"
+          stroke={color}
+          strokeWidth="6"
+          strokeLinecap="round"
+          fill="none"
+        />
+        <Path
+          d="M 78 38 C 78 58, 50 58, 50 48 C 50 38, 22 38, 22 58"
+          stroke={color}
+          strokeWidth="6"
+          strokeLinecap="round"
+          fill="none"
+        />
+
+        {/* Linke Hand/Arm */}
+        <Path
+          d="M 22 38 Q 15 32, 20 26"
+          stroke={color}
+          strokeWidth="5"
+          strokeLinecap="round"
+          fill="none"
+        />
+        {/* Rechte Hand/Arm */}
+        <Path
+          d="M 78 38 Q 85 32, 80 26"
+          stroke={color}
+          strokeWidth="5"
+          strokeLinecap="round"
+          fill="none"
+        />
+      </Svg>
+
       {showSubtitle && (
-        <View style={styles.subtitleContainer}>
-          <Text style={[styles.logoTitle, { fontSize: titleFontSize }]}>
-            BNM
+        <View style={styles.textContainer}>
+          <Text style={[styles.title, { fontSize: textSize, color }]}>
+            BETREUUNG
           </Text>
-          <Text style={[styles.subtitleText, { fontSize: subtitleFontSize }]}>
-            Betreuung neuer Muslime
+          <Text style={[styles.subtitle, { fontSize: subSize, color }]}>
+            NEUER MUSLIME
           </Text>
         </View>
       )}
@@ -58,45 +79,19 @@ const styles = StyleSheet.create({
   wrapper: {
     alignItems: "center",
   },
-  logoBox: {
-    backgroundColor: COLORS.gradientStart,
+  textContainer: {
+    marginTop: 4,
     alignItems: "center",
-    justifyContent: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 6,
-    position: "relative",
-    overflow: "hidden",
   },
-  accentBar: {
-    position: "absolute",
-    top: 6,
-    left: 6,
-    height: 3,
-    backgroundColor: COLORS.gold,
-    opacity: 0.8,
-  },
-  logoLetters: {
-    color: COLORS.gold,
+  title: {
     fontWeight: "800",
-    letterSpacing: 2,
-  },
-  subtitleContainer: {
-    marginTop: 8,
-    alignItems: "center",
-  },
-  logoTitle: {
-    color: COLORS.primary,
-    fontWeight: "700",
     letterSpacing: 3,
   },
-  subtitleText: {
-    color: COLORS.secondary,
+  subtitle: {
     fontWeight: "500",
-    letterSpacing: 0.5,
-    marginTop: 2,
+    letterSpacing: 2,
+    opacity: 0.7,
+    marginTop: 1,
   },
 });
 
