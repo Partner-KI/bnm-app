@@ -11,27 +11,26 @@ import {
 import { showSuccess, showConfirm } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
+import { useLanguage, type Language } from "../contexts/LanguageContext";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
 
-const LANGUAGES = [
-  { key: "de", label: "Deutsch" },
-  { key: "tr", label: "Türkçe" },
-  { key: "ar", label: "العربية" },
-  { key: "en", label: "English" },
-] as const;
-
-type LanguageKey = (typeof LANGUAGES)[number]["key"];
+const LANGUAGES: { key: Language; label: string; native: string }[] = [
+  { key: "de", label: "Deutsch", native: "Deutsch" },
+  { key: "tr", label: "Türkçe", native: "Türkçe" },
+  { key: "ar", label: "العربية", native: "العربية" },
+  { key: "en", label: "English", native: "English" },
+];
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { logout } = useAuth();
+  const { language, setLanguage, t } = useLanguage();
 
   const [pushEnabled, setPushEnabled] = useState(true);
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageKey>("de");
 
   async function handleDeleteAccount() {
-    const ok = await showConfirm("Konto löschen", "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden permanent gelöscht.");
+    const ok = await showConfirm(t("settings.deleteTitle"), t("settings.deleteConfirm"));
     if (ok) {
       showSuccess("Dein Konto wurde erfolgreich gelöscht.", logout);
     }
@@ -45,29 +44,31 @@ export default function SettingsScreen() {
     Linking.openURL("https://bnm-program.de");
   }
 
+  function handleLanguageSelect(lang: Language) {
+    setLanguage(lang);
+  }
+
   return (
     <Container>
       <View style={styles.root}>
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹ Zurück</Text>
+            <Text style={styles.backText}>‹ {t("common.back")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Einstellungen</Text>
+          <Text style={styles.headerTitle}>{t("settings.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
 
           {/* Sektion: Benachrichtigungen */}
-          <Text style={styles.sectionLabel}>BENACHRICHTIGUNGEN</Text>
+          <Text style={styles.sectionLabel}>{t("settings.notifications")}</Text>
           <View style={styles.card}>
             <View style={styles.toggleRow}>
               <View style={styles.toggleInfo}>
-                <Text style={styles.toggleTitle}>Push-Benachrichtigungen</Text>
-                <Text style={styles.toggleSubtitle}>
-                  Erhalte Erinnerungen und Neuigkeiten
-                </Text>
+                <Text style={styles.toggleTitle}>{t("settings.pushNotifications")}</Text>
+                <Text style={styles.toggleSubtitle}>{t("settings.pushSubtitle")}</Text>
               </View>
               <Switch
                 value={pushEnabled}
@@ -79,7 +80,7 @@ export default function SettingsScreen() {
           </View>
 
           {/* Sektion: Sprache */}
-          <Text style={styles.sectionLabel}>SPRACHE</Text>
+          <Text style={styles.sectionLabel}>{t("settings.language")}</Text>
           <View style={styles.card}>
             {LANGUAGES.map((lang, idx) => (
               <TouchableOpacity
@@ -87,11 +88,24 @@ export default function SettingsScreen() {
                 style={[
                   styles.languageRow,
                   idx < LANGUAGES.length - 1 && styles.languageRowBorder,
+                  language === lang.key && styles.languageRowActive,
                 ]}
-                onPress={() => setSelectedLanguage(lang.key)}
+                onPress={() => handleLanguageSelect(lang.key)}
+                activeOpacity={0.7}
               >
-                <Text style={styles.languageLabel}>{lang.label}</Text>
-                {selectedLanguage === lang.key && (
+                <View style={styles.languageLabelGroup}>
+                  <Text style={[
+                    styles.languageLabel,
+                    language === lang.key && styles.languageLabelSelected,
+                  ]}>
+                    {lang.native}
+                  </Text>
+                  {/* RTL-Hinweis für Arabisch */}
+                  {lang.key === "ar" && language !== "ar" && (
+                    <Text style={styles.rtlHint}>{t("settings.rtlHint")}</Text>
+                  )}
+                </View>
+                {language === lang.key && (
                   <View style={styles.checkMark}>
                     <Text style={styles.checkMarkText}>✓</Text>
                   </View>
@@ -101,17 +115,17 @@ export default function SettingsScreen() {
           </View>
 
           {/* Sektion: Über BNM */}
-          <Text style={styles.sectionLabel}>ÜBER BNM</Text>
+          <Text style={styles.sectionLabel}>{t("settings.aboutBNM")}</Text>
           <View style={styles.card}>
             <View style={[styles.infoRow, styles.rowBorder]}>
-              <Text style={styles.infoLabel}>Version</Text>
+              <Text style={styles.infoLabel}>{t("settings.version")}</Text>
               <Text style={styles.infoValue}>1.0.0</Text>
             </View>
             <TouchableOpacity
               style={[styles.infoRow, styles.rowBorder]}
               onPress={handleSupportMail}
             >
-              <Text style={styles.infoLabel}>Support</Text>
+              <Text style={styles.infoLabel}>{t("settings.support")}</Text>
               <Text style={[styles.infoValue, { color: COLORS.link }]}>
                 support@bnm-program.de
               </Text>
@@ -120,7 +134,7 @@ export default function SettingsScreen() {
               style={styles.infoRow}
               onPress={handleWebsite}
             >
-              <Text style={styles.infoLabel}>Website</Text>
+              <Text style={styles.infoLabel}>{t("settings.website")}</Text>
               <Text style={[styles.infoValue, { color: COLORS.link }]}>
                 bnm-program.de ↗
               </Text>
@@ -128,20 +142,11 @@ export default function SettingsScreen() {
           </View>
 
           {/* Sektion: Datenschutz */}
-          <Text style={styles.sectionLabel}>DATENSCHUTZ</Text>
+          <Text style={styles.sectionLabel}>{t("settings.privacy")}</Text>
           <View style={styles.card}>
-            <Text style={styles.privacyText}>
-              BNM verarbeitet deine Daten ausschließlich zur Verwaltung des
-              Mentoring-Programms. Deine Daten werden nicht an Dritte
-              weitergegeben und nach Beendigung der Betreuung entsprechend
-              der gesetzlichen Aufbewahrungsfristen gelöscht.
-            </Text>
+            <Text style={styles.privacyText}>{t("settings.privacyText1")}</Text>
             <View style={styles.privacyDivider} />
-            <Text style={styles.privacyText}>
-              Du hast das Recht auf Auskunft, Berichtigung und Löschung
-              deiner gespeicherten Daten. Wende dich bei Fragen an
-              datenschutz@bnm-program.de.
-            </Text>
+            <Text style={styles.privacyText}>{t("settings.privacyText2")}</Text>
           </View>
 
           {/* Konto löschen */}
@@ -149,12 +154,10 @@ export default function SettingsScreen() {
             style={styles.deleteButton}
             onPress={handleDeleteAccount}
           >
-            <Text style={styles.deleteButtonText}>Konto löschen</Text>
+            <Text style={styles.deleteButtonText}>{t("settings.deleteAccount")}</Text>
           </TouchableOpacity>
 
-          <Text style={styles.footerText}>
-            BNM – Betreuung neuer Muslime · Version 1.0.0
-          </Text>
+          <Text style={styles.footerText}>{t("settings.footer")}</Text>
         </ScrollView>
       </View>
     </Container>
@@ -215,7 +218,17 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
+  languageRowActive: {
+    backgroundColor: "rgba(238,167,27,0.06)",
+  },
+  languageLabelGroup: { flex: 1 },
   languageLabel: { color: COLORS.primary, fontSize: 14 },
+  languageLabelSelected: { fontWeight: "600", color: COLORS.gradientStart },
+  rtlHint: {
+    color: COLORS.tertiary,
+    fontSize: 11,
+    marginTop: 2,
+  },
   checkMark: {
     width: 24,
     height: 24,

@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } 
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
@@ -22,6 +23,7 @@ export default function DashboardScreen() {
 
 function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: boolean }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const {
     users,
     mentorships,
@@ -56,21 +58,21 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
         <View style={styles.headerRow}>
           <BNMLogo size={36} showSubtitle={false} />
           <View style={styles.headerTextGroup}>
-            <Text style={styles.pageTitle}>Admin Dashboard</Text>
-            <Text style={styles.pageSubtitle}>Gesamtübersicht BNM-Programm</Text>
+            <Text style={styles.pageTitle}>{t("dashboard.admin")}</Text>
+            <Text style={styles.pageSubtitle}>{t("dashboard.overview")}</Text>
           </View>
         </View>
 
         {/* KPI Karten – Reihe 1 */}
         <View style={styles.row3}>
-          <StatCard label="Aktive Betreuungen" value={activeMentorships.length} color={COLORS.gradientStart} />
-          <StatCard label="Abgeschlossen" value={completedMentorships.length} color={COLORS.cta} />
+          <StatCard label={t("dashboard.activeMentorships")} value={activeMentorships.length} color={COLORS.gradientStart} />
+          <StatCard label={t("dashboard.completed")} value={completedMentorships.length} color={COLORS.cta} />
         </View>
 
         {/* KPI Karten – Reihe 2 */}
         <View style={[styles.row3, { marginBottom: 16 }]}>
-          <StatCard label="Mentoren" value={allMentors.length} color={COLORS.gradientStart} />
-          <StatCard label="Mentees gesamt" value={allMentees.length} color={COLORS.gold} />
+          <StatCard label={t("dashboard.mentors")} value={allMentors.length} color={COLORS.gradientStart} />
+          <StatCard label={t("dashboard.totalMentees")} value={allMentees.length} color={COLORS.gold} />
         </View>
 
         {/* Nicht zugewiesene Mentees */}
@@ -78,14 +80,14 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           <View style={styles.amberBox}>
             <Text style={styles.amberTitle}>
               {unassignedMentees.length} Mentee
-              {unassignedMentees.length > 1 ? "s" : ""} ohne Zuweisung
+              {unassignedMentees.length > 1 ? "s" : ""} {t("dashboard.withoutAssignment")}
             </Text>
             {unassignedMentees.map((mentee) => (
               <View key={mentee.id} style={styles.amberRow}>
                 <View>
                   <Text style={styles.menteeNameText}>{mentee.name}</Text>
                   <Text style={styles.menteeSubText}>
-                    {mentee.city} · {mentee.gender === "male" ? "Bruder" : "Schwester"}
+                    {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -94,7 +96,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                     router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
                   }
                 >
-                  <Text style={styles.assignButtonText}>Zuweisen</Text>
+                  <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
                 </TouchableOpacity>
               </View>
             ))}
@@ -108,14 +110,14 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
               onPress={() => router.push("/admin/session-types")}
             >
-              <Text style={styles.actionButtonText}>Session-Typen verwalten</Text>
+              <Text style={styles.actionButtonText}>{t("dashboard.sessionTypes")}</Text>
             </TouchableOpacity>
           )}
           <TouchableOpacity
             style={[styles.actionButtonGold, !showSystemSettings ? { flex: 1 } : {}]}
             onPress={() => router.push("/(tabs)/reports")}
           >
-            <Text style={styles.actionButtonTextDark}>Monatsberichte</Text>
+            <Text style={styles.actionButtonTextDark}>{t("dashboard.reports")}</Text>
           </TouchableOpacity>
         </View>
 
@@ -125,8 +127,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           onPress={() => router.push("/admin/applications")}
         >
           <View style={styles.applicationsButtonContent}>
-            <Text style={styles.applicationsButtonText}>Mentor-Bewerbungen</Text>
-            <Text style={styles.applicationsButtonSub}>Neue Mentoren prüfen</Text>
+            <Text style={styles.applicationsButtonText}>{t("dashboard.applications")}</Text>
+            <Text style={styles.applicationsButtonSub}>{t("dashboard.checkApplications")}</Text>
           </View>
           {pendingAppsCount > 0 && (
             <View style={styles.applicationsBadge}>
@@ -142,8 +144,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           onPress={() => router.push("/admin/feedback-overview")}
         >
           <View style={styles.applicationsButtonContent}>
-            <Text style={styles.applicationsButtonText}>Feedback-Übersicht</Text>
-            <Text style={styles.applicationsButtonSub}>Alle Feedbacks einsehen</Text>
+            <Text style={styles.applicationsButtonText}>{t("dashboard.feedbackOverview")}</Text>
+            <Text style={styles.applicationsButtonSub}>{t("dashboard.viewAllFeedbacks")}</Text>
           </View>
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
@@ -153,15 +155,15 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
         {/* Aktive Betreuungen Übersicht */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Aktive Betreuungen</Text>
+          <Text style={styles.cardTitle}>{t("dashboard.activeMentorships")}</Text>
           {activeMentorships.length === 0 ? (
             <View style={{ alignItems: "center", paddingVertical: 16 }}>
               <Text style={{ fontSize: 28, marginBottom: 8 }}>👥</Text>
               <Text style={[styles.emptyText, { marginBottom: 8 }]}>
-                Noch keine aktiven Betreuungen.
+                {t("dashboard.noActiveMentorships")}
               </Text>
               <Text style={{ color: COLORS.link, fontSize: 13 }}>
-                Weise einen Mentee zu, um zu starten.
+                {t("dashboard.assignMenteePrompt")}
               </Text>
             </View>
           ) : (
@@ -182,7 +184,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <View style={styles.rowBetweenMb2}>
                     <View>
                       <Text style={styles.semiboldPrimary}>{m.mentee?.name}</Text>
-                      <Text style={styles.tertiaryXs}>Mentor: {m.mentor?.name}</Text>
+                      <Text style={styles.tertiaryXs}>{t("dashboard.mentor")} {m.mentor?.name}</Text>
                     </View>
                     <View style={styles.percentBadge}>
                       <Text style={styles.percentBadgeText}>{progress}%</Text>
@@ -197,10 +199,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
         {/* Geschlechtertrennung Hinweis */}
         <View style={styles.blueBox}>
-          <Text style={styles.blueTitle}>Geschlechtertrennung aktiv</Text>
-          <Text style={styles.blueText}>
-            Brüder werden nur Brüdern zugewiesen, Schwestern nur Schwestern.
-          </Text>
+          <Text style={styles.blueTitle}>{t("dashboard.genderSeparation")}</Text>
+          <Text style={styles.blueText}>{t("dashboard.genderSeparationText")}</Text>
         </View>
       </View>
     </ScrollView>
@@ -210,6 +210,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 function MentorDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -232,24 +233,24 @@ function MentorDashboard() {
       <View style={styles.page}>
         {/* Begrüssung – Hero mit dunklem Blau */}
         <View style={styles.greetingCard}>
-          <Text style={styles.greetingSmall}>Salam Aleikum,</Text>
+          <Text style={styles.greetingSmall}>{t("dashboard.salam")}</Text>
           <Text style={styles.greetingName}>{user.name}</Text>
           <Text style={styles.greetingMeta}>
-            {user.city} · {user.gender === "male" ? "Bruder" : "Schwester"}
+            {user.city} · {user.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
           </Text>
         </View>
 
         {/* Stats */}
         <View style={[styles.row3, { marginBottom: 16 }]}>
-          <StatCard label="Aktive Mentees" value={activeMentorships.length} color={COLORS.gradientStart} />
-          <StatCard label="Abgeschlossen" value={completedMentorships.length} color={COLORS.cta} />
+          <StatCard label={t("dashboard.activeMentees")} value={activeMentorships.length} color={COLORS.gradientStart} />
+          <StatCard label={t("dashboard.completed")} value={completedMentorships.length} color={COLORS.cta} />
         </View>
 
         {/* Aktive Betreuungen */}
-        <Text style={styles.sectionTitle}>Meine aktiven Betreuungen</Text>
+        <Text style={styles.sectionTitle}>{t("dashboard.myActiveMentorships")}</Text>
         {activeMentorships.length === 0 ? (
           <View style={[styles.card, { padding: 24, alignItems: "center", marginBottom: 16 }]}>
-            <Text style={styles.emptyText}>Dir sind aktuell keine Mentees zugewiesen.</Text>
+            <Text style={styles.emptyText}>{t("dashboard.noMenteesAssigned")}</Text>
           </View>
         ) : (
           activeMentorships.map((m) => {
@@ -290,7 +291,7 @@ function MentorDashboard() {
                   <View style={styles.nextStepRow}>
                     <View style={styles.goldDot} />
                     <Text style={styles.nextStepText}>
-                      Nächster Schritt: {nextStep.name}
+                      {t("dashboard.nextStep")} {nextStep.name}
                     </Text>
                   </View>
                 )}
@@ -302,7 +303,7 @@ function MentorDashboard() {
                       router.push({ pathname: "/document-session", params: { mentorshipId: m.id } });
                     }}
                   >
-                    <Text style={styles.docButtonText}>Session dokumentieren</Text>
+                    <Text style={styles.docButtonText}>{t("dashboard.documentSession")}</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
                     style={styles.chatButton}
@@ -311,7 +312,7 @@ function MentorDashboard() {
                       router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: m.id } });
                     }}
                   >
-                    <Text style={styles.chatButtonText}>Chat</Text>
+                    <Text style={styles.chatButtonText}>{t("dashboard.openChat")}</Text>
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -323,11 +324,9 @@ function MentorDashboard() {
         <View style={styles.goldBox}>
           <View style={styles.goldBoxHeader}>
             <Text style={styles.goldStar}>★</Text>
-            <Text style={styles.goldBoxTitle}>Mentor des Monats</Text>
+            <Text style={styles.goldBoxTitle}>{t("dashboard.mentorOfMonth")}</Text>
           </View>
-          <Text style={styles.goldBoxText}>
-            Dokumentiere deine Sessions regelmässig, um in die Auswahl zu kommen.
-          </Text>
+          <Text style={styles.goldBoxText}>{t("dashboard.mentorOfMonthText")}</Text>
         </View>
       </View>
     </ScrollView>
@@ -337,6 +336,7 @@ function MentorDashboard() {
 function MenteeDashboard() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -359,12 +359,12 @@ function MenteeDashboard() {
       <View style={styles.page}>
         {/* Begrüssung – Hero */}
         <View style={styles.greetingCard}>
-          <Text style={styles.greetingSmall}>Salam Aleikum,</Text>
+          <Text style={styles.greetingSmall}>{t("dashboard.salam")}</Text>
           <Text style={styles.greetingName}>{user.name}</Text>
           {mentorship ? (
-            <Text style={styles.greetingMeta}>Mentor: {mentorship.mentor?.name}</Text>
+            <Text style={styles.greetingMeta}>{t("dashboard.mentor")} {mentorship.mentor?.name}</Text>
           ) : (
-            <Text style={styles.greetingMeta}>Noch kein Mentor zugewiesen</Text>
+            <Text style={styles.greetingMeta}>{t("dashboard.noMentorYet")}</Text>
           )}
         </View>
 
@@ -373,7 +373,7 @@ function MenteeDashboard() {
           <>
             <View style={[styles.card, { marginBottom: 16 }]}>
               <View style={styles.rowBetweenMb3}>
-                <Text style={styles.cardTitle}>Dein Fortschritt</Text>
+                <Text style={styles.cardTitle}>{t("dashboard.yourProgress")}</Text>
                 <Text style={styles.goldBold}>
                   {completedStepIds.length}/{sessionTypes.length}
                 </Text>
@@ -393,7 +393,7 @@ function MenteeDashboard() {
                   router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
                 }
               >
-                <Text style={styles.actionButtonText}>Betreuung ansehen</Text>
+                <Text style={styles.actionButtonText}>{t("dashboard.viewMentorship")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.secondaryButton}
@@ -401,12 +401,12 @@ function MenteeDashboard() {
                   router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
                 }
               >
-                <Text style={styles.secondaryButtonText}>Chat öffnen</Text>
+                <Text style={styles.secondaryButtonText}>{t("dashboard.openChat")}</Text>
               </TouchableOpacity>
             </View>
 
             {/* 10-Schritte-Gamification */}
-            <Text style={styles.sectionTitle}>Deine 10 Schritte</Text>
+            <Text style={styles.sectionTitle}>{t("dashboard.your10Steps")}</Text>
             <View style={[styles.card, { padding: 0, overflow: "hidden", marginBottom: 16 }]}>
               {sortedSessionTypes.map((step, idx) => {
                 const isDone = completedStepIds.includes(step.id);
@@ -457,13 +457,13 @@ function MenteeDashboard() {
                         {step.name}
                       </Text>
                       {isCurrent && (
-                        <Text style={styles.currentStepLabel}>Aktuelle Session</Text>
+                        <Text style={styles.currentStepLabel}>{t("dashboard.currentSession")}</Text>
                       )}
                     </View>
 
                     {isDone && (
                       <View style={styles.doneChip}>
-                        <Text style={styles.doneChipText}>Erledigt</Text>
+                        <Text style={styles.doneChipText}>{t("dashboard.done")}</Text>
                       </View>
                     )}
                   </View>
@@ -485,22 +485,22 @@ function MenteeDashboard() {
                 >
                   <View style={styles.hadithCardHeader}>
                     <Text style={styles.hadithStar}>★</Text>
-                    <Text style={styles.hadithCardLabel}>Hadith des Tages</Text>
+                    <Text style={styles.hadithCardLabel}>{t("dashboard.hadithOfDay")}</Text>
                   </View>
                   <Text style={styles.hadithCardText} numberOfLines={3}>
                     "{hadith.text}"
                   </Text>
                   <Text style={styles.hadithCardQuelle}>— {hadith.quelle}</Text>
-                  <Text style={styles.hadithCardLink}>Alle Hadithe ansehen →</Text>
+                  <Text style={styles.hadithCardLink}>{t("dashboard.viewAllHadithe")}</Text>
                 </TouchableOpacity>
               );
             })()}
           </>
         ) : (
           <View style={[styles.card, { padding: 32, alignItems: "center" }]}>
-            <Text style={styles.boldPrimary}>Zuweisung ausstehend</Text>
+            <Text style={styles.boldPrimary}>{t("dashboard.pendingAssignment")}</Text>
             <Text style={[styles.emptyText, { marginTop: 8 }]}>
-              Das BNM-Team weist dir bald einen passenden Mentor zu.
+              {t("dashboard.pendingAssignmentText")}
             </Text>
           </View>
         )}
@@ -537,6 +537,7 @@ function ProgressBar({ progress }: { progress: number }) {
 }
 
 function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
+  const { t } = useLanguage();
   const monthData = useMemo(() => {
     const now = new Date();
     const months: { label: string; count: number }[] = [];
@@ -560,7 +561,7 @@ function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
 
   return (
     <View style={styles.chartCard}>
-      <Text style={styles.cardTitle}>Neue Betreuungen (letzte 4 Monate)</Text>
+      <Text style={styles.cardTitle}>{t("dashboard.newMentorships")}</Text>
       <View style={styles.chartArea}>
         {/* Y-Achse */}
         <View style={styles.yAxis}>

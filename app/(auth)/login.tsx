@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { BNMLogo } from "../../components/BNMLogo";
@@ -19,6 +20,7 @@ import { BNMLogo } from "../../components/BNMLogo";
 export default function LoginScreen() {
   const router = useRouter();
   const { login, loginAs, isLoading } = useAuth();
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,13 +29,13 @@ export default function LoginScreen() {
 
   async function handleLogin() {
     if (!email.trim() || !password.trim()) {
-      setErrorMsg("Bitte E-Mail und Passwort eingeben.");
+      setErrorMsg(t("login.errorEmpty"));
       return;
     }
     setErrorMsg("");
     const success = await login(email.trim(), password);
     if (!success) {
-      setErrorMsg("E-Mail oder Passwort ist falsch.");
+      setErrorMsg(t("login.errorInvalid"));
     }
   }
 
@@ -41,7 +43,7 @@ export default function LoginScreen() {
     setErrorMsg("");
     const result = await loginAs(role);
     if (!result.success) {
-      setErrorMsg(result.error ?? "Anmeldung fehlgeschlagen.");
+      setErrorMsg(result.error ?? t("login.errorFailed"));
     }
   }
 
@@ -49,7 +51,7 @@ export default function LoginScreen() {
     setErrorMsg("");
     const result = await loginAs("office");
     if (!result.success) {
-      setErrorMsg(result.error ?? "Anmeldung fehlgeschlagen.");
+      setErrorMsg(result.error ?? t("login.errorFailed"));
     }
   }
 
@@ -73,13 +75,11 @@ export default function LoginScreen() {
 
         {/* Login-Formular */}
         <View style={styles.formContainer}>
-          <Text style={styles.welcomeTitle}>Willkommen</Text>
-          <Text style={styles.welcomeSubtitle}>
-            Melde dich an, um fortzufahren.
-          </Text>
+          <Text style={styles.welcomeTitle}>{t("login.title")}</Text>
+          <Text style={styles.welcomeSubtitle}>{t("login.subtitle")}</Text>
 
           {/* E-Mail */}
-          <Text style={styles.fieldLabel}>E-Mail-Adresse</Text>
+          <Text style={styles.fieldLabel}>{t("login.email")}</Text>
           <TextInput
             style={styles.input}
             placeholder="deine@email.de"
@@ -92,11 +92,11 @@ export default function LoginScreen() {
           />
 
           {/* Passwort */}
-          <Text style={styles.fieldLabel}>Passwort</Text>
+          <Text style={styles.fieldLabel}>{t("login.password")}</Text>
           <View style={styles.passwordRow}>
             <TextInput
               style={styles.passwordInput}
-              placeholder="Passwort"
+              placeholder={t("login.password")}
               placeholderTextColor="#98A2B3"
               secureTextEntry={!showPassword}
               value={password}
@@ -122,7 +122,7 @@ export default function LoginScreen() {
             style={styles.forgotPasswordRow}
             onPress={() => router.push("/(auth)/forgot-password")}
           >
-            <Text style={styles.forgotPasswordText}>Passwort vergessen?</Text>
+            <Text style={styles.forgotPasswordText}>{t("login.forgotPassword")}</Text>
           </TouchableOpacity>
 
           {/* Login-Button */}
@@ -134,7 +134,7 @@ export default function LoginScreen() {
             {isLoading ? (
               <ActivityIndicator color="#FFFFFF" />
             ) : (
-              <Text style={styles.loginButtonText}>Anmelden</Text>
+              <Text style={styles.loginButtonText}>{t("login.submit")}</Text>
             )}
           </TouchableOpacity>
 
@@ -143,13 +143,13 @@ export default function LoginScreen() {
             <TouchableOpacity
               onPress={() => router.push("/(auth)/register-mentee")}
             >
-              <Text style={styles.linkText}>Mentee registrieren</Text>
+              <Text style={styles.linkText}>{t("login.registerMentee")}</Text>
             </TouchableOpacity>
             <Text style={styles.divider}>|</Text>
             <TouchableOpacity
               onPress={() => router.push("/(auth)/register-mentor")}
             >
-              <Text style={styles.linkText}>Als Mentor bewerben</Text>
+              <Text style={styles.linkText}>{t("login.registerMentor")}</Text>
             </TouchableOpacity>
           </View>
 
@@ -158,14 +158,12 @@ export default function LoginScreen() {
             style={styles.publicRegisterButton}
             onPress={() => router.push("/(auth)/register-public")}
           >
-            <Text style={styles.publicRegisterText}>
-              Neu beim Islam? Hier anmelden →
-            </Text>
+            <Text style={styles.publicRegisterText}>{t("login.publicRegister")}</Text>
           </TouchableOpacity>
 
           {/* Test-Schnellzugang */}
           <View style={styles.quickSection}>
-            <Text style={styles.quickLabel}>SCHNELLZUGANG (ENTWICKLUNG)</Text>
+            <Text style={styles.quickLabel}>{t("login.quickAccess")}</Text>
             <View style={styles.quickRow}>
               <TouchableOpacity
                 style={styles.quickButton}

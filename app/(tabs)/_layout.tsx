@@ -4,6 +4,7 @@ import { Tabs, useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS } from "../../constants/Colors";
 
 function BellButton() {
@@ -55,6 +56,7 @@ const tabStyles = StyleSheet.create({
 
 export default function TabLayout() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isAdmin = user?.role === "admin";
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
 
@@ -76,7 +78,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Dashboard",
+          title: t("tabs.dashboard"),
           headerRight: () => <BellButton />,
           tabBarIcon: ({ color }) => (
             <SymbolView
@@ -90,7 +92,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="mentees"
         options={{
-          title: "Mentees",
+          title: t("tabs.mentees"),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
@@ -107,7 +109,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="leaderboard"
         options={{
-          title: "Ranking",
+          title: t("tabs.ranking"),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{
@@ -124,7 +126,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="reports"
         options={{
-          title: "Berichte",
+          title: t("tabs.reports"),
           href: isAdminOrOffice ? undefined : null,
           tabBarIcon: ({ color }) => (
             <SymbolView
@@ -142,7 +144,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Profil",
+          title: t("tabs.profile"),
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{

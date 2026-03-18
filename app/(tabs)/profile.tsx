@@ -12,17 +12,11 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { showConfirm } from "../../lib/errorHandler";
 import { useData } from "../../contexts/DataContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: "Administrator",
-  office: "Büro-Mitarbeiterin",
-  mentor: "Mentor",
-  mentee: "Mentee (Neuer Muslim)",
-};
 
 const CONTACT_LABELS: Record<string, string> = {
   whatsapp: "WhatsApp",
@@ -35,12 +29,20 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
   const { getMentorshipsByMentorId, sessions, users, refreshData } = useData();
+  const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  const ROLE_LABELS: Record<UserRole, string> = {
+    admin: "Administrator",
+    office: "Büro-Mitarbeiterin",
+    mentor: "Mentor",
+    mentee: "Mentee (Neuer Muslim)",
+  };
 
   const mentorStats = useMemo(() => {
     if (!user || user.role !== "mentor") return null;
@@ -77,7 +79,7 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   async function handleLogout() {
-    const ok = await showConfirm("Abmelden", "Möchtest du dich wirklich abmelden?");
+    const ok = await showConfirm(t("profile.logoutTitle"), t("profile.logoutConfirm"));
     if (ok) logout();
   }
 
@@ -138,21 +140,21 @@ export default function ProfileScreen() {
           {/* Geschlecht-Badge */}
           <View style={styles.genderBadge}>
             <Text style={styles.genderText}>
-              {user.gender === "male" ? "Bruder" : "Schwester"}
+              {user.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
             </Text>
           </View>
         </View>
 
         {/* Persönliche Infos */}
         <View style={styles.infoCard}>
-          <Text style={styles.sectionLabel}>{"PERSÖNLICHE INFORMATIONEN"}</Text>
+          <Text style={styles.sectionLabel}>{t("profile.personalInfo")}</Text>
 
-          <InfoRow label="E-Mail" value={user.email} />
-          <InfoRow label="Stadt" value={user.city} />
-          <InfoRow label="Alter" value={`${user.age} Jahre`} />
-          {user.phone && <InfoRow label="Telefon" value={user.phone} />}
+          <InfoRow label={t("profile.email")} value={user.email} />
+          <InfoRow label={t("profile.city")} value={user.city} />
+          <InfoRow label={t("profile.age")} value={`${user.age} ${t("profile.ageYears")}`} />
+          {user.phone && <InfoRow label={t("profile.phone")} value={user.phone} />}
           <InfoRow
-            label="Kontakt"
+            label={t("profile.contact")}
             value={CONTACT_LABELS[user.contact_preference] ?? user.contact_preference}
             isLast
           />
@@ -161,29 +163,29 @@ export default function ProfileScreen() {
         {/* Mentor-Statistiken */}
         {user.role === "mentor" && mentorStats && (
           <View style={styles.infoCard}>
-            <Text style={styles.sectionLabel}>{"MEINE STATISTIKEN"}</Text>
+            <Text style={styles.sectionLabel}>{t("profile.myStats")}</Text>
             <View style={styles.statsGrid}>
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>{mentorStats.active}</Text>
-                <Text style={styles.statLabel}>Aktive Betreuungen</Text>
+                <Text style={styles.statLabel}>{t("profile.activeMentorships")}</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: COLORS.cta }]}>{mentorStats.completed}</Text>
-                <Text style={styles.statLabel}>Abgeschlossen</Text>
+                <Text style={styles.statLabel}>{t("profile.completedMentorships")}</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: COLORS.gradientStart }]}>{mentorStats.totalSessions}</Text>
-                <Text style={styles.statLabel}>Sessions gesamt</Text>
+                <Text style={styles.statLabel}>{t("profile.totalSessions")}</Text>
               </View>
               <View style={styles.statItem}>
                 <Text style={[styles.statValue, { color: COLORS.gold }]}>
                   #{mentorStats.rank}
                 </Text>
-                <Text style={styles.statLabel}>Ranking</Text>
+                <Text style={styles.statLabel}>{t("profile.ranking")}</Text>
               </View>
             </View>
             <Text style={styles.rankHint}>
-              von {mentorStats.totalMentors} Mentoren · Score = Abschlüsse × 10 + Sessions × 3
+              {t("profile.rankingOf").replace("{0}", String(mentorStats.totalMentors))}
             </Text>
           </View>
         )}
@@ -191,38 +193,38 @@ export default function ProfileScreen() {
         {/* Konto-Aktionen */}
         <View style={[styles.infoCard, { padding: 0, overflow: "hidden" }]}>
           <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }]}>
-            {"KONTO"}
+            {t("profile.account")}
           </Text>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => router.push("/edit-profile")}
           >
-            <Text style={styles.menuItemText}>Profil bearbeiten</Text>
+            <Text style={styles.menuItemText}>{t("profile.editProfile")}</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.menuItem}
             onPress={() => router.push("/change-password")}
           >
-            <Text style={styles.menuItemText}>Passwort ändern</Text>
+            <Text style={styles.menuItemText}>{t("profile.changePassword")}</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={() => router.push("/settings")}
           >
-            <Text style={styles.menuItemText}>Einstellungen</Text>
+            <Text style={styles.menuItemText}>{t("profile.settings")}</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
         </View>
 
         {/* Logout */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Abmelden</Text>
+          <Text style={styles.logoutText}>{t("profile.logout")}</Text>
         </TouchableOpacity>
 
         {/* App-Info */}
-        <Text style={styles.appInfo}>BNM App · Betreuung neuer Muslime</Text>
+        <Text style={styles.appInfo}>{t("profile.appInfo")}</Text>
       </View>
     </ScrollView>
     </Container>

@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { useLanguage } from "../../contexts/LanguageContext";
 import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
@@ -31,6 +32,7 @@ type SortKey = "name" | "city" | "progress";
 
 function AdminMenteesView() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [search, setSearch] = useState("");
   const [assignFilter, setAssignFilter] = useState<AssignmentFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -87,26 +89,26 @@ function AdminMenteesView() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Alle Mentees</Text>
-        <Text style={styles.pageSubtitle}>{allMentees.length} Mentees registriert</Text>
+        <Text style={styles.pageTitle}>{t("mentees.allMentees")}</Text>
+        <Text style={styles.pageSubtitle}>{allMentees.length} {t("mentees.registered")}</Text>
 
         {/* Suche */}
         <TextInput
           style={styles.searchInput}
-          placeholder="Suchen nach Name oder Stadt..."
+          placeholder={t("mentees.search")}
           placeholderTextColor="#98A2B3"
           value={search}
           onChangeText={setSearch}
         />
 
         {/* Filter: Zuweisung */}
-        <Text style={styles.filterGroupLabel}>Zuweisung</Text>
+        <Text style={styles.filterGroupLabel}>{t("mentees.filterAssignment")}</Text>
         <View style={styles.filterRow}>
           {(
             [
-              { key: "all", label: "Alle" },
-              { key: "assigned", label: "Zugewiesen" },
-              { key: "unassigned", label: "Offen" },
+              { key: "all", label: t("mentees.all") },
+              { key: "assigned", label: t("mentees.assigned") },
+              { key: "unassigned", label: t("mentees.unassigned") },
             ] as const
           ).map((tab) => (
             <TouchableOpacity
@@ -129,14 +131,14 @@ function AdminMenteesView() {
         </View>
 
         {/* Filter: Status */}
-        <Text style={styles.filterGroupLabel}>Status</Text>
+        <Text style={styles.filterGroupLabel}>{t("mentees.filterStatus")}</Text>
         <View style={styles.filterRow}>
           {(
             [
-              { key: "all", label: "Alle" },
-              { key: "active", label: "Aktiv" },
-              { key: "completed", label: "Abgeschlossen" },
-              { key: "cancelled", label: "Abgebrochen" },
+              { key: "all", label: t("mentees.all") },
+              { key: "active", label: t("mentees.active") },
+              { key: "completed", label: t("mentees.completedStatus") },
+              { key: "cancelled", label: t("mentees.cancelled") },
             ] as const
           ).map((tab) => (
             <TouchableOpacity
@@ -159,13 +161,13 @@ function AdminMenteesView() {
         </View>
 
         {/* Filter: Geschlecht */}
-        <Text style={styles.filterGroupLabel}>Geschlecht</Text>
+        <Text style={styles.filterGroupLabel}>{t("mentees.filterGender")}</Text>
         <View style={styles.filterRow}>
           {(
             [
-              { key: "all", label: "Alle" },
-              { key: "male", label: "Brüder" },
-              { key: "female", label: "Schwestern" },
+              { key: "all", label: t("mentees.all") },
+              { key: "male", label: t("mentees.brothers") },
+              { key: "female", label: t("mentees.sisters") },
             ] as const
           ).map((tab) => (
             <TouchableOpacity
@@ -188,13 +190,13 @@ function AdminMenteesView() {
         </View>
 
         {/* Sortierung */}
-        <Text style={styles.filterGroupLabel}>Sortierung</Text>
+        <Text style={styles.filterGroupLabel}>{t("mentees.filterSort")}</Text>
         <View style={[styles.filterRow, { marginBottom: 24 }]}>
           {(
             [
-              { key: "name", label: "Name A–Z" },
-              { key: "city", label: "Stadt" },
-              { key: "progress", label: "Fortschritt" },
+              { key: "name", label: t("mentees.sortName") },
+              { key: "city", label: t("mentees.sortCity") },
+              { key: "progress", label: t("mentees.sortProgress") },
             ] as const
           ).map((opt) => (
             <TouchableOpacity
@@ -219,7 +221,7 @@ function AdminMenteesView() {
         {/* Mentee-Liste */}
         {filteredMentees.length === 0 ? (
           <View style={styles.emptyCard}>
-            <Text style={styles.emptyText}>Keine Mentees gefunden.</Text>
+            <Text style={styles.emptyText}>{t("mentees.noResults")}</Text>
           </View>
         ) : (
           filteredMentees.map((mentee) => {
@@ -248,11 +250,11 @@ function AdminMenteesView() {
             const statusLabel =
               mentorship
                 ? mentorship.status === "active"
-                  ? "Aktiv"
+                  ? t("mentees.active")
                   : mentorship.status === "completed"
-                  ? "Abgeschlossen"
-                  : "Abgebrochen"
-                : "Offen";
+                  ? t("mentees.completedStatus")
+                  : t("mentees.cancelled")
+                : t("mentees.unassigned");
 
             return (
               <TouchableOpacity
@@ -270,7 +272,7 @@ function AdminMenteesView() {
                     <Text style={styles.meneeName}>{mentee.name}</Text>
                     <Text style={styles.menteeSubText}>
                       {mentee.city} · {mentee.age} J. ·{" "}
-                      {mentee.gender === "male" ? "Bruder" : "Schwester"}
+                      {mentee.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
                     </Text>
                   </View>
                   <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
@@ -300,7 +302,7 @@ function AdminMenteesView() {
                       router.push({ pathname: "/assign", params: { menteeId: mentee.id } });
                     }}
                   >
-                    <Text style={styles.assignButtonText}>Mentor zuweisen</Text>
+                    <Text style={styles.assignButtonText}>{t("mentees.assignMentor")}</Text>
                   </TouchableOpacity>
                 )}
               </TouchableOpacity>
@@ -315,6 +317,7 @@ function AdminMenteesView() {
 function MentorMenteesView() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { getMentorshipsByMentorId, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -333,9 +336,9 @@ function MentorMenteesView() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Meine Mentees</Text>
+        <Text style={styles.pageTitle}>{t("mentees.myMentees")}</Text>
         <Text style={styles.pageSubtitle}>
-          {myMentorships.filter((m) => m.status === "active").length} aktive Betreuungen
+          {myMentorships.filter((m) => m.status === "active").length} {t("mentees.activeMentorships")}
         </Text>
 
         {/* Mentor kann selbst Mentee übernehmen */}
@@ -343,24 +346,24 @@ function MentorMenteesView() {
           style={styles.selfAssignButton}
           onPress={() => router.push("/assign")}
         >
-          <Text style={styles.selfAssignText}>+ Mentee selbst übernehmen</Text>
+          <Text style={styles.selfAssignText}>{t("mentees.takeMentee")}</Text>
         </TouchableOpacity>
 
         {myMentorships.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={{ fontSize: 36, marginBottom: 12 }}>🤝</Text>
             <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8 }]}>
-              Noch keine Mentees
+              {t("mentees.noMenteesYet")}
             </Text>
             <Text style={[styles.emptyText, { marginTop: 0, marginBottom: 12 }]}>
-              Dir sind noch keine Mentees zugewiesen. Du kannst einen nicht zugewiesenen Mentee selbst übernehmen.
+              {t("mentees.noMenteesText")}
             </Text>
             <TouchableOpacity
               style={{ backgroundColor: COLORS.gradientStart, borderRadius: 5, paddingVertical: 9, paddingHorizontal: 20 }}
               onPress={() => router.push("/assign")}
             >
               <Text style={{ color: COLORS.white, fontWeight: "600", fontSize: 14 }}>
-                Mentee übernehmen
+                {t("mentees.takeMenteeButton")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -376,6 +379,7 @@ function MentorMenteesView() {
 
 function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
   const router = useRouter();
+  const { t } = useLanguage();
   const { getCompletedStepIds, getSessionsByMentorshipId, sessionTypes } = useData();
 
   const completedStepIds = getCompletedStepIds(mentorship.id);
@@ -399,7 +403,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
           <Text style={styles.meneeName}>{mentorship.mentee?.name}</Text>
           <Text style={styles.menteeSubText}>
             {mentorship.mentee?.city} · {mentorship.mentee?.age} J. ·{" "}
-            {mentorship.mentee?.gender === "male" ? "Bruder" : "Schwester"}
+            {mentorship.mentee?.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
           </Text>
         </View>
         <View
@@ -414,7 +418,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
               { color: mentorship.status === "active" ? "#15803d" : "#4b5563" },
             ]}
           >
-            {mentorship.status === "active" ? "Aktiv" : "Abgeschlossen"}
+            {mentorship.status === "active" ? t("mentees.active") : t("mentees.completedStatus")}
           </Text>
         </View>
       </View>
@@ -430,7 +434,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
       </View>
 
       {/* Step-Liste */}
-      <Text style={styles.stepSectionLabel}>{"FORTSCHRITT"}</Text>
+      <Text style={styles.stepSectionLabel}>{t("mentees.progress")}</Text>
       <View style={styles.stepChipRow}>
         {sortedTypes.map((step, idx) => {
           const isDone = completedStepIds.includes(step.id);
@@ -451,7 +455,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
       {/* Session-Anzahl + Aktionen */}
       <View style={styles.cardFooter}>
         <Text style={styles.sessionCount}>
-          {sessions.length} Session{sessions.length !== 1 ? "s" : ""} dokumentiert
+          {sessions.length} Session{sessions.length !== 1 ? "s" : ""} {t("mentees.documented")}
         </Text>
         {mentorship.status === "active" && (
           <TouchableOpacity
@@ -464,7 +468,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
               });
             }}
           >
-            <Text style={styles.docChipText}>Session dokumentieren</Text>
+            <Text style={styles.docChipText}>{t("sessions.document")}</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -475,6 +479,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
 function MenteeProgressView() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const {
     getMentorshipByMenteeId,
     getCompletedStepIds,
@@ -503,14 +508,14 @@ function MenteeProgressView() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
       >
         <View style={styles.page}>
-          <Text style={styles.pageTitle}>Mein Fortschritt</Text>
+          <Text style={styles.pageTitle}>{t("mentees.myProgress")}</Text>
           <View style={styles.emptyCard}>
             <Text style={{ fontSize: 36, marginBottom: 12 }}>🌱</Text>
             <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8 }]}>
-              Noch keine Zuweisung
+              {t("mentees.noAssignmentYet")}
             </Text>
             <Text style={[styles.emptyText, { marginTop: 0 }]}>
-              Das BNM-Team prüft deine Anmeldung und weist dir bald einen passenden Mentor zu.
+              {t("mentees.noAssignmentText")}
             </Text>
           </View>
         </View>
@@ -526,12 +531,12 @@ function MenteeProgressView() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Mein Fortschritt</Text>
+        <Text style={styles.pageTitle}>{t("mentees.myProgress")}</Text>
         <Text style={styles.pageSubtitle}>Mentor: {mentorship.mentor?.name}</Text>
 
         {/* Gesamtfortschritt – dunkle Hero-Card */}
         <View style={styles.progressHeaderCard}>
-          <Text style={styles.progressHeaderLabel}>Gesamtfortschritt</Text>
+          <Text style={styles.progressHeaderLabel}>{t("mentees.totalProgress")}</Text>
           <Text style={styles.progressHeaderValue}>{totalProgress}%</Text>
           <View style={styles.progressTrackWhite}>
             <View
@@ -539,7 +544,7 @@ function MenteeProgressView() {
             />
           </View>
           <Text style={styles.progressHeaderSub}>
-            {completedStepIds.length} von {sessionTypes.length} Schritten abgeschlossen
+            {completedStepIds.length} {t("mentees.stepsCompleted").replace("{0}", String(sessionTypes.length))}
           </Text>
         </View>
 
@@ -550,12 +555,12 @@ function MenteeProgressView() {
             router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
           }
         >
-          <Text style={styles.detailsButtonText}>Betreuungsdetails ansehen</Text>
+          <Text style={styles.detailsButtonText}>{t("mentees.viewDetails")}</Text>
           <Text style={styles.detailsArrow}>›</Text>
         </TouchableOpacity>
 
         {/* Detaillierte Schritt-Liste */}
-        <Text style={styles.sectionTitle}>Deine 10 Schritte im Detail</Text>
+        <Text style={styles.sectionTitle}>{t("mentees.your10StepsDetail")}</Text>
         <View style={[styles.emptyCard, { padding: 0, overflow: "hidden", marginBottom: 24 }]}>
           {sortedTypes.map((step, idx) => {
             const isDone = completedStepIds.includes(step.id);
@@ -610,20 +615,20 @@ function MenteeProgressView() {
                       {step.name}
                     </Text>
                     {isLocked && (
-                      <Text style={{ color: COLORS.tertiary, fontSize: 12 }}>Gesperrt</Text>
+                      <Text style={{ color: COLORS.tertiary, fontSize: 12 }}>{t("mentees.locked")}</Text>
                     )}
                     {isCurrent && (
                       <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
-                        <Text style={{ color: "#b45309", fontSize: 12, fontWeight: "500" }}>Aktuell</Text>
+                        <Text style={{ color: "#b45309", fontSize: 12, fontWeight: "500" }}>{t("mentees.current")}</Text>
                       </View>
                     )}
                   </View>
                   <Text style={styles.stepDetailDesc}>{step.description}</Text>
                   {isDone && session && (
                     <Text style={{ color: "#16a34a", fontSize: 12, marginTop: 4 }}>
-                      Abgeschlossen am{" "}
+                      {t("mentees.completedOn")}{" "}
                       {new Date(session.date).toLocaleDateString("de-DE")}
-                      {session.is_online ? " (Online)" : " (Vor Ort)"}
+                      {session.is_online ? ` (${t("mentees.online")})` : ` (${t("mentees.offline")})`}
                     </Text>
                   )}
                 </View>
