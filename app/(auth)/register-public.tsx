@@ -8,8 +8,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Alert,
 } from "react-native";
+import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/Colors";
 import type { Gender, ContactPreference } from "../../types";
@@ -87,7 +87,7 @@ export default function RegisterPublicScreen() {
       });
 
       if (error) {
-        Alert.alert("Fehler", "Die Anmeldung konnte nicht übermittelt werden. Bitte versuche es erneut.");
+        showError("Die Anmeldung konnte nicht übermittelt werden. Bitte versuche es erneut.");
         setIsSubmitting(false);
         return;
       }
@@ -102,7 +102,7 @@ export default function RegisterPublicScreen() {
 
       setStep("success");
     } catch {
-      Alert.alert("Fehler", "Ein unerwarteter Fehler ist aufgetreten.");
+      showError("Ein unerwarteter Fehler ist aufgetreten.");
     } finally {
       setIsSubmitting(false);
     }

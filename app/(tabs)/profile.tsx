@@ -5,12 +5,12 @@ import {
   Image,
   ScrollView,
   TouchableOpacity,
-  Alert,
   RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
+import { showConfirm } from "../../lib/errorHandler";
 import { useData } from "../../contexts/DataContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
@@ -76,11 +76,9 @@ export default function ProfileScreen() {
 
   if (!user) return null;
 
-  function handleLogout() {
-    Alert.alert("Abmelden", "Möchtest du dich wirklich abmelden?", [
-      { text: "Abbrechen", style: "cancel" },
-      { text: "Abmelden", style: "destructive", onPress: logout },
-    ]);
+  async function handleLogout() {
+    const ok = await showConfirm("Abmelden", "Möchtest du dich wirklich abmelden?");
+    if (ok) logout();
   }
 
   const initials = user.name

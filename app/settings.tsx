@@ -5,10 +5,10 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
   StyleSheet,
   Linking,
 } from "react-native";
+import { showSuccess, showConfirm } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS } from "../constants/Colors";
@@ -30,25 +30,11 @@ export default function SettingsScreen() {
   const [pushEnabled, setPushEnabled] = useState(true);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageKey>("de");
 
-  function handleDeleteAccount() {
-    Alert.alert(
-      "Konto löschen",
-      "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden permanent gelöscht.",
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Konto löschen",
-          style: "destructive",
-          onPress: () => {
-            Alert.alert(
-              "Konto gelöscht",
-              "Dein Konto wurde erfolgreich gelöscht.",
-              [{ text: "OK", onPress: logout }]
-            );
-          },
-        },
-      ]
-    );
+  async function handleDeleteAccount() {
+    const ok = await showConfirm("Konto löschen", "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden permanent gelöscht.");
+    if (ok) {
+      showSuccess("Dein Konto wurde erfolgreich gelöscht.", logout);
+    }
   }
 
   function handleSupportMail() {

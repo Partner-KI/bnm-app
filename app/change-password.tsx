@@ -5,9 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
@@ -35,7 +35,7 @@ export default function ChangePasswordScreen() {
   function handleSubmit() {
     const error = validate();
     if (error) {
-      Alert.alert("Fehler", error);
+      showError(error);
       return;
     }
 
@@ -43,11 +43,7 @@ export default function ChangePasswordScreen() {
     // Mock-Submit
     setTimeout(() => {
       setIsSaving(false);
-      Alert.alert(
-        "Passwort geändert",
-        "Dein Passwort wurde erfolgreich geändert.",
-        [{ text: "OK", onPress: () => router.back() }]
-      );
+      showSuccess("Dein Passwort wurde erfolgreich geändert.", () => router.back());
     }, 600);
   }
 

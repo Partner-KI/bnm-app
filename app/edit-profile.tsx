@@ -6,10 +6,10 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Platform,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
@@ -58,7 +58,7 @@ export default function EditProfileScreen() {
       await updateUser(safeUser.id, { avatar_url: publicUrl });
       setAvatarPreview(publicUrl);
     } else {
-      Alert.alert("Fehler", "Profilbild konnte nicht hochgeladen werden.");
+      showError("Profilbild konnte nicht hochgeladen werden.");
       setAvatarPreview(safeUser.avatar_url);
     }
     setIsUploadingAvatar(false);
@@ -70,10 +70,7 @@ export default function EditProfileScreen() {
       fileInputRef.current?.click();
     } else {
       // Native: expo-image-picker wäre nötig — Package noch nicht installiert
-      Alert.alert(
-        "Profilbild ändern",
-        "Bilderauswahl braucht expo-image-picker (npx expo install expo-image-picker)."
-      );
+      showError("Bilderauswahl braucht expo-image-picker (npx expo install expo-image-picker).");
     }
   }
 
@@ -88,7 +85,7 @@ export default function EditProfileScreen() {
   async function handleSave() {
     const error = validate();
     if (error) {
-      Alert.alert("Fehler", error);
+      showError(error);
       return;
     }
 
@@ -101,9 +98,7 @@ export default function EditProfileScreen() {
       contact_preference: contactPref,
     });
     setIsSaving(false);
-    Alert.alert("Gespeichert", "Dein Profil wurde aktualisiert.", [
-      { text: "OK", onPress: () => router.back() },
-    ]);
+    showSuccess("Dein Profil wurde aktualisiert.", () => router.back());
   }
 
   return (

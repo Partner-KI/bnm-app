@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
@@ -123,7 +123,7 @@ export default function RegisterMentorScreen() {
       });
 
       if (error) {
-        Alert.alert("Fehler", error.message);
+        showError(error.message);
         setIsSubmitting(false);
         return;
       }
@@ -136,13 +136,9 @@ export default function RegisterMentorScreen() {
         form.gender
       );
 
-      Alert.alert(
-        "Bewerbung eingegangen",
-        "Vielen Dank für deine Bewerbung als Mentor! Das BNM-Team wird deine Bewerbung prüfen und sich bei dir melden.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
-      );
+      showSuccess("Vielen Dank für deine Bewerbung als Mentor! Das BNM-Team wird deine Bewerbung prüfen und sich bei dir melden.", () => router.replace("/(auth)/login"));
     } catch {
-      Alert.alert("Fehler", "Ein unerwarteter Fehler ist aufgetreten.");
+      showError("Ein unerwarteter Fehler ist aufgetreten.");
     } finally {
       setIsSubmitting(false);
     }

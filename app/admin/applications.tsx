@@ -4,10 +4,10 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   TextInput,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -68,110 +68,67 @@ export default function ApplicationsScreen() {
   const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
   const pendingMenteeCount = menteeApps.filter((a) => a.status === "pending").length;
 
-  function handleApproveMentor(app: MentorApplication) {
-    Alert.alert(
-      "Bewerbung annehmen",
-      `${app.name} wird als Mentor hinzugefügt. Fortfahren?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Annehmen",
-          style: "default",
-          onPress: () => {
-            approveApplication(app.id);
-            Alert.alert("Erfolgreich", `${app.name} wurde als Mentor hinzugefügt.`);
-          },
-        },
-      ]
-    );
+  async function handleApproveMentor(app: MentorApplication) {
+    const ok = await showConfirm("Bewerbung annehmen", `${app.name} wird als Mentor hinzugefügt. Fortfahren?`);
+    if (ok) {
+      approveApplication(app.id);
+      showSuccess(`${app.name} wurde als Mentor hinzugefügt.`);
+    }
   }
 
-  function handleRejectMentor(app: MentorApplication) {
-    Alert.alert(
-      "Bewerbung ablehnen",
-      `Die Bewerbung von ${app.name} wird abgelehnt. Fortfahren?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Ablehnen",
-          style: "destructive",
-          onPress: () => {
-            rejectApplication(app.id);
-          },
-        },
-      ]
-    );
+  async function handleRejectMentor(app: MentorApplication) {
+    const ok = await showConfirm("Bewerbung ablehnen", `Die Bewerbung von ${app.name} wird abgelehnt. Fortfahren?`);
+    if (ok) {
+      rejectApplication(app.id);
+    }
   }
 
-  function handleAcceptMenteeRegistration(app: MentorApplication) {
-    Alert.alert(
-      "Mentee-Account erstellen",
-      `Für ${app.name} (${app.email}) wird ein Mentee-Account erstellt. Fortfahren?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Account erstellen",
-          style: "default",
-          onPress: async () => {
-            // Temporäres Passwort generieren: "BNM-" + 6 Zufallsziffern
-            const digits = Math.floor(100000 + Math.random() * 900000).toString();
-            const tempPassword = `BNM-${digits}`;
+  async function handleAcceptMenteeRegistration(app: MentorApplication) {
+    const ok = await showConfirm("Mentee-Account erstellen", `Für ${app.name} (${app.email}) wird ein Mentee-Account erstellt. Fortfahren?`);
+    if (!ok) return;
 
-            // Supabase Auth signUp für den Mentee
-            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-              email: app.email,
-              password: tempPassword,
-              options: {
-                data: {
-                  name: app.name,
-                  role: "mentee",
-                  gender: app.gender,
-                  city: app.city,
-                  age: app.age,
-                },
-              },
-            });
+    // Temporäres Passwort generieren: "BNM-" + 6 Zufallsziffern
+    const digits = Math.floor(100000 + Math.random() * 900000).toString();
+    const tempPassword = `BNM-${digits}`;
 
-            if (signUpError) {
-              if (
-                signUpError.message.includes("already registered") ||
-                signUpError.message.includes("User already registered")
-              ) {
-                Alert.alert("Hinweis", `${app.name} hat bereits einen Account mit dieser E-Mail.`);
-              } else {
-                Alert.alert("Fehler", signUpError.message);
-                return;
-              }
-            }
-
-            // Anmeldung als approved markieren
-            approveApplication(app.id);
-
-            Alert.alert(
-              "Account erstellt",
-              `Temporäres Passwort: ${tempPassword}\n\nBitte teile dieses Passwort sicher mit ${app.name}. Die Person kann es nach dem ersten Login ändern.`
-            );
-          },
+    // Supabase Auth signUp für den Mentee
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: app.email,
+      password: tempPassword,
+      options: {
+        data: {
+          name: app.name,
+          role: "mentee",
+          gender: app.gender,
+          city: app.city,
+          age: app.age,
         },
-      ]
-    );
+      },
+    });
+
+    if (signUpError) {
+      if (
+        signUpError.message.includes("already registered") ||
+        signUpError.message.includes("User already registered")
+      ) {
+        showSuccess(`${app.name} hat bereits einen Account mit dieser E-Mail.`);
+      } else {
+        showError(signUpError.message);
+        return;
+      }
+    }
+
+    // Anmeldung als approved markieren
+    approveApplication(app.id);
+
+    showSuccess(`Temporäres Passwort: ${tempPassword}\n\nBitte teile dieses Passwort sicher mit ${app.name}. Die Person kann es nach dem ersten Login ändern.`);
   }
 
-  function handleRejectMenteeRegistration(app: MentorApplication) {
-    Alert.alert(
-      "Anmeldung ablehnen",
-      `Die Anmeldung von ${app.name} wird abgelehnt. Fortfahren?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Ablehnen",
-          style: "destructive",
-          onPress: () => {
-            rejectApplication(app.id);
-          },
-        },
-      ]
-    );
+  async function handleRejectMenteeRegistration(app: MentorApplication) {
+    const ok = await showConfirm("Anmeldung ablehnen", `Die Anmeldung von ${app.name} wird abgelehnt. Fortfahren?`);
+    if (ok) {
+      rejectApplication(app.id);
+    }
   }
 
   return (

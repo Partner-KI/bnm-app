@@ -5,9 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
@@ -152,18 +152,18 @@ export default function DocumentSessionScreen() {
 
     // Admin: muss Session-Typ gewählt haben
     if (isAdmin && !adminSelectedTypeId) {
-      Alert.alert("Fehler", "Bitte wähle einen Session-Typ.");
+      showError("Bitte wähle einen Session-Typ.");
       return;
     }
 
     // Mentor: kein nextStep bei aktiver Mentorship? Abbruch (außer bei weiterer Session)
     if (!isAdmin && !isCompleted && !nextStep && !forceNewSession) {
-      Alert.alert("Info", "Alle Steps für diese Betreuung sind bereits abgeschlossen.");
+      showSuccess("Alle Steps für diese Betreuung sind bereits abgeschlossen.");
       return;
     }
 
     if (!date.trim()) {
-      Alert.alert("Fehler", "Bitte gib ein Datum ein.");
+      showError("Bitte gib ein Datum ein.");
       return;
     }
 
@@ -178,7 +178,7 @@ export default function DocumentSessionScreen() {
       : nextStep?.id ?? "";
 
     if (!sessionTypeId) {
-      Alert.alert("Fehler", "Kein gültiger Session-Typ gefunden.");
+      showError("Kein gültiger Session-Typ gefunden.");
       return;
     }
 
@@ -233,11 +233,7 @@ export default function DocumentSessionScreen() {
     setDurationMinutes("");
 
     const typeName = activeSessionType?.name ?? "Session";
-    Alert.alert(
-      "Session dokumentiert",
-      `"${typeName}" wurde erfolgreich dokumentiert.`,
-      [{ text: "OK", onPress: () => router.back() }]
-    );
+    showSuccess(`"${typeName}" wurde erfolgreich dokumentiert.`, () => router.back());
   }
 
   if (!user || (user.role !== "mentor" && user.role !== "admin" && user.role !== "office")) {

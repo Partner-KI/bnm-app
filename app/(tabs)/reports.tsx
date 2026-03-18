@@ -4,11 +4,11 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Platform,
   RefreshControl,
   StyleSheet,
 } from "react-native";
+import { showSuccess } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -173,11 +173,7 @@ export default function ReportsScreen() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
     } else {
-      Alert.alert(
-        "CSV erstellt",
-        `Der Bericht für "${periodLabel}" wurde als CSV generiert.\n\nFür nativen Download wird expo-sharing benötigt (Post-Launch).`,
-        [{ text: "OK" }]
-      );
+      showSuccess(`Der Bericht für "${periodLabel}" wurde als CSV generiert.\n\nFür nativen Download wird expo-sharing benötigt (Post-Launch).`);
     }
   }
 
@@ -202,11 +198,7 @@ export default function ReportsScreen() {
       const report = monthlyData
         .map((d) => `${d.month}: ${d.count} Sessions`)
         .join("\n");
-      Alert.alert(
-        `Spender-Bericht ${selectedYear}`,
-        `${report}\n\nGesamt: ${total} Sessions`,
-        [{ text: "OK" }]
-      );
+      showSuccess(`${report}\n\nGesamt: ${total} Sessions`);
     }
   }
 

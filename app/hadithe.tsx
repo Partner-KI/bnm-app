@@ -4,9 +4,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
 import { MOCK_HADITHE } from "../data/mockData";
@@ -28,11 +28,7 @@ export default function HaditheScreen() {
   }, [todayHadithIndex]);
 
   function handleShare(text: string, quelle: string) {
-    Alert.alert(
-      "Teilen",
-      `"${text}"\n\n— ${quelle}\n\n(Teilen-Funktion wird in einer späteren Version verfügbar sein)`,
-      [{ text: "OK" }]
-    );
+    showSuccess(`"${text}"\n\n— ${quelle}\n\n(Teilen-Funktion wird in einer späteren Version verfügbar sein)`);
   }
 
   return (

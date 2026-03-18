@@ -5,9 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showError, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -43,24 +43,18 @@ export default function SessionTypesScreen() {
     updateSessionTypeOrder(updated);
   }
 
-  function handleDelete(st: SessionType) {
+  async function handleDelete(st: SessionType) {
     if (st.is_default) {
-      Alert.alert("Nicht möglich", "Standard-Session-Typen können nicht gelöscht werden.");
+      showError("Standard-Session-Typen können nicht gelöscht werden.");
       return;
     }
-    Alert.alert(
-      "Session-Typ löschen",
-      `"${st.name}" wirklich löschen?`,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        { text: "Löschen", style: "destructive", onPress: () => deleteSessionType(st.id) },
-      ]
-    );
+    const ok = await showConfirm("Session-Typ löschen", `"${st.name}" wirklich löschen?`);
+    if (ok) deleteSessionType(st.id);
   }
 
   function handleAdd() {
     if (!newName.trim()) {
-      Alert.alert("Fehler", "Bitte gib einen Namen ein.");
+      showError("Bitte gib einen Namen ein.");
       return;
     }
     const maxOrder = Math.max(...sessionTypes.map((st) => st.sort_order), 0);

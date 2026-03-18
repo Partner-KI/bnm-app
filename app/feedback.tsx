@@ -5,9 +5,9 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
@@ -30,11 +30,11 @@ export default function FeedbackScreen() {
 
   async function handleSubmit() {
     if (rating === 0) {
-      Alert.alert("Bewertung fehlt", "Bitte wähle eine Bewertung (1–5 Sterne).");
+      showError("Bitte wähle eine Bewertung (1–5 Sterne).");
       return;
     }
     if (!user || !params.mentorshipId) {
-      Alert.alert("Fehler", "Fehlende Informationen.");
+      showError("Fehlende Informationen.");
       return;
     }
 
@@ -58,11 +58,7 @@ export default function FeedbackScreen() {
 
     setIsSaving(false);
 
-    Alert.alert(
-      "Danke für dein Feedback!",
-      "Deine Rückmeldung wurde gespeichert.",
-      [{ text: "OK", onPress: () => router.replace("/(tabs)") }]
-    );
+    showSuccess("Deine Rückmeldung wurde gespeichert.", () => router.replace("/(tabs)"));
   }
 
   const statusLabel =

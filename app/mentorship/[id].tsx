@@ -4,9 +4,9 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  Alert,
   StyleSheet,
 } from "react-native";
+import { showConfirm } from "../../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -56,39 +56,20 @@ export default function MentorshipDetailScreen() {
     (user.role === "admin" || user.id === mentorship.mentor_id) &&
     mentorship.status === "active";
 
-  function handleComplete() {
-    Alert.alert(
-      "Betreuung abschließen",
-      "Möchtest du diese Betreuung wirklich als abgeschlossen markieren?",
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Abschließen",
-          onPress: () => {
-            updateMentorshipStatus(mentorshipId, "completed");
-            router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
-          },
-        },
-      ]
-    );
+  async function handleComplete() {
+    const ok = await showConfirm("Betreuung abschließen", "Möchtest du diese Betreuung wirklich als abgeschlossen markieren?");
+    if (ok) {
+      updateMentorshipStatus(mentorshipId, "completed");
+      router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
+    }
   }
 
-  function handleCancel() {
-    Alert.alert(
-      "Betreuung abbrechen",
-      "Möchtest du diese Betreuung wirklich abbrechen?",
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: "Abbrechen (Betreuung)",
-          style: "destructive",
-          onPress: () => {
-            updateMentorshipStatus(mentorshipId, "cancelled");
-            router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
-          },
-        },
-      ]
-    );
+  async function handleCancel() {
+    const ok = await showConfirm("Betreuung abbrechen", "Möchtest du diese Betreuung wirklich abbrechen?");
+    if (ok) {
+      updateMentorshipStatus(mentorshipId, "cancelled");
+      router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
+    }
   }
 
   const statusBg =

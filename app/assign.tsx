@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
   StyleSheet,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -100,7 +101,7 @@ export default function AssignScreen() {
 
   const maxPossibleScore = 100;
 
-  function handleAssign() {
+  async function handleAssign() {
     if (!user) return;
 
     const mentorId = isMentor ? user.id : selectedMentorId;
@@ -114,33 +115,41 @@ export default function AssignScreen() {
       ? `Möchtest du ${mentee.name} als Mentee übernehmen?`
       : `${mentee.name} wird ${mentor.name} zugewiesen. Fortfahren?`;
 
-    const buttonText = isMentor ? "Übernehmen" : "Zuweisen";
+    const confirmed =
+      Platform.OS === "web"
+        ? window.confirm(confirmText)
+        : await new Promise<boolean>((resolve) =>
+            Alert.alert(
+              isMentor ? "Mentee übernehmen" : "Zuweisung bestätigen",
+              confirmText,
+              [
+                { text: "Abbrechen", onPress: () => resolve(false) },
+                { text: isMentor ? "Übernehmen" : "Zuweisen", onPress: () => resolve(true) },
+              ]
+            )
+          );
 
-    Alert.alert(
-      isMentor ? "Mentee übernehmen" : "Zuweisung bestätigen",
-      confirmText,
-      [
-        { text: "Abbrechen", style: "cancel" },
-        {
-          text: buttonText,
-          onPress: async () => {
-            await assignMentorship(selectedMenteeId, mentorId, user.id);
-            // E-Mail an Mentor
-            if (mentor.email) {
-              sendMenteeAssignedNotification(
-                mentor.name,
-                mentor.email,
-                mentee.name,
-                mentee.city
-              );
-            }
-            Alert.alert("Erfolg", "Zuweisung erfolgreich!", [
-              { text: "OK", onPress: () => router.back() },
-            ]);
-          },
-        },
-      ]
-    );
+    if (!confirmed) return;
+
+    await assignMentorship(selectedMenteeId, mentorId, user.id);
+
+    if (mentor.email) {
+      sendMenteeAssignedNotification(
+        mentor.name,
+        mentor.email,
+        mentee.name,
+        mentee.city
+      );
+    }
+
+    if (Platform.OS === "web") {
+      window.alert("Zuweisung erfolgreich!");
+      router.back();
+    } else {
+      Alert.alert("Erfolg", "Zuweisung erfolgreich!", [
+        { text: "OK", onPress: () => router.back() },
+      ]);
+    }
   }
 
   if (!isAdmin && !isMentor) {

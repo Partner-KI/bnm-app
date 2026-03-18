@@ -5,11 +5,11 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
 } from "react-native";
+import { showError, showSuccess } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
@@ -117,19 +117,15 @@ export default function RegisterMenteeScreen() {
         if (error.message.includes("already registered") || error.message.includes("User already registered")) {
           setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
         } else {
-          Alert.alert("Fehler", error.message);
+          showError(error.message);
         }
         setIsSubmitting(false);
         return;
       }
 
-      Alert.alert(
-        "Registrierung eingegangen",
-        "Vielen Dank! Deine Registrierung wurde eingereicht. Das BNM-Team wird sich bald bei dir melden.",
-        [{ text: "OK", onPress: () => router.replace("/(auth)/login") }]
-      );
+      showSuccess("Vielen Dank! Deine Registrierung wurde eingereicht. Das BNM-Team wird sich bald bei dir melden.", () => router.replace("/(auth)/login"));
     } catch {
-      Alert.alert("Fehler", "Ein unerwarteter Fehler ist aufgetreten.");
+      showError("Ein unerwarteter Fehler ist aufgetreten.");
     } finally {
       setIsSubmitting(false);
     }
