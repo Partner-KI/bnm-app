@@ -7,6 +7,7 @@ import {
   Alert,
   StyleSheet,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { UserRole } from "../../types";
@@ -27,6 +28,7 @@ const CONTACT_LABELS: Record<string, string> = {
 };
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, logout } = useAuth();
   const { getMentorshipsByMentorId, sessions, users } = useData();
 
@@ -170,12 +172,25 @@ export default function ProfileScreen() {
           <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }]}>
             {"KONTO"}
           </Text>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/edit-profile")}
+          >
             <Text style={styles.menuItemText}>Profil bearbeiten</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.menuItem, { borderBottomWidth: 0 }]}>
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => router.push("/change-password")}
+          >
             <Text style={styles.menuItemText}>Passwort ändern</Text>
+            <Text style={styles.menuArrow}>›</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+            onPress={() => router.push("/settings")}
+          >
+            <Text style={styles.menuItemText}>Einstellungen</Text>
             <Text style={styles.menuArrow}>›</Text>
           </TouchableOpacity>
         </View>

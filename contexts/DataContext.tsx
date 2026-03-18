@@ -15,6 +15,7 @@ import type {
   MentorshipStatus,
   MentorApplication,
   ApplicationStatus,
+  Notification,
 } from "../types";
 import {
   MOCK_USERS,
@@ -64,6 +65,45 @@ const MOCK_MESSAGES: Message[] = [
   },
 ];
 
+const MOCK_NOTIFICATIONS: Notification[] = [
+  {
+    id: "notif-1",
+    type: "assignment",
+    title: "Neuer Mentee zugewiesen",
+    body: "Dir wurde Michael Bauer als neuer Mentee zugewiesen.",
+    created_at: "2024-02-05T10:00:00Z",
+    read: false,
+    related_id: "mentorship-1",
+  },
+  {
+    id: "notif-2",
+    type: "reminder",
+    title: "Session dokumentieren",
+    body: "Bitte dokumentiere deine letzte Session mit Michael Bauer.",
+    created_at: "2024-02-20T09:00:00Z",
+    read: false,
+    related_id: "mentorship-1",
+  },
+  {
+    id: "notif-3",
+    type: "progress",
+    title: "Schritt abgeschlossen",
+    body: "Dein Mentee Michael Bauer hat Schritt 3 (Erstkontakt) abgeschlossen.",
+    created_at: "2024-02-07T19:00:00Z",
+    read: true,
+    related_id: "mentorship-1",
+  },
+  {
+    id: "notif-4",
+    type: "message",
+    title: "Neue Nachricht",
+    body: "Michael Bauer hat dir eine Nachricht geschrieben.",
+    created_at: "2024-02-07T18:00:00Z",
+    read: true,
+    related_id: "mentorship-1",
+  },
+];
+
 export interface DataContextValue {
   // Data
   users: User[];
@@ -73,6 +113,7 @@ export interface DataContextValue {
   feedback: Feedback[];
   messages: Message[];
   applications: MentorApplication[];
+  notifications: Notification[];
 
   // Mentorship actions
   assignMentorship: (menteeId: string, mentorId: string, adminId: string) => void;
@@ -92,10 +133,18 @@ export interface DataContextValue {
   // Message actions
   sendMessage: (mentorshipId: string, senderId: string, content: string) => void;
 
+  // Notification actions
+  markAsRead: (notificationId: string) => void;
+  markAllAsRead: () => void;
+  getUnreadCount: () => number;
+
   // Application actions
   approveApplication: (applicationId: string) => void;
   rejectApplication: (applicationId: string) => void;
   submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => void;
+
+  // User actions
+  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference">>) => void;
 
   // Computed helpers
   getMentorshipsByMentorId: (mentorId: string) => Mentorship[];
@@ -124,6 +173,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [feedback, setFeedback] = useState<Feedback[]>(MOCK_FEEDBACK);
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [applications, setApplications] = useState<MentorApplication[]>(MOCK_APPLICATIONS);
+  const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
 
   // Mentorship actions
   const assignMentorship = useCallback(
@@ -364,6 +414,31 @@ export function DataProvider({ children }: { children: ReactNode }) {
     return applications.filter((a) => a.status === "pending").length;
   }, [applications]);
 
+  // Notification actions
+  const markAsRead = useCallback((notificationId: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
+    );
+  }, []);
+
+  const markAllAsRead = useCallback(() => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }, []);
+
+  const getUnreadCount = useCallback(() => {
+    return notifications.filter((n) => !n.read).length;
+  }, [notifications]);
+
+  // User actions
+  const updateUser = useCallback(
+    (userId: string, data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference">>) => {
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, ...data } : u))
+      );
+    },
+    []
+  );
+
   return (
     <DataContext.Provider
       value={{
@@ -374,6 +449,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         feedback,
         messages,
         applications,
+        notifications,
         assignMentorship,
         updateMentorshipStatus,
         addSession,
@@ -382,9 +458,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteSessionType,
         addFeedback,
         sendMessage,
+        markAsRead,
+        markAllAsRead,
+        getUnreadCount,
         approveApplication,
         rejectApplication,
         submitApplication,
+        updateUser,
         getMentorshipsByMentorId,
         getMentorshipByMenteeId,
         getMentorshipById,

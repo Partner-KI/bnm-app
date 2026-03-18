@@ -93,3 +93,15 @@ export interface AuthContextValue {
   loginAs: (role: UserRole) => void;
   logout: () => void;
 }
+
+export type NotificationType = "assignment" | "reminder" | "progress" | "message";
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  created_at: string;
+  read: boolean;
+  related_id?: string;
+}

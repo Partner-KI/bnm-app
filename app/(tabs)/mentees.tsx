@@ -23,23 +23,56 @@ export default function MenteesScreen() {
   return <Container><MenteeProgressView /></Container>;
 }
 
+type AssignmentFilter = "all" | "assigned" | "unassigned";
+type StatusFilter = "all" | "active" | "completed" | "cancelled";
+type GenderFilter = "all" | "male" | "female";
+type SortKey = "name" | "city" | "progress";
+
 function AdminMenteesView() {
   const router = useRouter();
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<"all" | "assigned" | "unassigned">("all");
+  const [assignFilter, setAssignFilter] = useState<AssignmentFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
+  const [sortKey, setSortKey] = useState<SortKey>("name");
   const { users, mentorships, sessionTypes, getCompletedStepIds } = useData();
 
   const allMentees = users.filter((u) => u.role === "mentee");
 
-  const filteredMentees = allMentees.filter((mentee) => {
-    const hasMentorship = mentorships.find((m) => m.mentee_id === mentee.id);
-    const matchesSearch =
-      mentee.name.toLowerCase().includes(search.toLowerCase()) ||
-      mentee.city.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter =
-      filter === "all" ? true : filter === "assigned" ? !!hasMentorship : !hasMentorship;
-    return matchesSearch && matchesFilter;
-  });
+  const filteredMentees = allMentees
+    .filter((mentee) => {
+      const mentorship = mentorships.find((m) => m.mentee_id === mentee.id);
+      const matchesSearch =
+        mentee.name.toLowerCase().includes(search.toLowerCase()) ||
+        mentee.city.toLowerCase().includes(search.toLowerCase());
+      const matchesAssign =
+        assignFilter === "all"
+          ? true
+          : assignFilter === "assigned"
+          ? !!mentorship
+          : !mentorship;
+      const matchesStatus =
+        statusFilter === "all"
+          ? true
+          : mentorship
+          ? mentorship.status === statusFilter
+          : false;
+      const matchesGender =
+        genderFilter === "all" ? true : mentee.gender === genderFilter;
+      return matchesSearch && matchesAssign && matchesStatus && matchesGender;
+    })
+    .sort((a, b) => {
+      if (sortKey === "name") return a.name.localeCompare(b.name);
+      if (sortKey === "city") return a.city.localeCompare(b.city);
+      if (sortKey === "progress") {
+        const mA = mentorships.find((m) => m.mentee_id === a.id);
+        const mB = mentorships.find((m) => m.mentee_id === b.id);
+        const progA = mA ? getCompletedStepIds(mA.id).length : 0;
+        const progB = mB ? getCompletedStepIds(mB.id).length : 0;
+        return progB - progA;
+      }
+      return 0;
+    });
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -56,7 +89,8 @@ function AdminMenteesView() {
           onChangeText={setSearch}
         />
 
-        {/* Filter-Tabs */}
+        {/* Filter: Zuweisung */}
+        <Text style={styles.filterGroupLabel}>Zuweisung</Text>
         <View style={styles.filterRow}>
           {(
             [
@@ -69,16 +103,104 @@ function AdminMenteesView() {
               key={tab.key}
               style={[
                 styles.filterChip,
-                filter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
+                assignFilter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
               ]}
-              onPress={() => setFilter(tab.key)}
+              onPress={() => setAssignFilter(tab.key)}
             >
               <Text
                 style={
-                  filter === tab.key ? styles.filterChipTextActive : styles.filterChipTextInactive
+                  assignFilter === tab.key ? styles.filterChipTextActive : styles.filterChipTextInactive
                 }
               >
                 {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Filter: Status */}
+        <Text style={styles.filterGroupLabel}>Status</Text>
+        <View style={styles.filterRow}>
+          {(
+            [
+              { key: "all", label: "Alle" },
+              { key: "active", label: "Aktiv" },
+              { key: "completed", label: "Abgeschlossen" },
+              { key: "cancelled", label: "Abgebrochen" },
+            ] as const
+          ).map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                styles.filterChip,
+                statusFilter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
+              ]}
+              onPress={() => setStatusFilter(tab.key)}
+            >
+              <Text
+                style={
+                  statusFilter === tab.key ? styles.filterChipTextActive : styles.filterChipTextInactive
+                }
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Filter: Geschlecht */}
+        <Text style={styles.filterGroupLabel}>Geschlecht</Text>
+        <View style={styles.filterRow}>
+          {(
+            [
+              { key: "all", label: "Alle" },
+              { key: "male", label: "Brüder" },
+              { key: "female", label: "Schwestern" },
+            ] as const
+          ).map((tab) => (
+            <TouchableOpacity
+              key={tab.key}
+              style={[
+                styles.filterChip,
+                genderFilter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
+              ]}
+              onPress={() => setGenderFilter(tab.key)}
+            >
+              <Text
+                style={
+                  genderFilter === tab.key ? styles.filterChipTextActive : styles.filterChipTextInactive
+                }
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Sortierung */}
+        <Text style={styles.filterGroupLabel}>Sortierung</Text>
+        <View style={[styles.filterRow, { marginBottom: 24 }]}>
+          {(
+            [
+              { key: "name", label: "Name A–Z" },
+              { key: "city", label: "Stadt" },
+              { key: "progress", label: "Fortschritt" },
+            ] as const
+          ).map((opt) => (
+            <TouchableOpacity
+              key={opt.key}
+              style={[
+                styles.filterChip,
+                sortKey === opt.key ? styles.filterChipActive : styles.filterChipInactive,
+              ]}
+              onPress={() => setSortKey(opt.key)}
+            >
+              <Text
+                style={
+                  sortKey === opt.key ? styles.filterChipTextActive : styles.filterChipTextInactive
+                }
+              >
+                {opt.label}
               </Text>
             </TouchableOpacity>
           ))}
@@ -126,12 +248,9 @@ function AdminMenteesView() {
               <TouchableOpacity
                 key={mentee.id}
                 style={styles.menteeCard}
-                onPress={() => {
-                  if (mentorship) {
-                    router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } });
-                  }
-                }}
-                disabled={!mentorship}
+                onPress={() =>
+                  router.push({ pathname: "/mentee/[id]", params: { id: mentee.id } })
+                }
               >
                 <View style={styles.menteeCardHeader}>
                   <View style={{ flex: 1 }}>
@@ -163,9 +282,10 @@ function AdminMenteesView() {
                 ) : (
                   <TouchableOpacity
                     style={styles.assignButton}
-                    onPress={() =>
-                      router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
-                    }
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      router.push({ pathname: "/assign", params: { menteeId: mentee.id } });
+                    }}
                   >
                     <Text style={styles.assignButtonText}>Mentor zuweisen</Text>
                   </TouchableOpacity>
@@ -180,6 +300,7 @@ function AdminMenteesView() {
 }
 
 function MentorMenteesView() {
+  const router = useRouter();
   const { user } = useAuth();
   const { getMentorshipsByMentorId } = useData();
 
@@ -196,9 +317,15 @@ function MentorMenteesView() {
         </Text>
 
         {myMentorships.length === 0 ? (
-          <View style={styles.emptyCard}>
+          <TouchableOpacity
+            style={styles.emptyCard}
+            onPress={() => router.push("/onboarding")}
+          >
             <Text style={styles.emptyText}>Dir sind noch keine Mentees zugewiesen.</Text>
-          </View>
+            <Text style={[styles.emptyText, { color: COLORS.link, marginTop: 4 }]}>
+              Onboarding ansehen →
+            </Text>
+          </TouchableOpacity>
         ) : (
           myMentorships.map((mentorship) => (
             <MentorMenteeCard key={mentorship.id} mentorship={mentorship} />
@@ -470,7 +597,14 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     marginBottom: 16,
   },
-  filterRow: { flexDirection: "row", gap: 8, marginBottom: 24 },
+  filterGroupLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: COLORS.tertiary,
+    letterSpacing: 0.5,
+    marginBottom: 6,
+  },
+  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 12 },
   filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterChipInactive: { backgroundColor: COLORS.white, borderColor: COLORS.border },

@@ -3,8 +3,10 @@ import {
   View,
   Text,
   ScrollView,
+  TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
@@ -25,6 +27,7 @@ const MEDAL_LABELS = ["Gold", "Silber", "Bronze"] as const;
 const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"] as const;
 
 export default function LeaderboardScreen() {
+  const router = useRouter();
   const { user } = useAuth();
   const { users, mentorships, sessions } = useData();
 
@@ -116,13 +119,16 @@ export default function LeaderboardScreen() {
                 const medalColor = isTop3 ? MEDAL_COLORS[index] : undefined;
 
                 return (
-                  <View
+                  <TouchableOpacity
                     key={item.mentorId}
                     style={[
                       styles.rankRow,
                       index < ranked.length - 1 ? styles.rankRowBorder : {},
                       isMe ? styles.rankRowHighlight : {},
                     ]}
+                    onPress={() =>
+                      router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })
+                    }
                   >
                     {/* Rang-Indikator */}
                     <View
@@ -177,7 +183,7 @@ export default function LeaderboardScreen() {
                       </Text>
                       <Text style={styles.scoreLabel}>Pkt.</Text>
                     </View>
-                  </View>
+                  </TouchableOpacity>
                 );
               })
             )}

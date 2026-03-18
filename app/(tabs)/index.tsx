@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 
@@ -114,6 +115,9 @@ function AdminDashboard() {
           )}
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
+
+        {/* Balkendiagramm: Neue Betreuungen pro Monat */}
+        <MonthlyChart mentorships={mentorships} />
 
         {/* Aktive Betreuungen Übersicht */}
         <View style={styles.card}>
@@ -449,6 +453,68 @@ function ProgressBar({ progress }: { progress: number }) {
   );
 }
 
+function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
+  const monthData = useMemo(() => {
+    const now = new Date();
+    const months: { label: string; count: number }[] = [];
+    for (let i = 3; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = d.toLocaleDateString("de-DE", { month: "short" });
+      const count = mentorships.filter((m) => {
+        const assigned = new Date(m.assigned_at);
+        return (
+          assigned.getFullYear() === d.getFullYear() &&
+          assigned.getMonth() === d.getMonth()
+        );
+      }).length;
+      months.push({ label, count });
+    }
+    return months;
+  }, [mentorships]);
+
+  const maxCount = Math.max(...monthData.map((m) => m.count), 1);
+  const BAR_MAX_HEIGHT = 80;
+
+  return (
+    <View style={styles.chartCard}>
+      <Text style={styles.cardTitle}>Neue Betreuungen (letzte 4 Monate)</Text>
+      <View style={styles.chartArea}>
+        {/* Y-Achse */}
+        <View style={styles.yAxis}>
+          {[maxCount, Math.ceil(maxCount / 2), 0].map((val, idx) => (
+            <Text key={idx} style={styles.yLabel}>{val}</Text>
+          ))}
+        </View>
+        {/* Balken */}
+        <View style={styles.barsContainer}>
+          {monthData.map((month, idx) => {
+            const barHeight = maxCount > 0
+              ? Math.max((month.count / maxCount) * BAR_MAX_HEIGHT, month.count > 0 ? 8 : 0)
+              : 0;
+            return (
+              <View key={idx} style={styles.barColumn}>
+                <View style={styles.barWrapper}>
+                  <Text style={styles.barValueLabel}>{month.count > 0 ? month.count : ""}</Text>
+                  <View
+                    style={[
+                      styles.bar,
+                      {
+                        height: barHeight,
+                        backgroundColor: COLORS.cta,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text style={styles.xLabel}>{month.label}</Text>
+              </View>
+            );
+          })}
+        </View>
+      </View>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
@@ -654,4 +720,59 @@ const styles = StyleSheet.create({
   currentStepLabel: { color: COLORS.secondary, fontSize: 12, marginTop: 2 },
   doneChip: { backgroundColor: "#dcfce7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
   doneChipText: { color: "#15803d", fontSize: 12 },
+  chartCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginBottom: 24,
+  },
+  chartArea: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    marginTop: 12,
+    height: 110,
+  },
+  yAxis: {
+    width: 24,
+    height: 90,
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    marginRight: 8,
+    paddingBottom: 2,
+  },
+  yLabel: { color: COLORS.tertiary, fontSize: 10 },
+  barsContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  barColumn: {
+    flex: 1,
+    alignItems: "center",
+  },
+  barWrapper: {
+    alignItems: "center",
+    justifyContent: "flex-end",
+    height: 90,
+  },
+  barValueLabel: {
+    color: COLORS.secondary,
+    fontSize: 11,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  bar: {
+    width: "100%",
+    borderRadius: 4,
+    minWidth: 20,
+  },
+  xLabel: {
+    color: COLORS.tertiary,
+    fontSize: 11,
+    marginTop: 6,
+    textAlign: "center",
+  },
 });
