@@ -69,6 +69,23 @@ export interface Message {
   sender?: User;
 }
 
+export type ApplicationStatus = "pending" | "approved" | "rejected";
+
+export interface MentorApplication {
+  id: string;
+  name: string;
+  email: string;
+  city: string;
+  gender: Gender;
+  age: number;
+  experience: string;
+  motivation: string;
+  contact_preference: ContactPreference;
+  phone?: string;
+  status: ApplicationStatus;
+  submitted_at: string;
+}
+
 export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;

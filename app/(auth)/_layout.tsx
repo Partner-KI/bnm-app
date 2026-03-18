@@ -19,6 +19,10 @@ export default function AuthLayout() {
         name="register-mentor"
         options={{ title: "Als Mentor bewerben" }}
       />
+      <Stack.Screen
+        name="register-public"
+        options={{ title: "Neu beim Islam? Hier anmelden" }}
+      />
     </Stack>
   );
 }

@@ -12,14 +12,15 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
+import { Container } from "../../components/Container";
 
 export default function MenteesScreen() {
   const { user } = useAuth();
   if (!user) return null;
 
-  if (user.role === "admin") return <AdminMenteesView />;
-  if (user.role === "mentor") return <MentorMenteesView />;
-  return <MenteeProgressView />;
+  if (user.role === "admin") return <Container><AdminMenteesView /></Container>;
+  if (user.role === "mentor") return <Container><MentorMenteesView /></Container>;
+  return <Container><MenteeProgressView /></Container>;
 }
 
 function AdminMenteesView() {

@@ -133,6 +133,16 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
+          {/* Öffentliche Anmeldung */}
+          <TouchableOpacity
+            style={styles.publicRegisterButton}
+            onPress={() => router.push("/(auth)/register-public")}
+          >
+            <Text style={styles.publicRegisterText}>
+              Neu beim Islam? Hier anmelden →
+            </Text>
+          </TouchableOpacity>
+
           {/* Test-Schnellzugang */}
           <View style={styles.quickSection}>
             <Text style={styles.quickLabel}>
@@ -270,7 +280,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "center",
     gap: 16,
-    marginBottom: 32,
+    marginBottom: 16,
+  },
+  publicRegisterButton: {
+    backgroundColor: "rgba(238,167,27,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(238,167,27,0.4)",
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  publicRegisterText: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: "600",
   },
   linkText: {
     color: COLORS.link,

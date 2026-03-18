@@ -1,0 +1,320 @@
+import React, { useMemo } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+} from "react-native";
+import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
+import { COLORS } from "../../constants/Colors";
+import { Container } from "../../components/Container";
+
+interface MentorScore {
+  mentorId: string;
+  name: string;
+  city: string;
+  gender: "male" | "female";
+  completedCount: number;
+  sessionCount: number;
+  score: number;
+}
+
+const MEDAL_COLORS = ["#EEA71B", "#9CA3AF", "#CD7F32"] as const;
+const MEDAL_LABELS = ["Gold", "Silber", "Bronze"] as const;
+const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"] as const;
+
+export default function LeaderboardScreen() {
+  const { user } = useAuth();
+  const { users, mentorships, sessions } = useData();
+
+  const ranked: MentorScore[] = useMemo(() => {
+    const mentors = users.filter((u) => u.role === "mentor");
+    return mentors
+      .map((mentor) => {
+        const myMentorships = mentorships.filter((m) => m.mentor_id === mentor.id);
+        const completedCount = myMentorships.filter((m) => m.status === "completed").length;
+        const sessionCount = sessions.filter((s) =>
+          myMentorships.some((m) => m.id === s.mentorship_id)
+        ).length;
+        const score = completedCount * 10 + sessionCount * 3;
+        return {
+          mentorId: mentor.id,
+          name: mentor.name,
+          city: mentor.city,
+          gender: mentor.gender,
+          completedCount,
+          sessionCount,
+          score,
+        };
+      })
+      .sort((a, b) => b.score - a.score);
+  }, [users, mentorships, sessions]);
+
+  // Mentor des Monats = derjenige mit dem höchsten Score
+  const mentorOfMonth = ranked.length > 0 ? ranked[0] : null;
+
+  // Position des eingeloggten Mentors
+  const myRankIndex = user?.role === "mentor"
+    ? ranked.findIndex((r) => r.mentorId === user.id)
+    : -1;
+
+  return (
+    <Container>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.page}>
+          <Text style={styles.pageTitle}>Rangliste</Text>
+          <Text style={styles.pageSubtitle}>
+            Score = Abschlüsse × 10 + Sessions × 3
+          </Text>
+
+          {/* Mentor des Monats Banner */}
+          {mentorOfMonth && mentorOfMonth.score > 0 && (
+            <View style={styles.momBanner}>
+              <View style={styles.momHeader}>
+                <Text style={styles.momStar}>★</Text>
+                <Text style={styles.momTitle}>Mentor des Monats</Text>
+              </View>
+              <Text style={styles.momName}>{mentorOfMonth.name}</Text>
+              <View style={styles.momStatsRow}>
+                <View style={styles.momStatPill}>
+                  <Text style={styles.momStatValue}>{mentorOfMonth.score}</Text>
+                  <Text style={styles.momStatLabel}>Punkte</Text>
+                </View>
+                <View style={styles.momStatPill}>
+                  <Text style={styles.momStatValue}>{mentorOfMonth.completedCount}</Text>
+                  <Text style={styles.momStatLabel}>Abschlüsse</Text>
+                </View>
+                <View style={styles.momStatPill}>
+                  <Text style={styles.momStatValue}>{mentorOfMonth.sessionCount}</Text>
+                  <Text style={styles.momStatLabel}>Sessions</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
+          {/* Eigene Position (nur für Mentoren) */}
+          {user?.role === "mentor" && myRankIndex >= 0 && (
+            <View style={styles.myPositionCard}>
+              <Text style={styles.myPositionLabel}>Deine Position</Text>
+              <Text style={styles.myPositionRank}>Platz {myRankIndex + 1}</Text>
+              <Text style={styles.myPositionScore}>
+                {ranked[myRankIndex].score} Punkte
+              </Text>
+            </View>
+          )}
+
+          {/* Rangliste */}
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Alle Mentoren</Text>
+            {ranked.length === 0 ? (
+              <Text style={styles.emptyText}>Noch keine Mentoren vorhanden.</Text>
+            ) : (
+              ranked.map((item, index) => {
+                const isTop3 = index < 3;
+                const isMe = user?.role === "mentor" && item.mentorId === user.id;
+                const medalColor = isTop3 ? MEDAL_COLORS[index] : undefined;
+
+                return (
+                  <View
+                    key={item.mentorId}
+                    style={[
+                      styles.rankRow,
+                      index < ranked.length - 1 ? styles.rankRowBorder : {},
+                      isMe ? styles.rankRowHighlight : {},
+                    ]}
+                  >
+                    {/* Rang-Indikator */}
+                    <View
+                      style={[
+                        styles.rankBadge,
+                        isTop3
+                          ? { backgroundColor: medalColor }
+                          : { backgroundColor: COLORS.bg },
+                      ]}
+                    >
+                      {isTop3 ? (
+                        <Text style={styles.rankBadgeTextWhite}>
+                          {MEDAL_EMOJIS[index]}
+                        </Text>
+                      ) : (
+                        <Text style={styles.rankBadgeTextDark}>{index + 1}</Text>
+                      )}
+                    </View>
+
+                    {/* Mentor-Info */}
+                    <View style={styles.rankInfo}>
+                      <View style={styles.rankNameRow}>
+                        <Text style={styles.rankName}>{item.name}</Text>
+                        {isMe && (
+                          <View style={styles.meChip}>
+                            <Text style={styles.meChipText}>Du</Text>
+                          </View>
+                        )}
+                        {isTop3 && (
+                          <View style={[styles.medalChip, { backgroundColor: medalColor }]}>
+                            <Text style={styles.medalChipText}>{MEDAL_LABELS[index]}</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.rankSub}>
+                        {item.city} · {item.gender === "male" ? "Bruder" : "Schwester"}
+                      </Text>
+                      <Text style={styles.rankDetail}>
+                        {item.completedCount} Abschlüsse · {item.sessionCount} Sessions
+                      </Text>
+                    </View>
+
+                    {/* Score */}
+                    <View style={styles.scoreBox}>
+                      <Text
+                        style={[
+                          styles.scoreValue,
+                          isTop3 ? { color: medalColor } : {},
+                        ]}
+                      >
+                        {item.score}
+                      </Text>
+                      <Text style={styles.scoreLabel}>Pkt.</Text>
+                    </View>
+                  </View>
+                );
+              })
+            )}
+          </View>
+
+          {/* Legende */}
+          <View style={styles.legendCard}>
+            <Text style={styles.legendTitle}>Punktesystem</Text>
+            <View style={styles.legendRow}>
+              <View style={styles.legendDot} />
+              <Text style={styles.legendText}>
+                Abgeschlossene Betreuung = <Text style={styles.legendBold}>10 Punkte</Text>
+              </Text>
+            </View>
+            <View style={styles.legendRow}>
+              <View style={styles.legendDot} />
+              <Text style={styles.legendText}>
+                Dokumentierte Session = <Text style={styles.legendBold}>3 Punkte</Text>
+              </Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    </Container>
+  );
+}
+
+const styles = StyleSheet.create({
+  scrollView: { flex: 1, backgroundColor: COLORS.bg },
+  page: { padding: 24 },
+  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
+  pageSubtitle: { color: COLORS.secondary, marginBottom: 24, fontSize: 13 },
+
+  momBanner: {
+    backgroundColor: "rgba(238,167,27,0.12)",
+    borderWidth: 1,
+    borderColor: "rgba(238,167,27,0.4)",
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+  },
+  momHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  momStar: { color: COLORS.gold, fontSize: 22, marginRight: 8 },
+  momTitle: { fontWeight: "bold", color: COLORS.primary, fontSize: 15 },
+  momName: { fontSize: 22, fontWeight: "bold", color: COLORS.primary, marginBottom: 16 },
+  momStatsRow: { flexDirection: "row", gap: 12 },
+  momStatPill: {
+    flex: 1,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 12,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "rgba(238,167,27,0.3)",
+  },
+  momStatValue: { fontSize: 20, fontWeight: "bold", color: COLORS.gold },
+  momStatLabel: { color: COLORS.secondary, fontSize: 11, marginTop: 2 },
+
+  myPositionCard: {
+    backgroundColor: COLORS.primary,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  myPositionLabel: { color: COLORS.white, opacity: 0.7, fontSize: 13 },
+  myPositionRank: { color: COLORS.gold, fontWeight: "bold", fontSize: 20 },
+  myPositionScore: { color: COLORS.white, fontWeight: "bold", fontSize: 16 },
+
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginBottom: 16,
+  },
+  cardTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 16, fontSize: 15 },
+  emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
+
+  rankRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 14,
+    gap: 12,
+  },
+  rankRowBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  rankRowHighlight: {
+    backgroundColor: "#eff6ff",
+    borderRadius: 10,
+    marginHorizontal: -8,
+    paddingHorizontal: 8,
+  },
+
+  rankBadge: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  rankBadgeTextWhite: { fontSize: 20 },
+  rankBadgeTextDark: { color: COLORS.secondary, fontWeight: "bold", fontSize: 14 },
+
+  rankInfo: { flex: 1 },
+  rankNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
+  rankName: { fontWeight: "600", color: COLORS.primary, fontSize: 15 },
+  meChip: {
+    backgroundColor: "#dbeafe",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 9999,
+  },
+  meChipText: { color: "#1d4ed8", fontSize: 11, fontWeight: "600" },
+  medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  medalChipText: { color: COLORS.white, fontSize: 11, fontWeight: "600" },
+  rankSub: { color: COLORS.tertiary, fontSize: 12 },
+  rankDetail: { color: COLORS.secondary, fontSize: 12, marginTop: 2 },
+
+  scoreBox: { alignItems: "center" },
+  scoreValue: { fontSize: 22, fontWeight: "bold", color: COLORS.primary },
+  scoreLabel: { color: COLORS.tertiary, fontSize: 11 },
+
+  legendCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginBottom: 8,
+  },
+  legendTitle: { fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  legendRow: { flexDirection: "row", alignItems: "center", marginBottom: 8, gap: 8 },
+  legendDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold },
+  legendText: { color: COLORS.secondary, fontSize: 13 },
+  legendBold: { fontWeight: "bold", color: COLORS.primary },
+});

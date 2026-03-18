@@ -4,15 +4,16 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
+import { Container } from "../../components/Container";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
 
   if (!user) return null;
 
-  if (user.role === "admin") return <AdminDashboard />;
-  if (user.role === "mentor") return <MentorDashboard />;
-  return <MenteeDashboard />;
+  if (user.role === "admin") return <Container><AdminDashboard /></Container>;
+  if (user.role === "mentor") return <Container><MentorDashboard /></Container>;
+  return <Container><MenteeDashboard /></Container>;
 }
 
 function AdminDashboard() {
@@ -23,6 +24,7 @@ function AdminDashboard() {
     sessionTypes,
     getCompletedStepIds,
     getUnassignedMentees,
+    getPendingApplicationsCount,
   } = useData();
 
   const allMentors = users.filter((u) => u.role === "mentor");
@@ -32,6 +34,7 @@ function AdminDashboard() {
     (m) => m.status === "completed"
   );
   const unassignedMentees = getUnassignedMentees();
+  const pendingAppsCount = getPendingApplicationsCount();
 
   return (
     <ScrollView style={styles.scrollView}>
@@ -94,6 +97,23 @@ function AdminDashboard() {
             <Text style={styles.actionButtonTextDark}>Monatsberichte</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Schnellzugriff: Bewerbungen */}
+        <TouchableOpacity
+          style={styles.applicationsButton}
+          onPress={() => router.push("/admin/applications")}
+        >
+          <View style={styles.applicationsButtonContent}>
+            <Text style={styles.applicationsButtonText}>Mentor-Bewerbungen</Text>
+            <Text style={styles.applicationsButtonSub}>Neue Mentoren prüfen</Text>
+          </View>
+          {pendingAppsCount > 0 && (
+            <View style={styles.applicationsBadge}>
+              <Text style={styles.applicationsBadgeText}>{pendingAppsCount}</Text>
+            </View>
+          )}
+          <Text style={styles.applicationsArrow}>›</Text>
+        </TouchableOpacity>
 
         {/* Aktive Betreuungen Übersicht */}
         <View style={styles.card}>
@@ -507,6 +527,32 @@ const styles = StyleSheet.create({
     borderColor: "rgba(238,167,27,0.4)",
   },
   actionButtonTextDark: { color: COLORS.primary, fontSize: 12, fontWeight: "600", textAlign: "center" },
+  applicationsButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 24,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  applicationsButtonContent: { flex: 1 },
+  applicationsButtonText: { fontWeight: "600", color: COLORS.primary, fontSize: 14 },
+  applicationsButtonSub: { color: COLORS.tertiary, fontSize: 12, marginTop: 2 },
+  applicationsBadge: {
+    backgroundColor: COLORS.error,
+    borderRadius: 9999,
+    minWidth: 24,
+    height: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
+  },
+  applicationsBadgeText: { color: COLORS.white, fontSize: 12, fontWeight: "bold" },
+  applicationsArrow: { color: COLORS.tertiary, fontSize: 18 },
   blueBox: {
     backgroundColor: "#eff6ff",
     borderWidth: 1,

@@ -13,6 +13,8 @@ import type {
   Feedback,
   Message,
   MentorshipStatus,
+  MentorApplication,
+  ApplicationStatus,
 } from "../types";
 import {
   MOCK_USERS,
@@ -20,6 +22,7 @@ import {
   MOCK_SESSIONS,
   SESSION_TYPES,
   MOCK_FEEDBACK,
+  MOCK_APPLICATIONS,
 } from "../data/mockData";
 
 // Extended mock messages for chat
@@ -69,6 +72,7 @@ export interface DataContextValue {
   sessionTypes: SessionType[];
   feedback: Feedback[];
   messages: Message[];
+  applications: MentorApplication[];
 
   // Mentorship actions
   assignMentorship: (menteeId: string, mentorId: string, adminId: string) => void;
@@ -88,6 +92,11 @@ export interface DataContextValue {
   // Message actions
   sendMessage: (mentorshipId: string, senderId: string, content: string) => void;
 
+  // Application actions
+  approveApplication: (applicationId: string) => void;
+  rejectApplication: (applicationId: string) => void;
+  submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => void;
+
   // Computed helpers
   getMentorshipsByMentorId: (mentorId: string) => Mentorship[];
   getMentorshipByMenteeId: (menteeId: string) => Mentorship | undefined;
@@ -97,6 +106,7 @@ export interface DataContextValue {
   getMessagesByMentorshipId: (mentorshipId: string) => Message[];
   getUserById: (id: string) => User | undefined;
   getUnassignedMentees: () => User[];
+  getPendingApplicationsCount: () => number;
 }
 
 const DataContext = createContext<DataContextValue | null>(null);
@@ -107,12 +117,13 @@ function generateId(prefix: string): string {
 }
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [users] = useState<User[]>(MOCK_USERS);
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
   const [mentorships, setMentorships] = useState<Mentorship[]>(MOCK_MENTORSHIPS);
   const [sessions, setSessions] = useState<Session[]>(MOCK_SESSIONS);
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>(SESSION_TYPES);
   const [feedback, setFeedback] = useState<Feedback[]>(MOCK_FEEDBACK);
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
+  const [applications, setApplications] = useState<MentorApplication[]>(MOCK_APPLICATIONS);
 
   // Mentorship actions
   const assignMentorship = useCallback(
@@ -297,6 +308,62 @@ export function DataProvider({ children }: { children: ReactNode }) {
     );
   }, [users, mentorships]);
 
+  // Application actions
+  const approveApplication = useCallback(
+    (applicationId: string) => {
+      const app = applications.find((a) => a.id === applicationId);
+      if (!app) return;
+
+      // Status auf approved setzen
+      setApplications((prev) =>
+        prev.map((a) =>
+          a.id === applicationId ? { ...a, status: "approved" as ApplicationStatus } : a
+        )
+      );
+
+      // Neuen Mentor-User anlegen
+      const newUser: User = {
+        id: generateId("user-mentor"),
+        email: app.email,
+        role: "mentor",
+        gender: app.gender,
+        name: app.name,
+        phone: app.phone,
+        city: app.city,
+        age: app.age,
+        contact_preference: app.contact_preference,
+        created_at: new Date().toISOString(),
+      };
+      setUsers((prev) => [...prev, newUser]);
+    },
+    [applications]
+  );
+
+  const rejectApplication = useCallback((applicationId: string) => {
+    setApplications((prev) =>
+      prev.map((a) =>
+        a.id === applicationId ? { ...a, status: "rejected" as ApplicationStatus } : a
+      )
+    );
+  }, []);
+
+  const submitApplication = useCallback(
+    (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => {
+      const newApp: MentorApplication = {
+        ...data,
+        id: generateId("app"),
+        status: "pending",
+        submitted_at: new Date().toISOString(),
+      };
+      setApplications((prev) => [...prev, newApp]);
+    },
+    []
+  );
+
+  const getPendingApplicationsCount = useCallback(() => {
+    return applications.filter((a) => a.status === "pending").length;
+  }, [applications]);
+
   return (
     <DataContext.Provider
       value={{
@@ -306,6 +373,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         sessionTypes,
         feedback,
         messages,
+        applications,
         assignMentorship,
         updateMentorshipStatus,
         addSession,
@@ -314,6 +382,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         deleteSessionType,
         addFeedback,
         sendMessage,
+        approveApplication,
+        rejectApplication,
+        submitApplication,
         getMentorshipsByMentorId,
         getMentorshipByMenteeId,
         getMentorshipById,
@@ -322,6 +393,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         getMessagesByMentorshipId,
         getUserById,
         getUnassignedMentees,
+        getPendingApplicationsCount,
       }}
     >
       {children}

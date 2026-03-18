@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -8,8 +8,10 @@ import {
   StyleSheet,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
+import { Container } from "../../components/Container";
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: "Administrator",
@@ -26,6 +28,39 @@ const CONTACT_LABELS: Record<string, string> = {
 
 export default function ProfileScreen() {
   const { user, logout } = useAuth();
+  const { getMentorshipsByMentorId, sessions, users } = useData();
+
+  const mentorStats = useMemo(() => {
+    if (!user || user.role !== "mentor") return null;
+
+    const myMentorships = getMentorshipsByMentorId(user.id);
+    const activeMentorships = myMentorships.filter((m) => m.status === "active");
+    const completedMentorships = myMentorships.filter((m) => m.status === "completed");
+    const totalSessions = sessions.filter((s) =>
+      myMentorships.some((m) => m.id === s.mentorship_id)
+    ).length;
+
+    // Ranking berechnen
+    const allMentors = users.filter((u) => u.role === "mentor");
+    const scores = allMentors.map((mentor) => {
+      const ms = getMentorshipsByMentorId(mentor.id);
+      const completed = ms.filter((m) => m.status === "completed").length;
+      const sessionsCnt = sessions.filter((s) =>
+        ms.some((m) => m.id === s.mentorship_id)
+      ).length;
+      return { mentorId: mentor.id, score: completed * 10 + sessionsCnt * 3 };
+    });
+    scores.sort((a, b) => b.score - a.score);
+    const myRank = scores.findIndex((s) => s.mentorId === user.id) + 1;
+
+    return {
+      active: activeMentorships.length,
+      completed: completedMentorships.length,
+      totalSessions,
+      rank: myRank,
+      totalMentors: allMentors.length,
+    };
+  }, [user, getMentorshipsByMentorId, sessions, users]);
 
   if (!user) return null;
 
@@ -58,6 +93,7 @@ export default function ProfileScreen() {
       : "#15803d";
 
   return (
+    <Container>
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
         <Text style={styles.pageTitle}>Profil</Text>
@@ -99,6 +135,36 @@ export default function ProfileScreen() {
           />
         </View>
 
+        {/* Mentor-Statistiken */}
+        {user.role === "mentor" && mentorStats && (
+          <View style={styles.infoCard}>
+            <Text style={styles.sectionLabel}>{"MEINE STATISTIKEN"}</Text>
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{mentorStats.active}</Text>
+                <Text style={styles.statLabel}>Aktive Betreuungen</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: COLORS.cta }]}>{mentorStats.completed}</Text>
+                <Text style={styles.statLabel}>Abgeschlossen</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: COLORS.primary }]}>{mentorStats.totalSessions}</Text>
+                <Text style={styles.statLabel}>Sessions gesamt</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={[styles.statValue, { color: COLORS.gold }]}>
+                  #{mentorStats.rank}
+                </Text>
+                <Text style={styles.statLabel}>Ranking</Text>
+              </View>
+            </View>
+            <Text style={styles.rankHint}>
+              von {mentorStats.totalMentors} Mentoren · Score = Abschlüsse × 10 + Sessions × 3
+            </Text>
+          </View>
+        )}
+
         {/* Konto-Aktionen */}
         <View style={[styles.infoCard, { padding: 0, overflow: "hidden" }]}>
           <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }]}>
@@ -123,6 +189,7 @@ export default function ProfileScreen() {
         <Text style={styles.appInfo}>BNM App · Betreuung neuer Muslime</Text>
       </View>
     </ScrollView>
+    </Container>
   );
 }
 
@@ -216,6 +283,23 @@ const styles = StyleSheet.create({
   },
   menuItemText: { color: COLORS.primary },
   menuArrow: { color: COLORS.tertiary },
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginBottom: 8,
+  },
+  statItem: {
+    flex: 1,
+    minWidth: "40%",
+    backgroundColor: COLORS.bg,
+    borderRadius: 10,
+    padding: 12,
+    alignItems: "center",
+  },
+  statValue: { fontSize: 24, fontWeight: "bold", color: COLORS.primary },
+  statLabel: { color: COLORS.tertiary, fontSize: 11, marginTop: 2, textAlign: "center" },
+  rankHint: { color: COLORS.tertiary, fontSize: 11, textAlign: "center", marginTop: 4 },
   logoutButton: {
     backgroundColor: "#fef2f2",
     borderWidth: 1,

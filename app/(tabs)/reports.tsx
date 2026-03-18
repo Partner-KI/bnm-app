@@ -5,11 +5,13 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  Platform,
   StyleSheet,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
+import { Container } from "../../components/Container";
 
 const MONTHS = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -84,6 +86,41 @@ export default function ReportsScreen() {
 
   const maxBarValue = Math.max(...barChartData.map((w) => w.count), 1);
 
+  function handleExport() {
+    const monthLabel = `${MONTHS[selectedMonth]} ${selectedYear}`;
+
+    const header = "Monat,Betreuungen,Erstkontakte,Ersttreffen,BNM-Boxen,Sessions,Abschlüsse,Abbrüche";
+    const row = [
+      `"${monthLabel}"`,
+      kpis.totalAssigned,
+      kpis.firstContacts,
+      kpis.firstMeetings,
+      kpis.bnmBoxes,
+      kpis.totalSessions,
+      kpis.completions,
+      kpis.cancellations,
+    ].join(",");
+    const csvContent = `${header}\n${row}`;
+
+    if (Platform.OS === "web") {
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `BNM-Bericht-${MONTHS[selectedMonth]}-${selectedYear}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } else {
+      Alert.alert(
+        "CSV erstellt",
+        `Der Bericht für ${monthLabel} wurde als CSV generiert.\n\nFür nativen Download wird expo-sharing benötigt (Post-Launch).`,
+        [{ text: "OK" }]
+      );
+    }
+  }
+
   if (user?.role !== "admin") {
     return (
       <View style={styles.centerContainer}>
@@ -93,6 +130,7 @@ export default function ReportsScreen() {
   }
 
   return (
+    <Container>
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
         <Text style={styles.pageTitle}>Monatsberichte</Text>
@@ -221,17 +259,15 @@ export default function ReportsScreen() {
         {/* Export-Button */}
         <TouchableOpacity
           style={styles.exportButton}
-          onPress={() =>
-            Alert.alert(
-              "Export wird vorbereitet",
-              `Der Bericht für ${MONTHS[selectedMonth]} ${selectedYear} wird generiert...`
-            )
-          }
+          onPress={handleExport}
         >
-          <Text style={styles.exportButtonText}>Bericht exportieren</Text>
+          <Text style={styles.exportButtonText}>
+            {Platform.OS === "web" ? "CSV herunterladen" : "Bericht exportieren"}
+          </Text>
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </Container>
   );
 }
 

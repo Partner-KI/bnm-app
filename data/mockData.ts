@@ -5,6 +5,7 @@ import type {
   SessionType,
   Feedback,
   Message,
+  MentorApplication,
 } from "../types";
 
 export const MOCK_USERS: User[] = [
@@ -337,3 +338,47 @@ export function getCompletedStepIds(mentorshipId: string): string[] {
 export function getUserById(id: string): User | undefined {
   return MOCK_USERS.find((u) => u.id === id);
 }
+
+export const MOCK_APPLICATIONS: MentorApplication[] = [
+  {
+    id: "app-1",
+    name: "Ibrahim Hassan",
+    email: "ibrahim.hassan@example.de",
+    city: "Frankfurt",
+    gender: "male",
+    age: 34,
+    experience: "Ich bin seit 5 Jahren Muslime und habe bereits informell zwei Konvertierte begleitet. Ich bin in der lokalen Moscheegemeinde aktiv.",
+    motivation: "Ich möchte meine Erfahrung und meinen Glauben teilen und neuen Muslimen den Einstieg erleichtern. Es ist das Beste, was ich für die Gemeinschaft tun kann.",
+    contact_preference: "whatsapp",
+    phone: "+49 160 11223344",
+    status: "pending",
+    submitted_at: "2026-03-10T09:00:00Z",
+  },
+  {
+    id: "app-2",
+    name: "Aisha Richter",
+    email: "aisha.richter@example.de",
+    city: "München",
+    gender: "female",
+    age: 28,
+    experience: "Konvertitin seit 3 Jahren. Ich habe eine Schwester durch ihre erste Zeit im Islam begleitet und verstehe die Herausforderungen gut.",
+    motivation: "Als Konvertitin weiß ich, wie wichtig Unterstützung am Anfang ist. Ich möchte für andere Schwestern da sein, wie man für mich da war.",
+    contact_preference: "phone",
+    phone: "+49 176 55667788",
+    status: "pending",
+    submitted_at: "2026-03-12T14:30:00Z",
+  },
+  {
+    id: "app-3",
+    name: "Omar Dietrich",
+    email: "omar.dietrich@example.de",
+    city: "Stuttgart",
+    gender: "male",
+    age: 41,
+    experience: "Muslime seit 12 Jahren, Moscheevorsitzender seit 4 Jahren. Habe bereits mehrere Mentoring-Programme mitorganisiert.",
+    motivation: "Das BNM-Programm ist ein wichtiges Projekt. Mit meiner Erfahrung in der Gemeinschaftsarbeit kann ich einen großen Beitrag leisten.",
+    contact_preference: "email",
+    status: "pending",
+    submitted_at: "2026-03-15T11:00:00Z",
+  },
+];

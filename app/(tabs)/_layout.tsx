@@ -53,6 +53,23 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="leaderboard"
+        options={{
+          title: "Ranking",
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: "trophy.fill",
+                android: "emoji_events",
+                web: "emoji_events",
+              }}
+              tintColor={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="reports"
         options={{
           title: "Berichte",
