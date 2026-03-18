@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -33,7 +34,13 @@ const CONTACT_LABELS: Record<string, string> = {
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { getMentorshipsByMentorId, sessions, users } = useData();
+  const { getMentorshipsByMentorId, sessions, users, refreshData } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const mentorStats = useMemo(() => {
     if (!user || user.role !== "mentor") return null;
@@ -99,7 +106,10 @@ export default function ProfileScreen() {
 
   return (
     <Container>
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         {/* Hero-Header mit dunklem Blau */}
         <View style={styles.heroHeader}>

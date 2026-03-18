@@ -4,6 +4,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   StyleSheet,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
@@ -29,16 +30,31 @@ export default function FeedbackOverviewScreen() {
   const { user } = useAuth();
   const { getFeedbacks, users, mentorships } = useData();
   const [filter, setFilter] = useState<FeedbackFilter>("all");
+  const [search, setSearch] = useState("");
 
   const allFeedbacks = getFeedbacks(); // sortiert nach Datum (neueste zuerst)
 
   const hasNegative = allFeedbacks.some((f) => f.rating <= 2);
 
   const filtered = useMemo(() => {
-    if (filter === "positive") return allFeedbacks.filter((f) => f.rating >= 4);
-    if (filter === "negative") return allFeedbacks.filter((f) => f.rating <= 2);
-    return allFeedbacks;
-  }, [filter, allFeedbacks]);
+    const searchLower = search.toLowerCase();
+    let base = allFeedbacks;
+    if (filter === "positive") base = base.filter((f) => f.rating >= 4);
+    if (filter === "negative") base = base.filter((f) => f.rating <= 2);
+    if (search) {
+      base = base.filter((f) => {
+        const submitter = users.find((u) => u.id === f.submitted_by);
+        const mentorship = mentorships.find((m) => m.id === f.mentorship_id);
+        return (
+          submitter?.name.toLowerCase().includes(searchLower) ||
+          mentorship?.mentee?.name.toLowerCase().includes(searchLower) ||
+          mentorship?.mentor?.name.toLowerCase().includes(searchLower) ||
+          f.comments?.toLowerCase().includes(searchLower)
+        );
+      });
+    }
+    return base;
+  }, [filter, search, allFeedbacks, users, mentorships]);
 
   if (user?.role !== "admin") {
     return (
@@ -56,6 +72,15 @@ export default function FeedbackOverviewScreen() {
           <Text style={styles.pageSubtitle}>
             {allFeedbacks.length} Feedbacks insgesamt
           </Text>
+
+          {/* Suche */}
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Name oder Kommentar suchen..."
+            placeholderTextColor="#98A2B3"
+            value={search}
+            onChangeText={setSearch}
+          />
 
           {/* FIX 11: Frühwarnsystem */}
           {hasNegative && (
@@ -220,6 +245,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: { color: COLORS.tertiary, fontSize: 14 },
+  searchInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: COLORS.primary,
+    fontSize: 14,
+    marginBottom: 12,
+  },
 
   feedbackCard: {
     backgroundColor: COLORS.white,

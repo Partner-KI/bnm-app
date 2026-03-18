@@ -1,9 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
+  RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -31,9 +33,16 @@ type GenderFilter = "all" | "male" | "female";
 export default function LeaderboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { users, mentorships, sessions, mentorOfMonthVisible } = useData();
+  const { users, mentorships, sessions, mentorOfMonthVisible, refreshData } = useData();
 
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
+  const [search, setSearch] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const allScored: MentorScore[] = useMemo(() => {
     const mentors = users.filter((u) => u.role === "mentor");
@@ -59,13 +68,22 @@ export default function LeaderboardScreen() {
   }, [users, mentorships, sessions]);
 
   const ranked: MentorScore[] = useMemo(() => {
+    let base: MentorScore[];
     if (user?.role === "mentor" || user?.role === "mentee") {
-      return allScored.filter((m) => m.gender === user.gender);
+      base = allScored.filter((m) => m.gender === user.gender);
+    } else if (genderFilter === "all") {
+      base = allScored;
+    } else {
+      base = allScored.filter((m) => m.gender === genderFilter);
     }
-    // Admin und Office sehen alle (mit Geschlechterfilter)
-    if (genderFilter === "all") return allScored;
-    return allScored.filter((m) => m.gender === genderFilter);
-  }, [allScored, user, genderFilter]);
+    if (search) {
+      const sl = search.toLowerCase();
+      base = base.filter(
+        (m) => m.name.toLowerCase().includes(sl) || m.city.toLowerCase().includes(sl)
+      );
+    }
+    return base;
+  }, [allScored, user, genderFilter, search]);
 
   const mentorOfMonthMale = useMemo(() => {
     const males = allScored.filter((m) => m.gender === "male" && m.score > 0);
@@ -104,12 +122,24 @@ export default function LeaderboardScreen() {
 
   return (
     <Container>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+      >
         <View style={styles.page}>
           <Text style={styles.pageTitle}>Rangliste</Text>
           <Text style={styles.pageSubtitle}>
             Score = Abschlüsse × 10 + Sessions × 3
           </Text>
+
+          {/* Suche nach Mentor-Name */}
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Mentor nach Name suchen..."
+            placeholderTextColor="#98A2B3"
+            value={search}
+            onChangeText={setSearch}
+          />
 
           {/* Admin-Filter für Geschlecht */}
           {isAdmin && (
@@ -453,4 +483,15 @@ const styles = StyleSheet.create({
   legendDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold },
   legendText: { color: COLORS.secondary, fontSize: 13 },
   legendBold: { fontWeight: "700", color: COLORS.primary },
+  searchInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: COLORS.primary,
+    fontSize: 14,
+    marginBottom: 16,
+  },
 });

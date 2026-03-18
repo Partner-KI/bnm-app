@@ -288,7 +288,7 @@ export default function AssignScreen() {
                         <View
                           style={[
                             styles.scoreBarFill,
-                            { width: Math.min(percentage, 100) + "%", backgroundColor: scoreColor },
+                            { width: `${Math.min(percentage, 100)}%` as any, backgroundColor: scoreColor },
                           ]}
                         />
                       </View>

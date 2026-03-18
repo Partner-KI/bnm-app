@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useMemo, useState, useCallback } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -29,7 +29,14 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     getCompletedStepIds,
     getUnassignedMentees,
     getPendingApplicationsCount,
+    refreshData,
   } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const allMentors = users.filter((u) => u.role === "mentor");
   const allMentees = users.filter((u) => u.role === "mentee");
@@ -41,7 +48,10 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const pendingAppsCount = getPendingApplicationsCount();
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         <View style={styles.headerRow}>
           <BNMLogo size={36} showSubtitle={false} />
@@ -145,7 +155,15 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Aktive Betreuungen</Text>
           {activeMentorships.length === 0 ? (
-            <Text style={styles.emptyText}>Keine aktiven Betreuungen.</Text>
+            <View style={{ alignItems: "center", paddingVertical: 16 }}>
+              <Text style={{ fontSize: 28, marginBottom: 8 }}>👥</Text>
+              <Text style={[styles.emptyText, { marginBottom: 8 }]}>
+                Noch keine aktiven Betreuungen.
+              </Text>
+              <Text style={{ color: COLORS.link, fontSize: 13 }}>
+                Weise einen Mentee zu, um zu starten.
+              </Text>
+            </View>
           ) : (
             activeMentorships.map((m, index) => {
               const completedSteps = getCompletedStepIds(m.id);
@@ -192,7 +210,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 function MentorDashboard() {
   const { user } = useAuth();
   const router = useRouter();
-  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes } = useData();
+  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   if (!user) return null;
 
@@ -201,7 +225,10 @@ function MentorDashboard() {
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         {/* Begrüssung – Hero mit dunklem Blau */}
         <View style={styles.greetingCard}>
@@ -310,7 +337,13 @@ function MentorDashboard() {
 function MenteeDashboard() {
   const { user } = useAuth();
   const router = useRouter();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, refreshData } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   if (!user) return null;
 
@@ -319,7 +352,10 @@ function MenteeDashboard() {
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         {/* Begrüssung – Hero */}
         <View style={styles.greetingCard}>
@@ -494,7 +530,7 @@ function ProgressBar({ progress }: { progress: number }) {
   return (
     <View style={styles.progressTrack}>
       <View
-        style={[styles.progressFill, { width: progress + "%" }]}
+        style={[styles.progressFill, { width: `${progress}%` as any }]}
       />
     </View>
   );

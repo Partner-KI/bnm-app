@@ -156,7 +156,7 @@ export default function MentorshipDetailScreen() {
             <Text style={styles.progressPercent}>{progress}%</Text>
           </View>
           <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: progress + "%" }]} />
+            <View style={[styles.progressFill, { width: `${progress}%` as any }]} />
           </View>
           <Text style={styles.progressSub}>
             {completedStepIds.length} von {sessionTypes.length} Schritten abgeschlossen

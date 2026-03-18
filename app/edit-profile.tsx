@@ -46,17 +46,20 @@ export default function EditProfileScreen() {
 
   if (!user) return null;
 
+  // user ist hier garantiert nicht null (Early Return oben)
+  const safeUser = user;
+
   async function handleAvatarPickWeb(uri: string) {
     if (!uri) return;
     setIsUploadingAvatar(true);
     setAvatarPreview(uri);
-    const publicUrl = await uploadAvatar(user.id, uri);
+    const publicUrl = await uploadAvatar(safeUser.id, uri);
     if (publicUrl) {
-      await updateUser(user.id, { avatar_url: publicUrl });
+      await updateUser(safeUser.id, { avatar_url: publicUrl });
       setAvatarPreview(publicUrl);
     } else {
       Alert.alert("Fehler", "Profilbild konnte nicht hochgeladen werden.");
-      setAvatarPreview(user.avatar_url);
+      setAvatarPreview(safeUser.avatar_url);
     }
     setIsUploadingAvatar(false);
   }
@@ -90,7 +93,7 @@ export default function EditProfileScreen() {
     }
 
     setIsSaving(true);
-    await updateUser(user.id, {
+    await updateUser(safeUser.id, {
       name: name.trim(),
       city: city.trim(),
       age: parseInt(age, 10),
@@ -128,7 +131,7 @@ export default function EditProfileScreen() {
             ) : (
               <View style={styles.avatarPlaceholder}>
                 <Text style={styles.avatarInitials}>
-                  {user.name
+                  {safeUser.name
                     .split(" ")
                     .map((n) => n[0])
                     .join("")
@@ -242,7 +245,7 @@ export default function EditProfileScreen() {
               E-Mail-Adresse und Rolle können nicht selbst geändert werden.
               Bitte wende dich an das BNM-Team.
             </Text>
-            <Text style={styles.infoBoxValue}>{user.email}</Text>
+            <Text style={styles.infoBoxValue}>{safeUser.email}</Text>
           </View>
 
           {/* Speichern */}

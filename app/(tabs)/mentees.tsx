@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   TextInput,
+  RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -35,7 +36,13 @@ function AdminMenteesView() {
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
-  const { users, mentorships, sessionTypes, getCompletedStepIds } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const { users, mentorships, sessionTypes, getCompletedStepIds, refreshData } = useData();
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const allMentees = users.filter((u) => u.role === "mentee");
 
@@ -75,7 +82,10 @@ function AdminMenteesView() {
     });
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         <Text style={styles.pageTitle}>Alle Mentees</Text>
         <Text style={styles.pageSubtitle}>{allMentees.length} Mentees registriert</Text>
@@ -274,7 +284,7 @@ function AdminMenteesView() {
                     <View style={styles.progressRow}>
                       <View style={styles.progressTrack}>
                         <View
-                          style={[styles.progressFill, { width: progress + "%" }]}
+                          style={[styles.progressFill, { width: `${progress}%` as any }]}
                         />
                       </View>
                       <Text style={styles.progressText}>
@@ -305,14 +315,23 @@ function AdminMenteesView() {
 function MentorMenteesView() {
   const router = useRouter();
   const { user } = useAuth();
-  const { getMentorshipsByMentorId } = useData();
+  const { getMentorshipsByMentorId, refreshData } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   if (!user) return null;
 
   const myMentorships = getMentorshipsByMentorId(user.id);
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         <Text style={styles.pageTitle}>Meine Mentees</Text>
         <Text style={styles.pageSubtitle}>
@@ -328,15 +347,23 @@ function MentorMenteesView() {
         </TouchableOpacity>
 
         {myMentorships.length === 0 ? (
-          <TouchableOpacity
-            style={styles.emptyCard}
-            onPress={() => router.push("/onboarding")}
-          >
-            <Text style={styles.emptyText}>Dir sind noch keine Mentees zugewiesen.</Text>
-            <Text style={[styles.emptyText, { color: COLORS.link, marginTop: 4 }]}>
-              Onboarding ansehen →
+          <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>🤝</Text>
+            <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8 }]}>
+              Noch keine Mentees
             </Text>
-          </TouchableOpacity>
+            <Text style={[styles.emptyText, { marginTop: 0, marginBottom: 12 }]}>
+              Dir sind noch keine Mentees zugewiesen. Du kannst einen nicht zugewiesenen Mentee selbst übernehmen.
+            </Text>
+            <TouchableOpacity
+              style={{ backgroundColor: COLORS.gradientStart, borderRadius: 5, paddingVertical: 9, paddingHorizontal: 20 }}
+              onPress={() => router.push("/assign")}
+            >
+              <Text style={{ color: COLORS.white, fontWeight: "600", fontSize: 14 }}>
+                Mentee übernehmen
+              </Text>
+            </TouchableOpacity>
+          </View>
         ) : (
           myMentorships.map((mentorship) => (
             <MentorMenteeCard key={mentorship.id} mentorship={mentorship} />
@@ -395,7 +422,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
       {/* Fortschrittsbalken */}
       <View style={styles.progressRow}>
         <View style={styles.progressTrack}>
-          <View style={[styles.progressFill, { width: progress + "%" }]} />
+          <View style={[styles.progressFill, { width: `${progress}%` as any }]} />
         </View>
         <Text style={styles.progressText}>
           {completedStepIds.length}/{sessionTypes.length} Steps
@@ -453,7 +480,14 @@ function MenteeProgressView() {
     getCompletedStepIds,
     getSessionsByMentorshipId,
     sessionTypes,
+    refreshData,
   } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   if (!user) return null;
 
@@ -464,15 +498,19 @@ function MenteeProgressView() {
 
   if (!mentorship) {
     return (
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+      >
         <View style={styles.page}>
           <Text style={styles.pageTitle}>Mein Fortschritt</Text>
           <View style={styles.emptyCard}>
+            <Text style={{ fontSize: 36, marginBottom: 12 }}>🌱</Text>
             <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8 }]}>
               Noch keine Zuweisung
             </Text>
             <Text style={[styles.emptyText, { marginTop: 0 }]}>
-              Das BNM-Team weist dir bald einen Mentor zu.
+              Das BNM-Team prüft deine Anmeldung und weist dir bald einen passenden Mentor zu.
             </Text>
           </View>
         </View>
@@ -483,7 +521,10 @@ function MenteeProgressView() {
   const totalProgress = Math.round((completedStepIds.length / sessionTypes.length) * 100);
 
   return (
-    <ScrollView style={styles.scrollView}>
+    <ScrollView
+      style={styles.scrollView}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+    >
       <View style={styles.page}>
         <Text style={styles.pageTitle}>Mein Fortschritt</Text>
         <Text style={styles.pageSubtitle}>Mentor: {mentorship.mentor?.name}</Text>
@@ -494,7 +535,7 @@ function MenteeProgressView() {
           <Text style={styles.progressHeaderValue}>{totalProgress}%</Text>
           <View style={styles.progressTrackWhite}>
             <View
-              style={[styles.progressFillGold, { width: totalProgress + "%" }]}
+              style={[styles.progressFillGold, { width: `${totalProgress}%` as any }]}
             />
           </View>
           <Text style={styles.progressHeaderSub}>

@@ -171,7 +171,7 @@ export default function MentorDetailScreen() {
                         <View style={styles.progressRow}>
                           <View style={styles.progressTrack}>
                             <View
-                              style={[styles.progressFill, { width: progress + "%" }]}
+                              style={[styles.progressFill, { width: `${progress}%` as any }]}
                             />
                           </View>
                           <Text style={styles.progressText}>

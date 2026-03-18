@@ -25,6 +25,16 @@ interface MenteeFormData {
   contact_preference: ContactPreference | "";
 }
 
+interface MenteeFormErrors {
+  name?: string;
+  email?: string;
+  gender?: string;
+  city?: string;
+  age?: string;
+  phone?: string;
+  contact_preference?: string;
+}
+
 const GENDER_OPTIONS: { value: Gender; label: string }[] = [
   { value: "male", label: "Bruder" },
   { value: "female", label: "Schwester" },
@@ -49,10 +59,10 @@ export default function RegisterMenteeScreen() {
     phone: "",
     contact_preference: "",
   });
-  const [errors, setErrors] = useState<Partial<MenteeFormData>>({});
+  const [errors, setErrors] = useState<MenteeFormErrors>({});
 
   function validate(): boolean {
-    const newErrors: Partial<MenteeFormData> = {};
+    const newErrors: MenteeFormErrors = {};
     if (!form.name.trim()) newErrors.name = "Pflichtfeld";
     if (!form.email.trim()) newErrors.email = "Pflichtfeld";
     else if (!/\S+@\S+\.\S+/.test(form.email))
@@ -127,7 +137,7 @@ export default function RegisterMenteeScreen() {
 
   function update(field: keyof MenteeFormData, value: string) {
     setForm((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
+    if (errors[field as keyof MenteeFormErrors]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
   }

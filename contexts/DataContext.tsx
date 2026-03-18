@@ -86,6 +86,9 @@ export interface DataContextValue {
   getUnassignedMentees: () => User[];
   getPendingApplicationsCount: () => number;
 
+  // Refresh
+  refreshData: () => Promise<void>;
+
   // Loading
   isLoading: boolean;
 }
@@ -982,6 +985,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  // ─── refreshData ──────────────────────────────────────────────────────────────
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const refreshData = useCallback(async () => {
+    await loadAllData();
+  }, [authUser?.id]); // intentionally only depends on authUser to avoid infinite re-creation
+
   // ─── Computed Helpers ─────────────────────────────────────────────────────────
 
   const getMentorshipsByMentorId = useCallback(
@@ -1075,6 +1085,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         getUserById,
         getUnassignedMentees,
         getPendingApplicationsCount,
+        refreshData,
         isLoading,
       }}
     >

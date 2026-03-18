@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  RefreshControl,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -35,7 +36,13 @@ function getQuarterIndex(month: number): number {
 export default function ReportsScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible, toggleMentorOfMonth } = useData();
+  const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible, toggleMentorOfMonth, refreshData } = useData();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refreshData();
+    setRefreshing(false);
+  }, [refreshData]);
 
   const now = new Date();
   const [periodMode, setPeriodMode] = useState<PeriodMode>("month");
@@ -216,7 +223,10 @@ export default function ReportsScreen() {
 
   return (
     <Container>
-      <ScrollView style={styles.scrollView}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+      >
         <View style={styles.page}>
           <Text style={styles.pageTitle}>Berichte</Text>
           <Text style={styles.pageSubtitle}>KPIs und Statistiken auf einen Blick</Text>

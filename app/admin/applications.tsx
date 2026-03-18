@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  TextInput,
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -27,6 +28,7 @@ export default function ApplicationsScreen() {
   const [mainTab, setMainTab] = useState<MainTab>("mentors");
   const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [menteeFilter, setMenteeFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [search, setSearch] = useState("");
 
   if (user?.role !== "admin" && user?.role !== "office") {
     return (
@@ -45,8 +47,23 @@ export default function ApplicationsScreen() {
     (a) => a.motivation === PUBLIC_REGISTRATION_MARKER
   );
 
-  const filteredMentorApps = mentorApps.filter((a) => a.status === mentorFilter);
-  const filteredMenteeApps = menteeApps.filter((a) => a.status === menteeFilter);
+  const searchLower = search.toLowerCase();
+  const filteredMentorApps = mentorApps.filter(
+    (a) =>
+      a.status === mentorFilter &&
+      (search === "" ||
+        a.name.toLowerCase().includes(searchLower) ||
+        a.email.toLowerCase().includes(searchLower) ||
+        a.city.toLowerCase().includes(searchLower))
+  );
+  const filteredMenteeApps = menteeApps.filter(
+    (a) =>
+      a.status === menteeFilter &&
+      (search === "" ||
+        a.name.toLowerCase().includes(searchLower) ||
+        a.email.toLowerCase().includes(searchLower) ||
+        a.city.toLowerCase().includes(searchLower))
+  );
 
   const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
   const pendingMenteeCount = menteeApps.filter((a) => a.status === "pending").length;
@@ -88,38 +105,51 @@ export default function ApplicationsScreen() {
 
   function handleAcceptMenteeRegistration(app: MentorApplication) {
     Alert.alert(
-      "Mentee-Anmeldung annehmen",
-      `Für ${app.name} wird ein Mentee-Account erstellt. Das System sendet eine Einladungs-E-Mail. Fortfahren?`,
+      "Mentee-Account erstellen",
+      `Für ${app.name} (${app.email}) wird ein Mentee-Account erstellt. Fortfahren?`,
       [
         { text: "Abbrechen", style: "cancel" },
         {
           text: "Account erstellen",
           style: "default",
           onPress: async () => {
-            // Mentee-Account via Supabase Auth erstellen
-            const tempPassword = Math.random().toString(36).slice(-10) + "A1!";
-            const { error: signUpError } = await supabase.auth.admin
-              ? // Falls admin API verfügbar
-                { error: null }
-              : { error: null };
+            // Temporäres Passwort generieren: "BNM-" + 6 Zufallsziffern
+            const digits = Math.floor(100000 + Math.random() * 900000).toString();
+            const tempPassword = `BNM-${digits}`;
 
-            // Da admin API clientseitig nicht verfügbar ist, speichern wir den Status
-            // und der Admin muss den Account manuell via Supabase Dashboard oder
-            // via Edge Function erstellen. Wir markieren die Anmeldung als "approved".
-            const { error } = await supabase
-              .from("mentor_applications")
-              .update({ status: "approved" })
-              .eq("id", app.id);
+            // Supabase Auth signUp für den Mentee
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+              email: app.email,
+              password: tempPassword,
+              options: {
+                data: {
+                  name: app.name,
+                  role: "mentee",
+                  gender: app.gender,
+                  city: app.city,
+                  age: app.age,
+                },
+              },
+            });
 
-            if (error) {
-              Alert.alert("Fehler", "Status konnte nicht aktualisiert werden.");
-              return;
+            if (signUpError) {
+              if (
+                signUpError.message.includes("already registered") ||
+                signUpError.message.includes("User already registered")
+              ) {
+                Alert.alert("Hinweis", `${app.name} hat bereits einen Account mit dieser E-Mail.`);
+              } else {
+                Alert.alert("Fehler", signUpError.message);
+                return;
+              }
             }
 
+            // Anmeldung als approved markieren
             approveApplication(app.id);
+
             Alert.alert(
-              "Anmeldung angenommen",
-              `${app.name} wurde angenommen. Bitte erstelle den Mentee-Account manuell im Supabase Dashboard unter Authentication → Users → Invite User.\n\nE-Mail: ${app.email}\nTemp-Passwort wird per E-Mail gesendet.`
+              "Account erstellt",
+              `Temporäres Passwort: ${tempPassword}\n\nBitte teile dieses Passwort sicher mit ${app.name}. Die Person kann es nach dem ersten Login ändern.`
             );
           },
         },
@@ -153,6 +183,15 @@ export default function ApplicationsScreen() {
           </TouchableOpacity>
 
           <Text style={styles.pageTitle}>Anmeldungen & Bewerbungen</Text>
+
+          {/* Suche */}
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Name, E-Mail oder Stadt suchen..."
+            placeholderTextColor="#98A2B3"
+            value={search}
+            onChangeText={(v) => setSearch(v)}
+          />
 
           {/* Haupt-Tabs */}
           <View style={styles.mainTabRow}>
@@ -489,6 +528,17 @@ const styles = StyleSheet.create({
   },
   tabBadgeText: { color: COLORS.white, fontSize: 10, fontWeight: "700" },
 
+  searchInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    color: COLORS.primary,
+    fontSize: 14,
+    marginBottom: 12,
+  },
   filterRow: { flexDirection: "row", gap: 8, marginBottom: 16, flexWrap: "wrap" },
   filterChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 9999, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },

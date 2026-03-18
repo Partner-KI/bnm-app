@@ -1,0 +1,248 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { COLORS } from "../../constants/Colors";
+import { supabase } from "../../lib/supabase";
+
+export default function ForgotPasswordScreen() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  async function handleReset() {
+    if (!email.trim()) {
+      setErrorMsg("Bitte E-Mail-Adresse eingeben.");
+      return;
+    }
+    if (!/\S+@\S+\.\S+/.test(email.trim())) {
+      setErrorMsg("Bitte eine gültige E-Mail-Adresse eingeben.");
+      return;
+    }
+
+    setErrorMsg("");
+    setIsLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: undefined,
+      });
+
+      if (error) {
+        setErrorMsg(error.message);
+      } else {
+        setSent(true);
+      }
+    } catch {
+      setErrorMsg("Ein unerwarteter Fehler ist aufgetreten.");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.flex1}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
+      <ScrollView
+        style={styles.flex1}
+        contentContainerStyle={{ flexGrow: 1 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View style={styles.container}>
+          {/* Icon */}
+          <View style={styles.iconBox}>
+            <Text style={styles.iconText}>🔑</Text>
+          </View>
+
+          <Text style={styles.title}>Passwort vergessen?</Text>
+          <Text style={styles.subtitle}>
+            Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen.
+          </Text>
+
+          {sent ? (
+            /* Erfolgs-State */
+            <View style={styles.successBox}>
+              <Text style={styles.successIcon}>✓</Text>
+              <Text style={styles.successTitle}>E-Mail gesendet</Text>
+              <Text style={styles.successText}>
+                Wir haben eine E-Mail an{" "}
+                <Text style={{ fontWeight: "700" }}>{email.trim()}</Text> gesendet.
+                Bitte prüfe auch deinen Spam-Ordner.
+              </Text>
+              <TouchableOpacity
+                style={styles.backButton}
+                onPress={() => router.replace("/(auth)/login")}
+              >
+                <Text style={styles.backButtonText}>Zurück zum Login</Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            /* Formular */
+            <>
+              <Text style={styles.fieldLabel}>E-Mail-Adresse</Text>
+              <TextInput
+                style={[styles.input, errorMsg ? styles.inputError : styles.inputNormal]}
+                placeholder="deine@email.de"
+                placeholderTextColor="#98A2B3"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                value={email}
+                onChangeText={(v) => {
+                  setEmail(v);
+                  if (errorMsg) setErrorMsg("");
+                }}
+              />
+
+              {errorMsg ? (
+                <View style={styles.errorBox}>
+                  <Text style={styles.errorText}>{errorMsg}</Text>
+                </View>
+              ) : null}
+
+              <TouchableOpacity
+                style={[styles.submitButton, isLoading && { opacity: 0.6 }]}
+                onPress={handleReset}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color={COLORS.white} />
+                ) : (
+                  <Text style={styles.submitButtonText}>Zurücksetzen-Link senden</Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => router.back()}
+              >
+                <Text style={styles.cancelButtonText}>Zurück zum Login</Text>
+              </TouchableOpacity>
+            </>
+          )}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  flex1: { flex: 1, backgroundColor: COLORS.bg },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 40,
+    paddingBottom: 40,
+  },
+  iconBox: {
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  iconText: { fontSize: 48 },
+  title: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: COLORS.primary,
+    textAlign: "center",
+    marginBottom: 8,
+  },
+  subtitle: {
+    color: COLORS.secondary,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 28,
+  },
+  fieldLabel: {
+    color: COLORS.secondary,
+    fontSize: 13,
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  input: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: COLORS.primary,
+    fontSize: 14,
+    marginBottom: 12,
+  },
+  inputNormal: { borderColor: COLORS.border },
+  inputError: { borderColor: "#f87171" },
+  errorBox: {
+    backgroundColor: "#fef2f2",
+    borderWidth: 1,
+    borderColor: "#fecaca",
+    borderRadius: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginBottom: 12,
+  },
+  errorText: { color: "#dc2626", fontSize: 13 },
+  submitButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 10,
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  submitButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+  cancelButton: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 5,
+    paddingVertical: 10,
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+  },
+  cancelButtonText: { color: COLORS.secondary, fontWeight: "500", fontSize: 14 },
+  successBox: {
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    borderRadius: 8,
+    padding: 24,
+    alignItems: "center",
+  },
+  successIcon: {
+    fontSize: 36,
+    color: COLORS.cta,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  successTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#15803d",
+    marginBottom: 8,
+  },
+  successText: {
+    color: "#166534",
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 20,
+  },
+  backButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    alignItems: "center",
+  },
+  backButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+});

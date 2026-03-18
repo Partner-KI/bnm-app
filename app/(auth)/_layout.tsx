@@ -23,6 +23,10 @@ export default function AuthLayout() {
         name="register-public"
         options={{ title: "Neu beim Islam? Hier anmelden" }}
       />
+      <Stack.Screen
+        name="forgot-password"
+        options={{ title: "Passwort zurücksetzen" }}
+      />
     </Stack>
   );
 }
