@@ -347,29 +347,44 @@ CREATE POLICY "hadithe_admin" ON hadithe FOR ALL USING (
 
 -- ============================================================
 -- AUTO-TRIGGER: Profil bei User-Registrierung erstellen
+-- Vereinfachte Version: Erstellt Minimal-Profil, Details kommen per App-Update
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
-  INSERT INTO profiles (id, email, name, role, gender, city, age)
+  INSERT INTO public.profiles (id, email, name, role, gender, city, age)
   VALUES (
     NEW.id,
-    NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'name', ''),
-    COALESCE((NEW.raw_user_meta_data->>'role')::user_role, 'mentee'),
-    COALESCE((NEW.raw_user_meta_data->>'gender')::gender_type, 'male'),
-    COALESCE(NEW.raw_user_meta_data->>'city', ''),
-    COALESCE((NEW.raw_user_meta_data->>'age')::integer, 0)
+    COALESCE(NEW.email, ''),
+    COALESCE(NEW.raw_user_meta_data->>'name', 'Neuer Benutzer'),
+    'mentee',
+    'male',
+    '',
+    0
   );
   RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  RAISE LOG 'handle_new_user error: %', SQLERRM;
+  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE TRIGGER on_auth_user_created
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION handle_new_user();
+
+-- HINWEIS: Nach dem Erstellen von Test-Usern im Dashboard
+-- müssen Profile manuell angelegt/aktualisiert werden:
+--
+-- INSERT INTO profiles (id, email, name, role, gender, city, age) VALUES
+--   ('<UUID>', 'admin@bnm.org', 'Rizgar Ahmad', 'admin', 'male', 'Wien', 35),
+--   ('<UUID>', 'mentor@bnm.org', 'Ahmad Yilmaz', 'mentor', 'male', 'Wien', 30),
+--   ('<UUID>', 'mentee@bnm.org', 'Lukas Weber', 'mentee', 'male', 'Wien', 25);
 
 -- ============================================================
 -- AUTO-TRIGGER: updated_at aktualisieren
