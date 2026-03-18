@@ -1,0 +1,82 @@
+-- ============================================================
+-- Resend E-Mail Integration via Supabase Edge Function
+-- ============================================================
+--
+-- SCHRITT 1: Supabase Dashboard → Edge Functions → "New Function"
+--   Name: send-email
+--   Code (Deno):
+--
+-- import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+-- import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+--
+-- const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY")
+-- const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!
+-- const SUPABASE_SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+--
+-- serve(async (req) => {
+--   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+--
+--   // Alle pending Mails holen
+--   const { data: mails, error } = await supabase
+--     .from("email_queue")
+--     .select("*")
+--     .eq("status", "pending")
+--     .limit(50)
+--
+--   if (error || !mails) {
+--     return new Response(JSON.stringify({ error }), { status: 500 })
+--   }
+--
+--   const results = []
+--   for (const mail of mails) {
+--     const recipient = mail.override_to || mail.to_email
+--     const res = await fetch("https://api.resend.com/emails", {
+--       method: "POST",
+--       headers: {
+--         "Authorization": `Bearer ${RESEND_API_KEY}`,
+--         "Content-Type": "application/json",
+--       },
+--       body: JSON.stringify({
+--         from: "BNM <noreply@bnm-app.de>",
+--         to: [recipient],
+--         subject: mail.subject,
+--         html: mail.body,
+--       }),
+--     })
+--
+--     const newStatus = res.ok ? "sent" : "failed"
+--     await supabase
+--       .from("email_queue")
+--       .update({ status: newStatus, sent_at: new Date().toISOString() })
+--       .eq("id", mail.id)
+--
+--     results.push({ id: mail.id, status: newStatus })
+--   }
+--
+--   return new Response(JSON.stringify({ processed: results.length, results }))
+-- })
+--
+-- ============================================================
+-- SCHRITT 2: Supabase Dashboard → Settings → Edge Functions → Secrets:
+--   RESEND_API_KEY = "re_..."
+--   (SUPABASE_URL und SUPABASE_SERVICE_ROLE_KEY sind automatisch verfügbar)
+--
+-- SCHRITT 3: Resend Account unter https://resend.com erstellen
+--   → API Key generieren
+--   → Domain verifizieren (oder resend.dev für Tests nutzen)
+--
+-- SCHRITT 4: Edge Function per pg_cron oder manuell aufrufen:
+--   SELECT cron.schedule(
+--     'send-pending-emails',
+--     '*/5 * * * *',  -- alle 5 Minuten
+--     $$
+--       SELECT net.http_post(
+--         url := 'https://<project-ref>.supabase.co/functions/v1/send-email',
+--         headers := '{"Authorization": "Bearer <anon-key>"}'::jsonb
+--       )
+--     $$
+--   );
+--
+-- ALTERNATIV: In lib/emailService.ts die Zeile auskommentieren:
+--   await supabase.functions.invoke("send-email", { body: { to, subject, body } })
+-- ============================================================

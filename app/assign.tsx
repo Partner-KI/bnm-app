@@ -12,6 +12,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { User } from "../types";
 import { COLORS } from "../constants/Colors";
+import { sendMenteeAssignedNotification } from "../lib/emailService";
 
 interface MatchScore {
   mentor: User;
@@ -67,7 +68,7 @@ export default function AssignScreen() {
   const params = useLocalSearchParams<{ menteeId?: string }>();
 
   const isMentor = user?.role === "mentor";
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "admin" || user?.role === "office";
 
   // FIX 5: Mentor sieht nur nicht zugewiesene Mentees des GLEICHEN Geschlechts
   const unassignedMentees = useMemo(() => {
@@ -124,6 +125,15 @@ export default function AssignScreen() {
           text: buttonText,
           onPress: async () => {
             await assignMentorship(selectedMenteeId, mentorId, user.id);
+            // E-Mail an Mentor
+            if (mentor.email) {
+              sendMenteeAssignedNotification(
+                mentor.name,
+                mentor.email,
+                mentee.name,
+                mentee.city
+              );
+            }
             Alert.alert("Erfolg", "Zuweisung erfolgreich!", [
               { text: "OK", onPress: () => router.back() },
             ]);
@@ -136,7 +146,7 @@ export default function AssignScreen() {
   if (!isAdmin && !isMentor) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Kein Zugriff. Nur für Admins und Mentoren.</Text>
+        <Text style={styles.accessText}>Kein Zugriff. Nur für Admins, Office und Mentoren.</Text>
       </View>
     );
   }

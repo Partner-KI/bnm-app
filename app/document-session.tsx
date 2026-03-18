@@ -39,8 +39,8 @@ export default function DocumentSessionScreen() {
   const params = useLocalSearchParams<{ mentorshipId?: string }>();
 
   // FIX 1: Auch "completed" Mentorships einbeziehen
-  // FIX 3: Admin sieht ALLE Mentorships
-  const isAdmin = user?.role === "admin";
+  // FIX 3: Admin und Office sehen ALLE Mentorships
+  const isAdmin = user?.role === "admin" || user?.role === "office";
 
   const myMentorships = user
     ? isAdmin
@@ -240,10 +240,10 @@ export default function DocumentSessionScreen() {
     );
   }
 
-  if (!user || (user.role !== "mentor" && user.role !== "admin")) {
+  if (!user || (user.role !== "mentor" && user.role !== "admin" && user.role !== "office")) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Nur für Mentoren und Admins.</Text>
+        <Text style={styles.accessText}>Nur für Mentoren, Admins und Office.</Text>
       </View>
     );
   }

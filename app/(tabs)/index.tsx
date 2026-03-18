@@ -14,12 +14,13 @@ export default function DashboardScreen() {
 
   if (!user) return null;
 
-  if (user.role === "admin") return <Container><AdminDashboard /></Container>;
+  if (user.role === "admin") return <Container><AdminDashboard showSystemSettings /></Container>;
+  if (user.role === "office") return <Container><AdminDashboard showSystemSettings={false} /></Container>;
   if (user.role === "mentor") return <Container><MentorDashboard /></Container>;
   return <Container><MenteeDashboard /></Container>;
 }
 
-function AdminDashboard() {
+function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: boolean }) {
   const router = useRouter();
   const {
     users,
@@ -92,14 +93,16 @@ function AdminDashboard() {
 
         {/* Admin-Aktionen */}
         <View style={styles.row3}>
+          {showSystemSettings && (
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
+              onPress={() => router.push("/admin/session-types")}
+            >
+              <Text style={styles.actionButtonText}>Session-Typen verwalten</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
-            onPress={() => router.push("/admin/session-types")}
-          >
-            <Text style={styles.actionButtonText}>Session-Typen verwalten</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.actionButtonGold}
+            style={[styles.actionButtonGold, !showSystemSettings ? { flex: 1 } : {}]}
             onPress={() => router.push("/(tabs)/reports")}
           >
             <Text style={styles.actionButtonTextDark}>Monatsberichte</Text>

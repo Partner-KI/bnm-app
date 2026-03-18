@@ -14,6 +14,7 @@ import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
+import { sendNewMentorApplicationNotification } from "../../lib/emailService";
 
 interface MentorFormData {
   name: string;
@@ -126,6 +127,14 @@ export default function RegisterMentorScreen() {
         setIsSubmitting(false);
         return;
       }
+
+      // E-Mail-Benachrichtigung an Admin
+      sendNewMentorApplicationNotification(
+        form.name.trim(),
+        emailLower,
+        form.city.trim(),
+        form.gender
+      );
 
       Alert.alert(
         "Bewerbung eingegangen",

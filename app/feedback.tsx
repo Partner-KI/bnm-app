@@ -12,6 +12,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { COLORS } from "../constants/Colors";
+import { sendNewFeedbackNotification } from "../lib/emailService";
 
 export default function FeedbackScreen() {
   const router = useRouter();
@@ -44,6 +45,17 @@ export default function FeedbackScreen() {
       rating,
       comments: comment.trim() || undefined,
     });
+
+    // E-Mail-Benachrichtigung an Admin
+    if (mentorship) {
+      sendNewFeedbackNotification(
+        mentorship.mentor?.name ?? "Unbekannt",
+        mentorship.mentee?.name ?? "Unbekannt",
+        rating,
+        comment.trim() || undefined
+      );
+    }
+
     setIsSaving(false);
 
     Alert.alert(

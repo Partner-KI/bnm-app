@@ -23,6 +23,7 @@ import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 import { checkReminders } from "../lib/reminders";
 import { showError } from "../lib/errorHandler";
+import { sendMentorshipStatusChangeNotification } from "../lib/emailService";
 
 export interface DataContextValue {
   // Data
@@ -536,8 +537,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return;
       }
 
-      setMentorships((prev) =>
-        prev.map((m) =>
+      setMentorships((prev) => {
+        const updated = prev.map((m) =>
           m.id === mentorshipId
             ? {
                 ...m,
@@ -548,8 +549,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
                     : m.completed_at,
               }
             : m
-        )
-      );
+        );
+
+        // E-Mail an Admin bei Abschluss oder Abbruch
+        if (status === "completed" || status === "cancelled") {
+          const m = prev.find((ms) => ms.id === mentorshipId);
+          if (m) {
+            sendMentorshipStatusChangeNotification(
+              "admin@bnm-app.de",
+              m.mentor?.name ?? "Unbekannt",
+              m.mentee?.name ?? "Unbekannt",
+              status as "completed" | "cancelled"
+            );
+          }
+        }
+
+        return updated;
+      });
     },
     []
   );

@@ -15,6 +15,7 @@ import { COLORS } from "../../constants/Colors";
 import type { Gender, ContactPreference } from "../../types";
 import { Container } from "../../components/Container";
 import { supabase } from "../../lib/supabase";
+import { sendNewMenteeRegistrationNotification } from "../../lib/emailService";
 
 type Step = "form" | "success";
 
@@ -90,6 +91,14 @@ export default function RegisterPublicScreen() {
         setIsSubmitting(false);
         return;
       }
+
+      // E-Mail-Benachrichtigung an Admin
+      sendNewMenteeRegistrationNotification(
+        `${firstName.trim()} ${lastName.trim()}`,
+        emailLower,
+        city.trim(),
+        gender ?? "male"
+      );
 
       setStep("success");
     } catch {

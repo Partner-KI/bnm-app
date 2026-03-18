@@ -62,6 +62,7 @@ export default function LeaderboardScreen() {
     if (user?.role === "mentor" || user?.role === "mentee") {
       return allScored.filter((m) => m.gender === user.gender);
     }
+    // Admin und Office sehen alle (mit Geschlechterfilter)
     if (genderFilter === "all") return allScored;
     return allScored.filter((m) => m.gender === genderFilter);
   }, [allScored, user, genderFilter]);
@@ -80,6 +81,7 @@ export default function LeaderboardScreen() {
     if (user?.role === "mentor" || user?.role === "mentee") {
       return user.gender === "male" ? mentorOfMonthMale : mentorOfMonthFemale;
     }
+    // Admin und Office sehen nach Filter
     if (genderFilter === "male") return mentorOfMonthMale;
     if (genderFilter === "female") return mentorOfMonthFemale;
     return ranked.length > 0 && ranked[0].score > 0 ? ranked[0] : null;
@@ -89,7 +91,7 @@ export default function LeaderboardScreen() {
     ? ranked.findIndex((r) => r.mentorId === user.id)
     : -1;
 
-  const isAdmin = user?.role === "admin";
+  const isAdmin = user?.role === "admin" || user?.role === "office";
 
   const listTitle = useMemo(() => {
     if (user?.role === "mentor" || user?.role === "mentee") {

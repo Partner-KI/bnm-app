@@ -22,6 +22,7 @@ export default function LoginScreen() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleLogin() {
@@ -92,14 +93,22 @@ export default function LoginScreen() {
 
           {/* Passwort */}
           <Text style={styles.fieldLabel}>Passwort</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Passwort"
-            placeholderTextColor="#98A2B3"
-            secureTextEntry
-            value={password}
-            onChangeText={setPassword}
-          />
+          <View style={styles.passwordRow}>
+            <TextInput
+              style={styles.passwordInput}
+              placeholder="Passwort"
+              placeholderTextColor="#98A2B3"
+              secureTextEntry={!showPassword}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeButton}
+              onPress={() => setShowPassword((v) => !v)}
+            >
+              <Text style={styles.eyeText}>{showPassword ? "🙈" : "👁"}</Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Fehlermeldung */}
           {errorMsg ? (
@@ -248,6 +257,28 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 14,
   },
+  passwordRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    marginBottom: 10,
+    overflow: "hidden",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingHorizontal: 12,
+    paddingVertical: Platform.OS === "web" ? 8 : 10,
+    color: COLORS.primary,
+    fontSize: 14,
+  },
+  eyeButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+  },
+  eyeText: { fontSize: 18 },
   errorBox: {
     backgroundColor: "#fef2f2",
     borderWidth: 1,

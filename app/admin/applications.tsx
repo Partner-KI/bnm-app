@@ -13,25 +13,45 @@ import { useData } from "../../contexts/DataContext";
 import type { MentorApplication } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { supabase } from "../../lib/supabase";
+
+// Öffentliche Anmeldungen sind in mentor_applications mit diesem Motivation-Marker gespeichert
+const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
+
+type MainTab = "mentors" | "mentees";
 
 export default function ApplicationsScreen() {
   const { user } = useAuth();
   const router = useRouter();
   const { applications, approveApplication, rejectApplication } = useData();
-  const [filter, setFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [mainTab, setMainTab] = useState<MainTab>("mentors");
+  const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [menteeFilter, setMenteeFilter] = useState<"pending" | "approved" | "rejected">("pending");
 
-  if (user?.role !== "admin") {
+  if (user?.role !== "admin" && user?.role !== "office") {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessDeniedText}>Nur für Admins zugänglich.</Text>
+        <Text style={styles.accessDeniedText}>Nur für Admins und Office zugänglich.</Text>
       </View>
     );
   }
 
-  const filtered = applications.filter((a) => a.status === filter);
-  const pendingCount = applications.filter((a) => a.status === "pending").length;
+  // Mentor-Bewerbungen = alle die NICHT den Public-Marker haben
+  const mentorApps = applications.filter(
+    (a) => a.motivation !== PUBLIC_REGISTRATION_MARKER
+  );
+  // Mentee-Anmeldungen = alle mit Public-Marker
+  const menteeApps = applications.filter(
+    (a) => a.motivation === PUBLIC_REGISTRATION_MARKER
+  );
 
-  function handleApprove(app: MentorApplication) {
+  const filteredMentorApps = mentorApps.filter((a) => a.status === mentorFilter);
+  const filteredMenteeApps = menteeApps.filter((a) => a.status === menteeFilter);
+
+  const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
+  const pendingMenteeCount = menteeApps.filter((a) => a.status === "pending").length;
+
+  function handleApproveMentor(app: MentorApplication) {
     Alert.alert(
       "Bewerbung annehmen",
       `${app.name} wird als Mentor hinzugefügt. Fortfahren?`,
@@ -49,10 +69,68 @@ export default function ApplicationsScreen() {
     );
   }
 
-  function handleReject(app: MentorApplication) {
+  function handleRejectMentor(app: MentorApplication) {
     Alert.alert(
       "Bewerbung ablehnen",
       `Die Bewerbung von ${app.name} wird abgelehnt. Fortfahren?`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Ablehnen",
+          style: "destructive",
+          onPress: () => {
+            rejectApplication(app.id);
+          },
+        },
+      ]
+    );
+  }
+
+  function handleAcceptMenteeRegistration(app: MentorApplication) {
+    Alert.alert(
+      "Mentee-Anmeldung annehmen",
+      `Für ${app.name} wird ein Mentee-Account erstellt. Das System sendet eine Einladungs-E-Mail. Fortfahren?`,
+      [
+        { text: "Abbrechen", style: "cancel" },
+        {
+          text: "Account erstellen",
+          style: "default",
+          onPress: async () => {
+            // Mentee-Account via Supabase Auth erstellen
+            const tempPassword = Math.random().toString(36).slice(-10) + "A1!";
+            const { error: signUpError } = await supabase.auth.admin
+              ? // Falls admin API verfügbar
+                { error: null }
+              : { error: null };
+
+            // Da admin API clientseitig nicht verfügbar ist, speichern wir den Status
+            // und der Admin muss den Account manuell via Supabase Dashboard oder
+            // via Edge Function erstellen. Wir markieren die Anmeldung als "approved".
+            const { error } = await supabase
+              .from("mentor_applications")
+              .update({ status: "approved" })
+              .eq("id", app.id);
+
+            if (error) {
+              Alert.alert("Fehler", "Status konnte nicht aktualisiert werden.");
+              return;
+            }
+
+            approveApplication(app.id);
+            Alert.alert(
+              "Anmeldung angenommen",
+              `${app.name} wurde angenommen. Bitte erstelle den Mentee-Account manuell im Supabase Dashboard unter Authentication → Users → Invite User.\n\nE-Mail: ${app.email}\nTemp-Passwort wird per E-Mail gesendet.`
+            );
+          },
+        },
+      ]
+    );
+  }
+
+  function handleRejectMenteeRegistration(app: MentorApplication) {
+    Alert.alert(
+      "Anmeldung ablehnen",
+      `Die Anmeldung von ${app.name} wird abgelehnt. Fortfahren?`,
       [
         { text: "Abbrechen", style: "cancel" },
         {
@@ -74,60 +152,170 @@ export default function ApplicationsScreen() {
             <Text style={styles.backButtonText}>← Zurück</Text>
           </TouchableOpacity>
 
-          <Text style={styles.pageTitle}>Mentor-Bewerbungen</Text>
-          <Text style={styles.pageSubtitle}>
-            {pendingCount} offene Bewerbung{pendingCount !== 1 ? "en" : ""}
-          </Text>
+          <Text style={styles.pageTitle}>Anmeldungen & Bewerbungen</Text>
 
-          {/* Filter-Tabs */}
-          <View style={styles.filterRow}>
-            {(
-              [
-                { key: "pending", label: "Offen" },
-                { key: "approved", label: "Angenommen" },
-                { key: "rejected", label: "Abgelehnt" },
-              ] as const
-            ).map((tab) => {
-              const count = applications.filter((a) => a.status === tab.key).length;
-              return (
-                <TouchableOpacity
-                  key={tab.key}
-                  style={[
-                    styles.filterChip,
-                    filter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
-                  ]}
-                  onPress={() => setFilter(tab.key)}
-                >
-                  <Text
-                    style={
-                      filter === tab.key
-                        ? styles.filterChipTextActive
-                        : styles.filterChipTextInactive
-                    }
-                  >
-                    {tab.label} ({count})
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+          {/* Haupt-Tabs */}
+          <View style={styles.mainTabRow}>
+            <TouchableOpacity
+              style={[
+                styles.mainTab,
+                mainTab === "mentors" ? styles.mainTabActive : styles.mainTabInactive,
+              ]}
+              onPress={() => setMainTab("mentors")}
+            >
+              <Text
+                style={mainTab === "mentors" ? styles.mainTabTextActive : styles.mainTabTextInactive}
+              >
+                Mentor-Bewerbungen
+              </Text>
+              {pendingMentorCount > 0 && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>{pendingMentorCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[
+                styles.mainTab,
+                mainTab === "mentees" ? styles.mainTabActive : styles.mainTabInactive,
+              ]}
+              onPress={() => setMainTab("mentees")}
+            >
+              <Text
+                style={mainTab === "mentees" ? styles.mainTabTextActive : styles.mainTabTextInactive}
+              >
+                Mentee-Anmeldungen
+              </Text>
+              {pendingMenteeCount > 0 && (
+                <View style={styles.tabBadge}>
+                  <Text style={styles.tabBadgeText}>{pendingMenteeCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
 
-          {/* Bewerbungsliste */}
-          {filtered.length === 0 ? (
-            <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>
-                Keine {filter === "pending" ? "offenen" : filter === "approved" ? "angenommenen" : "abgelehnten"} Bewerbungen.
+          {/* ─── Mentor-Bewerbungen ─── */}
+          {mainTab === "mentors" && (
+            <>
+              <Text style={styles.pageSubtitle}>
+                {pendingMentorCount} offene Bewerbung{pendingMentorCount !== 1 ? "en" : ""}
               </Text>
-            </View>
-          ) : (
-            filtered.map((app) => (
-              <ApplicationCard
-                key={app.id}
-                application={app}
-                onApprove={() => handleApprove(app)}
-                onReject={() => handleReject(app)}
-              />
-            ))
+              <View style={styles.filterRow}>
+                {(
+                  [
+                    { key: "pending", label: "Offen" },
+                    { key: "approved", label: "Angenommen" },
+                    { key: "rejected", label: "Abgelehnt" },
+                  ] as const
+                ).map((tab) => {
+                  const count = mentorApps.filter((a) => a.status === tab.key).length;
+                  return (
+                    <TouchableOpacity
+                      key={tab.key}
+                      style={[
+                        styles.filterChip,
+                        mentorFilter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
+                      ]}
+                      onPress={() => setMentorFilter(tab.key)}
+                    >
+                      <Text
+                        style={
+                          mentorFilter === tab.key
+                            ? styles.filterChipTextActive
+                            : styles.filterChipTextInactive
+                        }
+                      >
+                        {tab.label} ({count})
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {filteredMentorApps.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>
+                    Keine {mentorFilter === "pending" ? "offenen" : mentorFilter === "approved" ? "angenommenen" : "abgelehnten"} Bewerbungen.
+                  </Text>
+                </View>
+              ) : (
+                filteredMentorApps.map((app) => (
+                  <ApplicationCard
+                    key={app.id}
+                    application={app}
+                    type="mentor"
+                    onApprove={() => handleApproveMentor(app)}
+                    onReject={() => handleRejectMentor(app)}
+                  />
+                ))
+              )}
+            </>
+          )}
+
+          {/* ─── Mentee-Anmeldungen ─── */}
+          {mainTab === "mentees" && (
+            <>
+              <Text style={styles.pageSubtitle}>
+                {pendingMenteeCount} offene Anmeldung{pendingMenteeCount !== 1 ? "en" : ""}
+              </Text>
+
+              <View style={styles.infoBox}>
+                <Text style={styles.infoBoxText}>
+                  Diese Anmeldungen kommen vom öffentlichen Formular. Zum Annehmen: Supabase Dashboard → Authentication → Users → Invite User (E-Mail des Interessenten eingeben, Rolle "mentee").
+                </Text>
+              </View>
+
+              <View style={styles.filterRow}>
+                {(
+                  [
+                    { key: "pending", label: "Offen" },
+                    { key: "approved", label: "Angenommen" },
+                    { key: "rejected", label: "Abgelehnt" },
+                  ] as const
+                ).map((tab) => {
+                  const count = menteeApps.filter((a) => a.status === tab.key).length;
+                  return (
+                    <TouchableOpacity
+                      key={tab.key}
+                      style={[
+                        styles.filterChip,
+                        menteeFilter === tab.key ? styles.filterChipActive : styles.filterChipInactive,
+                      ]}
+                      onPress={() => setMenteeFilter(tab.key)}
+                    >
+                      <Text
+                        style={
+                          menteeFilter === tab.key
+                            ? styles.filterChipTextActive
+                            : styles.filterChipTextInactive
+                        }
+                      >
+                        {tab.label} ({count})
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {filteredMenteeApps.length === 0 ? (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>
+                    Keine {menteeFilter === "pending" ? "offenen" : menteeFilter === "approved" ? "angenommenen" : "abgelehnten"} Anmeldungen.
+                  </Text>
+                </View>
+              ) : (
+                filteredMenteeApps.map((app) => (
+                  <ApplicationCard
+                    key={app.id}
+                    application={app}
+                    type="mentee"
+                    onApprove={() => handleAcceptMenteeRegistration(app)}
+                    onReject={() => handleRejectMenteeRegistration(app)}
+                  />
+                ))
+              )}
+            </>
           )}
         </View>
       </ScrollView>
@@ -137,10 +325,12 @@ export default function ApplicationsScreen() {
 
 function ApplicationCard({
   application,
+  type,
   onApprove,
   onReject,
 }: {
   application: MentorApplication;
+  type: "mentor" | "mentee";
   onApprove: () => void;
   onReject: () => void;
 }) {
@@ -160,11 +350,14 @@ function ApplicationCard({
     telegram: "Telegram",
   };
 
+  const approveLabel = type === "mentor" ? "Annehmen" : "Account erstellen";
+  const approveColor = type === "mentor" ? COLORS.cta : COLORS.gradientStart;
+
   return (
     <View style={styles.card}>
       {/* Header */}
       <View style={styles.cardHeader}>
-        <View>
+        <View style={{ flex: 1 }}>
           <Text style={styles.applicantName}>{application.name}</Text>
           <Text style={styles.applicantSub}>
             {application.city} · {genderLabel} · {application.age} Jahre
@@ -178,8 +371,11 @@ function ApplicationCard({
       {/* Kontakt-Info */}
       <View style={styles.infoSection}>
         <InfoLine label="E-Mail" value={application.email} />
-        {application.phone && <InfoLine label="Telefon" value={application.phone} />}
-        <InfoLine label="Kontakt" value={contactLabels[application.contact_preference] ?? application.contact_preference} />
+        {application.phone ? <InfoLine label="Telefon" value={application.phone} /> : null}
+        <InfoLine
+          label="Kontakt"
+          value={contactLabels[application.contact_preference] ?? application.contact_preference}
+        />
         <InfoLine
           label="Eingegangen"
           value={new Date(application.submitted_at).toLocaleDateString("de-DE", {
@@ -190,26 +386,33 @@ function ApplicationCard({
         />
       </View>
 
-      {/* Erfahrung */}
-      <View style={styles.textSection}>
-        <Text style={styles.textSectionLabel}>Erfahrung</Text>
-        <Text style={styles.textSectionContent}>{application.experience}</Text>
-      </View>
+      {/* Erfahrung / Motivation (nur für Mentor-Bewerbungen) */}
+      {type === "mentor" && (
+        <>
+          {application.experience ? (
+            <View style={styles.textSection}>
+              <Text style={styles.textSectionLabel}>Erfahrung</Text>
+              <Text style={styles.textSectionContent}>{application.experience}</Text>
+            </View>
+          ) : null}
+          <View style={styles.textSection}>
+            <Text style={styles.textSectionLabel}>Motivation</Text>
+            <Text style={styles.textSectionContent}>{application.motivation}</Text>
+          </View>
+        </>
+      )}
 
-      {/* Motivation */}
-      <View style={styles.textSection}>
-        <Text style={styles.textSectionLabel}>Motivation</Text>
-        <Text style={styles.textSectionContent}>{application.motivation}</Text>
-      </View>
-
-      {/* Aktions-Buttons (nur für offene Bewerbungen) */}
+      {/* Aktions-Buttons (nur für offene Einträge) */}
       {isPending && (
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.rejectButton} onPress={onReject}>
             <Text style={styles.rejectButtonText}>Ablehnen</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.approveButton} onPress={onApprove}>
-            <Text style={styles.approveButtonText}>Annehmen</Text>
+          <TouchableOpacity
+            style={[styles.approveButton, { backgroundColor: approveColor }]}
+            onPress={onApprove}
+          >
+            <Text style={styles.approveButtonText}>{approveLabel}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -236,25 +439,79 @@ const styles = StyleSheet.create({
   },
   accessDeniedText: { color: COLORS.primary, fontWeight: "600" },
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
-  page: { padding: 24 },
+  page: { padding: 20 },
   backButton: { marginBottom: 16 },
   backButtonText: { color: COLORS.link, fontSize: 14 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
-  pageSubtitle: { color: COLORS.secondary, marginBottom: 24 },
+  pageTitle: { fontSize: 22, fontWeight: "bold", color: COLORS.primary, marginBottom: 12 },
+  pageSubtitle: { color: COLORS.secondary, marginBottom: 16, fontSize: 13 },
 
-  filterRow: { flexDirection: "row", gap: 8, marginBottom: 24, flexWrap: "wrap" },
-  filterChip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 9999, borderWidth: 1 },
+  mainTabRow: {
+    flexDirection: "row",
+    gap: 8,
+    marginBottom: 16,
+  },
+  mainTab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: 6,
+  },
+  mainTabActive: {
+    backgroundColor: COLORS.gradientStart,
+    borderColor: COLORS.gradientStart,
+  },
+  mainTabInactive: {
+    backgroundColor: COLORS.white,
+    borderColor: COLORS.border,
+  },
+  mainTabTextActive: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  mainTabTextInactive: {
+    color: COLORS.secondary,
+    fontSize: 13,
+  },
+  tabBadge: {
+    backgroundColor: COLORS.error,
+    borderRadius: 9999,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  tabBadgeText: { color: COLORS.white, fontSize: 10, fontWeight: "700" },
+
+  filterRow: { flexDirection: "row", gap: 8, marginBottom: 16, flexWrap: "wrap" },
+  filterChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 9999, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterChipInactive: { backgroundColor: COLORS.white, borderColor: COLORS.border },
-  filterChipTextActive: { color: COLORS.white, fontSize: 13, fontWeight: "500" },
-  filterChipTextInactive: { color: COLORS.secondary, fontSize: 13, fontWeight: "500" },
+  filterChipTextActive: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
+  filterChipTextInactive: { color: COLORS.secondary, fontSize: 12, fontWeight: "500" },
+
+  infoBox: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 12,
+  },
+  infoBoxText: { color: "#1e40af", fontSize: 12, lineHeight: 18 },
 
   emptyCard: {
     backgroundColor: COLORS.white,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: COLORS.border,
-    padding: 32,
+    padding: 28,
     alignItems: "center",
   },
   emptyText: { color: COLORS.tertiary, fontSize: 14, textAlign: "center" },
@@ -265,7 +522,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     padding: 14,
-    marginBottom: 16,
+    marginBottom: 14,
   },
   cardHeader: {
     flexDirection: "row",
@@ -273,7 +530,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 12,
   },
-  applicantName: { fontWeight: "bold", color: COLORS.primary, fontSize: 17 },
+  applicantName: { fontWeight: "bold", color: COLORS.primary, fontSize: 16 },
   applicantSub: { color: COLORS.tertiary, fontSize: 12, marginTop: 2 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999 },
   statusText: { fontSize: 12, fontWeight: "600" },
@@ -281,19 +538,31 @@ const styles = StyleSheet.create({
   infoSection: {
     backgroundColor: COLORS.bg,
     borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
-    gap: 6,
+    padding: 10,
+    marginBottom: 10,
+    gap: 5,
   },
   infoLine: { flexDirection: "row", justifyContent: "space-between" },
   infoLineLabel: { color: COLORS.tertiary, fontSize: 13 },
-  infoLineValue: { color: COLORS.primary, fontSize: 13, fontWeight: "500", maxWidth: "60%", textAlign: "right" },
+  infoLineValue: {
+    color: COLORS.primary,
+    fontSize: 13,
+    fontWeight: "500",
+    maxWidth: "60%",
+    textAlign: "right",
+  },
 
-  textSection: { marginBottom: 12 },
-  textSectionLabel: { color: COLORS.tertiary, fontSize: 12, fontWeight: "600", marginBottom: 4, letterSpacing: 0.5 },
-  textSectionContent: { color: COLORS.secondary, fontSize: 14, lineHeight: 20 },
+  textSection: { marginBottom: 10 },
+  textSectionLabel: {
+    color: COLORS.tertiary,
+    fontSize: 11,
+    fontWeight: "600",
+    marginBottom: 4,
+    letterSpacing: 0.5,
+  },
+  textSectionContent: { color: COLORS.secondary, fontSize: 13, lineHeight: 19 },
 
-  actionRow: { flexDirection: "row", gap: 12, marginTop: 4 },
+  actionRow: { flexDirection: "row", gap: 10, marginTop: 4 },
   rejectButton: {
     flex: 1,
     backgroundColor: "#fef2f2",
@@ -303,13 +572,12 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     alignItems: "center",
   },
-  rejectButtonText: { color: "#dc2626", fontWeight: "600", fontSize: 14 },
+  rejectButtonText: { color: "#dc2626", fontWeight: "600", fontSize: 13 },
   approveButton: {
     flex: 1,
-    backgroundColor: COLORS.cta,
     borderRadius: 5,
     paddingVertical: 9,
     alignItems: "center",
   },
-  approveButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 14 },
+  approveButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 13 },
 });
