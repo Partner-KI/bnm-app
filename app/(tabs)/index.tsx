@@ -197,11 +197,6 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           )}
         </View>
 
-        {/* Geschlechtertrennung Hinweis */}
-        <View style={styles.blueBox}>
-          <Text style={styles.blueTitle}>{t("dashboard.genderSeparation")}</Text>
-          <Text style={styles.blueText}>{t("dashboard.genderSeparationText")}</Text>
-        </View>
       </View>
     </ScrollView>
   );
