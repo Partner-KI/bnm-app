@@ -316,6 +316,14 @@ function MentorMenteesView() {
           {myMentorships.filter((m) => m.status === "active").length} aktive Betreuungen
         </Text>
 
+        {/* FIX 5: Mentor kann selbst Mentee übernehmen */}
+        <TouchableOpacity
+          style={styles.selfAssignButton}
+          onPress={() => router.push("/assign")}
+        >
+          <Text style={styles.selfAssignText}>+ Mentee selbst übernehmen</Text>
+        </TouchableOpacity>
+
         {myMentorships.length === 0 ? (
           <TouchableOpacity
             style={styles.emptyCard}
@@ -675,6 +683,17 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   docChipText: { color: COLORS.cta, fontSize: 12, fontWeight: "600" },
+  selfAssignButton: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#bfdbfe",
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  selfAssignText: { color: "#1d4ed8", fontWeight: "600", fontSize: 14 },
   progressHeaderCard: {
     backgroundColor: COLORS.primary,
     borderRadius: 16,

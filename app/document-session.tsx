@@ -13,6 +13,16 @@ import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { COLORS } from "../constants/Colors";
 
+const ERSTKONTAKT_TYPE_NAME = "Erstkontakt";
+const BNM_BOX_TYPE_NAME = "BNM-Box";
+const NACHBETREUUNG_TYPE_NAME = "Nachbetreuung";
+
+const BNM_BOX_DELIVERY_OPTIONS = [
+  { key: "persoenlich", label: "Persönlich" },
+  { key: "post", label: "Per Post" },
+  { key: "gutschein", label: "Gutschein" },
+] as const;
+
 export default function DocumentSessionScreen() {
   const router = useRouter();
   const { user } = useAuth();
@@ -20,14 +30,24 @@ export default function DocumentSessionScreen() {
     getMentorshipsByMentorId,
     getMentorshipById,
     getCompletedStepIds,
+    getSessionsByMentorshipId,
     sessionTypes,
     addSession,
+    mentorships,
   } = useData();
 
   const params = useLocalSearchParams<{ mentorshipId?: string }>();
 
+  // FIX 1: Auch "completed" Mentorships einbeziehen
+  // FIX 3: Admin sieht ALLE Mentorships
+  const isAdmin = user?.role === "admin";
+
   const myMentorships = user
-    ? getMentorshipsByMentorId(user.id).filter((m) => m.status === "active")
+    ? isAdmin
+      ? mentorships // Admin sieht alle
+      : getMentorshipsByMentorId(user.id).filter(
+          (m) => m.status === "active" || m.status === "completed"
+        )
     : [];
 
   const [selectedMentorshipId, setSelectedMentorshipId] = useState<string>(
@@ -38,6 +58,15 @@ export default function DocumentSessionScreen() {
   const [details, setDetails] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // FIX 3: Admin kann Session-Typ frei wählen
+  const [adminSelectedTypeId, setAdminSelectedTypeId] = useState<string>("");
+
+  // FIX 8: Kontakt-Versuche
+  const [attemptNumber, setAttemptNumber] = useState<string>("");
+
+  // FIX 9: BNM-Box Übergabe-Art
+  const [bnmBoxDelivery, setBnmBoxDelivery] = useState<string>("");
+
   const selectedMentorship = selectedMentorshipId
     ? getMentorshipById(selectedMentorshipId)
     : undefined;
@@ -46,13 +75,67 @@ export default function DocumentSessionScreen() {
     ? getCompletedStepIds(selectedMentorshipId)
     : [];
 
-  const nextStep = sessionTypes.find((st) => !completedStepIds.includes(st.id));
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
 
+  // Nächster sequenzieller Step (für Mentor-Modus)
+  const nextStep = sortedSessionTypes.find((st) => !completedStepIds.includes(st.id));
+
+  // FIX 1: Nachbetreuungs-Modus wenn Mentorship completed
+  const isCompleted = selectedMentorship?.status === "completed";
+  const nachbetreuungType = sessionTypes.find((st) => st.name === NACHBETREUUNG_TYPE_NAME);
+
+  // Aktiver Session-Typ (je nach Modus)
+  const activeSessionType = isAdmin
+    ? sessionTypes.find((st) => st.id === adminSelectedTypeId)
+    : isCompleted
+    ? nachbetreuungType
+    : nextStep;
+
+  // Ist es ein Erstkontakt-Step?
+  const isErstkontaktStep =
+    activeSessionType?.name === ERSTKONTAKT_TYPE_NAME;
+
+  // Ist es ein BNM-Box-Step?
+  const isBnmBoxStep =
+    activeSessionType?.name === BNM_BOX_TYPE_NAME;
+
+  // FIX 8: Anzahl bisheriger Erstkontakt-Sessions für diese Mentorship
+  const allSessions = selectedMentorshipId
+    ? getSessionsByMentorshipId(selectedMentorshipId)
+    : [];
+  const erstkontaktTypeId = sessionTypes.find((st) => st.name === ERSTKONTAKT_TYPE_NAME)?.id;
+  const previousAttempts = erstkontaktTypeId
+    ? allSessions.filter((s) => s.session_type_id === erstkontaktTypeId).length
+    : 0;
+
   async function handleSave() {
-    if (!nextStep || !selectedMentorshipId || !user) return;
+    if (!selectedMentorshipId || !user) return;
+
+    // Admin: muss Session-Typ gewählt haben
+    if (isAdmin && !adminSelectedTypeId) {
+      Alert.alert("Fehler", "Bitte wähle einen Session-Typ.");
+      return;
+    }
+
+    // Mentor: kein nextStep bei aktiver Mentorship? Abbruch
+    if (!isAdmin && !isCompleted && !nextStep) {
+      Alert.alert("Info", "Alle Steps für diese Betreuung sind bereits abgeschlossen.");
+      return;
+    }
+
     if (!date.trim()) {
       Alert.alert("Fehler", "Bitte gib ein Datum ein.");
+      return;
+    }
+
+    const sessionTypeId = isAdmin
+      ? adminSelectedTypeId
+      : isCompleted
+      ? nachbetreuungType?.id ?? ""
+      : nextStep?.id ?? "";
+
+    if (!sessionTypeId) {
+      Alert.alert("Fehler", "Kein gültiger Session-Typ gefunden.");
       return;
     }
 
@@ -71,21 +154,38 @@ export default function DocumentSessionScreen() {
       isoDate = new Date().toISOString();
     }
 
+    // FIX 9: BNM-Box Details vorausfüllen
+    let finalDetails = details.trim() || undefined;
+    if (isBnmBoxStep && bnmBoxDelivery) {
+      const deliveryLabel =
+        BNM_BOX_DELIVERY_OPTIONS.find((o) => o.key === bnmBoxDelivery)?.label ?? bnmBoxDelivery;
+      finalDetails = finalDetails
+        ? `Übergabe: ${deliveryLabel} – ${finalDetails}`
+        : `Übergabe: ${deliveryLabel}`;
+    }
+
+    // FIX 8: attempt_number für Erstkontakt
+    const attemptNum = isErstkontaktStep && attemptNumber
+      ? parseInt(attemptNumber, 10) || undefined
+      : undefined;
+
     addSession({
       mentorship_id: selectedMentorshipId,
-      session_type_id: nextStep.id,
+      session_type_id: sessionTypeId,
       date: isoDate,
       is_online: isOnline,
-      details: details.trim() || undefined,
+      details: finalDetails,
       documented_by: user.id,
+      attempt_number: attemptNum,
     });
 
     await new Promise((resolve) => setTimeout(resolve, 400));
     setIsSaving(false);
 
+    const typeName = activeSessionType?.name ?? "Session";
     Alert.alert(
       "Session dokumentiert",
-      `"${nextStep.name}" wurde erfolgreich dokumentiert.`,
+      `"${typeName}" wurde erfolgreich dokumentiert.`,
       [{ text: "OK", onPress: () => router.back() }]
     );
   }
@@ -101,8 +201,10 @@ export default function DocumentSessionScreen() {
   if (myMentorships.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.boldTitle}>Keine aktiven Betreuungen</Text>
-        <Text style={styles.centerSubText}>Du hast keine aktiven Mentees.</Text>
+        <Text style={styles.boldTitle}>Keine Betreuungen gefunden</Text>
+        <Text style={styles.centerSubText}>
+          {isAdmin ? "Es gibt noch keine Mentorships." : "Du hast keine aktiven oder abgeschlossenen Mentees."}
+        </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Zurück</Text>
         </TouchableOpacity>
@@ -113,10 +215,12 @@ export default function DocumentSessionScreen() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        {/* Mentee auswählen (wenn mehrere) */}
-        {myMentorships.length > 1 && (
+        {/* Mentee auswählen (wenn mehrere oder Admin) */}
+        {(myMentorships.length > 1 || isAdmin) && (
           <>
-            <Text style={styles.sectionLabel}>{"BETREUUNG WÄHLEN"}</Text>
+            <Text style={styles.sectionLabel}>
+              {isAdmin ? "BETREUUNG WÄHLEN (ALLE)" : "BETREUUNG WÄHLEN"}
+            </Text>
             <View style={styles.listCard}>
               {myMentorships.map((m, idx) => (
                 <TouchableOpacity
@@ -126,7 +230,10 @@ export default function DocumentSessionScreen() {
                     idx < myMentorships.length - 1 ? styles.listItemBorder : {},
                     selectedMentorshipId === m.id ? styles.listItemSelected : {},
                   ]}
-                  onPress={() => setSelectedMentorshipId(m.id)}
+                  onPress={() => {
+                    setSelectedMentorshipId(m.id);
+                    setAdminSelectedTypeId("");
+                  }}
                 >
                   <View
                     style={[
@@ -140,57 +247,164 @@ export default function DocumentSessionScreen() {
                       <View style={styles.radioDot} />
                     )}
                   </View>
-                  <Text style={styles.itemName}>{m.mentee?.name}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.itemName}>{m.mentee?.name}</Text>
+                    <Text style={styles.itemSub}>
+                      {m.mentor?.name} · {m.status === "completed" ? "Abgeschlossen" : "Aktiv"}
+                    </Text>
+                  </View>
                 </TouchableOpacity>
               ))}
             </View>
           </>
         )}
 
-        {/* Aktueller Step */}
+        {/* Aktueller Step / Betreuungsinfo */}
         {selectedMentorship && (
           <>
-            {/* Step-Fortschritt */}
-            <View style={styles.progressCard}>
-              <Text style={styles.progressCardLabel}>Betreuung von</Text>
-              <Text style={styles.progressCardName}>{selectedMentorship.mentee?.name}</Text>
-
-              {/* Mini-Step-Übersicht */}
-              <View style={styles.miniStepRow}>
-                {sortedSessionTypes.map((st, idx) => {
-                  const isDone = completedStepIds.includes(st.id);
-                  const isCurrent = !isDone && idx === completedStepIds.length;
-                  const chipBg = isDone
-                    ? "rgba(39,174,96,0.8)"
-                    : isCurrent
-                    ? COLORS.gold
-                    : "rgba(255,255,255,0.1)";
-                  return (
-                    <View key={st.id} style={[styles.miniStepChip, { backgroundColor: chipBg }]}>
-                      <Text style={styles.miniStepText}>{isDone ? "✓" : idx + 1}</Text>
-                    </View>
-                  );
-                })}
+            {/* FIX 1: Nachbetreuungs-Banner für completed */}
+            {isCompleted && (
+              <View style={styles.nachbetreuungBox}>
+                <Text style={styles.nachbetreuungLabel}>{"NACHBETREUUNG"}</Text>
+                <Text style={styles.nachbetreuungText}>
+                  Diese Betreuung ist abgeschlossen. Du kannst eine Nachbetreuungs-Session dokumentieren.
+                </Text>
               </View>
+            )}
 
-              <Text style={styles.progressCardSub}>
-                {completedStepIds.length} von {sessionTypes.length} Steps abgeschlossen
-              </Text>
-            </View>
+            {/* Step-Fortschritt (nur bei aktiven Mentorships) */}
+            {!isCompleted && (
+              <View style={styles.progressCard}>
+                <Text style={styles.progressCardLabel}>Betreuung von</Text>
+                <Text style={styles.progressCardName}>{selectedMentorship.mentee?.name}</Text>
 
-            {/* Nächster Step Info */}
-            {nextStep ? (
-              <>
-                <View style={styles.amberBox}>
-                  <Text style={styles.amberLabel}>{"NÄCHSTER SCHRITT"}</Text>
-                  <Text style={styles.amberStepName}>
-                    {nextStep.sort_order}. {nextStep.name}
-                  </Text>
-                  <Text style={styles.amberDesc}>{nextStep.description}</Text>
+                <View style={styles.miniStepRow}>
+                  {sortedSessionTypes.map((st, idx) => {
+                    const isDone = completedStepIds.includes(st.id);
+                    const isCurrent = !isDone && idx === completedStepIds.length;
+                    const chipBg = isDone
+                      ? "rgba(39,174,96,0.8)"
+                      : isCurrent
+                      ? COLORS.gold
+                      : "rgba(255,255,255,0.1)";
+                    return (
+                      <View key={st.id} style={[styles.miniStepChip, { backgroundColor: chipBg }]}>
+                        <Text style={styles.miniStepText}>{isDone ? "✓" : idx + 1}</Text>
+                      </View>
+                    );
+                  })}
                 </View>
 
-                {/* Session-Formular */}
+                <Text style={styles.progressCardSub}>
+                  {completedStepIds.length} von {sessionTypes.length} Steps abgeschlossen
+                </Text>
+              </View>
+            )}
+
+            {/* FIX 3: Admin kann Session-Typ frei wählen */}
+            {isAdmin && !isCompleted && (
+              <>
+                <Text style={styles.sectionLabel}>{"SESSION-TYP WÄHLEN"}</Text>
+                <View style={styles.listCard}>
+                  {sortedSessionTypes.map((st, idx) => (
+                    <TouchableOpacity
+                      key={st.id}
+                      style={[
+                        styles.listItem,
+                        idx < sortedSessionTypes.length - 1 ? styles.listItemBorder : {},
+                        adminSelectedTypeId === st.id ? styles.listItemSelected : {},
+                      ]}
+                      onPress={() => setAdminSelectedTypeId(st.id)}
+                    >
+                      <View
+                        style={[
+                          styles.radioCircle,
+                          adminSelectedTypeId === st.id
+                            ? styles.radioCircleActive
+                            : styles.radioCircleInactive,
+                        ]}
+                      >
+                        {adminSelectedTypeId === st.id && <View style={styles.radioDot} />}
+                      </View>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.itemName}>{st.sort_order}. {st.name}</Text>
+                        <Text style={styles.itemSub}>{st.description}</Text>
+                      </View>
+                      {completedStepIds.includes(st.id) && (
+                        <View style={styles.doneChip}>
+                          <Text style={styles.doneChipText}>Erledigt</Text>
+                        </View>
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* Nächster Step Info (Mentor-Modus, aktive Betreuung) */}
+            {!isAdmin && !isCompleted && nextStep && (
+              <View style={styles.amberBox}>
+                <Text style={styles.amberLabel}>{"NÄCHSTER SCHRITT"}</Text>
+                <Text style={styles.amberStepName}>
+                  {nextStep.sort_order}. {nextStep.name}
+                </Text>
+                <Text style={styles.amberDesc}>{nextStep.description}</Text>
+              </View>
+            )}
+
+            {/* Formular anzeigen wenn: Nachbetreuung ODER aktiver NextStep ODER Admin hat Typ gewählt */}
+            {(isCompleted || nextStep || (isAdmin && adminSelectedTypeId)) && (
+              <>
                 <Text style={styles.sectionLabel}>{"SESSION DOKUMENTIEREN"}</Text>
+
+                {/* FIX 8: Erstkontakt – Versuch-Nummer */}
+                {isErstkontaktStep && (
+                  <View style={styles.formCard}>
+                    <Text style={styles.formLabel}>
+                      Kontaktversuch Nr. (bisherige: {previousAttempts})
+                    </Text>
+                    <TextInput
+                      style={styles.textInput}
+                      value={attemptNumber}
+                      onChangeText={setAttemptNumber}
+                      placeholder={`z.B. ${previousAttempts + 1}`}
+                      placeholderTextColor="#98A2B3"
+                      keyboardType="number-pad"
+                    />
+                    {previousAttempts > 0 && (
+                      <Text style={styles.attemptHint}>
+                        Es wurden bereits {previousAttempts} Kontaktversuch{previousAttempts !== 1 ? "e" : ""} dokumentiert.
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                {/* FIX 9: BNM-Box Übergabe-Art */}
+                {isBnmBoxStep && (
+                  <View style={styles.formCard}>
+                    <Text style={styles.formLabel}>Übergabe-Art</Text>
+                    <View style={styles.toggleRow}>
+                      {BNM_BOX_DELIVERY_OPTIONS.map((opt) => (
+                        <TouchableOpacity
+                          key={opt.key}
+                          style={[
+                            styles.toggleButton,
+                            bnmBoxDelivery === opt.key ? styles.toggleButtonActive : styles.toggleButtonInactive,
+                          ]}
+                          onPress={() => setBnmBoxDelivery(opt.key)}
+                        >
+                          <Text
+                            style={
+                              bnmBoxDelivery === opt.key ? styles.toggleTextActive : styles.toggleTextInactive
+                            }
+                          >
+                            {opt.label}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </View>
+                )}
 
                 {/* Datum */}
                 <View style={styles.formCard}>
@@ -216,11 +430,7 @@ export default function DocumentSessionScreen() {
                       ]}
                       onPress={() => setIsOnline(false)}
                     >
-                      <Text
-                        style={
-                          !isOnline ? styles.toggleTextActive : styles.toggleTextInactive
-                        }
-                      >
+                      <Text style={!isOnline ? styles.toggleTextActive : styles.toggleTextInactive}>
                         Vor Ort
                       </Text>
                     </TouchableOpacity>
@@ -231,11 +441,7 @@ export default function DocumentSessionScreen() {
                       ]}
                       onPress={() => setIsOnline(true)}
                     >
-                      <Text
-                        style={
-                          isOnline ? styles.toggleTextActive : styles.toggleTextInactive
-                        }
-                      >
+                      <Text style={isOnline ? styles.toggleTextActive : styles.toggleTextInactive}>
                         Online
                       </Text>
                     </TouchableOpacity>
@@ -271,11 +477,14 @@ export default function DocumentSessionScreen() {
                   </Text>
                 </TouchableOpacity>
               </>
-            ) : (
+            )}
+
+            {/* Alle Steps abgeschlossen (nur für Mentor-Modus, aktiv) */}
+            {!isAdmin && !isCompleted && !nextStep && (
               <View style={styles.completedBox}>
-                <Text style={styles.completedTitle}>Alle Steps abgeschlossen! 🎉</Text>
+                <Text style={styles.completedTitle}>Alle Steps abgeschlossen!</Text>
                 <Text style={styles.completedText}>
-                  Alle 10 Schritte wurden dokumentiert. Die Betreuung kann abgeschlossen werden.
+                  Alle Schritte wurden dokumentiert. Die Betreuung kann abgeschlossen werden.
                 </Text>
               </View>
             )}
@@ -314,7 +523,10 @@ const styles = StyleSheet.create({
   radioCircleActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
   radioCircleInactive: { borderColor: COLORS.border },
   radioDot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: COLORS.white },
-  itemName: { fontWeight: "600", color: COLORS.primary, flex: 1 },
+  itemName: { fontWeight: "600", color: COLORS.primary },
+  itemSub: { color: COLORS.tertiary, fontSize: 12, marginTop: 2 },
+  doneChip: { backgroundColor: "#dcfce7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  doneChipText: { color: "#15803d", fontSize: 11, fontWeight: "500" },
   progressCard: { backgroundColor: COLORS.primary, borderRadius: 16, padding: 20, marginBottom: 24 },
   progressCardLabel: { color: COLORS.white, opacity: 0.7, fontSize: 14, marginBottom: 4 },
   progressCardName: { color: COLORS.white, fontSize: 20, fontWeight: "bold", marginBottom: 12 },
@@ -322,6 +534,16 @@ const styles = StyleSheet.create({
   miniStepChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
   miniStepText: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   progressCardSub: { color: COLORS.white, opacity: 0.6, fontSize: 12, marginTop: 12 },
+  nachbetreuungBox: {
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  nachbetreuungLabel: { color: "#15803d", fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 4 },
+  nachbetreuungText: { color: "#16a34a", fontSize: 14 },
   amberBox: {
     backgroundColor: "#fffbeb",
     borderWidth: 1,
@@ -350,8 +572,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     color: COLORS.primary,
   },
-  toggleRow: { flexDirection: "row", gap: 12 },
-  toggleButton: { flex: 1, paddingVertical: 12, borderRadius: 8, borderWidth: 1, alignItems: "center" },
+  attemptHint: { color: COLORS.tertiary, fontSize: 12, marginTop: 6 },
+  toggleRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  toggleButton: { flex: 1, paddingVertical: 12, borderRadius: 8, borderWidth: 1, alignItems: "center", minWidth: 80 },
   toggleButtonActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   toggleButtonInactive: { backgroundColor: COLORS.white, borderColor: COLORS.border },
   toggleTextActive: { color: COLORS.white, fontWeight: "600" },

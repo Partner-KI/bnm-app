@@ -6,6 +6,7 @@ import { useData } from "../../contexts/DataContext";
 import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { MOCK_HADITHE } from "../../data/mockData";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -113,6 +114,18 @@ function AdminDashboard() {
               <Text style={styles.applicationsBadgeText}>{pendingAppsCount}</Text>
             </View>
           )}
+          <Text style={styles.applicationsArrow}>›</Text>
+        </TouchableOpacity>
+
+        {/* FIX 11: Feedback-Übersicht */}
+        <TouchableOpacity
+          style={styles.applicationsButton}
+          onPress={() => router.push("/admin/feedback-overview")}
+        >
+          <View style={styles.applicationsButtonContent}>
+            <Text style={styles.applicationsButtonText}>Feedback-Übersicht</Text>
+            <Text style={styles.applicationsButtonSub}>Alle Feedbacks einsehen</Text>
+          </View>
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
 
@@ -412,6 +425,31 @@ function MenteeDashboard() {
                 );
               })}
             </View>
+
+            {/* FIX 12: Hadithe-Card */}
+            {(() => {
+              const today = new Date();
+              const dayOfYear = Math.floor(
+                (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+              );
+              const hadith = MOCK_HADITHE[dayOfYear % MOCK_HADITHE.length];
+              return (
+                <TouchableOpacity
+                  style={styles.hadithCard}
+                  onPress={() => router.push("/hadithe")}
+                >
+                  <View style={styles.hadithCardHeader}>
+                    <Text style={styles.hadithStar}>★</Text>
+                    <Text style={styles.hadithCardLabel}>Hadith des Tages</Text>
+                  </View>
+                  <Text style={styles.hadithCardText} numberOfLines={3}>
+                    "{hadith.text}"
+                  </Text>
+                  <Text style={styles.hadithCardQuelle}>— {hadith.quelle}</Text>
+                  <Text style={styles.hadithCardLink}>Alle Hadithe ansehen →</Text>
+                </TouchableOpacity>
+              );
+            })()}
           </>
         ) : (
           <View style={[styles.card, { padding: 32, alignItems: "center" }]}>
@@ -775,4 +813,19 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: "center",
   },
+  hadithCard: {
+    backgroundColor: "rgba(238,167,27,0.1)",
+    borderWidth: 1,
+    borderColor: "rgba(238,167,27,0.3)",
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 8,
+    marginBottom: 8,
+  },
+  hadithCardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
+  hadithStar: { color: COLORS.gold, fontSize: 16, marginRight: 6 },
+  hadithCardLabel: { fontWeight: "bold", color: COLORS.primary, fontSize: 13 },
+  hadithCardText: { color: COLORS.secondary, fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 6 },
+  hadithCardQuelle: { color: COLORS.tertiary, fontSize: 11, marginBottom: 8 },
+  hadithCardLink: { color: COLORS.link, fontSize: 13, fontWeight: "600" },
 });

@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
+import { useData } from "../../contexts/DataContext";
 
 interface MenteeFormData {
   name: string;
@@ -38,6 +39,7 @@ const CONTACT_OPTIONS: { value: ContactPreference; label: string }[] = [
 
 export default function RegisterMenteeScreen() {
   const router = useRouter();
+  const { users } = useData();
   const [form, setForm] = useState<MenteeFormData>({
     name: "",
     email: "",
@@ -69,6 +71,13 @@ export default function RegisterMenteeScreen() {
 
   function handleSubmit() {
     if (!validate()) return;
+    // FIX 2: Duplikats-Check
+    const emailLower = form.email.trim().toLowerCase();
+    const exists = users.some((u) => u.email.toLowerCase() === emailLower);
+    if (exists) {
+      setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
+      return;
+    }
     Alert.alert(
       "Registrierung eingegangen",
       "Vielen Dank! Deine Registrierung wurde eingereicht. Das BNM-Team wird sich bald bei dir melden.",

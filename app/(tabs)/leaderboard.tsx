@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -26,12 +26,17 @@ const MEDAL_COLORS = ["#EEA71B", "#9CA3AF", "#CD7F32"] as const;
 const MEDAL_LABELS = ["Gold", "Silber", "Bronze"] as const;
 const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"] as const;
 
+type GenderFilter = "all" | "male" | "female";
+
 export default function LeaderboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const { users, mentorships, sessions } = useData();
+  const { users, mentorships, sessions, mentorOfMonthVisible } = useData();
 
-  const ranked: MentorScore[] = useMemo(() => {
+  // FIX 4: Admin hat Geschlechter-Filter-Toggle
+  const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
+
+  const allScored: MentorScore[] = useMemo(() => {
     const mentors = users.filter((u) => u.role === "mentor");
     return mentors
       .map((mentor) => {
@@ -54,13 +59,52 @@ export default function LeaderboardScreen() {
       .sort((a, b) => b.score - a.score);
   }, [users, mentorships, sessions]);
 
-  // Mentor des Monats = derjenige mit dem höchsten Score
-  const mentorOfMonth = ranked.length > 0 ? ranked[0] : null;
+  // FIX 4: Mentor/Mentee sieht nur gleiches Geschlecht
+  const ranked: MentorScore[] = useMemo(() => {
+    if (user?.role === "mentor" || user?.role === "mentee") {
+      return allScored.filter((m) => m.gender === user.gender);
+    }
+    // Admin: Filter-Toggle
+    if (genderFilter === "all") return allScored;
+    return allScored.filter((m) => m.gender === genderFilter);
+  }, [allScored, user, genderFilter]);
 
-  // Position des eingeloggten Mentors
+  // FIX 4: Mentor des Monats nach Geschlecht getrennt
+  const mentorOfMonthMale = useMemo(() => {
+    const males = allScored.filter((m) => m.gender === "male" && m.score > 0);
+    return males.length > 0 ? males[0] : null;
+  }, [allScored]);
+
+  const mentorOfMonthFemale = useMemo(() => {
+    const females = allScored.filter((m) => m.gender === "female" && m.score > 0);
+    return females.length > 0 ? females[0] : null;
+  }, [allScored]);
+
+  // Für Mentor/Mentee: nur eigenes Geschlecht
+  const mentorOfMonthForUser = useMemo(() => {
+    if (user?.role === "mentor" || user?.role === "mentee") {
+      return user.gender === "male" ? mentorOfMonthMale : mentorOfMonthFemale;
+    }
+    // Admin: nach Filter
+    if (genderFilter === "male") return mentorOfMonthMale;
+    if (genderFilter === "female") return mentorOfMonthFemale;
+    return ranked.length > 0 && ranked[0].score > 0 ? ranked[0] : null;
+  }, [user, genderFilter, mentorOfMonthMale, mentorOfMonthFemale, ranked]);
+
   const myRankIndex = user?.role === "mentor"
     ? ranked.findIndex((r) => r.mentorId === user.id)
     : -1;
+
+  const isAdmin = user?.role === "admin";
+
+  const listTitle = useMemo(() => {
+    if (user?.role === "mentor" || user?.role === "mentee") {
+      return user.gender === "male" ? "Brüder-Rangliste" : "Schwestern-Rangliste";
+    }
+    if (genderFilter === "male") return "Brüder-Rangliste";
+    if (genderFilter === "female") return "Schwestern-Rangliste";
+    return "Alle Mentoren";
+  }, [user, genderFilter]);
 
   return (
     <Container>
@@ -71,25 +115,71 @@ export default function LeaderboardScreen() {
             Score = Abschlüsse × 10 + Sessions × 3
           </Text>
 
-          {/* Mentor des Monats Banner */}
-          {mentorOfMonth && mentorOfMonth.score > 0 && (
+          {/* FIX 4: Admin-Filter für Geschlecht */}
+          {isAdmin && (
+            <View style={styles.filterCard}>
+              <Text style={styles.filterLabel}>{"ANZEIGE"}</Text>
+              <View style={styles.filterRow}>
+                {(
+                  [
+                    { key: "all", label: "Alle" },
+                    { key: "male", label: "Brüder" },
+                    { key: "female", label: "Schwestern" },
+                  ] as const
+                ).map((opt) => (
+                  <TouchableOpacity
+                    key={opt.key}
+                    style={[
+                      styles.filterChip,
+                      genderFilter === opt.key ? styles.filterChipActive : styles.filterChipInactive,
+                    ]}
+                    onPress={() => setGenderFilter(opt.key)}
+                  >
+                    <Text
+                      style={
+                        genderFilter === opt.key
+                          ? styles.filterChipTextActive
+                          : styles.filterChipTextInactive
+                      }
+                    >
+                      {opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+
+          {/* Hinweis für Mentor/Mentee */}
+          {(user?.role === "mentor" || user?.role === "mentee") && (
+            <View style={styles.genderHintBox}>
+              <Text style={styles.genderHintText}>
+                {user.gender === "male"
+                  ? "Du siehst nur die Rangliste der Brüder."
+                  : "Du siehst nur die Rangliste der Schwestern."}
+              </Text>
+            </View>
+          )}
+
+          {/* FIX 7: Mentor des Monats (wenn sichtbar) */}
+          {mentorOfMonthVisible && mentorOfMonthForUser && (
             <View style={styles.momBanner}>
               <View style={styles.momHeader}>
                 <Text style={styles.momStar}>★</Text>
                 <Text style={styles.momTitle}>Mentor des Monats</Text>
               </View>
-              <Text style={styles.momName}>{mentorOfMonth.name}</Text>
+              <Text style={styles.momName}>{mentorOfMonthForUser.name}</Text>
               <View style={styles.momStatsRow}>
                 <View style={styles.momStatPill}>
-                  <Text style={styles.momStatValue}>{mentorOfMonth.score}</Text>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.score}</Text>
                   <Text style={styles.momStatLabel}>Punkte</Text>
                 </View>
                 <View style={styles.momStatPill}>
-                  <Text style={styles.momStatValue}>{mentorOfMonth.completedCount}</Text>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.completedCount}</Text>
                   <Text style={styles.momStatLabel}>Abschlüsse</Text>
                 </View>
                 <View style={styles.momStatPill}>
-                  <Text style={styles.momStatValue}>{mentorOfMonth.sessionCount}</Text>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.sessionCount}</Text>
                   <Text style={styles.momStatLabel}>Sessions</Text>
                 </View>
               </View>
@@ -109,9 +199,9 @@ export default function LeaderboardScreen() {
 
           {/* Rangliste */}
           <View style={styles.card}>
-            <Text style={styles.cardTitle}>Alle Mentoren</Text>
+            <Text style={styles.cardTitle}>{listTitle}</Text>
             {ranked.length === 0 ? (
-              <Text style={styles.emptyText}>Noch keine Mentoren vorhanden.</Text>
+              <Text style={styles.emptyText}>Keine Mentoren vorhanden.</Text>
             ) : (
               ranked.map((item, index) => {
                 const isTop3 = index < 3;
@@ -130,7 +220,6 @@ export default function LeaderboardScreen() {
                       router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })
                     }
                   >
-                    {/* Rang-Indikator */}
                     <View
                       style={[
                         styles.rankBadge,
@@ -148,7 +237,6 @@ export default function LeaderboardScreen() {
                       )}
                     </View>
 
-                    {/* Mentor-Info */}
                     <View style={styles.rankInfo}>
                       <View style={styles.rankNameRow}>
                         <Text style={styles.rankName}>{item.name}</Text>
@@ -171,7 +259,6 @@ export default function LeaderboardScreen() {
                       </Text>
                     </View>
 
-                    {/* Score */}
                     <View style={styles.scoreBox}>
                       <Text
                         style={[
@@ -216,6 +303,32 @@ const styles = StyleSheet.create({
   page: { padding: 24 },
   pageTitle: { fontSize: 24, fontWeight: "bold", color: COLORS.primary, marginBottom: 4 },
   pageSubtitle: { color: COLORS.secondary, marginBottom: 24, fontSize: 13 },
+
+  filterCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 16,
+    marginBottom: 16,
+  },
+  filterLabel: { fontSize: 11, fontWeight: "600", color: COLORS.tertiary, letterSpacing: 1, marginBottom: 10 },
+  filterRow: { flexDirection: "row", gap: 8 },
+  filterChip: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 9999, borderWidth: 1 },
+  filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
+  filterChipInactive: { backgroundColor: COLORS.bg, borderColor: COLORS.border },
+  filterChipTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
+  filterChipTextInactive: { color: COLORS.secondary, fontSize: 13 },
+
+  genderHintBox: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+  },
+  genderHintText: { color: "#1e40af", fontSize: 13 },
 
   momBanner: {
     backgroundColor: "rgba(238,167,27,0.12)",

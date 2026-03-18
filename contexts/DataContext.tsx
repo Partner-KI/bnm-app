@@ -115,6 +115,13 @@ export interface DataContextValue {
   applications: MentorApplication[];
   notifications: Notification[];
 
+  // Mentor des Monats Sichtbarkeit (FIX 7)
+  mentorOfMonthVisible: boolean;
+  toggleMentorOfMonth: () => void;
+
+  // User registration (FIX 2)
+  addUser: (user: Omit<User, "id" | "created_at">) => void;
+
   // Mentorship actions
   assignMentorship: (menteeId: string, mentorId: string, adminId: string) => void;
   updateMentorshipStatus: (mentorshipId: string, status: MentorshipStatus) => void;
@@ -129,6 +136,7 @@ export interface DataContextValue {
 
   // Feedback actions
   addFeedback: (feedback: Omit<Feedback, "id" | "created_at">) => void;
+  getFeedbacks: () => Feedback[];
 
   // Message actions
   sendMessage: (mentorshipId: string, senderId: string, content: string) => void;
@@ -174,6 +182,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>(MOCK_MESSAGES);
   const [applications, setApplications] = useState<MentorApplication[]>(MOCK_APPLICATIONS);
   const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
+  const [mentorOfMonthVisible, setMentorOfMonthVisible] = useState<boolean>(true);
 
   // Mentorship actions
   const assignMentorship = useCallback(
@@ -286,6 +295,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
         created_at: new Date().toISOString(),
       };
       setFeedback((prev) => [...prev, newFeedback]);
+    },
+    []
+  );
+
+  const getFeedbacks = useCallback(() => {
+    return [...feedback].sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+  }, [feedback]);
+
+  // Mentor des Monats Toggle (FIX 7)
+  const toggleMentorOfMonth = useCallback(() => {
+    setMentorOfMonthVisible((prev) => !prev);
+  }, []);
+
+  // User Registration (FIX 2)
+  const addUser = useCallback(
+    (userData: Omit<User, "id" | "created_at">) => {
+      const newUser: User = {
+        ...userData,
+        id: generateId("user"),
+        created_at: new Date().toISOString(),
+      };
+      setUsers((prev) => [...prev, newUser]);
     },
     []
   );
@@ -450,6 +483,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         messages,
         applications,
         notifications,
+        mentorOfMonthVisible,
+        toggleMentorOfMonth,
+        addUser,
         assignMentorship,
         updateMentorshipStatus,
         addSession,
@@ -457,6 +493,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         updateSessionTypeOrder,
         deleteSessionType,
         addFeedback,
+        getFeedbacks,
         sendMessage,
         markAsRead,
         markAllAsRead,

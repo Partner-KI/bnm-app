@@ -339,6 +339,70 @@ export function getUserById(id: string): User | undefined {
   return MOCK_USERS.find((u) => u.id === id);
 }
 
+// FIX 12: Hadithe / Motivationstexte
+export const MOCK_HADITHE: { text: string; quelle: string }[] = [
+  {
+    text: "Der beste unter euch ist derjenige, der den Koran lernt und ihn lehrt.",
+    quelle: "Sahih al-Bukhari",
+  },
+  {
+    text: "Wer einen Weg geht, um Wissen zu suchen, dem erleichtert Allah den Weg ins Paradies.",
+    quelle: "Muslim",
+  },
+  {
+    text: "Keiner von euch glaubt wahrhaftig, bis er für seinen Bruder das liebt, was er für sich selbst liebt.",
+    quelle: "Sahih al-Bukhari & Muslim",
+  },
+  {
+    text: "Lächeln in das Gesicht deines Bruders ist Sadaqa.",
+    quelle: "At-Tirmidhi",
+  },
+  {
+    text: "Wer in der Lage ist zu helfen und hilft nicht, dem wird geholfen, wenn er Hilfe braucht, nicht.",
+    quelle: "überliefert",
+  },
+  {
+    text: "Halte fest an fünf Dingen, bevor fünf kommen: deine Jugend, bevor du alt wirst; deine Gesundheit, bevor du krank wirst; deinen Reichtum, bevor du arm wirst; deine Freizeit, bevor du beschäftigt bist; dein Leben, bevor der Tod kommt.",
+    quelle: "al-Hakim",
+  },
+  {
+    text: "Das Beste an einem Menschen ist sein Charakter.",
+    quelle: "Ahmad",
+  },
+  {
+    text: "Erleichtert und erschwert nicht; berichtet gute Nachrichten und schreckt nicht ab.",
+    quelle: "Sahih al-Bukhari",
+  },
+  {
+    text: "Die Gläubigen sind in ihrer gegenseitigen Barmherzigkeit, Liebe und Zuneigung wie ein einziger Körper.",
+    quelle: "Sahih al-Bukhari & Muslim",
+  },
+  {
+    text: "Wer Allah's Zufriedenheit durch die Unzufriedenheit der Menschen sucht, dem wird Allah genügen. Wer aber die Zufriedenheit der Menschen durch Allah's Unzufriedenheit sucht, dem überlässt Allah die Menschen.",
+    quelle: "At-Tirmidhi",
+  },
+  {
+    text: "Sei in dieser Welt wie ein Fremder oder ein Reisender.",
+    quelle: "Sahih al-Bukhari",
+  },
+  {
+    text: "Sprich das Gute oder schweige.",
+    quelle: "Sahih al-Bukhari & Muslim",
+  },
+  {
+    text: "Der Starke ist nicht derjenige, der andere niederwirft, sondern der Starke ist derjenige, der sich selbst beherrscht, wenn er zornig ist.",
+    quelle: "Sahih al-Bukhari",
+  },
+  {
+    text: "Allah liebt es, wenn einer von euch eine Tat vollbringt, sie sorgfältig ausführt.",
+    quelle: "at-Tabarani",
+  },
+  {
+    text: "Macht es euch nicht schwer, sonst wird es Allah euch schwer machen.",
+    quelle: "Abu Dawud",
+  },
+];
+
 export const MOCK_APPLICATIONS: MentorApplication[] = [
   {
     id: "app-1",

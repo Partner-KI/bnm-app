@@ -66,40 +66,64 @@ export default function AssignScreen() {
   const { users, mentorships, assignMentorship, getUnassignedMentees } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
 
-  const unassignedMentees = getUnassignedMentees();
+  const isMentor = user?.role === "mentor";
+  const isAdmin = user?.role === "admin";
+
+  // FIX 5: Mentor sieht nur nicht zugewiesene Mentees des GLEICHEN Geschlechts
+  const unassignedMentees = useMemo(() => {
+    const all = getUnassignedMentees();
+    if (isMentor && user) {
+      return all.filter((m) => m.gender === user.gender);
+    }
+    return all;
+  }, [getUnassignedMentees, isMentor, user]);
+
   const [selectedMenteeId, setSelectedMenteeId] = useState<string>(
     params.menteeId ?? (unassignedMentees[0]?.id ?? "")
   );
-  const [selectedMentorId, setSelectedMentorId] = useState<string>("");
+  const [selectedMentorId, setSelectedMentorId] = useState<string>(
+    // FIX 5: Mentor ist sich selbst vorausgewählt
+    isMentor && user ? user.id : ""
+  );
 
   const selectedMentee = users.find((u) => u.id === selectedMenteeId);
 
   const matchedMentors: MatchScore[] = useMemo(() => {
-    if (!selectedMentee) return [];
+    if (!selectedMentee || isMentor) return [];
     const mentors = users.filter((u) => u.role === "mentor");
     return mentors
       .map((mentor) => calculateMatchScore(selectedMentee, mentor))
       .filter((m) => m.score >= 0)
       .sort((a, b) => b.score - a.score);
-  }, [selectedMentee, users]);
+  }, [selectedMentee, users, isMentor]);
 
   const maxPossibleScore = 100;
 
   function handleAssign() {
-    if (!selectedMenteeId || !selectedMentorId || !user) return;
-    const mentor = users.find((u) => u.id === selectedMentorId);
+    if (!user) return;
+
+    const mentorId = isMentor ? user.id : selectedMentorId;
+    if (!selectedMenteeId || !mentorId) return;
+
+    const mentor = users.find((u) => u.id === mentorId);
     const mentee = users.find((u) => u.id === selectedMenteeId);
     if (!mentor || !mentee) return;
 
+    const confirmText = isMentor
+      ? `Möchtest du ${mentee.name} als Mentee übernehmen?`
+      : `${mentee.name} wird ${mentor.name} zugewiesen. Fortfahren?`;
+
+    const buttonText = isMentor ? "Übernehmen" : "Zuweisen";
+
     Alert.alert(
-      "Zuweisung bestätigen",
-      `${mentee.name} wird ${mentor.name} zugewiesen. Fortfahren?`,
+      isMentor ? "Mentee übernehmen" : "Zuweisung bestätigen",
+      confirmText,
       [
         { text: "Abbrechen", style: "cancel" },
         {
-          text: "Zuweisen",
+          text: buttonText,
           onPress: () => {
-            assignMentorship(selectedMenteeId, selectedMentorId, user.id);
+            assignMentorship(selectedMenteeId, mentorId, user.id);
             Alert.alert("Erfolg", "Zuweisung erfolgreich!", [
               { text: "OK", onPress: () => router.back() },
             ]);
@@ -109,10 +133,10 @@ export default function AssignScreen() {
     );
   }
 
-  if (user?.role !== "admin") {
+  if (!isAdmin && !isMentor) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Kein Zugriff. Nur für Admins.</Text>
+        <Text style={styles.accessText}>Kein Zugriff. Nur für Admins und Mentoren.</Text>
       </View>
     );
   }
@@ -120,9 +144,13 @@ export default function AssignScreen() {
   if (unassignedMentees.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.boldTitle}>Alle Mentees zugewiesen</Text>
+        <Text style={styles.boldTitle}>
+          {isMentor ? "Keine passenden Mentees" : "Alle Mentees zugewiesen"}
+        </Text>
         <Text style={styles.centerSubText}>
-          Aktuell gibt es keine nicht zugewiesenen Mentees.
+          {isMentor
+            ? "Es gibt aktuell keine nicht zugewiesenen Mentees deines Geschlechts."
+            : "Aktuell gibt es keine nicht zugewiesenen Mentees."}
         </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
           <Text style={styles.backButtonText}>Zurück</Text>
@@ -134,6 +162,18 @@ export default function AssignScreen() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
+        {/* FIX 5: Mentor-Modus Banner */}
+        {isMentor && (
+          <View style={styles.mentorModeBox}>
+            <Text style={styles.mentorModeTitle}>Mentee selbst übernehmen</Text>
+            <Text style={styles.mentorModeText}>
+              Wähle einen nicht zugewiesenen{" "}
+              {user?.gender === "male" ? "Bruder" : "eine nicht zugewiesene Schwester"} aus
+              und übernimm die Betreuung direkt.
+            </Text>
+          </View>
+        )}
+
         {/* Mentee auswählen */}
         <Text style={styles.sectionLabel}>{"MENTEE AUSWÄHLEN"}</Text>
         <View style={styles.listCard}>
@@ -147,7 +187,7 @@ export default function AssignScreen() {
               ]}
               onPress={() => {
                 setSelectedMenteeId(mentee.id);
-                setSelectedMentorId("");
+                if (!isMentor) setSelectedMentorId("");
               }}
             >
               <View
@@ -173,8 +213,8 @@ export default function AssignScreen() {
           ))}
         </View>
 
-        {/* Passende Mentoren */}
-        {selectedMentee && (
+        {/* Passende Mentoren (nur Admin-Modus) */}
+        {isAdmin && selectedMentee && (
           <>
             <Text style={styles.sectionLabel}>{"PASSENDE MENTOREN"}</Text>
             <Text style={styles.sectionHint}>
@@ -234,7 +274,6 @@ export default function AssignScreen() {
                         </View>
                       </View>
 
-                      {/* Score-Balken */}
                       <View style={styles.scoreBar}>
                         <View
                           style={[
@@ -244,7 +283,6 @@ export default function AssignScreen() {
                         />
                       </View>
 
-                      {/* Matching-Gründe */}
                       <View style={styles.reasonsRow}>
                         {match.reasons.map((reason) => (
                           <View key={reason} style={styles.reasonChip}>
@@ -266,26 +304,26 @@ export default function AssignScreen() {
           </>
         )}
 
-        {/* Zuweisen Button */}
+        {/* Zuweisen / Übernehmen Button */}
         <TouchableOpacity
           style={[
             styles.assignButton,
-            selectedMenteeId && selectedMentorId
+            (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId)
               ? { backgroundColor: COLORS.cta }
               : { backgroundColor: COLORS.border },
           ]}
           onPress={handleAssign}
-          disabled={!selectedMenteeId || !selectedMentorId}
+          disabled={isMentor ? !selectedMenteeId : !selectedMenteeId || !selectedMentorId}
         >
           <Text
             style={[
               styles.assignButtonText,
-              selectedMenteeId && selectedMentorId
+              (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId)
                 ? { color: COLORS.white }
                 : { color: COLORS.tertiary },
             ]}
           >
-            Mentor zuweisen
+            {isMentor ? "Mentee übernehmen" : "Mentor zuweisen"}
           </Text>
         </TouchableOpacity>
       </View>
@@ -304,6 +342,16 @@ const styles = StyleSheet.create({
   page: { padding: 24 },
   sectionLabel: { fontSize: 12, fontWeight: "600", color: COLORS.tertiary, letterSpacing: 1, marginBottom: 12 },
   sectionHint: { color: COLORS.secondary, fontSize: 12, marginBottom: 12 },
+  mentorModeBox: {
+    backgroundColor: "#eff6ff",
+    borderWidth: 1,
+    borderColor: "#dbeafe",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 24,
+  },
+  mentorModeTitle: { color: "#1e40af", fontWeight: "600", fontSize: 14, marginBottom: 4 },
+  mentorModeText: { color: "#2563eb", fontSize: 13 },
   listCard: {
     backgroundColor: COLORS.white,
     borderRadius: 12,

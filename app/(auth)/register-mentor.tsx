@@ -13,6 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
+import { useData } from "../../contexts/DataContext";
 
 interface MentorFormData {
   name: string;
@@ -40,6 +41,7 @@ const CONTACT_OPTIONS: { value: ContactPreference; label: string }[] = [
 
 export default function RegisterMentorScreen() {
   const router = useRouter();
+  const { users } = useData();
   const [form, setForm] = useState<MentorFormData>({
     name: "",
     email: "",
@@ -74,6 +76,13 @@ export default function RegisterMentorScreen() {
 
   function handleSubmit() {
     if (!validate()) return;
+    // FIX 2: Duplikats-Check
+    const emailLower = form.email.trim().toLowerCase();
+    const exists = users.some((u) => u.email.toLowerCase() === emailLower);
+    if (exists) {
+      setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
+      return;
+    }
     Alert.alert(
       "Bewerbung eingegangen",
       "Vielen Dank für deine Bewerbung als Mentor! Das BNM-Team wird deine Bewerbung prüfen und sich bei dir melden.",

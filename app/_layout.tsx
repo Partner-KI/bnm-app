@@ -152,6 +152,20 @@ function RootLayoutInner() {
             headerTintColor: "#101828",
           }}
         />
+        <Stack.Screen
+          name="admin/feedback-overview"
+          options={{
+            title: "Feedback-Übersicht",
+            headerStyle: { backgroundColor: "#FFFFFF" },
+            headerTintColor: "#101828",
+          }}
+        />
+        <Stack.Screen
+          name="hadithe"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

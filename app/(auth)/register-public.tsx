@@ -14,11 +14,13 @@ import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/Colors";
 import type { Gender, ContactPreference } from "../../types";
 import { Container } from "../../components/Container";
+import { useData } from "../../contexts/DataContext";
 
 type Step = "form" | "success";
 
 export default function RegisterPublicScreen() {
   const router = useRouter();
+  const { users } = useData();
   const [step, setStep] = useState<Step>("form");
 
   // Formular-Felder
@@ -52,7 +54,13 @@ export default function RegisterPublicScreen() {
 
   function handleSubmit() {
     if (!validate()) return;
-    // In einer echten App würde hier der API-Call stehen
+    // FIX 2: Duplikats-Check
+    const emailLower = email.trim().toLowerCase();
+    const exists = users.some((u) => u.email.toLowerCase() === emailLower);
+    if (exists) {
+      setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
+      return;
+    }
     setStep("success");
   }
 

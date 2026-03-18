@@ -46,6 +46,7 @@ export interface Session {
   is_online: boolean;
   details?: string;
   documented_by: string;
+  attempt_number?: number;
   session_type?: SessionType;
   mentorship?: Mentorship;
 }
