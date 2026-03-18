@@ -141,9 +141,9 @@ export default function LoginScreen() {
           {/* Registrierungs-Links */}
           <View style={styles.registerRow}>
             <TouchableOpacity
-              onPress={() => router.push("/(auth)/register-mentee")}
+              onPress={() => router.push("/(auth)/register-public")}
             >
-              <Text style={styles.linkText}>{t("login.registerMentee")}</Text>
+              <Text style={styles.linkText}>{t("login.publicRegister")}</Text>
             </TouchableOpacity>
             <Text style={styles.divider}>|</Text>
             <TouchableOpacity
@@ -152,14 +152,6 @@ export default function LoginScreen() {
               <Text style={styles.linkText}>{t("login.registerMentor")}</Text>
             </TouchableOpacity>
           </View>
-
-          {/* Öffentliche Anmeldung */}
-          <TouchableOpacity
-            style={styles.publicRegisterButton}
-            onPress={() => router.push("/(auth)/register-public")}
-          >
-            <Text style={styles.publicRegisterText}>{t("login.publicRegister")}</Text>
-          </TouchableOpacity>
 
           {/* Test-Schnellzugang */}
           <View style={styles.quickSection}>
