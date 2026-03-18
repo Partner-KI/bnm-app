@@ -17,18 +17,20 @@ import type { ContactPreference } from "../types";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { uploadAvatar } from "../lib/storage";
-
-const CONTACT_OPTIONS: { key: ContactPreference; label: string }[] = [
-  { key: "whatsapp", label: "WhatsApp" },
-  { key: "phone", label: "Telefon" },
-  { key: "telegram", label: "Telegram" },
-  { key: "email", label: "E-Mail" },
-];
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function EditProfileScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { updateUser } = useData();
+
+  const CONTACT_OPTIONS: { key: ContactPreference; label: string }[] = [
+    { key: "whatsapp", label: "WhatsApp" },
+    { key: "phone", label: "Telefon" },
+    { key: "telegram", label: "Telegram" },
+    { key: "email", label: "E-Mail" },
+  ];
 
   const [name, setName] = useState(user?.name ?? "");
   const [city, setCity] = useState(user?.city ?? "");
@@ -58,7 +60,7 @@ export default function EditProfileScreen() {
       await updateUser(safeUser.id, { avatar_url: publicUrl });
       setAvatarPreview(publicUrl);
     } else {
-      showError("Profilbild konnte nicht hochgeladen werden.");
+      showError(t("editProfile.errorUpload"));
       setAvatarPreview(safeUser.avatar_url);
     }
     setIsUploadingAvatar(false);
@@ -70,15 +72,15 @@ export default function EditProfileScreen() {
       fileInputRef.current?.click();
     } else {
       // Native: expo-image-picker wäre nötig — Package noch nicht installiert
-      showError("Bilderauswahl braucht expo-image-picker (npx expo install expo-image-picker).");
+      showError(t("editProfile.nativeImagePicker"));
     }
   }
 
   function validate(): string | null {
-    if (!name.trim()) return "Name darf nicht leer sein.";
-    if (!city.trim()) return "Stadt darf nicht leer sein.";
+    if (!name.trim()) return t("editProfile.errorName");
+    if (!city.trim()) return t("editProfile.errorCity");
     const ageNum = parseInt(age, 10);
-    if (isNaN(ageNum) || ageNum < 14 || ageNum > 99) return "Bitte ein gültiges Alter (14–99) eingeben.";
+    if (isNaN(ageNum) || ageNum < 14 || ageNum > 99) return t("editProfile.errorAge");
     return null;
   }
 
@@ -98,7 +100,7 @@ export default function EditProfileScreen() {
       contact_preference: contactPref,
     });
     setIsSaving(false);
-    showSuccess("Dein Profil wurde aktualisiert.", () => router.back());
+    showSuccess(t("editProfile.successMsg"), () => router.back());
   }
 
   return (
@@ -107,9 +109,9 @@ export default function EditProfileScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹ Zurück</Text>
+            <Text style={styles.backText}>{t("editProfile.back")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Profil bearbeiten</Text>
+          <Text style={styles.headerTitle}>{t("editProfile.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -141,7 +143,7 @@ export default function EditProfileScreen() {
               disabled={isUploadingAvatar}
             >
               <Text style={styles.avatarButtonText}>
-                {isUploadingAvatar ? "Wird hochgeladen..." : "Profilbild ändern"}
+                {isUploadingAvatar ? t("editProfile.uploading") : t("editProfile.changePicture")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -165,40 +167,40 @@ export default function EditProfileScreen() {
           )}
 
           {/* Name */}
-          <Text style={styles.fieldLabel}>Name</Text>
+          <Text style={styles.fieldLabel}>{t("editProfile.name")}</Text>
           <TextInput
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="Vor- und Nachname"
+            placeholder={t("editProfile.namePlaceholder")}
             placeholderTextColor={COLORS.tertiary}
             autoCapitalize="words"
           />
 
           {/* Stadt */}
-          <Text style={styles.fieldLabel}>Stadt</Text>
+          <Text style={styles.fieldLabel}>{t("editProfile.city")}</Text>
           <TextInput
             style={styles.input}
             value={city}
             onChangeText={setCity}
-            placeholder="z.B. Berlin"
+            placeholder={t("editProfile.cityPlaceholder")}
             placeholderTextColor={COLORS.tertiary}
             autoCapitalize="words"
           />
 
           {/* Alter */}
-          <Text style={styles.fieldLabel}>Alter</Text>
+          <Text style={styles.fieldLabel}>{t("editProfile.age")}</Text>
           <TextInput
             style={styles.input}
             value={age}
             onChangeText={setAge}
-            placeholder="z.B. 28"
+            placeholder={t("editProfile.agePlaceholder")}
             placeholderTextColor={COLORS.tertiary}
             keyboardType="number-pad"
           />
 
           {/* Telefon */}
-          <Text style={styles.fieldLabel}>Telefonnummer (optional)</Text>
+          <Text style={styles.fieldLabel}>{t("editProfile.phone")}</Text>
           <TextInput
             style={styles.input}
             value={phone}
@@ -209,7 +211,7 @@ export default function EditProfileScreen() {
           />
 
           {/* Kontaktpräferenz */}
-          <Text style={styles.fieldLabel}>Kontaktpräferenz</Text>
+          <Text style={styles.fieldLabel}>{t("editProfile.contactPref")}</Text>
           <View style={styles.contactGrid}>
             {CONTACT_OPTIONS.map((opt) => (
               <TouchableOpacity
@@ -235,10 +237,9 @@ export default function EditProfileScreen() {
 
           {/* Unveränderliche Info */}
           <View style={styles.infoBox}>
-            <Text style={styles.infoBoxTitle}>Nicht änderbar</Text>
+            <Text style={styles.infoBoxTitle}>{t("editProfile.unchangeable")}</Text>
             <Text style={styles.infoBoxText}>
-              E-Mail-Adresse und Rolle können nicht selbst geändert werden.
-              Bitte wende dich an das BNM-Team.
+              {t("editProfile.unchangeableText")}
             </Text>
             <Text style={styles.infoBoxValue}>{safeUser.email}</Text>
           </View>
@@ -250,12 +251,12 @@ export default function EditProfileScreen() {
             disabled={isSaving}
           >
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Speichern..." : "Änderungen speichern"}
+              {isSaving ? t("editProfile.saving") : t("editProfile.save")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-            <Text style={styles.cancelButtonText}>Abbrechen</Text>
+            <Text style={styles.cancelButtonText}>{t("editProfile.cancel")}</Text>
           </TouchableOpacity>
 
         </ScrollView>

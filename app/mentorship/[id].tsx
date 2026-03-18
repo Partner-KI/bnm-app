@@ -11,10 +11,12 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function MentorshipDetailScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const {
     getMentorshipById,
     getSessionsByMentorshipId,
@@ -32,12 +34,12 @@ export default function MentorshipDetailScreen() {
   if (!mentorship) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.boldTitle}>Betreuung nicht gefunden</Text>
+        <Text style={styles.boldTitle}>{t("mentorship.notFound")}</Text>
         <TouchableOpacity
           style={[styles.primaryButton, { marginTop: 16 }]}
           onPress={() => router.back()}
         >
-          <Text style={styles.primaryButtonText}>Zurück</Text>
+          <Text style={styles.primaryButtonText}>{t("mentorship.back")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -57,7 +59,7 @@ export default function MentorshipDetailScreen() {
     mentorship.status === "active";
 
   async function handleComplete() {
-    const ok = await showConfirm("Betreuung abschließen", "Möchtest du diese Betreuung wirklich als abgeschlossen markieren?");
+    const ok = await showConfirm(t("mentorship.completeTitle"), t("mentorship.completeText"));
     if (ok) {
       updateMentorshipStatus(mentorshipId, "completed");
       router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
@@ -65,7 +67,7 @@ export default function MentorshipDetailScreen() {
   }
 
   async function handleCancel() {
-    const ok = await showConfirm("Betreuung abbrechen", "Möchtest du diese Betreuung wirklich abbrechen?");
+    const ok = await showConfirm(t("mentorship.cancelTitle"), t("mentorship.cancelText"));
     if (ok) {
       updateMentorshipStatus(mentorshipId, "cancelled");
       router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
@@ -86,10 +88,10 @@ export default function MentorshipDetailScreen() {
       : "#b91c1c";
   const statusLabel =
     mentorship.status === "active"
-      ? "Aktiv"
+      ? t("mentorship.active")
       : mentorship.status === "completed"
-      ? "Abgeschlossen"
-      : "Abgebrochen";
+      ? t("mentorship.completed")
+      : t("mentorship.cancelled");
 
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -102,18 +104,18 @@ export default function MentorshipDetailScreen() {
             <Text style={[styles.statusText, { color: statusTextColor }]}>{statusLabel}</Text>
           </View>
           <Text style={styles.dateSince}>
-            Seit {new Date(mentorship.assigned_at).toLocaleDateString("de-DE")}
+            {t("mentorship.since").replace("{0}", new Date(mentorship.assigned_at).toLocaleDateString("de-DE"))}
           </Text>
         </View>
 
         {/* Mentee-Info */}
         <View style={styles.card}>
-          <Text style={styles.cardSectionLabel}>{"MENTEE"}</Text>
+          <Text style={styles.cardSectionLabel}>{t("mentorship.mentee")}</Text>
           <Text style={styles.bigName}>{mentorship.mentee?.name}</Text>
           <View style={styles.chipRow}>
             <InfoChip label={mentorship.mentee?.city ?? ""} />
             <InfoChip label={`${mentorship.mentee?.age} J.`} />
-            <InfoChip label={mentorship.mentee?.gender === "male" ? "Bruder" : "Schwester"} />
+            <InfoChip label={mentorship.mentee?.gender === "male" ? t("mentorship.brother") : t("mentorship.sister")} />
           </View>
           {mentorship.mentee?.phone && (
             <Text style={styles.phoneText}>{mentorship.mentee.phone}</Text>
@@ -122,7 +124,7 @@ export default function MentorshipDetailScreen() {
 
         {/* Mentor-Info */}
         <View style={styles.card}>
-          <Text style={styles.cardSectionLabel}>{"MENTOR"}</Text>
+          <Text style={styles.cardSectionLabel}>{t("mentorship.mentor")}</Text>
           <Text style={[styles.bigName, { fontSize: 18 }]}>{mentorship.mentor?.name}</Text>
           <View style={styles.chipRow}>
             <InfoChip label={mentorship.mentor?.city ?? ""} />
@@ -133,19 +135,21 @@ export default function MentorshipDetailScreen() {
         {/* Fortschrittsbalken */}
         <View style={styles.card}>
           <View style={styles.progressHeader}>
-            <Text style={styles.cardTitle}>Fortschritt</Text>
+            <Text style={styles.cardTitle}>{t("mentorship.progress")}</Text>
             <Text style={styles.progressPercent}>{progress}%</Text>
           </View>
           <View style={styles.progressTrack}>
             <View style={[styles.progressFill, { width: `${progress}%` as any }]} />
           </View>
           <Text style={styles.progressSub}>
-            {completedStepIds.length} von {sessionTypes.length} Schritten abgeschlossen
+            {t("mentorship.stepsCompleted")
+              .replace("{0}", String(completedStepIds.length))
+              .replace("{1}", String(sessionTypes.length))}
           </Text>
         </View>
 
         {/* Session-Timeline */}
-        <Text style={styles.sectionLabel}>{"SESSION-VERLAUF"}</Text>
+        <Text style={styles.sectionLabel}>{t("mentorship.sessionHistory")}</Text>
         <View style={[styles.card, { padding: 0, overflow: "hidden" }]}>
           {sortedSessionTypes.map((step, idx) => {
             const isDone = completedStepIds.includes(step.id);
@@ -214,7 +218,7 @@ export default function MentorshipDetailScreen() {
                     <>
                       <Text style={styles.sessionDate}>
                         {new Date(session.date).toLocaleDateString("de-DE")} ·{" "}
-                        {session.is_online ? "Online" : "Vor Ort"}
+                        {session.is_online ? t("mentorship.online") : t("mentorship.inPerson")}
                       </Text>
                       {session.details && (
                         <Text style={styles.sessionDetails}>"{session.details}"</Text>
@@ -224,7 +228,7 @@ export default function MentorshipDetailScreen() {
 
                   {isCurrent && (
                     <View style={styles.currentBadge}>
-                      <Text style={styles.currentBadgeText}>Nächster Schritt</Text>
+                      <Text style={styles.currentBadgeText}>{t("mentorship.nextStep")}</Text>
                     </View>
                   )}
                 </View>
@@ -243,7 +247,7 @@ export default function MentorshipDetailScreen() {
                   router.push({ pathname: "/document-session", params: { mentorshipId: mentorship.id } })
                 }
               >
-                <Text style={styles.primaryButtonText}>Session dokumentieren</Text>
+                <Text style={styles.primaryButtonText}>{t("mentorship.documentSession")}</Text>
               </TouchableOpacity>
             )}
 
@@ -253,7 +257,7 @@ export default function MentorshipDetailScreen() {
                 router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
               }
             >
-              <Text style={styles.primaryButtonText}>Chat öffnen</Text>
+              <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>
             </TouchableOpacity>
 
             {canChangeStatus && (
@@ -262,13 +266,13 @@ export default function MentorshipDetailScreen() {
                   style={styles.completeButton}
                   onPress={handleComplete}
                 >
-                  <Text style={styles.completeButtonText}>Abschließen</Text>
+                  <Text style={styles.completeButtonText}>{t("mentorship.complete")}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.cancelButton}
                   onPress={handleCancel}
                 >
-                  <Text style={styles.cancelButtonText}>Abbrechen</Text>
+                  <Text style={styles.cancelButtonText}>{t("mentorship.cancel")}</Text>
                 </TouchableOpacity>
               </View>
             )}
@@ -282,14 +286,15 @@ export default function MentorshipDetailScreen() {
               router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
             }
           >
-            <Text style={styles.primaryButtonText}>Chat öffnen</Text>
+            <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>
           </TouchableOpacity>
         )}
 
         {mentorship.completed_at && (
           <Text style={styles.completedAtText}>
-            {mentorship.status === "completed" ? "Abgeschlossen" : "Abgebrochen"} am{" "}
-            {new Date(mentorship.completed_at).toLocaleDateString("de-DE")}
+            {t("mentorship.completedAt")
+              .replace("{0}", mentorship.status === "completed" ? t("mentorship.completed") : t("mentorship.cancelled"))
+              .replace("{1}", new Date(mentorship.completed_at).toLocaleDateString("de-DE"))}
           </Text>
         )}
       </View>

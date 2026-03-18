@@ -13,6 +13,7 @@ import { useConfirm, useAlert } from "../contexts/ModalContext";
 import type { User } from "../types";
 import { COLORS } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface MatchScore {
   mentor: User;
@@ -64,6 +65,7 @@ function calculateMatchScore(mentee: User, mentor: User): MatchScore {
 export default function AssignScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { users, mentorships, assignMentorship, getUnassignedMentees } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
   const confirm = useConfirm();
@@ -112,10 +114,10 @@ export default function AssignScreen() {
     const mentee = users.find((u) => u.id === selectedMenteeId);
     if (!mentor || !mentee) return;
 
-    const confirmTitle = isMentor ? "Mentee übernehmen" : "Zuweisung bestätigen";
+    const confirmTitle = isMentor ? t("assign.confirmTakeMenteeTitle") : t("assign.confirmAssignTitle");
     const confirmText = isMentor
-      ? `Möchtest du ${mentee.name} als Mentee übernehmen?`
-      : `${mentee.name} wird ${mentor.name} zugewiesen. Fortfahren?`;
+      ? t("assign.confirmTakeMenteeText").replace("{0}", mentee.name)
+      : t("assign.confirmAssignText").replace("{0}", mentee.name).replace("{1}", mentor.name);
 
     const confirmed = await confirm(confirmTitle, confirmText);
     if (!confirmed) return;
@@ -131,14 +133,14 @@ export default function AssignScreen() {
       );
     }
 
-    await alert("Zuweisung erfolgreich", "Die Zuweisung wurde gespeichert.", "success");
+    await alert(t("assign.successTitle"), t("assign.successText"), "success");
     router.back();
   }
 
   if (!isAdmin && !isMentor) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Kein Zugriff. Nur für Admins, Office und Mentoren.</Text>
+        <Text style={styles.accessText}>{t("assign.accessDenied")}</Text>
       </View>
     );
   }
@@ -147,15 +149,15 @@ export default function AssignScreen() {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.boldTitle}>
-          {isMentor ? "Keine passenden Mentees" : "Alle Mentees zugewiesen"}
+          {isMentor ? t("assign.noMenteesMentorTitle") : t("assign.noMenteesTitle")}
         </Text>
         <Text style={styles.centerSubText}>
           {isMentor
-            ? "Es gibt aktuell keine nicht zugewiesenen Mentees deines Geschlechts."
-            : "Aktuell gibt es keine nicht zugewiesenen Mentees."}
+            ? t("assign.noMenteesMentorText")
+            : t("assign.noMenteesText")}
         </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Zurück</Text>
+          <Text style={styles.backButtonText}>{t("common.back")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -164,20 +166,18 @@ export default function AssignScreen() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        {/* FIX 5: Mentor-Modus Banner */}
+        {/* Mentor-Modus Banner */}
         {isMentor && (
           <View style={styles.mentorModeBox}>
-            <Text style={styles.mentorModeTitle}>Mentee selbst übernehmen</Text>
+            <Text style={styles.mentorModeTitle}>{t("assign.takeMenteeTitle")}</Text>
             <Text style={styles.mentorModeText}>
-              Wähle einen nicht zugewiesenen{" "}
-              {user?.gender === "male" ? "Bruder" : "eine nicht zugewiesene Schwester"} aus
-              und übernimm die Betreuung direkt.
+              {t("assign.takeMenteeText").replace("{0}", user?.gender === "male" ? t("assign.brother") : t("assign.sister"))}
             </Text>
           </View>
         )}
 
         {/* Mentee auswählen */}
-        <Text style={styles.sectionLabel}>{"MENTEE AUSWÄHLEN"}</Text>
+        <Text style={styles.sectionLabel}>{t("assign.selectMentee")}</Text>
         <View style={styles.listCard}>
           {unassignedMentees.map((mentee, idx) => (
             <TouchableOpacity
@@ -208,7 +208,7 @@ export default function AssignScreen() {
                 <Text style={styles.itemName}>{mentee.name}</Text>
                 <Text style={styles.itemSub}>
                   {mentee.city} · {mentee.age} J. ·{" "}
-                  {mentee.gender === "male" ? "Bruder" : "Schwester"}
+                  {mentee.gender === "male" ? t("assign.brother") : t("register.sister")}
                 </Text>
               </View>
             </TouchableOpacity>
@@ -218,16 +218,16 @@ export default function AssignScreen() {
         {/* Passende Mentoren (nur Admin-Modus) */}
         {isAdmin && selectedMentee && (
           <>
-            <Text style={styles.sectionLabel}>{"PASSENDE MENTOREN"}</Text>
+            <Text style={styles.sectionLabel}>{t("assign.matchedMentors")}</Text>
             <Text style={styles.sectionHint}>
-              Brüder werden nur Brüdern, Schwestern nur Schwestern zugewiesen.
+              {t("assign.genderRule")}
             </Text>
 
             {matchedMentors.length === 0 ? (
               <View style={styles.errorBox}>
-                <Text style={styles.errorTitle}>Kein passender Mentor gefunden</Text>
+                <Text style={styles.errorTitle}>{t("assign.noMentorFound")}</Text>
                 <Text style={styles.errorText}>
-                  Es gibt keine Mentoren des gleichen Geschlechts.
+                  {t("assign.noMentorFoundText")}
                 </Text>
               </View>
             ) : (
@@ -258,21 +258,22 @@ export default function AssignScreen() {
                         <View style={{ flex: 1 }}>
                           {idx === 0 && (
                             <View style={styles.bestChoiceBadge}>
-                              <Text style={styles.bestChoiceText}>Beste Wahl</Text>
+                              <Text style={styles.bestChoiceText}>{t("assign.bestChoice")}</Text>
                             </View>
                           )}
                           <Text style={styles.mentorName}>{match.mentor.name}</Text>
                           <Text style={styles.mentorSub}>
                             {match.mentor.city} · {match.mentor.age} J. ·{" "}
-                            {activeMenteeCount} aktive{" "}
-                            {activeMenteeCount === 1 ? "Betreuung" : "Betreuungen"}
+                            {t("assign.activeMentorships")
+                              .replace("{0}", String(activeMenteeCount))
+                              .replace("{1}", activeMenteeCount === 1 ? t("assign.mentorship") : t("assign.mentorships"))}
                           </Text>
                         </View>
                         <View style={{ alignItems: "center" }}>
                           <Text style={[styles.scoreValue, { color: scoreColor }]}>
                             {percentage}%
                           </Text>
-                          <Text style={styles.scoreLabel}>Match</Text>
+                          <Text style={styles.scoreLabel}>{t("assign.match")}</Text>
                         </View>
                       </View>
 
@@ -295,7 +296,7 @@ export default function AssignScreen() {
 
                       {isSelected && (
                         <View style={styles.selectedIndicator}>
-                          <Text style={styles.selectedIndicatorText}>✓ Ausgewählt</Text>
+                          <Text style={styles.selectedIndicatorText}>{t("assign.selected")}</Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -325,7 +326,7 @@ export default function AssignScreen() {
                 : { color: COLORS.tertiary },
             ]}
           >
-            {isMentor ? "Mentee übernehmen" : "Mentor zuweisen"}
+            {isMentor ? t("assign.takeMenteeButton") : t("assign.assignButton")}
           </Text>
         </TouchableOpacity>
       </View>

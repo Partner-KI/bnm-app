@@ -13,9 +13,11 @@ import {
 import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -23,11 +25,11 @@ export default function ForgotPasswordScreen() {
 
   async function handleReset() {
     if (!email.trim()) {
-      setErrorMsg("Bitte E-Mail-Adresse eingeben.");
+      setErrorMsg(t("forgotPassword.errorEmpty"));
       return;
     }
     if (!/\S+@\S+\.\S+/.test(email.trim())) {
-      setErrorMsg("Bitte eine gültige E-Mail-Adresse eingeben.");
+      setErrorMsg(t("forgotPassword.errorInvalid"));
       return;
     }
 
@@ -44,7 +46,7 @@ export default function ForgotPasswordScreen() {
         setSent(true);
       }
     } catch {
-      setErrorMsg("Ein unerwarteter Fehler ist aufgetreten.");
+      setErrorMsg(t("forgotPassword.errorUnexpected"));
     } finally {
       setIsLoading(false);
     }
@@ -66,32 +68,30 @@ export default function ForgotPasswordScreen() {
             <Text style={styles.iconText}>🔑</Text>
           </View>
 
-          <Text style={styles.title}>Passwort vergessen?</Text>
+          <Text style={styles.title}>{t("forgotPassword.title")}</Text>
           <Text style={styles.subtitle}>
-            Gib deine E-Mail-Adresse ein. Wir senden dir einen Link zum Zurücksetzen.
+            {t("forgotPassword.subtitle")}
           </Text>
 
           {sent ? (
             /* Erfolgs-State */
             <View style={styles.successBox}>
               <Text style={styles.successIcon}>✓</Text>
-              <Text style={styles.successTitle}>E-Mail gesendet</Text>
+              <Text style={styles.successTitle}>{t("forgotPassword.successTitle")}</Text>
               <Text style={styles.successText}>
-                Wir haben eine E-Mail an{" "}
-                <Text style={{ fontWeight: "700" }}>{email.trim()}</Text> gesendet.
-                Bitte prüfe auch deinen Spam-Ordner.
+                {t("forgotPassword.successText").replace("{0}", email.trim())}
               </Text>
               <TouchableOpacity
                 style={styles.backButton}
                 onPress={() => router.replace("/(auth)/login")}
               >
-                <Text style={styles.backButtonText}>Zurück zum Login</Text>
+                <Text style={styles.backButtonText}>{t("forgotPassword.backToLogin")}</Text>
               </TouchableOpacity>
             </View>
           ) : (
             /* Formular */
             <>
-              <Text style={styles.fieldLabel}>E-Mail-Adresse</Text>
+              <Text style={styles.fieldLabel}>{t("forgotPassword.emailLabel")}</Text>
               <TextInput
                 style={[styles.input, errorMsg ? styles.inputError : styles.inputNormal]}
                 placeholder="deine@email.de"
@@ -120,7 +120,7 @@ export default function ForgotPasswordScreen() {
                 {isLoading ? (
                   <ActivityIndicator color={COLORS.white} />
                 ) : (
-                  <Text style={styles.submitButtonText}>Zurücksetzen-Link senden</Text>
+                  <Text style={styles.submitButtonText}>{t("forgotPassword.submit")}</Text>
                 )}
               </TouchableOpacity>
 
@@ -128,7 +128,7 @@ export default function ForgotPasswordScreen() {
                 style={styles.cancelButton}
                 onPress={() => router.back()}
               >
-                <Text style={styles.cancelButtonText}>Zurück zum Login</Text>
+                <Text style={styles.cancelButtonText}>{t("forgotPassword.backToLogin")}</Text>
               </TouchableOpacity>
             </>
           )}

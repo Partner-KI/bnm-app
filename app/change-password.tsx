@@ -11,9 +11,11 @@ import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -25,10 +27,10 @@ export default function ChangePasswordScreen() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   function validate(): string | null {
-    if (!oldPassword.trim()) return "Bitte aktuelles Passwort eingeben.";
-    if (newPassword.length < 8) return "Das neue Passwort muss mindestens 8 Zeichen lang sein.";
-    if (newPassword !== confirmPassword) return "Die Passwörter stimmen nicht überein.";
-    if (oldPassword === newPassword) return "Das neue Passwort muss sich vom alten unterscheiden.";
+    if (!oldPassword.trim()) return t("changePassword.errorCurrent");
+    if (newPassword.length < 8) return t("changePassword.errorTooShort");
+    if (newPassword !== confirmPassword) return t("changePassword.errorMatch");
+    if (oldPassword === newPassword) return t("changePassword.errorSame");
     return null;
   }
 
@@ -43,15 +45,15 @@ export default function ChangePasswordScreen() {
     // Mock-Submit
     setTimeout(() => {
       setIsSaving(false);
-      showSuccess("Dein Passwort wurde erfolgreich geändert.", () => router.back());
+      showSuccess(t("changePassword.successMsg"), () => router.back());
     }, 600);
   }
 
   const newPasswordStrength = (() => {
     if (newPassword.length === 0) return null;
-    if (newPassword.length < 8) return { label: "Zu kurz", color: COLORS.error };
-    if (newPassword.length < 12) return { label: "Mittel", color: COLORS.gold };
-    return { label: "Stark", color: COLORS.cta };
+    if (newPassword.length < 8) return { label: t("changePassword.strengthTooShort"), color: COLORS.error };
+    if (newPassword.length < 12) return { label: t("changePassword.strengthMedium"), color: COLORS.gold };
+    return { label: t("changePassword.strengthStrong"), color: COLORS.cta };
   })();
 
   return (
@@ -60,9 +62,9 @@ export default function ChangePasswordScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹ Zurück</Text>
+            <Text style={styles.backText}>{t("changePassword.back")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Passwort ändern</Text>
+          <Text style={styles.headerTitle}>{t("changePassword.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -70,18 +72,18 @@ export default function ChangePasswordScreen() {
 
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>
-              Wähle ein sicheres Passwort mit mindestens 8 Zeichen.
+              {t("changePassword.info")}
             </Text>
           </View>
 
           {/* Aktuelles Passwort */}
-          <Text style={styles.fieldLabel}>Aktuelles Passwort</Text>
+          <Text style={styles.fieldLabel}>{t("changePassword.currentPassword")}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.inputFlex}
               value={oldPassword}
               onChangeText={setOldPassword}
-              placeholder="Aktuelles Passwort"
+              placeholder={t("changePassword.currentPassword")}
               placeholderTextColor={COLORS.tertiary}
               secureTextEntry={!showOld}
               autoCapitalize="none"
@@ -96,13 +98,13 @@ export default function ChangePasswordScreen() {
           </View>
 
           {/* Neues Passwort */}
-          <Text style={styles.fieldLabel}>Neues Passwort</Text>
+          <Text style={styles.fieldLabel}>{t("changePassword.newPassword")}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.inputFlex}
               value={newPassword}
               onChangeText={setNewPassword}
-              placeholder="Mindestens 8 Zeichen"
+              placeholder={t("changePassword.passwordPlaceholder")}
               placeholderTextColor={COLORS.tertiary}
               secureTextEntry={!showNew}
               autoCapitalize="none"
@@ -142,13 +144,13 @@ export default function ChangePasswordScreen() {
           )}
 
           {/* Passwort bestätigen */}
-          <Text style={[styles.fieldLabel, { marginTop: 8 }]}>Passwort bestätigen</Text>
+          <Text style={[styles.fieldLabel, { marginTop: 8 }]}>{t("changePassword.confirmPassword")}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.inputFlex}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
-              placeholder="Passwort wiederholen"
+              placeholder={t("changePassword.confirmPlaceholder")}
               placeholderTextColor={COLORS.tertiary}
               secureTextEntry={!showConfirm}
               autoCapitalize="none"
@@ -171,17 +173,17 @@ export default function ChangePasswordScreen() {
               ]}
             >
               {newPassword === confirmPassword
-                ? "✓ Passwörter stimmen überein"
-                : "✗ Passwörter stimmen nicht überein"}
+                ? t("changePassword.matchOk")
+                : t("changePassword.matchError")}
             </Text>
           )}
 
           {/* Sicherheitshinweis */}
           <View style={styles.tipCard}>
-            <Text style={styles.tipTitle}>Tipps für ein sicheres Passwort</Text>
-            <Text style={styles.tipText}>• Verwende Buchstaben, Zahlen und Sonderzeichen</Text>
-            <Text style={styles.tipText}>• Vermeide Geburtsdatum oder Namen</Text>
-            <Text style={styles.tipText}>• Nutze ein einzigartiges Passwort für diesen Dienst</Text>
+            <Text style={styles.tipTitle}>{t("changePassword.tipsTitle")}</Text>
+            <Text style={styles.tipText}>{t("changePassword.tip1")}</Text>
+            <Text style={styles.tipText}>{t("changePassword.tip2")}</Text>
+            <Text style={styles.tipText}>{t("changePassword.tip3")}</Text>
           </View>
 
           {/* Speichern */}
@@ -191,12 +193,12 @@ export default function ChangePasswordScreen() {
             disabled={isSaving}
           >
             <Text style={styles.saveButtonText}>
-              {isSaving ? "Wird geändert..." : "Passwort ändern"}
+              {isSaving ? t("changePassword.submitting") : t("changePassword.submit")}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
-            <Text style={styles.cancelButtonText}>Abbrechen</Text>
+            <Text style={styles.cancelButtonText}>{t("changePassword.cancel")}</Text>
           </TouchableOpacity>
 
         </ScrollView>

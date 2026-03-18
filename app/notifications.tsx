@@ -11,6 +11,7 @@ import { useData } from "../contexts/DataContext";
 import type { Notification, NotificationType } from "../types";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const TYPE_CONFIG: Record<
   NotificationType,
@@ -22,19 +23,27 @@ const TYPE_CONFIG: Record<
   message: { icon: "💬", bg: "#f3e8ff", color: "#7e22ce" },
 };
 
-function timeAgo(isoDate: string): string {
-  const diff = Date.now() - new Date(isoDate).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 60) return `vor ${minutes} Min.`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `vor ${hours} Std.`;
-  const days = Math.floor(hours / 24);
-  return `vor ${days} Tag${days > 1 ? "en" : ""}`;
-}
-
 export default function NotificationsScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const { notifications, markAsRead, markAllAsRead } = useData();
+
+  function timeAgo(isoDate: string): string {
+    const diff = Date.now() - new Date(isoDate).getTime();
+    const minutes = Math.floor(diff / 60000);
+    if (minutes < 60) return t("notifications.minutesAgo").replace("{0}", String(minutes));
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return t("notifications.hoursAgo").replace("{0}", String(hours));
+    const days = Math.floor(hours / 24);
+    return t("notifications.daysAgo").replace("{0}", String(days)).replace("{1}", days > 1 ? "en" : "");
+  }
+
+  const typeLabel = (type: NotificationType): string => {
+    if (type === "assignment") return t("notifications.typeAssignment");
+    if (type === "reminder") return t("notifications.typeReminder");
+    if (type === "progress") return t("notifications.typeProgress");
+    return t("notifications.typeMessage");
+  };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const sorted = [...notifications].sort(
@@ -52,14 +61,14 @@ export default function NotificationsScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>‹ Zurück</Text>
+              <Text style={styles.backText}>‹ {t("common.back")}</Text>
             </TouchableOpacity>
           </View>
-          <Text style={styles.headerTitle}>Benachrichtigungen</Text>
+          <Text style={styles.headerTitle}>{t("notifications.title")}</Text>
           <View style={styles.headerRight}>
             {unreadCount > 0 && (
               <TouchableOpacity onPress={markAllAsRead}>
-                <Text style={styles.markAllText}>Alle lesen</Text>
+                <Text style={styles.markAllText}>{t("notifications.markAll")}</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -68,7 +77,7 @@ export default function NotificationsScreen() {
         {unreadCount > 0 && (
           <View style={styles.unreadBanner}>
             <Text style={styles.unreadBannerText}>
-              {unreadCount} ungelesene Benachrichtigung{unreadCount > 1 ? "en" : ""}
+              {t("notifications.unread").replace("{0}", String(unreadCount)).replace("{1}", unreadCount > 1 ? "en" : "")}
             </Text>
           </View>
         )}
@@ -77,9 +86,9 @@ export default function NotificationsScreen() {
           {sorted.length === 0 ? (
             <View style={styles.emptyBox}>
               <Text style={styles.emptyIcon}>🔔</Text>
-              <Text style={styles.emptyTitle}>Keine Benachrichtigungen</Text>
+              <Text style={styles.emptyTitle}>{t("notifications.emptyTitle")}</Text>
               <Text style={styles.emptyText}>
-                Hier erscheinen Zuweisungen, Erinnerungen und Fortschrittsmeldungen.
+                {t("notifications.emptyText")}
               </Text>
             </View>
           ) : (
@@ -115,10 +124,7 @@ export default function NotificationsScreen() {
                     </Text>
                     <View style={[styles.typeBadge, { backgroundColor: config.bg }]}>
                       <Text style={[styles.typeBadgeText, { color: config.color }]}>
-                        {notification.type === "assignment" && "Zuweisung"}
-                        {notification.type === "reminder" && "Erinnerung"}
-                        {notification.type === "progress" && "Fortschritt"}
-                        {notification.type === "message" && "Nachricht"}
+                        {typeLabel(notification.type)}
                       </Text>
                     </View>
                   </View>

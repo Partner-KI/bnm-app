@@ -12,32 +12,26 @@ import {
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
-const SESSION_STEPS = [
-  "Registrierung",
-  "Zuweisung",
-  "Erstkontakt",
-  "Ersttreffen",
-  "BNM-Box",
-  "Wudu",
-  "Salah",
-  "Koran (5 Suren)",
-  "Community",
-  "Nachbetreuung",
-];
-
-const CONTACT_TIPS = [
-  "Schreibe innerhalb von 24 Stunden nach der Zuweisung.",
-  "Stelle dich kurz und persönlich vor.",
-  "Erkläre das BNM-Programm auf einfache Weise.",
-  "Vereinbare ein erstes Treffen in einer ruhigen Umgebung.",
-  "Zeige echtes Interesse – jeder Mensch hat eine eigene Geschichte.",
-];
-
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const SESSION_STEPS = [
+    "Registrierung", "Zuweisung", "Erstkontakt", "Ersttreffen", "BNM-Box",
+    "Wudu", "Salah", "Koran (5 Suren)", "Community", "Nachbetreuung",
+  ];
+
+  const CONTACT_TIPS = [
+    t("onboarding.tip1"),
+    t("onboarding.tip2"),
+    t("onboarding.tip3"),
+    t("onboarding.tip4"),
+    t("onboarding.tip5"),
+  ];
   const scrollRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const totalPages = 3;
@@ -64,7 +58,7 @@ export default function OnboardingScreen() {
       <View style={styles.root}>
         {/* Überspringen-Link */}
         <TouchableOpacity style={styles.skipButton} onPress={handleSkip}>
-          <Text style={styles.skipText}>Überspringen</Text>
+          <Text style={styles.skipText}>{t("onboarding.skip")}</Text>
         </TouchableOpacity>
 
         {/* Slides */}
@@ -88,41 +82,36 @@ export default function OnboardingScreen() {
               </View>
 
               <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>Willkommen bei BNM</Text>
+                <Text style={styles.headerBadgeText}>{t("onboarding.slide1Badge")}</Text>
               </View>
 
               <Text style={styles.slideTitle}>
-                Betreuung neuer Muslime
+                {t("onboarding.slide1Title")}
               </Text>
 
               <Text style={styles.slideBody}>
-                BNM ist ein strukturiertes Mentoring-Programm, das neue Muslime
-                auf ihrem Weg begleitet. Als Mentor bist du eine wichtige
-                Vertrauensperson – du bist der erste Ansprechpartner für Fragen
-                zum Islam und zur muslimischen Gemeinschaft.
+                {t("onboarding.slide1Body")}
               </Text>
 
               <View style={styles.highlightBox}>
-                <Text style={styles.highlightTitle}>Deine Rolle als Mentor</Text>
+                <Text style={styles.highlightTitle}>{t("onboarding.slide1HighlightTitle")}</Text>
                 <Text style={styles.highlightText}>
-                  Du begleitest deinen Mentee durch 10 aufeinander aufbauende
-                  Schritte – von der Registrierung bis zur langfristigen
-                  Nachbetreuung.
+                  {t("onboarding.slide1HighlightText")}
                 </Text>
               </View>
 
               <View style={styles.statsRow}>
                 <View style={styles.statPill}>
                   <Text style={styles.statPillNumber}>10</Text>
-                  <Text style={styles.statPillLabel}>Schritte</Text>
+                  <Text style={styles.statPillLabel}>{t("onboarding.slide1Steps")}</Text>
                 </View>
                 <View style={styles.statPill}>
                   <Text style={styles.statPillNumber}>1:1</Text>
-                  <Text style={styles.statPillLabel}>Betreuung</Text>
+                  <Text style={styles.statPillLabel}>{t("onboarding.slide1OneOnOne")}</Text>
                 </View>
                 <View style={styles.statPill}>
                   <Text style={styles.statPillNumber}>✓</Text>
-                  <Text style={styles.statPillLabel}>Dokumentiert</Text>
+                  <Text style={styles.statPillLabel}>{t("onboarding.slide1Documented")}</Text>
                 </View>
               </View>
             </View>
@@ -132,16 +121,15 @@ export default function OnboardingScreen() {
           <View style={[styles.slide, { width: SCREEN_WIDTH }]}>
             <View style={styles.slideInner}>
               <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>So funktioniert's</Text>
+                <Text style={styles.headerBadgeText}>{t("onboarding.slide2Badge")}</Text>
               </View>
 
               <Text style={styles.slideTitle}>
-                Die 10 Mentoring-Schritte
+                {t("onboarding.slide2Title")}
               </Text>
 
               <Text style={styles.slideBody}>
-                Jeder Schritt wird von dir dokumentiert. Erst nach
-                Dokumentation wird der nächste Schritt freigeschaltet.
+                {t("onboarding.slide2Body")}
               </Text>
 
               <View style={styles.stepsGrid}>
@@ -157,8 +145,7 @@ export default function OnboardingScreen() {
 
               <View style={styles.noteBox}>
                 <Text style={styles.noteText}>
-                  Alle Schritte sind sequenziell – kein Überspringen möglich.
-                  So wird eine vollständige Begleitung sichergestellt.
+                  {t("onboarding.slide2Note")}
                 </Text>
               </View>
             </View>
@@ -174,14 +161,13 @@ export default function OnboardingScreen() {
               </View>
 
               <View style={[styles.headerBadge, { backgroundColor: "rgba(238,167,27,0.15)", borderColor: "rgba(238,167,27,0.4)" }]}>
-                <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>Tipps für den Erstkontakt</Text>
+                <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>{t("onboarding.slide3Badge")}</Text>
               </View>
 
-              <Text style={styles.slideTitle}>Los geht's!</Text>
+              <Text style={styles.slideTitle}>{t("onboarding.slide3Title")}</Text>
 
               <Text style={styles.slideBody}>
-                Der erste Kontakt ist entscheidend. Hier sind einige Tipps
-                für einen guten Start mit deinem Mentee:
+                {t("onboarding.slide3Body")}
               </Text>
 
               <View style={styles.tipsCard}>
@@ -194,10 +180,9 @@ export default function OnboardingScreen() {
               </View>
 
               <View style={styles.reminderBox}>
-                <Text style={styles.reminderTitle}>Wichtig: Geschlechtertrennung</Text>
+                <Text style={styles.reminderTitle}>{t("onboarding.reminderTitle")}</Text>
                 <Text style={styles.reminderText}>
-                  Brüder betreuen nur Brüder, Schwestern nur Schwestern.
-                  Diese Regel ist absolut verbindlich.
+                  {t("onboarding.reminderText")}
                 </Text>
               </View>
             </View>
@@ -221,7 +206,7 @@ export default function OnboardingScreen() {
         <View style={styles.ctaContainer}>
           <TouchableOpacity style={styles.ctaButton} onPress={goToNext}>
             <Text style={styles.ctaText}>
-              {currentPage < totalPages - 1 ? "Weiter" : "Dashboard öffnen"}
+              {currentPage < totalPages - 1 ? t("onboarding.next") : t("onboarding.openDashboard")}
             </Text>
           </TouchableOpacity>
         </View>

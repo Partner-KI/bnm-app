@@ -12,20 +12,16 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { COLORS } from "../constants/Colors";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const ERSTKONTAKT_TYPE_NAME = "Erstkontakt";
 const BNM_BOX_TYPE_NAME = "BNM-Box";
 const NACHBETREUUNG_TYPE_NAME = "Nachbetreuung";
 
-const BNM_BOX_DELIVERY_OPTIONS = [
-  { key: "persoenlich", label: "Persönlich" },
-  { key: "post", label: "Per Post" },
-  { key: "gutschein", label: "Gutschein" },
-] as const;
-
 export default function DocumentSessionScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const {
     getMentorshipsByMentorId,
     getMentorshipById,
@@ -38,13 +34,11 @@ export default function DocumentSessionScreen() {
 
   const params = useLocalSearchParams<{ mentorshipId?: string }>();
 
-  // FIX 1: Auch "completed" Mentorships einbeziehen
-  // FIX 3: Admin und Office sehen ALLE Mentorships
   const isAdmin = user?.role === "admin" || user?.role === "office";
 
   const myMentorships = user
     ? isAdmin
-      ? mentorships // Admin sieht alle
+      ? mentorships
       : getMentorshipsByMentorId(user.id).filter(
           (m) => m.status === "active" || m.status === "completed"
         )
@@ -58,23 +52,18 @@ export default function DocumentSessionScreen() {
   const [details, setDetails] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
 
-  // FIX 3: Admin kann Session-Typ frei wählen
   const [adminSelectedTypeId, setAdminSelectedTypeId] = useState<string>("");
-
-  // FIX 8: Kontakt-Versuche
   const [attemptNumber, setAttemptNumber] = useState<string>("");
-
-  // FIX 9: BNM-Box Übergabe-Art
   const [bnmBoxDelivery, setBnmBoxDelivery] = useState<string>("");
-
-  // Feature: Dauer in Minuten
   const [durationMinutes, setDurationMinutes] = useState<string>("");
-
-  // Feature: Weitere Session für allows_multiple Steps
   const [forceNewSession, setForceNewSession] = useState<boolean>(false);
-
-  // Welcher allows_multiple Step soll zusätzlich dokumentiert werden
   const [additionalStepId, setAdditionalStepId] = useState<string>("");
+
+  const BNM_BOX_DELIVERY_OPTIONS = [
+    { key: "persoenlich", label: t("docSession.deliveryPersonal") },
+    { key: "post", label: t("docSession.deliveryPost") },
+    { key: "gutschein", label: t("docSession.deliveryVoucher") },
+  ] as const;
 
   const selectedMentorship = selectedMentorshipId
     ? getMentorshipById(selectedMentorshipId)
@@ -86,23 +75,17 @@ export default function DocumentSessionScreen() {
 
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
 
-  // Nächster sequenzieller Step (für Mentor-Modus)
-  // Ein Step gilt als abgeschlossen wenn er mind. 1 Session hat (getCompletedStepIds gibt eindeutige IDs zurück)
   const nextStep = sortedSessionTypes.find((st) => !completedStepIds.includes(st.id));
 
-  // Aktuell aktiver Step (auch für allows_multiple – wenn forceNewSession gesetzt)
-  // Letzter abgeschlossener Step wenn allows_multiple und forceNewSession
   const lastCompletedAllowsMultipleStep = forceNewSession
     ? sortedSessionTypes
         .filter((st) => completedStepIds.includes(st.id) && st.allows_multiple)
         .at(-1)
     : undefined;
 
-  // FIX 1: Nachbetreuungs-Modus wenn Mentorship completed
   const isCompleted = selectedMentorship?.status === "completed";
   const nachbetreuungType = sessionTypes.find((st) => st.name === NACHBETREUUNG_TYPE_NAME);
 
-  // Aktiver Session-Typ (je nach Modus)
   const activeSessionType = isAdmin
     ? sessionTypes.find((st) => st.id === adminSelectedTypeId)
     : isCompleted
@@ -113,15 +96,12 @@ export default function DocumentSessionScreen() {
     ? lastCompletedAllowsMultipleStep
     : nextStep;
 
-  // Ist es ein Erstkontakt-Step?
   const isErstkontaktStep =
     activeSessionType?.name === ERSTKONTAKT_TYPE_NAME;
 
-  // Ist es ein BNM-Box-Step?
   const isBnmBoxStep =
     activeSessionType?.name === BNM_BOX_TYPE_NAME;
 
-  // FIX 8: Anzahl bisheriger Erstkontakt-Sessions für diese Mentorship
   const allSessions = selectedMentorshipId
     ? getSessionsByMentorshipId(selectedMentorshipId)
     : [];
@@ -130,17 +110,14 @@ export default function DocumentSessionScreen() {
     ? allSessions.filter((s) => s.session_type_id === erstkontaktTypeId).length
     : 0;
 
-  // Anzahl bisheriger Sessions für den aktiven allows_multiple Step (Mentor-Modus)
   const activeStepSessionCount = activeSessionType
     ? allSessions.filter((s) => s.session_type_id === activeSessionType.id).length
     : 0;
 
-  // Liste der abgeschlossenen allows_multiple Steps (für "Weitere Session" Button)
   const completedAllowsMultipleSteps = sortedSessionTypes.filter(
     (st) => st.allows_multiple && completedStepIds.includes(st.id)
   );
 
-  // Zeige "Weitere Session hinzufügen"-Bereich nur für Mentor (nicht admin, nicht completed)
   const showAddMoreSession =
     !isAdmin &&
     !isCompleted &&
@@ -150,20 +127,18 @@ export default function DocumentSessionScreen() {
   async function handleSave() {
     if (!selectedMentorshipId || !user) return;
 
-    // Admin: muss Session-Typ gewählt haben
     if (isAdmin && !adminSelectedTypeId) {
-      showError("Bitte wähle einen Session-Typ.");
+      showError(t("docSession.selectTypeError"));
       return;
     }
 
-    // Mentor: kein nextStep bei aktiver Mentorship? Abbruch (außer bei weiterer Session)
     if (!isAdmin && !isCompleted && !nextStep && !forceNewSession) {
-      showSuccess("Alle Steps für diese Betreuung sind bereits abgeschlossen.");
+      showSuccess(t("docSession.allDoneSuccess"));
       return;
     }
 
     if (!date.trim()) {
-      showError("Bitte gib ein Datum ein.");
+      showError(t("docSession.dateError"));
       return;
     }
 
@@ -178,7 +153,7 @@ export default function DocumentSessionScreen() {
       : nextStep?.id ?? "";
 
     if (!sessionTypeId) {
-      showError("Kein gültiger Session-Typ gefunden.");
+      showError(t("docSession.noTypeError"));
       return;
     }
 
@@ -197,17 +172,15 @@ export default function DocumentSessionScreen() {
       isoDate = new Date().toISOString();
     }
 
-    // FIX 9: BNM-Box Details vorausfüllen
     let finalDetails = details.trim() || undefined;
     if (isBnmBoxStep && bnmBoxDelivery) {
       const deliveryLabel =
         BNM_BOX_DELIVERY_OPTIONS.find((o) => o.key === bnmBoxDelivery)?.label ?? bnmBoxDelivery;
       finalDetails = finalDetails
-        ? `Übergabe: ${deliveryLabel} – ${finalDetails}`
-        : `Übergabe: ${deliveryLabel}`;
+        ? t("docSession.handoverWithDetails").replace("{0}", deliveryLabel).replace("{1}", finalDetails)
+        : t("docSession.handoverPrefix").replace("{0}", deliveryLabel);
     }
 
-    // FIX 8: attempt_number für Erstkontakt
     const attemptNum = isErstkontaktStep && attemptNumber
       ? parseInt(attemptNumber, 10) || undefined
       : undefined;
@@ -233,13 +206,13 @@ export default function DocumentSessionScreen() {
     setDurationMinutes("");
 
     const typeName = activeSessionType?.name ?? "Session";
-    showSuccess(`"${typeName}" wurde erfolgreich dokumentiert.`, () => router.back());
+    showSuccess(t("docSession.successMsg").replace("{0}", typeName), () => router.back());
   }
 
   if (!user || (user.role !== "mentor" && user.role !== "admin" && user.role !== "office")) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Nur für Mentoren, Admins und Office.</Text>
+        <Text style={styles.accessText}>{t("docSession.accessDenied")}</Text>
       </View>
     );
   }
@@ -247,12 +220,12 @@ export default function DocumentSessionScreen() {
   if (myMentorships.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.boldTitle}>Keine Betreuungen gefunden</Text>
+        <Text style={styles.boldTitle}>{t("docSession.noMentorships")}</Text>
         <Text style={styles.centerSubText}>
-          {isAdmin ? "Es gibt noch keine Mentorships." : "Du hast keine aktiven oder abgeschlossenen Mentees."}
+          {isAdmin ? t("docSession.noMentorshipsAdmin") : t("docSession.noMentorshipsText")}
         </Text>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Text style={styles.backButtonText}>Zurück</Text>
+          <Text style={styles.backButtonText}>{t("docSession.back")}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -265,7 +238,7 @@ export default function DocumentSessionScreen() {
         {(myMentorships.length > 1 || isAdmin) && (
           <>
             <Text style={styles.sectionLabel}>
-              {isAdmin ? "BETREUUNG WÄHLEN (ALLE)" : "BETREUUNG WÄHLEN"}
+              {isAdmin ? t("docSession.chooseAll") : t("docSession.choose")}
             </Text>
             <View style={styles.listCard}>
               {myMentorships.map((m, idx) => (
@@ -296,7 +269,7 @@ export default function DocumentSessionScreen() {
                   <View style={{ flex: 1 }}>
                     <Text style={styles.itemName}>{m.mentee?.name}</Text>
                     <Text style={styles.itemSub}>
-                      {m.mentor?.name} · {m.status === "completed" ? "Abgeschlossen" : "Aktiv"}
+                      {m.mentor?.name} · {m.status === "completed" ? t("docSession.completed") : t("docSession.active")}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -305,23 +278,20 @@ export default function DocumentSessionScreen() {
           </>
         )}
 
-        {/* Aktueller Step / Betreuungsinfo */}
         {selectedMentorship && (
           <>
-            {/* FIX 1: Nachbetreuungs-Banner für completed */}
             {isCompleted && (
               <View style={styles.nachbetreuungBox}>
-                <Text style={styles.nachbetreuungLabel}>{"NACHBETREUUNG"}</Text>
+                <Text style={styles.nachbetreuungLabel}>{t("docSession.aftercare")}</Text>
                 <Text style={styles.nachbetreuungText}>
-                  Diese Betreuung ist abgeschlossen. Du kannst eine Nachbetreuungs-Session dokumentieren.
+                  {t("docSession.aftercareText")}
                 </Text>
               </View>
             )}
 
-            {/* Step-Fortschritt (nur bei aktiven Mentorships) */}
             {!isCompleted && (
               <View style={styles.progressCard}>
-                <Text style={styles.progressCardLabel}>Betreuung von</Text>
+                <Text style={styles.progressCardLabel}>{t("docSession.menteeOf")}</Text>
                 <Text style={styles.progressCardName}>{selectedMentorship.mentee?.name}</Text>
 
                 <View style={styles.miniStepRow}>
@@ -342,15 +312,16 @@ export default function DocumentSessionScreen() {
                 </View>
 
                 <Text style={styles.progressCardSub}>
-                  {completedStepIds.length} von {sessionTypes.length} Steps abgeschlossen
+                  {t("docSession.stepsCompleted")
+                    .replace("{0}", String(completedStepIds.length))
+                    .replace("{1}", String(sessionTypes.length))}
                 </Text>
               </View>
             )}
 
-            {/* FIX 3: Admin kann Session-Typ frei wählen */}
             {isAdmin && !isCompleted && (
               <>
-                <Text style={styles.sectionLabel}>{"SESSION-TYP WÄHLEN"}</Text>
+                <Text style={styles.sectionLabel}>{t("docSession.chooseType")}</Text>
                 <View style={styles.listCard}>
                   {sortedSessionTypes.map((st, idx) => (
                     <TouchableOpacity
@@ -378,7 +349,7 @@ export default function DocumentSessionScreen() {
                       </View>
                       {completedStepIds.includes(st.id) && (
                         <View style={styles.doneChip}>
-                          <Text style={styles.doneChipText}>Erledigt</Text>
+                          <Text style={styles.doneChipText}>{t("docSession.done")}</Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -387,10 +358,9 @@ export default function DocumentSessionScreen() {
               </>
             )}
 
-            {/* Nächster Step Info (Mentor-Modus, aktive Betreuung) */}
             {!isAdmin && !isCompleted && nextStep && (
               <View style={styles.amberBox}>
-                <Text style={styles.amberLabel}>{"NÄCHSTER SCHRITT"}</Text>
+                <Text style={styles.amberLabel}>{t("docSession.nextStep")}</Text>
                 <Text style={styles.amberStepName}>
                   {nextStep.sort_order}. {nextStep.name}
                 </Text>
@@ -398,16 +368,14 @@ export default function DocumentSessionScreen() {
               </View>
             )}
 
-            {/* Formular anzeigen wenn: Nachbetreuung ODER aktiver NextStep ODER Admin hat Typ gewählt ODER weitere Session */}
             {(isCompleted || nextStep || (isAdmin && adminSelectedTypeId) || forceNewSession) && (
               <>
-                <Text style={styles.sectionLabel}>{"SESSION DOKUMENTIEREN"}</Text>
+                <Text style={styles.sectionLabel}>{t("docSession.document")}</Text>
 
-                {/* FIX 8: Erstkontakt – Versuch-Nummer */}
                 {isErstkontaktStep && (
                   <View style={styles.formCard}>
                     <Text style={styles.formLabel}>
-                      Kontaktversuch Nr. (bisherige: {previousAttempts})
+                      {t("docSession.contactAttempt").replace("{0}", String(previousAttempts))}
                     </Text>
                     <TextInput
                       style={styles.textInput}
@@ -419,16 +387,17 @@ export default function DocumentSessionScreen() {
                     />
                     {previousAttempts > 0 && (
                       <Text style={styles.attemptHint}>
-                        Es wurden bereits {previousAttempts} Kontaktversuch{previousAttempts !== 1 ? "e" : ""} dokumentiert.
+                        {t("docSession.previousAttempts")
+                          .replace("{0}", String(previousAttempts))
+                          .replace("{1}", previousAttempts !== 1 ? "e" : "")}
                       </Text>
                     )}
                   </View>
                 )}
 
-                {/* FIX 9: BNM-Box Übergabe-Art */}
                 {isBnmBoxStep && (
                   <View style={styles.formCard}>
-                    <Text style={styles.formLabel}>Übergabe-Art</Text>
+                    <Text style={styles.formLabel}>{t("docSession.deliveryType")}</Text>
                     <View style={styles.toggleRow}>
                       {BNM_BOX_DELIVERY_OPTIONS.map((opt) => (
                         <TouchableOpacity
@@ -452,9 +421,8 @@ export default function DocumentSessionScreen() {
                   </View>
                 )}
 
-                {/* Datum */}
                 <View style={styles.formCard}>
-                  <Text style={styles.formLabel}>Datum (TT.MM.JJJJ)</Text>
+                  <Text style={styles.formLabel}>{t("docSession.dateLabel")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={date}
@@ -465,9 +433,8 @@ export default function DocumentSessionScreen() {
                   />
                 </View>
 
-                {/* Online / Offline Toggle */}
                 <View style={styles.formCard}>
-                  <Text style={styles.formLabel}>Durchführung</Text>
+                  <Text style={styles.formLabel}>{t("docSession.execution")}</Text>
                   <View style={styles.toggleRow}>
                     <TouchableOpacity
                       style={[
@@ -477,7 +444,7 @@ export default function DocumentSessionScreen() {
                       onPress={() => setIsOnline(false)}
                     >
                       <Text style={!isOnline ? styles.toggleTextActive : styles.toggleTextInactive}>
-                        Vor Ort
+                        {t("docSession.inPerson")}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -488,20 +455,19 @@ export default function DocumentSessionScreen() {
                       onPress={() => setIsOnline(true)}
                     >
                       <Text style={isOnline ? styles.toggleTextActive : styles.toggleTextInactive}>
-                        Online
+                        {t("docSession.online")}
                       </Text>
                     </TouchableOpacity>
                   </View>
                 </View>
 
-                {/* Details */}
                 <View style={styles.formCard}>
-                  <Text style={styles.formLabel}>Details (optional)</Text>
+                  <Text style={styles.formLabel}>{t("docSession.detailsLabel")}</Text>
                   <TextInput
                     style={[styles.textInput, { height: 80, minHeight: undefined }]}
                     value={details}
                     onChangeText={setDetails}
-                    placeholder="Notizen zur Session..."
+                    placeholder={t("docSession.detailsPlaceholder")}
                     placeholderTextColor="#98A2B3"
                     multiline
                     numberOfLines={4}
@@ -509,9 +475,8 @@ export default function DocumentSessionScreen() {
                   />
                 </View>
 
-                {/* Dauer in Minuten */}
                 <View style={styles.formCard}>
-                  <Text style={styles.formLabel}>Dauer (optional)</Text>
+                  <Text style={styles.formLabel}>{t("docSession.durationLabel")}</Text>
                   <TextInput
                     style={styles.textInput}
                     value={durationMinutes}
@@ -520,10 +485,9 @@ export default function DocumentSessionScreen() {
                     placeholderTextColor="#98A2B3"
                     keyboardType="number-pad"
                   />
-                  <Text style={styles.attemptHint}>Dauer der Session in Minuten</Text>
+                  <Text style={styles.attemptHint}>{t("docSession.durationHint")}</Text>
                 </View>
 
-                {/* Speichern */}
                 <TouchableOpacity
                   style={[
                     styles.saveButton,
@@ -533,28 +497,26 @@ export default function DocumentSessionScreen() {
                   disabled={isSaving}
                 >
                   <Text style={styles.saveButtonText}>
-                    {isSaving ? "Wird gespeichert..." : "Session dokumentieren"}
+                    {isSaving ? t("docSession.saving") : t("docSession.save")}
                   </Text>
                 </TouchableOpacity>
               </>
             )}
 
-            {/* Alle Steps abgeschlossen (nur für Mentor-Modus, aktiv) */}
             {!isAdmin && !isCompleted && !nextStep && !forceNewSession && (
               <View style={styles.completedBox}>
-                <Text style={styles.completedTitle}>Alle Steps abgeschlossen!</Text>
+                <Text style={styles.completedTitle}>{t("docSession.allDoneTitle")}</Text>
                 <Text style={styles.completedText}>
-                  Alle Schritte wurden dokumentiert. Die Betreuung kann abgeschlossen werden.
+                  {t("docSession.allDoneText")}
                 </Text>
               </View>
             )}
 
-            {/* Weitere Session hinzufügen (für allows_multiple Steps) */}
             {showAddMoreSession && (
               <View style={styles.moreSessionBox}>
-                <Text style={styles.moreSessionTitle}>Weitere Session dokumentieren</Text>
+                <Text style={styles.moreSessionTitle}>{t("docSession.moreSessionTitle")}</Text>
                 <Text style={styles.moreSessionSub}>
-                  Für folgende Schritte können weitere Sessions dokumentiert werden:
+                  {t("docSession.moreSessionSub")}
                 </Text>
                 <View style={styles.listCard}>
                   {completedAllowsMultipleSteps.map((st, idx) => {
@@ -579,7 +541,11 @@ export default function DocumentSessionScreen() {
                         </View>
                         <View style={{ flex: 1 }}>
                           <Text style={styles.itemName}>{st.sort_order}. {st.name}</Text>
-                          <Text style={styles.itemSub}>{count} Session{count !== 1 ? "s" : ""} bisher</Text>
+                          <Text style={styles.itemSub}>
+                            {count !== 1
+                              ? t("docSession.sessionCountPlural").replace("{0}", String(count))
+                              : t("docSession.sessionCount").replace("{0}", String(count))}
+                          </Text>
                         </View>
                       </TouchableOpacity>
                     );
@@ -591,32 +557,31 @@ export default function DocumentSessionScreen() {
                     onPress={() => setForceNewSession(true)}
                   >
                     <Text style={styles.addMoreButtonText}>
-                      Weitere Session für diesen Schritt →
+                      {t("docSession.moreSessionButton")}
                     </Text>
                   </TouchableOpacity>
                 ) : null}
               </View>
             )}
 
-            {/* forceNewSession: Step wählen und Formular anzeigen */}
             {forceNewSession && (
               <>
                 <View style={styles.amberBox}>
-                  <Text style={styles.amberLabel}>{"WEITERE SESSION"}</Text>
+                  <Text style={styles.amberLabel}>{t("docSession.furtherSession")}</Text>
                   <Text style={styles.amberStepName}>
                     {additionalStepId
                       ? sortedSessionTypes.find((st) => st.id === additionalStepId)?.name ?? ""
                       : lastCompletedAllowsMultipleStep?.name ?? ""}
                   </Text>
                   <Text style={styles.amberDesc}>
-                    Session {activeStepSessionCount + 1} von unbegrenzt
+                    {t("docSession.unlimited").replace("{0}", String(activeStepSessionCount + 1))}
                   </Text>
                 </View>
                 <TouchableOpacity
                   style={styles.cancelMoreButton}
                   onPress={() => { setForceNewSession(false); setAdditionalStepId(""); }}
                 >
-                  <Text style={styles.cancelMoreButtonText}>Abbrechen</Text>
+                  <Text style={styles.cancelMoreButtonText}>{t("docSession.cancelMore")}</Text>
                 </TouchableOpacity>
               </>
             )}

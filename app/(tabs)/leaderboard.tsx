@@ -13,6 +13,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface MentorScore {
   mentorId: string;
@@ -33,6 +34,7 @@ type GenderFilter = "all" | "male" | "female";
 export default function LeaderboardScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { users, mentorships, sessions, mentorOfMonthVisible, refreshData } = useData();
 
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
@@ -113,12 +115,12 @@ export default function LeaderboardScreen() {
 
   const listTitle = useMemo(() => {
     if (user?.role === "mentor" || user?.role === "mentee") {
-      return user.gender === "male" ? "Brüder-Rangliste" : "Schwestern-Rangliste";
+      return user.gender === "male" ? t("leaderboard.brothersList") : t("leaderboard.sistersList");
     }
-    if (genderFilter === "male") return "Brüder-Rangliste";
-    if (genderFilter === "female") return "Schwestern-Rangliste";
-    return "Alle Mentoren";
-  }, [user, genderFilter]);
+    if (genderFilter === "male") return t("leaderboard.brothersList");
+    if (genderFilter === "female") return t("leaderboard.sistersList");
+    return t("leaderboard.allMentors");
+  }, [user, genderFilter, t]);
 
   return (
     <Container>
@@ -127,15 +129,15 @@ export default function LeaderboardScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
       >
         <View style={styles.page}>
-          <Text style={styles.pageTitle}>Rangliste</Text>
+          <Text style={styles.pageTitle}>{t("leaderboard.title")}</Text>
           <Text style={styles.pageSubtitle}>
-            Score = Abschlüsse × 10 + Sessions × 3
+            {t("leaderboard.subtitle")}
           </Text>
 
           {/* Suche nach Mentor-Name */}
           <TextInput
             style={styles.searchInput}
-            placeholder="Mentor nach Name suchen..."
+            placeholder={t("leaderboard.searchPlaceholder")}
             placeholderTextColor="#98A2B3"
             value={search}
             onChangeText={setSearch}
@@ -144,13 +146,13 @@ export default function LeaderboardScreen() {
           {/* Admin-Filter für Geschlecht */}
           {isAdmin && (
             <View style={styles.filterCard}>
-              <Text style={styles.filterLabel}>{"ANZEIGE"}</Text>
+              <Text style={styles.filterLabel}>{t("leaderboard.filter")}</Text>
               <View style={styles.filterRow}>
                 {(
                   [
-                    { key: "all", label: "Alle" },
-                    { key: "male", label: "Brüder" },
-                    { key: "female", label: "Schwestern" },
+                    { key: "all", label: t("leaderboard.all") },
+                    { key: "male", label: t("leaderboard.brothers") },
+                    { key: "female", label: t("leaderboard.sisters") },
                   ] as const
                 ).map((opt) => (
                   <TouchableOpacity
@@ -181,8 +183,8 @@ export default function LeaderboardScreen() {
             <View style={styles.genderHintBox}>
               <Text style={styles.genderHintText}>
                 {user.gender === "male"
-                  ? "Du siehst nur die Rangliste der Brüder."
-                  : "Du siehst nur die Rangliste der Schwestern."}
+                  ? t("leaderboard.hintBrothers")
+                  : t("leaderboard.hintSisters")}
               </Text>
             </View>
           )}
@@ -192,21 +194,21 @@ export default function LeaderboardScreen() {
             <View style={styles.momBanner}>
               <View style={styles.momHeader}>
                 <Text style={styles.momStar}>★</Text>
-                <Text style={styles.momTitle}>Mentor des Monats</Text>
+                <Text style={styles.momTitle}>{t("leaderboard.mentorOfMonth")}</Text>
               </View>
               <Text style={styles.momName}>{mentorOfMonthForUser.name}</Text>
               <View style={styles.momStatsRow}>
                 <View style={styles.momStatPill}>
                   <Text style={styles.momStatValue}>{mentorOfMonthForUser.score}</Text>
-                  <Text style={styles.momStatLabel}>Punkte</Text>
+                  <Text style={styles.momStatLabel}>{t("leaderboard.points")}</Text>
                 </View>
                 <View style={styles.momStatPill}>
                   <Text style={styles.momStatValue}>{mentorOfMonthForUser.completedCount}</Text>
-                  <Text style={styles.momStatLabel}>Abschlüsse</Text>
+                  <Text style={styles.momStatLabel}>{t("leaderboard.completions")}</Text>
                 </View>
                 <View style={styles.momStatPill}>
                   <Text style={styles.momStatValue}>{mentorOfMonthForUser.sessionCount}</Text>
-                  <Text style={styles.momStatLabel}>Sessions</Text>
+                  <Text style={styles.momStatLabel}>{t("leaderboard.sessions")}</Text>
                 </View>
               </View>
             </View>
@@ -215,10 +217,10 @@ export default function LeaderboardScreen() {
           {/* Eigene Position (nur für Mentoren) */}
           {user?.role === "mentor" && myRankIndex >= 0 && (
             <View style={styles.myPositionCard}>
-              <Text style={styles.myPositionLabel}>Deine Position</Text>
-              <Text style={styles.myPositionRank}>Platz {myRankIndex + 1}</Text>
+              <Text style={styles.myPositionLabel}>{t("leaderboard.yourPosition")}</Text>
+              <Text style={styles.myPositionRank}>{t("leaderboard.place").replace("{0}", String(myRankIndex + 1))}</Text>
               <Text style={styles.myPositionScore}>
-                {ranked[myRankIndex].score} Punkte
+                {ranked[myRankIndex].score} {t("leaderboard.points")}
               </Text>
             </View>
           )}
@@ -227,7 +229,7 @@ export default function LeaderboardScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{listTitle}</Text>
             {ranked.length === 0 ? (
-              <Text style={styles.emptyText}>Keine Mentoren vorhanden.</Text>
+              <Text style={styles.emptyText}>{t("leaderboard.noMentors")}</Text>
             ) : (
               ranked.map((item, index) => {
                 const isTop3 = index < 3;
@@ -268,7 +270,7 @@ export default function LeaderboardScreen() {
                         <Text style={styles.rankName}>{item.name}</Text>
                         {isMe && (
                           <View style={styles.meChip}>
-                            <Text style={styles.meChipText}>Du</Text>
+                            <Text style={styles.meChipText}>{t("leaderboard.you")}</Text>
                           </View>
                         )}
                         {isTop3 && (
@@ -278,10 +280,10 @@ export default function LeaderboardScreen() {
                         )}
                       </View>
                       <Text style={styles.rankSub}>
-                        {item.city} · {item.gender === "male" ? "Bruder" : "Schwester"}
+                        {item.city} · {item.gender === "male" ? t("leaderboard.brother") : t("leaderboard.sister")}
                       </Text>
                       <Text style={styles.rankDetail}>
-                        {item.completedCount} Abschlüsse · {item.sessionCount} Sessions
+                        {item.completedCount} {t("leaderboard.completions")} · {item.sessionCount} {t("leaderboard.sessions")}
                       </Text>
                     </View>
 
@@ -294,7 +296,7 @@ export default function LeaderboardScreen() {
                       >
                         {item.score}
                       </Text>
-                      <Text style={styles.scoreLabel}>Pkt.</Text>
+                      <Text style={styles.scoreLabel}>{t("leaderboard.points_short")}</Text>
                     </View>
                   </TouchableOpacity>
                 );
@@ -304,17 +306,17 @@ export default function LeaderboardScreen() {
 
           {/* Legende */}
           <View style={styles.legendCard}>
-            <Text style={styles.legendTitle}>Punktesystem</Text>
+            <Text style={styles.legendTitle}>{t("leaderboard.legendTitle")}</Text>
             <View style={styles.legendRow}>
               <View style={styles.legendDot} />
               <Text style={styles.legendText}>
-                Abgeschlossene Betreuung = <Text style={styles.legendBold}>10 Punkte</Text>
+                {t("leaderboard.legendCompleted")}
               </Text>
             </View>
             <View style={styles.legendRow}>
               <View style={styles.legendDot} />
               <Text style={styles.legendText}>
-                Dokumentierte Session = <Text style={styles.legendBold}>3 Punkte</Text>
+                {t("leaderboard.legendSession")}
               </Text>
             </View>
           </View>

@@ -11,6 +11,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 type FeedbackFilter = "all" | "positive" | "negative";
 
@@ -28,6 +29,7 @@ function StarRating({ rating }: { rating: number }) {
 
 export default function FeedbackOverviewScreen() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { getFeedbacks, users, mentorships } = useData();
   const [filter, setFilter] = useState<FeedbackFilter>("all");
   const [search, setSearch] = useState("");
@@ -59,7 +61,7 @@ export default function FeedbackOverviewScreen() {
   if (user?.role !== "admin") {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Nur für Admins zugänglich.</Text>
+        <Text style={styles.accessText}>{t("feedbackOverview.accessDenied")}</Text>
       </View>
     );
   }
@@ -68,15 +70,15 @@ export default function FeedbackOverviewScreen() {
     <Container>
       <ScrollView style={styles.scrollView}>
         <View style={styles.page}>
-          <Text style={styles.pageTitle}>Feedback-Übersicht</Text>
+          <Text style={styles.pageTitle}>{t("feedbackOverview.title")}</Text>
           <Text style={styles.pageSubtitle}>
-            {allFeedbacks.length} Feedbacks insgesamt
+            {t("feedbackOverview.total").replace("{0}", String(allFeedbacks.length))}
           </Text>
 
           {/* Suche */}
           <TextInput
             style={styles.searchInput}
-            placeholder="Name oder Kommentar suchen..."
+            placeholder={t("feedbackOverview.search")}
             placeholderTextColor="#98A2B3"
             value={search}
             onChangeText={setSearch}
@@ -87,9 +89,9 @@ export default function FeedbackOverviewScreen() {
             <View style={styles.warningBanner}>
               <Text style={styles.warningIcon}>!</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.warningTitle}>Achtung: Negative Feedbacks vorhanden</Text>
+                <Text style={styles.warningTitle}>{t("feedbackOverview.warningTitle")}</Text>
                 <Text style={styles.warningText}>
-                  Es gibt Feedbacks mit 1–2 Sternen. Bitte zeitnah prüfen.
+                  {t("feedbackOverview.warningText")}
                 </Text>
               </View>
             </View>
@@ -97,13 +99,13 @@ export default function FeedbackOverviewScreen() {
 
           {/* Filter */}
           <View style={styles.filterCard}>
-            <Text style={styles.filterLabel}>{"FILTER"}</Text>
+            <Text style={styles.filterLabel}>{t("feedbackOverview.filter")}</Text>
             <View style={styles.filterRow}>
               {(
                 [
-                  { key: "all", label: "Alle" },
-                  { key: "positive", label: "Positiv (4-5 ★)" },
-                  { key: "negative", label: "Negativ (1-2 ★)" },
+                  { key: "all", label: t("feedbackOverview.all") },
+                  { key: "positive", label: t("feedbackOverview.positive") },
+                  { key: "negative", label: t("feedbackOverview.negative") },
                 ] as const
               ).map((opt) => (
                 <TouchableOpacity
@@ -131,7 +133,7 @@ export default function FeedbackOverviewScreen() {
           {/* Feedback-Liste */}
           {filtered.length === 0 ? (
             <View style={styles.emptyCard}>
-              <Text style={styles.emptyText}>Keine Feedbacks in dieser Kategorie.</Text>
+              <Text style={styles.emptyText}>{t("feedbackOverview.noFeedbacks")}</Text>
             </View>
           ) : (
             filtered.map((fb) => {
@@ -147,12 +149,12 @@ export default function FeedbackOverviewScreen() {
                   <View style={styles.feedbackHeader}>
                     <View style={{ flex: 1 }}>
                       <Text style={styles.feedbackSubmitter}>
-                        {submitter?.name ?? "Unbekannt"}
+                        {submitter?.name ?? t("feedbackOverview.unknown")}
                       </Text>
                       <Text style={styles.feedbackMeta}>
                         {mentorship
                           ? `${mentorship.mentee?.name ?? "?"} & ${mentorship.mentor?.name ?? "?"}`
-                          : "Betreuung unbekannt"}
+                          : t("feedbackOverview.unknownMentorship")}
                       </Text>
                     </View>
                     <View style={{ alignItems: "flex-end" }}>
@@ -168,12 +170,12 @@ export default function FeedbackOverviewScreen() {
                       <Text style={styles.commentsText}>{fb.comments}</Text>
                     </View>
                   ) : (
-                    <Text style={styles.noComments}>Kein Kommentar</Text>
+                    <Text style={styles.noComments}>{t("feedbackOverview.noComment")}</Text>
                   )}
 
                   {isNegative && (
                     <View style={styles.negativeBadge}>
-                      <Text style={styles.negativeBadgeText}>Handlungsbedarf</Text>
+                      <Text style={styles.negativeBadgeText}>{t("feedbackOverview.actionNeeded")}</Text>
                     </View>
                   )}
                 </View>

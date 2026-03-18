@@ -13,9 +13,11 @@ import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function ChatScreen() {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { getMessagesByMentorshipId, getMentorshipById, sendMessage } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
 
@@ -43,10 +45,10 @@ export default function ChatScreen() {
 
   const statusLabel =
     mentorship?.status === "active"
-      ? "Aktiv"
+      ? t("chat.active")
       : mentorship?.status === "completed"
-      ? "Abgeschlossen"
-      : "Abgebrochen";
+      ? t("chat.completed")
+      : t("chat.cancelled");
 
   return (
     <KeyboardAvoidingView
@@ -59,7 +61,7 @@ export default function ChatScreen() {
         <View style={styles.chatHeader}>
           <Text style={styles.chatHeaderName}>{chatPartnerName}</Text>
           <Text style={styles.chatHeaderSub}>
-            Betreuung · {statusLabel}
+            {t("chat.mentorship")} · {statusLabel}
           </Text>
         </View>
       )}
@@ -76,7 +78,7 @@ export default function ChatScreen() {
         {messages.length === 0 ? (
           <View style={styles.emptyMessages}>
             <Text style={styles.emptyText}>
-              Noch keine Nachrichten.{"\n"}Schreibe die erste Nachricht!
+              {t("chat.noMessages")}
             </Text>
           </View>
         ) : (
@@ -139,7 +141,7 @@ export default function ChatScreen() {
           style={styles.textInput}
           value={inputText}
           onChangeText={setInputText}
-          placeholder="Nachricht schreiben..."
+          placeholder={t("chat.placeholder")}
           placeholderTextColor="#98A2B3"
           multiline
           returnKeyType="default"

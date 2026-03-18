@@ -13,10 +13,12 @@ import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { COLORS } from "../constants/Colors";
 import { sendNewFeedbackNotification } from "../lib/emailService";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function FeedbackScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { addFeedback, getMentorshipById } = useData();
   const params = useLocalSearchParams<{ mentorshipId?: string }>();
 
@@ -30,11 +32,11 @@ export default function FeedbackScreen() {
 
   async function handleSubmit() {
     if (rating === 0) {
-      showError("Bitte wähle eine Bewertung (1–5 Sterne).");
+      showError(t("feedback.errorRating"));
       return;
     }
     if (!user || !params.mentorshipId) {
-      showError("Fehlende Informationen.");
+      showError(t("feedback.errorMissing"));
       return;
     }
 
@@ -58,22 +60,22 @@ export default function FeedbackScreen() {
 
     setIsSaving(false);
 
-    showSuccess("Deine Rückmeldung wurde gespeichert.", () => router.replace("/(tabs)"));
+    showSuccess(t("feedback.successMsg"), () => router.replace("/(tabs)"));
   }
 
   const statusLabel =
-    mentorship?.status === "completed" ? "abgeschlossen" : "abgebrochen";
+    mentorship?.status === "completed" ? t("feedback.completed") : t("feedback.cancelled");
 
   const ratingLabel =
     rating === 1
-      ? "Verbesserungsbedarf"
+      ? t("feedback.rating1")
       : rating === 2
-      ? "Teilweise gut"
+      ? t("feedback.rating2")
       : rating === 3
-      ? "Gut"
+      ? t("feedback.rating3")
       : rating === 4
-      ? "Sehr gut"
-      : "Ausgezeichnet!";
+      ? t("feedback.rating4")
+      : t("feedback.rating5");
 
   const isDisabled = isSaving || rating === 0;
 
@@ -85,7 +87,7 @@ export default function FeedbackScreen() {
           <Text style={styles.headerEmoji}>
             {mentorship?.status === "completed" ? "🎉" : "📝"}
           </Text>
-          <Text style={styles.headerTitle}>Betreuung {statusLabel}</Text>
+          <Text style={styles.headerTitle}>{t("feedback.headerTitle").replace("{0}", statusLabel)}</Text>
           {mentorship && (
             <Text style={styles.headerSub}>
               {mentorship.mentee?.name} & {mentorship.mentor?.name}
@@ -94,12 +96,12 @@ export default function FeedbackScreen() {
         </View>
 
         <Text style={styles.subText}>
-          Dein Feedback hilft uns, das BNM-Programm zu verbessern.
+          {t("feedback.helpText")}
         </Text>
 
         {/* Sternbewertung */}
         <View style={styles.ratingCard}>
-          <Text style={styles.ratingTitle}>Wie bewertest du die Betreuung?</Text>
+          <Text style={styles.ratingTitle}>{t("feedback.ratingTitle")}</Text>
           <View style={styles.starsRow}>
             {[1, 2, 3, 4, 5].map((star) => (
               <TouchableOpacity
@@ -120,12 +122,12 @@ export default function FeedbackScreen() {
 
         {/* Kommentar */}
         <View style={styles.commentCard}>
-          <Text style={styles.commentTitle}>Kommentar (optional)</Text>
+          <Text style={styles.commentTitle}>{t("feedback.commentTitle")}</Text>
           <TextInput
             style={[styles.commentInput]}
             value={comment}
             onChangeText={setComment}
-            placeholder="Dein Feedback zur Betreuung..."
+            placeholder={t("feedback.commentPlaceholder")}
             placeholderTextColor="#98A2B3"
             multiline
             numberOfLines={4}
@@ -148,7 +150,7 @@ export default function FeedbackScreen() {
               { color: isDisabled ? COLORS.tertiary : COLORS.white },
             ]}
           >
-            {isSaving ? "Wird gespeichert..." : "Feedback absenden"}
+            {isSaving ? t("feedback.submitting") : t("feedback.submit")}
           </Text>
         </TouchableOpacity>
 
@@ -157,7 +159,7 @@ export default function FeedbackScreen() {
           style={styles.skipButton}
           onPress={() => router.replace("/(tabs)")}
         >
-          <Text style={styles.skipText}>Überspringen</Text>
+          <Text style={styles.skipText}>{t("feedback.skip")}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

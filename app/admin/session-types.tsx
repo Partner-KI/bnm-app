@@ -13,10 +13,12 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { SessionType } from "../../types";
 import { COLORS } from "../../constants/Colors";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function SessionTypesScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { sessionTypes, addSessionType, updateSessionTypeOrder, deleteSessionType } = useData();
 
   const [showAddForm, setShowAddForm] = useState(false);
@@ -45,16 +47,16 @@ export default function SessionTypesScreen() {
 
   async function handleDelete(st: SessionType) {
     if (st.is_default) {
-      showError("Standard-Session-Typen können nicht gelöscht werden.");
+      showError(t("sessionTypes.errorDefault"));
       return;
     }
-    const ok = await showConfirm("Session-Typ löschen", `"${st.name}" wirklich löschen?`);
+    const ok = await showConfirm(t("sessionTypes.deleteTitle"), t("sessionTypes.deleteText").replace("{0}", `"${st.name}"`));
     if (ok) deleteSessionType(st.id);
   }
 
   function handleAdd() {
     if (!newName.trim()) {
-      showError("Bitte gib einen Namen ein.");
+      showError(t("sessionTypes.errorName"));
       return;
     }
     const maxOrder = Math.max(...sessionTypes.map((st) => st.sort_order), 0);
@@ -72,7 +74,7 @@ export default function SessionTypesScreen() {
   if (user?.role !== "admin") {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Nur für Admins zugänglich.</Text>
+        <Text style={styles.accessText}>{t("sessionTypes.accessDenied")}</Text>
       </View>
     );
   }
@@ -80,17 +82,16 @@ export default function SessionTypesScreen() {
   return (
     <ScrollView style={styles.scrollView}>
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>Session-Typen</Text>
+        <Text style={styles.pageTitle}>{t("sessionTypes.title")}</Text>
         <Text style={styles.pageSubtitle}>
-          {sortedTypes.length} Schritte definiert · Reihenfolge per Pfeile ändern
+          {t("sessionTypes.subtitle").replace("{0}", String(sortedTypes.length))}
         </Text>
 
         {/* Hinweis */}
         <View style={styles.blueBox}>
-          <Text style={styles.blueTitle}>Sequenzielle Freigabe</Text>
+          <Text style={styles.blueTitle}>{t("sessionTypes.infoTitle")}</Text>
           <Text style={styles.blueText}>
-            Mentees durchlaufen die Schritte in der angezeigten Reihenfolge.
-            Der nächste Schritt wird erst nach Dokumentation freigeschaltet.
+            {t("sessionTypes.infoText")}
           </Text>
         </View>
 
@@ -115,7 +116,7 @@ export default function SessionTypesScreen() {
                   <Text style={styles.itemName}>{st.name}</Text>
                   {st.is_default && (
                     <View style={styles.standardBadge}>
-                      <Text style={styles.standardBadgeText}>Standard</Text>
+                      <Text style={styles.standardBadgeText}>{t("sessionTypes.standard")}</Text>
                     </View>
                   )}
                 </View>
@@ -166,23 +167,23 @@ export default function SessionTypesScreen() {
         {/* Neuen Typ hinzufügen */}
         {showAddForm ? (
           <View style={styles.addFormCard}>
-            <Text style={styles.addFormTitle}>Neuen Session-Typ hinzufügen</Text>
+            <Text style={styles.addFormTitle}>{t("sessionTypes.addTitle")}</Text>
 
-            <Text style={styles.formLabel}>Name *</Text>
+            <Text style={styles.formLabel}>{t("sessionTypes.nameLabel")}</Text>
             <TextInput
               style={styles.textInput}
               value={newName}
               onChangeText={setNewName}
-              placeholder="z.B. Shahada-Begleitung"
+              placeholder={t("sessionTypes.namePlaceholder")}
               placeholderTextColor="#98A2B3"
             />
 
-            <Text style={styles.formLabel}>Beschreibung (optional)</Text>
+            <Text style={styles.formLabel}>{t("sessionTypes.descLabel")}</Text>
             <TextInput
               style={[styles.textInput, { minHeight: 80, marginBottom: 16 }]}
               value={newDescription}
               onChangeText={setNewDescription}
-              placeholder="Kurze Beschreibung des Schrittes..."
+              placeholder={t("sessionTypes.descPlaceholder")}
               placeholderTextColor="#98A2B3"
               multiline
               numberOfLines={3}
@@ -198,10 +199,10 @@ export default function SessionTypesScreen() {
                   setNewDescription("");
                 }}
               >
-                <Text style={styles.cancelFormButtonText}>Abbrechen</Text>
+                <Text style={styles.cancelFormButtonText}>{t("sessionTypes.cancel")}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
-                <Text style={styles.addButtonText}>Hinzufügen</Text>
+                <Text style={styles.addButtonText}>{t("sessionTypes.add")}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -210,7 +211,7 @@ export default function SessionTypesScreen() {
             style={styles.primaryButton}
             onPress={() => setShowAddForm(true)}
           >
-            <Text style={styles.primaryButtonText}>+ Neuen Schritt hinzufügen</Text>
+            <Text style={styles.primaryButtonText}>{t("sessionTypes.addNew")}</Text>
           </TouchableOpacity>
         )}
       </View>

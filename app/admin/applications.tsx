@@ -15,6 +15,7 @@ import type { MentorApplication } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { supabase } from "../../lib/supabase";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 // Öffentliche Anmeldungen sind in mentor_applications mit diesem Motivation-Marker gespeichert
 const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
@@ -24,6 +25,7 @@ type MainTab = "mentors" | "mentees";
 export default function ApplicationsScreen() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
   const { applications, approveApplication, rejectApplication } = useData();
   const [mainTab, setMainTab] = useState<MainTab>("mentors");
   const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
@@ -33,7 +35,7 @@ export default function ApplicationsScreen() {
   if (user?.role !== "admin" && user?.role !== "office") {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessDeniedText}>Nur für Admins und Office zugänglich.</Text>
+        <Text style={styles.accessDeniedText}>{t("applications.accessDenied")}</Text>
       </View>
     );
   }
@@ -69,7 +71,7 @@ export default function ApplicationsScreen() {
   const pendingMenteeCount = menteeApps.filter((a) => a.status === "pending").length;
 
   async function handleApproveMentor(app: MentorApplication) {
-    const ok = await showConfirm("Bewerbung annehmen", `${app.name} wird als Mentor hinzugefügt. Fortfahren?`);
+    const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
     if (ok) {
       approveApplication(app.id);
       showSuccess(`${app.name} wurde als Mentor hinzugefügt.`);
@@ -77,14 +79,14 @@ export default function ApplicationsScreen() {
   }
 
   async function handleRejectMentor(app: MentorApplication) {
-    const ok = await showConfirm("Bewerbung ablehnen", `Die Bewerbung von ${app.name} wird abgelehnt. Fortfahren?`);
+    const ok = await showConfirm(t("applications.rejectTitle"), t("applications.confirmReject").replace("{0}", app.name));
     if (ok) {
       rejectApplication(app.id);
     }
   }
 
   async function handleAcceptMenteeRegistration(app: MentorApplication) {
-    const ok = await showConfirm("Mentee-Account erstellen", `Für ${app.name} (${app.email}) wird ein Mentee-Account erstellt. Fortfahren?`);
+    const ok = await showConfirm(t("applications.createAccountTitle"), t("applications.confirmCreateAccount").replace("{0}", app.name).replace("{1}", app.email));
     if (!ok) return;
 
     // Temporäres Passwort generieren: "BNM-" + 6 Zufallsziffern
@@ -111,7 +113,7 @@ export default function ApplicationsScreen() {
         signUpError.message.includes("already registered") ||
         signUpError.message.includes("User already registered")
       ) {
-        showSuccess(`${app.name} hat bereits einen Account mit dieser E-Mail.`);
+        showSuccess(t("applications.alreadyAccount").replace("{0}", app.name));
       } else {
         showError(signUpError.message);
         return;
@@ -121,11 +123,11 @@ export default function ApplicationsScreen() {
     // Anmeldung als approved markieren
     approveApplication(app.id);
 
-    showSuccess(`Temporäres Passwort: ${tempPassword}\n\nBitte teile dieses Passwort sicher mit ${app.name}. Die Person kann es nach dem ersten Login ändern.`);
+    showSuccess(t("applications.tempPassword").replace("{0}", tempPassword).replace("{1}", app.name));
   }
 
   async function handleRejectMenteeRegistration(app: MentorApplication) {
-    const ok = await showConfirm("Anmeldung ablehnen", `Die Anmeldung von ${app.name} wird abgelehnt. Fortfahren?`);
+    const ok = await showConfirm(t("applications.rejectMenteeTitle"), t("applications.confirmRejectMentee").replace("{0}", app.name));
     if (ok) {
       rejectApplication(app.id);
     }
@@ -136,15 +138,15 @@ export default function ApplicationsScreen() {
       <ScrollView style={styles.scrollView}>
         <View style={styles.page}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backButtonText}>← Zurück</Text>
+            <Text style={styles.backButtonText}>{t("applications.back")}</Text>
           </TouchableOpacity>
 
-          <Text style={styles.pageTitle}>Anmeldungen & Bewerbungen</Text>
+          <Text style={styles.pageTitle}>{t("applications.title")}</Text>
 
           {/* Suche */}
           <TextInput
             style={styles.searchInput}
-            placeholder="Name, E-Mail oder Stadt suchen..."
+            placeholder={t("applications.search")}
             placeholderTextColor="#98A2B3"
             value={search}
             onChangeText={(v) => setSearch(v)}
@@ -162,7 +164,7 @@ export default function ApplicationsScreen() {
               <Text
                 style={mainTab === "mentors" ? styles.mainTabTextActive : styles.mainTabTextInactive}
               >
-                Mentor-Bewerbungen
+                {t("applications.mentorTab")}
               </Text>
               {pendingMentorCount > 0 && (
                 <View style={styles.tabBadge}>
@@ -181,7 +183,7 @@ export default function ApplicationsScreen() {
               <Text
                 style={mainTab === "mentees" ? styles.mainTabTextActive : styles.mainTabTextInactive}
               >
-                Mentee-Anmeldungen
+                {t("applications.menteeTab")}
               </Text>
               {pendingMenteeCount > 0 && (
                 <View style={styles.tabBadge}>
@@ -195,14 +197,16 @@ export default function ApplicationsScreen() {
           {mainTab === "mentors" && (
             <>
               <Text style={styles.pageSubtitle}>
-                {pendingMentorCount} offene Bewerbung{pendingMentorCount !== 1 ? "en" : ""}
+                {t("applications.pendingMentor")
+                  .replace("{0}", String(pendingMentorCount))
+                  .replace("{1}", pendingMentorCount !== 1 ? "en" : "")}
               </Text>
               <View style={styles.filterRow}>
                 {(
                   [
-                    { key: "pending", label: "Offen" },
-                    { key: "approved", label: "Angenommen" },
-                    { key: "rejected", label: "Abgelehnt" },
+                    { key: "pending", label: t("applications.filterOpen") },
+                    { key: "approved", label: t("applications.filterApproved") },
+                    { key: "rejected", label: t("applications.filterRejected") },
                   ] as const
                 ).map((tab) => {
                   const count = mentorApps.filter((a) => a.status === tab.key).length;
@@ -232,7 +236,11 @@ export default function ApplicationsScreen() {
               {filteredMentorApps.length === 0 ? (
                 <View style={styles.emptyCard}>
                   <Text style={styles.emptyText}>
-                    Keine {mentorFilter === "pending" ? "offenen" : mentorFilter === "approved" ? "angenommenen" : "abgelehnten"} Bewerbungen.
+                    {mentorFilter === "pending"
+                      ? t("applications.noOpen")
+                      : mentorFilter === "approved"
+                      ? t("applications.noApproved")
+                      : t("applications.noRejected")}
                   </Text>
                 </View>
               ) : (
@@ -253,21 +261,23 @@ export default function ApplicationsScreen() {
           {mainTab === "mentees" && (
             <>
               <Text style={styles.pageSubtitle}>
-                {pendingMenteeCount} offene Anmeldung{pendingMenteeCount !== 1 ? "en" : ""}
+                {t("applications.pendingMentee")
+                  .replace("{0}", String(pendingMenteeCount))
+                  .replace("{1}", pendingMenteeCount !== 1 ? "en" : "")}
               </Text>
 
               <View style={styles.infoBox}>
                 <Text style={styles.infoBoxText}>
-                  Diese Anmeldungen kommen vom öffentlichen Formular. Zum Annehmen: Supabase Dashboard → Authentication → Users → Invite User (E-Mail des Interessenten eingeben, Rolle "mentee").
+                  {t("applications.infoBox")}
                 </Text>
               </View>
 
               <View style={styles.filterRow}>
                 {(
                   [
-                    { key: "pending", label: "Offen" },
-                    { key: "approved", label: "Angenommen" },
-                    { key: "rejected", label: "Abgelehnt" },
+                    { key: "pending", label: t("applications.filterOpen") },
+                    { key: "approved", label: t("applications.filterApproved") },
+                    { key: "rejected", label: t("applications.filterRejected") },
                   ] as const
                 ).map((tab) => {
                   const count = menteeApps.filter((a) => a.status === tab.key).length;
@@ -297,7 +307,11 @@ export default function ApplicationsScreen() {
               {filteredMenteeApps.length === 0 ? (
                 <View style={styles.emptyCard}>
                   <Text style={styles.emptyText}>
-                    Keine {menteeFilter === "pending" ? "offenen" : menteeFilter === "approved" ? "angenommenen" : "abgelehnten"} Anmeldungen.
+                    {menteeFilter === "pending"
+                      ? t("applications.noOpenMentee")
+                      : menteeFilter === "approved"
+                      ? t("applications.noApprovedMentee")
+                      : t("applications.noRejectedMentee")}
                   </Text>
                 </View>
               ) : (
@@ -330,23 +344,24 @@ function ApplicationCard({
   onApprove: () => void;
   onReject: () => void;
 }) {
+  const { t } = useLanguage();
   const isPending = application.status === "pending";
   const isApproved = application.status === "approved";
 
   const statusBg = isPending ? "#fef3c7" : isApproved ? "#dcfce7" : "#fee2e2";
   const statusColor = isPending ? "#b45309" : isApproved ? "#15803d" : "#b91c1c";
-  const statusLabel = isPending ? "Offen" : isApproved ? "Angenommen" : "Abgelehnt";
+  const statusLabel = isPending ? t("applications.statusOpen") : isApproved ? t("applications.statusApproved") : t("applications.statusRejected");
 
-  const genderLabel = application.gender === "male" ? "Bruder" : "Schwester";
+  const genderLabel = application.gender === "male" ? t("applications.brother") : t("applications.sister");
 
   const contactLabels: Record<string, string> = {
     whatsapp: "WhatsApp",
-    phone: "Telefon",
-    email: "E-Mail",
+    phone: t("applications.phoneLabel"),
+    email: t("applications.emailLabel"),
     telegram: "Telegram",
   };
 
-  const approveLabel = type === "mentor" ? "Annehmen" : "Account erstellen";
+  const approveLabel = type === "mentor" ? t("applications.approve") : t("applications.createAccount");
   const approveColor = type === "mentor" ? COLORS.cta : COLORS.gradientStart;
 
   return (
@@ -366,14 +381,14 @@ function ApplicationCard({
 
       {/* Kontakt-Info */}
       <View style={styles.infoSection}>
-        <InfoLine label="E-Mail" value={application.email} />
-        {application.phone ? <InfoLine label="Telefon" value={application.phone} /> : null}
+        <InfoLine label={t("applications.emailLabel")} value={application.email} />
+        {application.phone ? <InfoLine label={t("applications.phoneLabel")} value={application.phone} /> : null}
         <InfoLine
-          label="Kontakt"
+          label={t("applications.contactLabel")}
           value={contactLabels[application.contact_preference] ?? application.contact_preference}
         />
         <InfoLine
-          label="Eingegangen"
+          label={t("applications.submittedLabel")}
           value={new Date(application.submitted_at).toLocaleDateString("de-DE", {
             day: "2-digit",
             month: "long",
@@ -387,12 +402,12 @@ function ApplicationCard({
         <>
           {application.experience ? (
             <View style={styles.textSection}>
-              <Text style={styles.textSectionLabel}>Erfahrung</Text>
+              <Text style={styles.textSectionLabel}>{t("applications.experience")}</Text>
               <Text style={styles.textSectionContent}>{application.experience}</Text>
             </View>
           ) : null}
           <View style={styles.textSection}>
-            <Text style={styles.textSectionLabel}>Motivation</Text>
+            <Text style={styles.textSectionLabel}>{t("applications.motivation")}</Text>
             <Text style={styles.textSectionContent}>{application.motivation}</Text>
           </View>
         </>
@@ -402,7 +417,7 @@ function ApplicationCard({
       {isPending && (
         <View style={styles.actionRow}>
           <TouchableOpacity style={styles.rejectButton} onPress={onReject}>
-            <Text style={styles.rejectButtonText}>Ablehnen</Text>
+            <Text style={styles.rejectButtonText}>{t("applications.reject")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.approveButton, { backgroundColor: approveColor }]}

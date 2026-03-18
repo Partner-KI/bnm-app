@@ -10,9 +10,11 @@ import { showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
 import { MOCK_HADITHE } from "../data/mockData";
+import { useLanguage } from "../contexts/LanguageContext";
 
 export default function HaditheScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   // "Hadith des Tages" basierend auf aktuellem Datum (modulo Anzahl)
   const today = new Date();
@@ -28,7 +30,7 @@ export default function HaditheScreen() {
   }, [todayHadithIndex]);
 
   function handleShare(text: string, quelle: string) {
-    showSuccess(`"${text}"\n\n— ${quelle}\n\n(Teilen-Funktion wird in einer späteren Version verfügbar sein)`);
+    showSuccess(`"${text}"\n\n— ${quelle}\n\n(${t("hadithe.shareNotice")})`);
   }
 
   return (
@@ -37,19 +39,19 @@ export default function HaditheScreen() {
         {/* Header */}
         <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
           <Text style={styles.backArrow}>‹</Text>
-          <Text style={styles.backText}>Zurück</Text>
+          <Text style={styles.backText}>{t("hadithe.back")}</Text>
         </TouchableOpacity>
 
-        <Text style={styles.pageTitle}>Hadithe & Motivationstexte</Text>
+        <Text style={styles.pageTitle}>{t("hadithe.title")}</Text>
         <Text style={styles.pageSubtitle}>
-          Tägliche Inspiration für deinen Weg
+          {t("hadithe.subtitle")}
         </Text>
 
         {/* Hadith des Tages */}
         <View style={styles.todayCard}>
           <View style={styles.todayHeader}>
             <Text style={styles.todayStar}>★</Text>
-            <Text style={styles.todayLabel}>Hadith des Tages</Text>
+            <Text style={styles.todayLabel}>{t("hadithe.todayLabel")}</Text>
           </View>
           <Text style={styles.todayText}>"{todayHadith.text}"</Text>
           <Text style={styles.todayQuelle}>— {todayHadith.quelle}</Text>
@@ -57,12 +59,12 @@ export default function HaditheScreen() {
             style={styles.shareButton}
             onPress={() => handleShare(todayHadith.text, todayHadith.quelle)}
           >
-            <Text style={styles.shareButtonText}>Teilen</Text>
+            <Text style={styles.shareButtonText}>{t("hadithe.share")}</Text>
           </TouchableOpacity>
         </View>
 
         {/* Weitere Hadithe */}
-        <Text style={styles.sectionLabel}>{"WEITERE HADITHE"}</Text>
+        <Text style={styles.sectionLabel}>{t("hadithe.moreHadithe")}</Text>
         {otherHadithe.map((hadith, idx) => (
           <View key={idx} style={styles.hadithCard}>
             <Text style={styles.hadithText}>"{hadith.text}"</Text>
@@ -72,7 +74,7 @@ export default function HaditheScreen() {
                 style={styles.hadithShareButton}
                 onPress={() => handleShare(hadith.text, hadith.quelle)}
               >
-                <Text style={styles.hadithShareText}>Teilen</Text>
+                <Text style={styles.hadithShareText}>{t("hadithe.share")}</Text>
               </TouchableOpacity>
             </View>
           </View>

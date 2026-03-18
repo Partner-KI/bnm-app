@@ -14,6 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 const MONTHS = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -36,6 +37,7 @@ function getQuarterIndex(month: number): number {
 export default function ReportsScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible, toggleMentorOfMonth, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -208,7 +210,7 @@ export default function ReportsScreen() {
   if (!isAdminOrOffice) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessDeniedText}>Nur für Admins und Office zugänglich.</Text>
+        <Text style={styles.accessDeniedText}>{t("reports.accessDenied")}</Text>
       </View>
     );
   }
@@ -220,20 +222,20 @@ export default function ReportsScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
       >
         <View style={styles.page}>
-          <Text style={styles.pageTitle}>Berichte</Text>
-          <Text style={styles.pageSubtitle}>KPIs und Statistiken auf einen Blick</Text>
+          <Text style={styles.pageTitle}>{t("reports.title")}</Text>
+          <Text style={styles.pageSubtitle}>{t("reports.subtitle")}</Text>
 
           {/* Zeitraum-Auswahl */}
           <View style={styles.card}>
-            <Text style={styles.cardSectionLabel}>{"ZEITRAUM WÄHLEN"}</Text>
+            <Text style={styles.cardSectionLabel}>{t("reports.periodLabel")}</Text>
 
             {/* Modus-Toggle */}
             <View style={styles.modeRow}>
               {(
                 [
-                  { key: "month", label: "Monat" },
-                  { key: "quarter", label: "Quartal" },
-                  { key: "year", label: "Jahr" },
+                  { key: "month", label: t("reports.month") },
+                  { key: "quarter", label: t("reports.quarter") },
+                  { key: "year", label: t("reports.year") },
                 ] as const
               ).map((opt) => (
                 <TouchableOpacity
@@ -331,22 +333,22 @@ export default function ReportsScreen() {
 
           {/* KPI-Karten mit Gold-Border links */}
           <View style={styles.kpiRow}>
-            <KpiCard label="Neue Betreuungen" value={kpis.totalAssigned} color={COLORS.gradientStart} />
-            <KpiCard label="Sessions gesamt" value={kpis.totalSessions} color={COLORS.gradientStart} />
+            <KpiCard label={t("reports.newMentorships")} value={kpis.totalAssigned} color={COLORS.gradientStart} />
+            <KpiCard label={t("reports.totalSessions")} value={kpis.totalSessions} color={COLORS.gradientStart} />
           </View>
           <View style={styles.kpiRow}>
-            <KpiCard label="Erstkontakte" value={kpis.firstContacts} color={COLORS.gold} />
-            <KpiCard label="Ersttreffen" value={kpis.firstMeetings} color={COLORS.gold} />
+            <KpiCard label={t("reports.firstContacts")} value={kpis.firstContacts} color={COLORS.gold} />
+            <KpiCard label={t("reports.firstMeetings")} value={kpis.firstMeetings} color={COLORS.gold} />
           </View>
           <View style={[styles.kpiRow, { marginBottom: 16 }]}>
-            <KpiCard label="BNM-Boxen übergeben" value={kpis.bnmBoxes} color={COLORS.secondary} />
-            <KpiCard label="Abschlüsse" value={kpis.completions} color={COLORS.cta} />
+            <KpiCard label={t("reports.bnmBoxes")} value={kpis.bnmBoxes} color={COLORS.secondary} />
+            <KpiCard label={t("reports.completions")} value={kpis.completions} color={COLORS.cta} />
           </View>
 
           {/* Abbrüche */}
           {kpis.cancellations > 0 && (
             <View style={styles.cancellationBox}>
-              <Text style={styles.cancellationLabel}>Abbrüche</Text>
+              <Text style={styles.cancellationLabel}>{t("reports.cancellations")}</Text>
               <Text style={styles.cancellationValue}>{kpis.cancellations}</Text>
             </View>
           )}
@@ -354,7 +356,7 @@ export default function ReportsScreen() {
           {/* Balkendiagramm – dunkler Hintergrund */}
           <View style={styles.chartCard}>
             <Text style={styles.chartTitle}>
-              Sessions{periodMode === "month" ? " nach Woche" : periodMode === "quarter" ? " nach Monat" : " nach Monat (Jahresübersicht)"}
+              {periodMode === "month" ? t("reports.sessionsPerWeek") : periodMode === "quarter" ? t("reports.sessionsPerMonth") : t("reports.sessionsPerYear")}
             </Text>
             <View style={styles.barChartContainer}>
               {barChartData.map((bar) => {
@@ -382,18 +384,18 @@ export default function ReportsScreen() {
             <View style={styles.goldBox}>
               <View style={styles.goldBoxHeader}>
                 <Text style={styles.goldStar}>★</Text>
-                <Text style={styles.goldBoxTitle}>Mentor des Monats / Zeitraums</Text>
+                <Text style={styles.goldBoxTitle}>{t("reports.mentorOfPeriod")}</Text>
               </View>
               <Text style={styles.goldMentorName}>{mentorOfMonth.mentor.name}</Text>
               <Text style={styles.goldMentorSub}>
-                {mentorOfMonth.count} Session{mentorOfMonth.count !== 1 ? "s" : ""} dokumentiert
+                {t("reports.sessionsDocumented").replace("{0}", String(mentorOfMonth.count)).replace("{1}", mentorOfMonth.count !== 1 ? "s" : "")}
               </Text>
             </View>
           ) : (
             !mentorOfMonthVisible ? null : (
               <View style={styles.emptyMonthBox}>
                 <Text style={styles.emptyMonthText}>
-                  Noch keine Sessions in diesem Zeitraum dokumentiert.
+                  {t("reports.noSessionsYet")}
                 </Text>
               </View>
             )
@@ -407,8 +409,8 @@ export default function ReportsScreen() {
             >
               <Text style={styles.toggleMomText}>
                 {mentorOfMonthVisible
-                  ? "Mentor des Monats ausblenden"
-                  : "Mentor des Monats einblenden"}
+                  ? t("reports.hideMentorOfMonth")
+                  : t("reports.showMentorOfMonth")}
               </Text>
             </TouchableOpacity>
           )}
@@ -419,7 +421,7 @@ export default function ReportsScreen() {
             onPress={handleExport}
           >
             <Text style={styles.exportButtonText}>
-              {Platform.OS === "web" ? "CSV herunterladen" : "Bericht exportieren"}
+              {Platform.OS === "web" ? t("reports.csvDownload") : t("reports.export")}
             </Text>
           </TouchableOpacity>
 
@@ -429,7 +431,7 @@ export default function ReportsScreen() {
             onPress={handleSpendenReport}
           >
             <Text style={styles.spendenButtonText}>
-              Spender-Bericht {selectedYear} (CSV)
+              {t("reports.donorReportCsv").replace("{0}", String(selectedYear))}
             </Text>
           </TouchableOpacity>
 
@@ -439,7 +441,7 @@ export default function ReportsScreen() {
             onPress={() => router.push("/donor-report" as never)}
           >
             <Text style={styles.donorReportButtonText}>
-              Visueller Spenderbericht →
+              {t("reports.donorReportVisual")}
             </Text>
           </TouchableOpacity>
 
@@ -453,7 +455,7 @@ export default function ReportsScreen() {
                 }
               }}
             >
-              <Text style={styles.printButtonText}>🖨 Bericht drucken (PDF)</Text>
+              <Text style={styles.printButtonText}>🖨 {t("reports.print")}</Text>
             </TouchableOpacity>
           )}
         </View>

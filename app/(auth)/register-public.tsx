@@ -16,11 +16,13 @@ import type { Gender, ContactPreference } from "../../types";
 import { Container } from "../../components/Container";
 import { supabase } from "../../lib/supabase";
 import { sendNewMenteeRegistrationNotification } from "../../lib/emailService";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 type Step = "form" | "success";
 
 export default function RegisterPublicScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [step, setStep] = useState<Step>("form");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,20 +42,20 @@ export default function RegisterPublicScreen() {
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
 
-    if (!firstName.trim()) newErrors.firstName = "Vorname ist erforderlich.";
-    if (!lastName.trim()) newErrors.lastName = "Nachname ist erforderlich.";
+    if (!firstName.trim()) newErrors.firstName = t("register.errorFirstName");
+    if (!lastName.trim()) newErrors.lastName = t("register.errorLastName");
     if (!email.trim() || !email.includes("@"))
-      newErrors.email = "Bitte eine gültige E-Mail-Adresse eingeben.";
-    if (!gender) newErrors.gender = "Bitte Geschlecht auswählen.";
-    if (!city.trim()) newErrors.city = "Stadt ist erforderlich.";
+      newErrors.email = t("register.errorEmail");
+    if (!gender) newErrors.gender = t("register.errorGender");
+    if (!city.trim()) newErrors.city = t("register.errorCity");
     const ageNum = parseInt(age, 10);
     if (!age.trim() || isNaN(ageNum) || ageNum < 12 || ageNum > 120)
-      newErrors.age = "Bitte ein gültiges Alter eingeben (12–120).";
-    if (!contactPref) newErrors.contactPref = "Bitte Kontaktpräferenz auswählen.";
+      newErrors.age = t("register.errorAge");
+    if (!contactPref) newErrors.contactPref = t("register.errorContactPref");
     if (!password.trim() || password.length < 8)
-      newErrors.password = "Mindestens 8 Zeichen.";
+      newErrors.password = t("register.errorPassword");
     if (password !== passwordConfirm)
-      newErrors.passwordConfirm = "Passwörter stimmen nicht überein.";
+      newErrors.passwordConfirm = t("register.errorPasswordMatch");
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -83,7 +85,7 @@ export default function RegisterPublicScreen() {
 
       if (error) {
         if (error.message.includes("already registered") || error.message.includes("User already registered")) {
-          setErrors((prev) => ({ ...prev, email: "Diese E-Mail ist bereits registriert." }));
+          setErrors((prev) => ({ ...prev, email: t("register.errorEmailTaken") }));
         } else {
           showError(error.message);
         }
@@ -110,7 +112,7 @@ export default function RegisterPublicScreen() {
 
       setStep("success");
     } catch {
-      showError("Ein unerwarteter Fehler ist aufgetreten.");
+      showError(t("register.errorUnexpected"));
     } finally {
       setIsSubmitting(false);
     }
@@ -123,19 +125,18 @@ export default function RegisterPublicScreen() {
           <View style={styles.successIconBox}>
             <Text style={styles.successIcon}>✓</Text>
           </View>
-          <Text style={styles.successTitle}>Willkommen bei BNM!</Text>
+          <Text style={styles.successTitle}>{t("register.successTitle")}</Text>
           <Text style={styles.successText}>
-            Dein Account wurde erfolgreich erstellt. Du bist jetzt angemeldet.
+            {t("register.successText")}
           </Text>
           <Text style={styles.successSub}>
-            Das BNM-Team wird dir bald einen passenden Mentor zuweisen.
-            Du wirst benachrichtigt, sobald es soweit ist.
+            {t("register.successSub")}
           </Text>
           <TouchableOpacity
             style={styles.backToLoginButton}
             onPress={() => router.replace("/(tabs)")}
           >
-            <Text style={styles.backToLoginText}>Zum Dashboard</Text>
+            <Text style={styles.backToLoginText}>{t("register.toDashboard")}</Text>
           </TouchableOpacity>
         </View>
       </Container>
@@ -156,17 +157,17 @@ export default function RegisterPublicScreen() {
           <View style={styles.page}>
             {/* Titel */}
             <View style={styles.titleSection}>
-              <Text style={styles.pageTitle}>Anmeldung als neuer Muslim</Text>
+              <Text style={styles.pageTitle}>{t("register.title")}</Text>
               <Text style={styles.pageSubtitle}>
-                Erstelle deinen Account – wir weisen dir einen passenden Mentor zu.
+                {t("register.subtitle")}
               </Text>
             </View>
 
             {/* Vorname */}
-            <FormField label="Vorname *" error={errors.firstName}>
+            <FormField label={t("register.firstName")} error={errors.firstName}>
               <TextInput
                 style={[styles.input, errors.firstName ? styles.inputError : {}]}
-                placeholder="Dein Vorname"
+                placeholder={t("register.firstNamePlaceholder")}
                 placeholderTextColor={COLORS.tertiary}
                 value={firstName}
                 onChangeText={setFirstName}
@@ -174,10 +175,10 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Nachname */}
-            <FormField label="Nachname *" error={errors.lastName}>
+            <FormField label={t("register.lastName")} error={errors.lastName}>
               <TextInput
                 style={[styles.input, errors.lastName ? styles.inputError : {}]}
-                placeholder="Dein Nachname"
+                placeholder={t("register.lastNamePlaceholder")}
                 placeholderTextColor={COLORS.tertiary}
                 value={lastName}
                 onChangeText={setLastName}
@@ -185,7 +186,7 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* E-Mail */}
-            <FormField label="E-Mail-Adresse *" error={errors.email}>
+            <FormField label={t("register.email")} error={errors.email}>
               <TextInput
                 style={[styles.input, errors.email ? styles.inputError : {}]}
                 placeholder="deine@email.de"
@@ -199,7 +200,7 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Telefon */}
-            <FormField label="Telefonnummer (optional)">
+            <FormField label={t("register.phone")}>
               <TextInput
                 style={styles.input}
                 placeholder="+49 ..."
@@ -211,14 +212,14 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Geschlecht */}
-            <FormField label="Ich bin ein/e *" error={errors.gender}>
+            <FormField label={t("register.gender")} error={errors.gender}>
               <View style={styles.pillRow}>
                 <TouchableOpacity
                   style={[styles.pill, gender === "male" ? styles.pillActive : styles.pillInactive]}
                   onPress={() => setGender("male")}
                 >
                   <Text style={gender === "male" ? styles.pillTextActive : styles.pillTextInactive}>
-                    Bruder
+                    {t("register.brother")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -226,17 +227,17 @@ export default function RegisterPublicScreen() {
                   onPress={() => setGender("female")}
                 >
                   <Text style={gender === "female" ? styles.pillTextActive : styles.pillTextInactive}>
-                    Schwester
+                    {t("register.sister")}
                   </Text>
                 </TouchableOpacity>
               </View>
             </FormField>
 
             {/* Stadt */}
-            <FormField label="Wohnort / Stadt *" error={errors.city}>
+            <FormField label={t("register.city")} error={errors.city}>
               <TextInput
                 style={[styles.input, errors.city ? styles.inputError : {}]}
-                placeholder="z.B. Berlin"
+                placeholder={t("register.cityPlaceholder")}
                 placeholderTextColor={COLORS.tertiary}
                 value={city}
                 onChangeText={setCity}
@@ -244,10 +245,10 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Alter */}
-            <FormField label="Alter *" error={errors.age}>
+            <FormField label={t("register.age")} error={errors.age}>
               <TextInput
                 style={[styles.input, errors.age ? styles.inputError : {}]}
-                placeholder="Dein Alter"
+                placeholder={t("register.agePlaceholder")}
                 placeholderTextColor={COLORS.tertiary}
                 keyboardType="numeric"
                 value={age}
@@ -256,7 +257,7 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Kontaktpräferenz */}
-            <FormField label="Wie erreichst du dich am besten? *" error={errors.contactPref}>
+            <FormField label={t("register.contactPref")} error={errors.contactPref}>
               <View style={styles.pillRow}>
                 {(
                   [
@@ -289,11 +290,11 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Passwort */}
-            <FormField label="Passwort wählen *" error={errors.password}>
+            <FormField label={t("register.password")} error={errors.password}>
               <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <TextInput
                   style={[styles.input, { flex: 1 }, errors.password ? styles.inputError : {}]}
-                  placeholder="Mindestens 8 Zeichen"
+                  placeholder={t("register.passwordPlaceholder")}
                   placeholderTextColor={COLORS.tertiary}
                   secureTextEntry={!showPassword}
                   value={password}
@@ -304,17 +305,17 @@ export default function RegisterPublicScreen() {
                   onPress={() => setShowPassword(!showPassword)}
                 >
                   <Text style={{ color: COLORS.secondary, fontSize: 13 }}>
-                    {showPassword ? "Verbergen" : "Zeigen"}
+                    {showPassword ? t("register.hidePassword") : t("register.showPassword")}
                   </Text>
                 </TouchableOpacity>
               </View>
             </FormField>
 
             {/* Passwort bestätigen */}
-            <FormField label="Passwort bestätigen *" error={errors.passwordConfirm}>
+            <FormField label={t("register.passwordConfirm")} error={errors.passwordConfirm}>
               <TextInput
                 style={[styles.input, errors.passwordConfirm ? styles.inputError : {}]}
-                placeholder="Passwort wiederholen"
+                placeholder={t("register.passwordConfirmPlaceholder")}
                 placeholderTextColor={COLORS.tertiary}
                 secureTextEntry={!showPassword}
                 value={passwordConfirm}
@@ -325,8 +326,7 @@ export default function RegisterPublicScreen() {
             {/* Hinweis */}
             <View style={styles.infoBox}>
               <Text style={styles.infoBoxText}>
-                Nach dem Absenden prüft das BNM-Team deine Anfrage und weist dir einen geeigneten Mentor zu.
-                Brüder werden nur Brüdern zugewiesen, Schwestern nur Schwestern.
+                {t("register.infoBox")}
               </Text>
             </View>
 
@@ -337,15 +337,15 @@ export default function RegisterPublicScreen() {
               disabled={isSubmitting}
             >
               <Text style={styles.submitButtonText}>
-                {isSubmitting ? "Wird gesendet..." : "Anmeldung absenden"}
+                {isSubmitting ? t("register.submitting") : t("register.submit")}
               </Text>
             </TouchableOpacity>
 
             {/* Link zum Login */}
             <View style={styles.loginLinkRow}>
-              <Text style={styles.loginLinkText}>Bereits registriert? </Text>
+              <Text style={styles.loginLinkText}>{t("register.alreadyRegistered")} </Text>
               <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
-                <Text style={styles.loginLink}>Hier anmelden</Text>
+                <Text style={styles.loginLink}>{t("register.loginLink")}</Text>
               </TouchableOpacity>
             </View>
           </View>

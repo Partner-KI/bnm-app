@@ -10,10 +10,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function MentorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
   const {
     getUserById,
     getMentorshipsByMentorId,
@@ -50,13 +52,13 @@ export default function MentorDetailScreen() {
         <View style={styles.root}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>‹ Zurück</Text>
+              <Text style={styles.backText}>{t("mentorDetail.back")}</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Mentor-Profil</Text>
+            <Text style={styles.headerTitle}>{t("mentorDetail.title")}</Text>
             <View style={styles.headerRight} />
           </View>
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>Mentor nicht gefunden.</Text>
+            <Text style={styles.emptyText}>{t("mentorDetail.notFound")}</Text>
           </View>
         </View>
       </Container>
@@ -76,9 +78,9 @@ export default function MentorDetailScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹ Zurück</Text>
+            <Text style={styles.backText}>{t("mentorDetail.back")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Mentor-Profil</Text>
+          <Text style={styles.headerTitle}>{t("mentorDetail.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -92,48 +94,48 @@ export default function MentorDetailScreen() {
             <Text style={styles.profileName}>{mentor.name}</Text>
             <Text style={styles.profileSub}>
               {mentor.city} · {mentor.age} Jahre ·{" "}
-              {mentor.gender === "male" ? "Bruder" : "Schwester"}
+              {mentor.gender === "male" ? t("mentorDetail.brother") : t("mentorDetail.sister")}
             </Text>
             {rank > 0 && (
               <View style={styles.rankBadge}>
-                <Text style={styles.rankBadgeText}>#{rank} im Ranking</Text>
+                <Text style={styles.rankBadgeText}>{t("mentorDetail.rankingLabel").replace("{0}", String(rank))}</Text>
               </View>
             )}
           </View>
 
           {/* Statistiken */}
-          <Text style={styles.sectionLabel}>STATISTIKEN</Text>
+          <Text style={styles.sectionLabel}>{t("mentorDetail.stats")}</Text>
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
               <Text style={[styles.statValue, { color: COLORS.primary }]}>
                 {activeMentorships.length}
               </Text>
-              <Text style={styles.statLabel}>Aktive Betreuungen</Text>
+              <Text style={styles.statLabel}>{t("mentorDetail.activeMentorships")}</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={[styles.statValue, { color: COLORS.cta }]}>
                 {completedMentorships.length}
               </Text>
-              <Text style={styles.statLabel}>Abgeschlossen</Text>
+              <Text style={styles.statLabel}>{t("mentorDetail.completed")}</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={[styles.statValue, { color: COLORS.gold }]}>
                 {totalSessions}
               </Text>
-              <Text style={styles.statLabel}>Sessions gesamt</Text>
+              <Text style={styles.statLabel}>{t("mentorDetail.totalSessions")}</Text>
             </View>
             <View style={styles.statCard}>
               <Text style={[styles.statValue, { color: COLORS.link }]}>
                 #{rank}
               </Text>
-              <Text style={styles.statLabel}>Ranking-Position</Text>
+              <Text style={styles.statLabel}>{t("mentorDetail.rankingPosition")}</Text>
             </View>
           </View>
 
           {/* Aktuelle Mentees */}
           {activeMentorships.length > 0 && (
             <>
-              <Text style={styles.sectionLabel}>AKTUELLE MENTEES</Text>
+              <Text style={styles.sectionLabel}>{t("mentorDetail.activeMentees")}</Text>
               <View style={styles.card}>
                 {activeMentorships.map((mentorship, idx) => {
                   const completedStepIds = getCompletedStepIds(mentorship.id);
@@ -162,11 +164,11 @@ export default function MentorDetailScreen() {
                       </View>
                       <View style={styles.menteeInfo}>
                         <Text style={styles.menteeName}>
-                          {mentorship.mentee?.name ?? "Unbekannt"}
+                          {mentorship.mentee?.name ?? t("feedbackOverview.unknown")}
                         </Text>
                         <Text style={styles.menteeSub}>
                           {mentorship.mentee?.city} ·{" "}
-                          {mentorship.mentee?.gender === "male" ? "Bruder" : "Schwester"}
+                          {mentorship.mentee?.gender === "male" ? t("mentorDetail.brother") : t("mentorDetail.sister")}
                         </Text>
                         <View style={styles.progressRow}>
                           <View style={styles.progressTrack}>
@@ -190,7 +192,7 @@ export default function MentorDetailScreen() {
           {/* Abgeschlossene Betreuungen */}
           {completedMentorships.length > 0 && (
             <>
-              <Text style={styles.sectionLabel}>ABGESCHLOSSENE BETREUUNGEN</Text>
+              <Text style={styles.sectionLabel}>{t("mentorDetail.completedMentorships")}</Text>
               <View style={styles.card}>
                 {completedMentorships.map((mentorship, idx) => {
                   const isLast = idx === completedMentorships.length - 1;
@@ -211,12 +213,11 @@ export default function MentorDetailScreen() {
                       </View>
                       <View style={styles.menteeInfo}>
                         <Text style={styles.menteeName}>
-                          {mentorship.mentee?.name ?? "Unbekannt"}
+                          {mentorship.mentee?.name ?? t("feedbackOverview.unknown")}
                         </Text>
                         {mentorship.completed_at && (
                           <Text style={styles.menteeSub}>
-                            Abgeschlossen am{" "}
-                            {new Date(mentorship.completed_at).toLocaleDateString("de-DE")}
+                            {t("mentorDetail.completedOn").replace("{0}", new Date(mentorship.completed_at).toLocaleDateString("de-DE"))}
                           </Text>
                         )}
                       </View>
@@ -233,7 +234,7 @@ export default function MentorDetailScreen() {
           {myMentorships.length === 0 && (
             <View style={styles.emptyCard}>
               <Text style={styles.emptyCardText}>
-                Noch keine Betreuungen.
+                {t("mentorDetail.noMentorships")}
               </Text>
             </View>
           )}

@@ -12,6 +12,7 @@ import { useRouter } from "expo-router";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
 import { COLORS } from "../constants/Colors";
+import { useLanguage } from "../contexts/LanguageContext";
 
 const MONTHS = [
   "Januar", "Februar", "März", "April", "Mai", "Juni",
@@ -30,6 +31,7 @@ type PeriodMode = "quarter" | "year";
 export default function DonorReportScreen() {
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible } = useData();
 
   const now = new Date();
@@ -44,7 +46,7 @@ export default function DonorReportScreen() {
   if (!isAdminOrOffice) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.accessText}>Nur für Admins und Office zugänglich.</Text>
+        <Text style={styles.accessText}>{t("donorReport.accessDenied")}</Text>
       </View>
     );
   }
@@ -62,10 +64,12 @@ export default function DonorReportScreen() {
 
   const periodLabel = useMemo(() => {
     if (periodMode === "quarter") {
-      return `BNM Spenderbericht ${QUARTERS[selectedQuarter].short} ${selectedYear}`;
+      return t("donorReport.periodLabelQuarter")
+        .replace("{0}", QUARTERS[selectedQuarter].short)
+        .replace("{1}", String(selectedYear));
     }
-    return `BNM Spenderbericht Jahr ${selectedYear}`;
-  }, [periodMode, selectedQuarter, selectedYear]);
+    return t("donorReport.periodLabelYear").replace("{0}", String(selectedYear));
+  }, [periodMode, selectedQuarter, selectedYear, t]);
 
   const kpis = useMemo(() => {
     const totalMentorships = mentorships.filter((m) => inPeriod(m.assigned_at)).length;
@@ -182,20 +186,20 @@ export default function DonorReportScreen() {
         {/* Header */}
         <View style={styles.reportHeader}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>← Zurück</Text>
+            <Text style={styles.backButtonText}>{t("donorReport.backToReports")}</Text>
           </TouchableOpacity>
           <View style={styles.logoBadge}>
             <Text style={styles.logoText}>BNM</Text>
           </View>
           <Text style={styles.reportTitle}>{periodLabel}</Text>
-          <Text style={styles.reportSubtitle}>Betreuung neuer Muslime · Spenderbericht</Text>
+          <Text style={styles.reportSubtitle}>{t("donorReport.subtitle")}</Text>
           <View style={styles.goldLine} />
         </View>
 
         <View style={styles.page}>
           {/* Zeitraum-Auswahl */}
           <View style={styles.card}>
-            <Text style={styles.cardLabel}>ZEITRAUM</Text>
+            <Text style={styles.cardLabel}>{t("donorReport.period")}</Text>
             <View style={styles.modeRow}>
               {(["quarter", "year"] as const).map((m) => (
                 <TouchableOpacity
@@ -204,7 +208,7 @@ export default function DonorReportScreen() {
                   onPress={() => setPeriodMode(m)}
                 >
                   <Text style={periodMode === m ? styles.modeBtnTextActive : styles.modeBtnTextInactive}>
-                    {m === "quarter" ? "Quartal" : "Jahr"}
+                    {m === "quarter" ? t("donorReport.quarter") : t("donorReport.year")}
                   </Text>
                 </TouchableOpacity>
               ))}
@@ -241,46 +245,46 @@ export default function DonorReportScreen() {
 
           {/* Übersichts-KPIs */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>Übersicht</Text>
+            <Text style={styles.sectionHeaderText}>{t("donorReport.overview")}</Text>
           </View>
           <View style={styles.kpiGrid}>
             <View style={styles.kpiCard}>
               <Text style={styles.kpiValue}>{kpis.totalMentorships}</Text>
-              <Text style={styles.kpiLabel}>Neue{"\n"}Betreuungen</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.newMentorships")}</Text>
             </View>
             <View style={styles.kpiCard}>
               <Text style={[styles.kpiValue, { color: COLORS.cta }]}>{kpis.completedMentorships}</Text>
-              <Text style={styles.kpiLabel}>Abschlüsse</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.completions")}</Text>
             </View>
             <View style={styles.kpiCard}>
               <Text style={[styles.kpiValue, { color: COLORS.gold }]}>{kpis.mentorCount}</Text>
-              <Text style={styles.kpiLabel}>Mentoren</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.mentors")}</Text>
             </View>
             <View style={styles.kpiCard}>
               <Text style={[styles.kpiValue, { color: COLORS.gradientStart }]}>{kpis.menteeCount}</Text>
-              <Text style={styles.kpiLabel}>Mentees</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.mentees")}</Text>
             </View>
           </View>
           <View style={styles.kpiRow2}>
             <View style={[styles.kpiCard, { flex: 1 }]}>
               <Text style={[styles.kpiValue, { color: COLORS.gradientStart }]}>{kpis.totalSessions}</Text>
-              <Text style={styles.kpiLabel}>Sessions gesamt</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.totalSessions")}</Text>
             </View>
             <View style={[styles.kpiCard, { flex: 1 }]}>
               <Text style={[styles.kpiValue, { color: COLORS.gold }]}>{kpis.bnmBoxes}</Text>
-              <Text style={styles.kpiLabel}>BNM-Boxen übergeben</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.bnmBoxes")}</Text>
             </View>
             <View style={[styles.kpiCard, { flex: 1 }]}>
               <Text style={[styles.kpiValue, { color: kpis.completionRate >= 50 ? COLORS.cta : COLORS.error }]}>
                 {kpis.completionRate}%
               </Text>
-              <Text style={styles.kpiLabel}>Abschluss-{"\n"}quote</Text>
+              <Text style={styles.kpiLabel}>{t("donorReport.completionRate")}</Text>
             </View>
           </View>
 
           {/* Statusverteilung (View-basiertes Balken-Diagramm) */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>Betreuungsstatus – Gesamtübersicht</Text>
+            <Text style={styles.sectionHeaderText}>{t("donorReport.statusOverview")}</Text>
           </View>
           <View style={styles.chartCard}>
             <View style={styles.statusBarRow}>
@@ -299,7 +303,7 @@ export default function DonorReportScreen() {
                 </View>
                 <Text style={styles.statusBarValue}>{statusDistribution.active.count}</Text>
                 <Text style={styles.statusBarPercent}>{statusDistribution.active.percent}%</Text>
-                <Text style={styles.statusBarLabel}>Aktiv</Text>
+                <Text style={styles.statusBarLabel}>{t("donorReport.statusActive")}</Text>
               </View>
               {/* Abgeschlossen */}
               <View style={styles.statusBarItem}>
@@ -316,7 +320,7 @@ export default function DonorReportScreen() {
                 </View>
                 <Text style={styles.statusBarValue}>{statusDistribution.completed.count}</Text>
                 <Text style={styles.statusBarPercent}>{statusDistribution.completed.percent}%</Text>
-                <Text style={styles.statusBarLabel}>Abgeschl.</Text>
+                <Text style={styles.statusBarLabel}>{t("donorReport.statusCompleted")}</Text>
               </View>
               {/* Abgebrochen */}
               <View style={styles.statusBarItem}>
@@ -333,16 +337,16 @@ export default function DonorReportScreen() {
                 </View>
                 <Text style={styles.statusBarValue}>{statusDistribution.cancelled.count}</Text>
                 <Text style={styles.statusBarPercent}>{statusDistribution.cancelled.percent}%</Text>
-                <Text style={styles.statusBarLabel}>Abgebr.</Text>
+                <Text style={styles.statusBarLabel}>{t("donorReport.statusCancelled")}</Text>
               </View>
             </View>
-            <Text style={styles.chartSubNote}>Gesamt: {statusDistribution.total} Betreuungen</Text>
+            <Text style={styles.chartSubNote}>{t("donorReport.total").replace("{0}", String(statusDistribution.total))}</Text>
           </View>
 
           {/* Monatsvergleich Balkendiagramm */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionHeaderText}>
-              Sessions{periodMode === "quarter" ? " nach Monat" : " pro Monat (Jahresübersicht)"}
+              {periodMode === "quarter" ? t("donorReport.sessionsPerMonth") : t("donorReport.sessionsPerYear")}
             </Text>
           </View>
           <View style={styles.chartCard}>
@@ -371,7 +375,7 @@ export default function DonorReportScreen() {
           {sessionDistribution.length > 0 && (
             <>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>Session-Verteilung</Text>
+                <Text style={styles.sectionHeaderText}>{t("donorReport.sessionDistribution")}</Text>
               </View>
               <View style={styles.card}>
                 {sessionDistribution.map((item) => {
@@ -396,14 +400,16 @@ export default function DonorReportScreen() {
           {mentorOfPeriod && (
             <>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionHeaderText}>Mentor des Zeitraums</Text>
+                <Text style={styles.sectionHeaderText}>{t("donorReport.mentorOfPeriod")}</Text>
               </View>
               <View style={styles.goldBox}>
                 <Text style={styles.goldStar}>★</Text>
                 <Text style={styles.goldMentorName}>{mentorOfPeriod.mentor.name}</Text>
                 <Text style={styles.goldMentorCity}>{mentorOfPeriod.mentor.city}</Text>
                 <Text style={styles.goldMentorSessions}>
-                  {mentorOfPeriod.count} Session{mentorOfPeriod.count !== 1 ? "s" : ""} in diesem Zeitraum
+                  {t("donorReport.mentorSessions")
+                    .replace("{0}", String(mentorOfPeriod.count))
+                    .replace("{1}", mentorOfPeriod.count !== 1 ? "s" : "")}
                 </Text>
               </View>
             </>
@@ -411,7 +417,7 @@ export default function DonorReportScreen() {
 
           {/* Zusammenfassung */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionHeaderText}>Zusammenfassung</Text>
+            <Text style={styles.sectionHeaderText}>{t("donorReport.summary")}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryText}>{summaryText}</Text>
@@ -427,12 +433,12 @@ export default function DonorReportScreen() {
                 }
               }}
             >
-              <Text style={styles.printButtonText}>🖨 Als PDF drucken</Text>
+              <Text style={styles.printButtonText}>🖨 {t("donorReport.print")}</Text>
             </TouchableOpacity>
           )}
 
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Text style={styles.backBtnText}>← Zurück zu Berichten</Text>
+            <Text style={styles.backBtnText}>{t("donorReport.backToReports")}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>

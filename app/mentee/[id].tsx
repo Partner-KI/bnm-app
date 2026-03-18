@@ -10,17 +10,19 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
-
-const CONTACT_LABELS: Record<string, string> = {
-  whatsapp: "WhatsApp",
-  phone: "Telefon",
-  telegram: "Telegram",
-  email: "E-Mail",
-};
+import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function MenteeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useLanguage();
+
+  const CONTACT_LABELS: Record<string, string> = {
+    whatsapp: "WhatsApp",
+    phone: t("menteeDetail.phone"),
+    telegram: "Telegram",
+    email: t("menteeDetail.email"),
+  };
   const {
     getUserById,
     mentorships,
@@ -43,13 +45,13 @@ export default function MenteeDetailScreen() {
         <View style={styles.root}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-              <Text style={styles.backText}>‹ Zurück</Text>
+              <Text style={styles.backText}>{t("menteeDetail.back")}</Text>
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Mentee-Detail</Text>
+            <Text style={styles.headerTitle}>{t("menteeDetail.headerTitle")}</Text>
             <View style={styles.headerRight} />
           </View>
           <View style={styles.emptyBox}>
-            <Text style={styles.emptyText}>Mentee nicht gefunden.</Text>
+            <Text style={styles.emptyText}>{t("menteeDetail.notFound")}</Text>
           </View>
         </View>
       </Container>
@@ -65,11 +67,11 @@ export default function MenteeDetailScreen() {
 
   const statusLabel = mentorship
     ? mentorship.status === "active"
-      ? "Aktiv"
+      ? t("menteeDetail.active")
       : mentorship.status === "completed"
-      ? "Abgeschlossen"
-      : "Abgebrochen"
-    : "Kein Mentor zugewiesen";
+      ? t("menteeDetail.completed")
+      : t("menteeDetail.cancelled")
+    : t("menteeDetail.noMentor");
 
   const statusBg = mentorship
     ? mentorship.status === "active"
@@ -93,9 +95,9 @@ export default function MenteeDetailScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={styles.backText}>‹ Zurück</Text>
+            <Text style={styles.backText}>{t("menteeDetail.back")}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Mentee-Profil</Text>
+          <Text style={styles.headerTitle}>{t("menteeDetail.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
@@ -109,7 +111,7 @@ export default function MenteeDetailScreen() {
             <Text style={styles.profileName}>{mentee.name}</Text>
             <Text style={styles.profileSub}>
               {mentee.city} · {mentee.age} Jahre ·{" "}
-              {mentee.gender === "male" ? "Bruder" : "Schwester"}
+              {mentee.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
               <Text style={[styles.statusText, { color: statusColor }]}>
@@ -119,12 +121,12 @@ export default function MenteeDetailScreen() {
           </View>
 
           {/* Kontaktinformationen */}
-          <Text style={styles.sectionLabel}>KONTAKTINFORMATIONEN</Text>
+          <Text style={styles.sectionLabel}>{t("menteeDetail.contactInfo")}</Text>
           <View style={styles.card}>
-            <InfoRow label="E-Mail" value={mentee.email} />
-            {mentee.phone && <InfoRow label="Telefon" value={mentee.phone} />}
+            <InfoRow label={t("menteeDetail.email")} value={mentee.email} />
+            {mentee.phone && <InfoRow label={t("menteeDetail.phone")} value={mentee.phone} />}
             <InfoRow
-              label="Kontaktpräferenz"
+              label={t("menteeDetail.contactPref")}
               value={CONTACT_LABELS[mentee.contact_preference] ?? mentee.contact_preference}
               isLast
             />
@@ -133,7 +135,7 @@ export default function MenteeDetailScreen() {
           {/* Zugewiesener Mentor */}
           {mentor && (
             <>
-              <Text style={styles.sectionLabel}>ZUGEWIESENER MENTOR</Text>
+              <Text style={styles.sectionLabel}>{t("menteeDetail.assignedMentor")}</Text>
               <View style={styles.card}>
                 <View style={styles.mentorRow}>
                   <View style={styles.mentorAvatar}>
@@ -144,14 +146,14 @@ export default function MenteeDetailScreen() {
                   <View style={styles.mentorInfo}>
                     <Text style={styles.mentorName}>{mentor.name}</Text>
                     <Text style={styles.mentorSub}>
-                      {mentor.city} · {mentor.gender === "male" ? "Bruder" : "Schwester"}
+                      {mentor.city} · {mentor.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
                     </Text>
                   </View>
                   <TouchableOpacity
                     style={styles.mentorDetailButton}
                     onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: mentor.id } })}
                   >
-                    <Text style={styles.mentorDetailText}>Profil</Text>
+                    <Text style={styles.mentorDetailText}>{t("menteeDetail.mentorProfile")}</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -161,17 +163,19 @@ export default function MenteeDetailScreen() {
           {/* Mentoring-Fortschritt */}
           {mentorship && (
             <>
-              <Text style={styles.sectionLabel}>MENTORING-FORTSCHRITT</Text>
+              <Text style={styles.sectionLabel}>{t("menteeDetail.mentoringProgress")}</Text>
               <View style={styles.card}>
                 <View style={styles.progressHeaderRow}>
-                  <Text style={styles.progressLabel}>Fortschritt</Text>
+                  <Text style={styles.progressLabel}>{t("menteeDetail.progress")}</Text>
                   <Text style={styles.progressValue}>{progress}%</Text>
                 </View>
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${progress}%` as any }]} />
                 </View>
                 <Text style={styles.progressSub}>
-                  {completedStepIds.length} von {sessionTypes.length} Schritten abgeschlossen
+                  {t("menteeDetail.stepsCompleted")
+                    .replace("{0}", String(completedStepIds.length))
+                    .replace("{1}", String(sessionTypes.length))}
                 </Text>
 
                 <View style={styles.stepsList}>
@@ -221,7 +225,7 @@ export default function MenteeDetailScreen() {
                         </Text>
                         {isCurrent && (
                           <View style={styles.currentChip}>
-                            <Text style={styles.currentChipText}>Aktuell</Text>
+                            <Text style={styles.currentChipText}>{t("menteeDetail.current")}</Text>
                           </View>
                         )}
                       </View>
@@ -233,7 +237,7 @@ export default function MenteeDetailScreen() {
           )}
 
           {/* Aktionen */}
-          <Text style={styles.sectionLabel}>AKTIONEN</Text>
+          <Text style={styles.sectionLabel}>{t("menteeDetail.actions")}</Text>
           <View style={styles.actionsCard}>
             {!mentorship && (
               <TouchableOpacity
@@ -242,7 +246,7 @@ export default function MenteeDetailScreen() {
                   router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
                 }
               >
-                <Text style={styles.actionButtonText}>Mentor zuweisen</Text>
+                <Text style={styles.actionButtonText}>{t("menteeDetail.assignMentor")}</Text>
               </TouchableOpacity>
             )}
             {mentorship && mentorship.status === "active" && (
@@ -252,7 +256,7 @@ export default function MenteeDetailScreen() {
                   router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
                 }
               >
-                <Text style={styles.actionButtonText}>Nachricht senden</Text>
+                <Text style={styles.actionButtonText}>{t("menteeDetail.sendMessage")}</Text>
               </TouchableOpacity>
             )}
             {mentorship && (
@@ -263,7 +267,7 @@ export default function MenteeDetailScreen() {
                 }
               >
                 <Text style={[styles.actionButtonText, { color: COLORS.primary }]}>
-                  Betreuung ansehen
+                  {t("menteeDetail.viewMentorship")}
                 </Text>
               </TouchableOpacity>
             )}

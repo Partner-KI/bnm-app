@@ -15,6 +15,7 @@ import type { Gender, ContactPreference } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { sendNewMentorApplicationNotification } from "../../lib/emailService";
+import { useLanguage } from "../../contexts/LanguageContext";
 
 interface MentorFormData {
   name: string;
@@ -28,21 +29,11 @@ interface MentorFormData {
   motivation: string;
 }
 
-const GENDER_OPTIONS: { value: Gender; label: string }[] = [
-  { value: "male", label: "Bruder" },
-  { value: "female", label: "Schwester" },
-];
-
-const CONTACT_OPTIONS: { value: ContactPreference; label: string }[] = [
-  { value: "whatsapp", label: "WhatsApp" },
-  { value: "phone", label: "Telefon" },
-  { value: "telegram", label: "Telegram" },
-  { value: "email", label: "E-Mail" },
-];
-
 export default function RegisterMentorScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState<MentorFormData>({
     name: "",
     email: "",
@@ -58,18 +49,18 @@ export default function RegisterMentorScreen() {
 
   function validate(): boolean {
     const newErrors: Partial<Record<keyof MentorFormData, string>> = {};
-    if (!form.name.trim()) newErrors.name = "Pflichtfeld";
-    if (!form.email.trim()) newErrors.email = "Pflichtfeld";
+    if (!form.name.trim()) newErrors.name = t("registerMentor.required");
+    if (!form.email.trim()) newErrors.email = t("registerMentor.required");
     else if (!/\S+@\S+\.\S+/.test(form.email))
-      newErrors.email = "Ungültige E-Mail";
-    if (!form.gender) newErrors.gender = "Pflichtfeld";
-    if (!form.city.trim()) newErrors.city = "Pflichtfeld";
-    if (!form.age.trim()) newErrors.age = "Pflichtfeld";
+      newErrors.email = t("registerMentor.invalidEmail");
+    if (!form.gender) newErrors.gender = t("registerMentor.required");
+    if (!form.city.trim()) newErrors.city = t("registerMentor.required");
+    if (!form.age.trim()) newErrors.age = t("registerMentor.required");
     else if (isNaN(Number(form.age)) || Number(form.age) < 18)
-      newErrors.age = "Mindestalter: 18 Jahre";
+      newErrors.age = t("registerMentor.minAge");
     if (!form.contact_preference)
-      newErrors.contact_preference = "Pflichtfeld";
-    if (!form.motivation.trim()) newErrors.motivation = "Pflichtfeld";
+      newErrors.contact_preference = t("registerMentor.required");
+    if (!form.motivation.trim()) newErrors.motivation = t("registerMentor.required");
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -80,20 +71,6 @@ export default function RegisterMentorScreen() {
     setIsSubmitting(true);
     try {
       const emailLower = form.email.trim().toLowerCase();
-
-      // Prüfen ob bereits eine pending Bewerbung existiert
-      const { data: existingApp } = await supabase
-        .from("mentor_applications")
-        .select("id")
-        .eq("email", emailLower)
-        .eq("status", "pending")
-        .maybeSingle();
-
-      if (existingApp) {
-        setErrors((prev) => ({ ...prev, email: "Für diese E-Mail liegt bereits eine Bewerbung vor." }));
-        setIsSubmitting(false);
-        return;
-      }
 
       // Mentor-Bewerbung in mentor_applications speichern
       const { error } = await supabase.from("mentor_applications").insert({
@@ -123,9 +100,9 @@ export default function RegisterMentorScreen() {
         form.gender
       );
 
-      showSuccess("Vielen Dank für deine Bewerbung als Mentor! Das BNM-Team wird deine Bewerbung prüfen und sich bei dir melden.", () => router.replace("/(auth)/login"));
+      setSubmitted(true);
     } catch {
-      showError("Ein unerwarteter Fehler ist aufgetreten.");
+      showError(t("registerMentor.errorUnexpected"));
     } finally {
       setIsSubmitting(false);
     }
@@ -136,6 +113,36 @@ export default function RegisterMentorScreen() {
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: undefined }));
     }
+  }
+
+  const genderOptions: { value: Gender; label: string }[] = [
+    { value: "male", label: t("register.brother") },
+    { value: "female", label: t("register.sister") },
+  ];
+
+  const contactOptions: { value: ContactPreference; label: string }[] = [
+    { value: "whatsapp", label: "WhatsApp" },
+    { value: "phone", label: "Telefon" },
+    { value: "telegram", label: "Telegram" },
+    { value: "email", label: "E-Mail" },
+  ];
+
+  if (submitted) {
+    return (
+      <View style={styles.successContainer}>
+        <View style={styles.successIcon}>
+          <Text style={{ color: COLORS.white, fontSize: 28, fontWeight: "bold" }}>✓</Text>
+        </View>
+        <Text style={styles.successTitle}>{t("registerMentor.successTitle")}</Text>
+        <Text style={styles.successText}>{t("registerMentor.successMsg")}</Text>
+        <TouchableOpacity
+          style={styles.successButton}
+          onPress={() => router.replace("/(auth)/login")}
+        >
+          <Text style={styles.successButtonText}>{t("login.submit")}</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
@@ -150,21 +157,21 @@ export default function RegisterMentorScreen() {
       >
         <View style={styles.container}>
           <Text style={styles.intro}>
-            Bewirb dich als Mentor und begleite neue Muslime auf ihrem Weg.
+            {t("registerMentor.intro")}
           </Text>
 
           {/* Name */}
-          <FieldLabel label="Vollständiger Name" error={errors.name} />
+          <FieldLabel label={t("registerMentor.name")} error={errors.name} />
           <TextInput
             style={[styles.input, errors.name ? styles.inputError : styles.inputNormal]}
-            placeholder="Dein Name"
+            placeholder={t("registerMentor.namePlaceholder")}
             placeholderTextColor="#98A2B3"
             value={form.name}
             onChangeText={(v) => update("name", v)}
           />
 
           {/* E-Mail */}
-          <FieldLabel label="E-Mail-Adresse" error={errors.email} />
+          <FieldLabel label={t("registerMentor.email")} error={errors.email} />
           <TextInput
             style={[styles.input, errors.email ? styles.inputError : styles.inputNormal]}
             placeholder="deine@email.de"
@@ -176,7 +183,7 @@ export default function RegisterMentorScreen() {
           />
 
           {/* Telefon */}
-          <FieldLabel label="Telefonnummer (optional)" />
+          <FieldLabel label={t("registerMentor.phone")} />
           <TextInput
             style={[styles.input, styles.inputNormal]}
             placeholder="+49 151 ..."
@@ -187,9 +194,9 @@ export default function RegisterMentorScreen() {
           />
 
           {/* Geschlecht */}
-          <FieldLabel label="Ich bin" error={errors.gender} />
+          <FieldLabel label={t("registerMentor.gender")} error={errors.gender} />
           <View style={styles.rowGap3Mb3}>
-            {GENDER_OPTIONS.map((opt) => (
+            {genderOptions.map((opt) => (
               <TouchableOpacity
                 key={opt.value}
                 style={[
@@ -214,20 +221,20 @@ export default function RegisterMentorScreen() {
           </View>
 
           {/* Stadt */}
-          <FieldLabel label="Wohnort / Stadt" error={errors.city} />
+          <FieldLabel label={t("registerMentor.city")} error={errors.city} />
           <TextInput
             style={[styles.input, errors.city ? styles.inputError : styles.inputNormal]}
-            placeholder="z.B. Hamburg"
+            placeholder={t("registerMentor.cityPlaceholder")}
             placeholderTextColor="#98A2B3"
             value={form.city}
             onChangeText={(v) => update("city", v)}
           />
 
           {/* Alter */}
-          <FieldLabel label="Alter (mindestens 18)" error={errors.age} />
+          <FieldLabel label={t("registerMentor.age")} error={errors.age} />
           <TextInput
             style={[styles.input, errors.age ? styles.inputError : styles.inputNormal]}
-            placeholder="z.B. 28"
+            placeholder={t("registerMentor.agePlaceholder")}
             placeholderTextColor="#98A2B3"
             keyboardType="number-pad"
             value={form.age}
@@ -236,11 +243,11 @@ export default function RegisterMentorScreen() {
 
           {/* Kontaktpräferenz */}
           <FieldLabel
-            label="Bevorzugter Kontaktweg"
+            label={t("registerMentor.contactPref")}
             error={errors.contact_preference}
           />
           <View style={styles.chipRow}>
-            {CONTACT_OPTIONS.map((opt) => (
+            {contactOptions.map((opt) => (
               <TouchableOpacity
                 key={opt.value}
                 style={[
@@ -266,10 +273,10 @@ export default function RegisterMentorScreen() {
           </View>
 
           {/* Erfahrung */}
-          <FieldLabel label="Erfahrung (optional)" error={errors.experience} />
+          <FieldLabel label={t("registerMentor.experience")} error={errors.experience} />
           <TextInput
             style={[styles.input, styles.inputNormal, styles.textarea]}
-            placeholder="Wie lange bist du Muslim? Hast du Erfahrung in der Dawah-Arbeit?"
+            placeholder={t("registerMentor.experiencePlaceholder")}
             placeholderTextColor="#98A2B3"
             multiline
             numberOfLines={3}
@@ -280,7 +287,7 @@ export default function RegisterMentorScreen() {
 
           {/* Motivation */}
           <FieldLabel
-            label="Motivation / Warum möchtest du Mentor werden?"
+            label={t("registerMentor.motivation")}
             error={errors.motivation}
           />
           <TextInput
@@ -290,7 +297,7 @@ export default function RegisterMentorScreen() {
               styles.textarea,
               { marginBottom: 16 },
             ]}
-            placeholder="Erzähl uns, warum du neuen Muslimen helfen möchtest..."
+            placeholder={t("registerMentor.motivationPlaceholder")}
             placeholderTextColor="#98A2B3"
             multiline
             numberOfLines={4}
@@ -306,7 +313,7 @@ export default function RegisterMentorScreen() {
             disabled={isSubmitting}
           >
             <Text style={styles.submitButtonText}>
-              {isSubmitting ? "Wird eingereicht..." : "Bewerbung einreichen"}
+              {isSubmitting ? t("registerMentor.submitting") : t("registerMentor.submit")}
             </Text>
           </TouchableOpacity>
         </View>
@@ -430,6 +437,47 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+  successContainer: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 28,
+  },
+  successIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: COLORS.cta,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 20,
+  },
+  successTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: COLORS.primary,
+    marginBottom: 10,
+    textAlign: "center",
+  },
+  successText: {
+    color: COLORS.secondary,
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  successButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingHorizontal: 28,
+    paddingVertical: 10,
+  },
+  successButtonText: {
     color: COLORS.white,
     fontWeight: "600",
     fontSize: 14,
