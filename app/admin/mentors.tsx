@@ -100,6 +100,12 @@ export default function AdminMentorsScreen() {
               {filtered.length} {t("adminMentors.mentors")}
             </Text>
           </View>
+          <TouchableOpacity
+            style={styles.csvButton}
+            onPress={() => router.push("/admin/csv-import")}
+          >
+            <Text style={styles.csvButtonText}>{t("csvImport.tabMentors")}</Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.csvButton} onPress={handleExportCsv}>
             <Text style={styles.csvButtonText}>{t("csv.export")}</Text>
           </TouchableOpacity>

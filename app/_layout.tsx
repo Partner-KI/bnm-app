@@ -218,6 +218,12 @@ function RootLayoutInner() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="admin/csv-import"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

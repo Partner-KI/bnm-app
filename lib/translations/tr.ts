@@ -974,6 +974,30 @@ const tr: Record<TranslationKeys, string> = {
   // Oturum Zaman Çizelgesi İyileştirmeleri
   "timeline.duration": "{0} dk.",
   "timeline.attempt": "Deneme {0}",
+
+  // CSV İçe Aktarma
+  "csvImport.title": "CSV İçe Aktar",
+  "csvImport.tabMentees": "Mentee'leri İçe Aktar",
+  "csvImport.tabMentors": "Mentorları İçe Aktar",
+  "csvImport.upload": "CSV dosyası seç",
+  "csvImport.uploadHint": "Yalnızca web'de kullanılabilir. Virgül veya noktalı virgül ayırıcılı CSV.",
+  "csvImport.downloadTemplate": "CSV şablonunu indir",
+  "csvImport.preview": "Önizleme",
+  "csvImport.import": "İçe Aktar",
+  "csvImport.importing": "İçe aktarılıyor...",
+  "csvImport.resultTitle": "Sonuç",
+  "csvImport.created": "Oluşturuldu",
+  "csvImport.failed": "Başarısız",
+  "csvImport.skipped": "Atlandı (Tekrarlar)",
+  "csvImport.errorNoFile": "Lütfen önce bir CSV dosyası seçin.",
+  "csvImport.errorEmpty": "CSV dosyası veri içermiyor.",
+  "csvImport.errorFormat": "Geçersiz CSV biçimi.",
+  "csvImport.rowValid": "Tamam",
+  "csvImport.rowError": "Hata",
+  "csvImport.rowDuplicate": "Tekrar",
+  "csvImport.nativeHint": "CSV içe aktarma yalnızca web sürümünde kullanılabilir.",
+  "csvImport.noPreview": "Dosya seçilmedi.",
+  "csvImport.progress": "{1} kişiden {0} işlendi",
 };
 
 export default tr;

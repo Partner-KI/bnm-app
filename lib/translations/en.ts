@@ -974,6 +974,30 @@ const en: Record<TranslationKeys, string> = {
   // Session Timeline Improvements
   "timeline.duration": "{0} min.",
   "timeline.attempt": "Attempt {0}",
+
+  // CSV Import
+  "csvImport.title": "CSV Import",
+  "csvImport.tabMentees": "Import Mentees",
+  "csvImport.tabMentors": "Import Mentors",
+  "csvImport.upload": "Select CSV file",
+  "csvImport.uploadHint": "Available on web only. CSV with comma or semicolon as delimiter.",
+  "csvImport.downloadTemplate": "Download CSV template",
+  "csvImport.preview": "Preview",
+  "csvImport.import": "Import",
+  "csvImport.importing": "Importing...",
+  "csvImport.resultTitle": "Result",
+  "csvImport.created": "Created",
+  "csvImport.failed": "Failed",
+  "csvImport.skipped": "Skipped (Duplicates)",
+  "csvImport.errorNoFile": "Please select a CSV file first.",
+  "csvImport.errorEmpty": "The CSV file contains no data.",
+  "csvImport.errorFormat": "Invalid CSV format.",
+  "csvImport.rowValid": "OK",
+  "csvImport.rowError": "Error",
+  "csvImport.rowDuplicate": "Duplicate",
+  "csvImport.nativeHint": "CSV import is only available in the web version.",
+  "csvImport.noPreview": "No file selected.",
+  "csvImport.progress": "{0} of {1} processed",
 };
 
 export default en;

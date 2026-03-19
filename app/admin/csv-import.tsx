@@ -1,0 +1,810 @@
+import React, { useState, useCallback } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { COLORS } from "../../constants/Colors";
+import { supabase } from "../../lib/supabase";
+import { supabaseAnon } from "../../lib/supabaseAnon";
+import { sendCredentialsEmail } from "../../lib/emailService";
+import {
+  parseCSV,
+  validateMenteeRow,
+  parseMenteeRow,
+  parseMentorRow,
+  getMenteeCSVTemplate,
+  getMentorCSVTemplate,
+  type CSVRow,
+} from "../../lib/csvParser";
+
+// ─── Typen ────────────────────────────────────────────────────────────────────
+
+type TabType = "mentees" | "mentors";
+type RowStatus = "valid" | "error" | "duplicate";
+
+interface PreviewRow {
+  index: number;
+  raw: CSVRow;
+  status: RowStatus;
+  errors: string[];
+  warnings: string[];
+  name: string;
+  email: string;
+  gender: string;
+  city: string;
+  age: string;
+}
+
+interface ImportResult {
+  created: number;
+  failed: number;
+  skipped: number;
+  errors: string[];
+}
+
+// ─── Hilfsfunction: Passwort generieren ──────────────────────────────────────
+
+function generateTempPassword(): string {
+  return "BNM-" + Math.floor(100000 + Math.random() * 900000);
+}
+
+// ─── Haupt-Komponente ─────────────────────────────────────────────────────────
+
+export default function CSVImportScreen() {
+  const router = useRouter();
+  const { t } = useLanguage();
+  const { user } = useAuth();
+  const { users, refreshData } = useData();
+
+  const [activeTab, setActiveTab] = useState<TabType>("mentees");
+  const [parsedRows, setParsedRows] = useState<CSVRow[]>([]);
+  const [previewRows, setPreviewRows] = useState<PreviewRow[]>([]);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResult, setImportResult] = useState<ImportResult | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [progressTotal, setProgressTotal] = useState(0);
+
+  // Nur Admin/Office darf importieren
+  if (!user || (user.role !== "admin" && user.role !== "office")) {
+    return (
+      <View style={styles.center}>
+        <Text style={styles.errorText}>{t("applications.accessDenied")}</Text>
+      </View>
+    );
+  }
+
+  // ─── CSV-Datei laden (nur Web) ──────────────────────────────────────────────
+
+  const handleFileUpload = useCallback(() => {
+    if (Platform.OS !== "web") return;
+
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".csv,text/csv";
+
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        if (!text) return;
+
+        const rows = parseCSV(text);
+        setParsedRows(rows);
+        setImportResult(null);
+        buildPreview(rows);
+      };
+      reader.readAsText(file, "UTF-8");
+    };
+
+    input.click();
+  }, [activeTab, users]);
+
+  // ─── Vorschau aufbauen ──────────────────────────────────────────────────────
+
+  const buildPreview = useCallback(
+    (rows: CSVRow[]) => {
+      const existingEmails = users.map((u) => u.email.toLowerCase());
+
+      const preview: PreviewRow[] = rows.map((row, idx) => {
+        const validation = validateMenteeRow(row, existingEmails);
+        const isDuplicate = validation.warnings.some((w) =>
+          w.includes("bereits vorhanden")
+        );
+
+        let status: RowStatus = "valid";
+        if (!validation.valid) status = "error";
+        else if (isDuplicate) status = "duplicate";
+
+        const parsed = parseMenteeRow(row);
+
+        return {
+          index: idx + 1,
+          raw: row,
+          status,
+          errors: validation.errors,
+          warnings: validation.warnings,
+          name: parsed.name,
+          email: parsed.email,
+          gender: parsed.gender === "male" ? "Bruder" : parsed.gender === "female" ? "Schwester" : "?",
+          city: parsed.city,
+          age: parsed.age != null ? String(parsed.age) : "?",
+        };
+      });
+
+      setPreviewRows(preview);
+    },
+    [users]
+  );
+
+  // ─── Tab wechseln ───────────────────────────────────────────────────────────
+
+  const handleTabChange = useCallback(
+    (tab: TabType) => {
+      setActiveTab(tab);
+      setParsedRows([]);
+      setPreviewRows([]);
+      setImportResult(null);
+      setProgress(0);
+      setProgressTotal(0);
+    },
+    []
+  );
+
+  // ─── Vorlage herunterladen ──────────────────────────────────────────────────
+
+  const handleDownloadTemplate = useCallback(() => {
+    if (Platform.OS !== "web") return;
+
+    const content =
+      activeTab === "mentees" ? getMenteeCSVTemplate() : getMentorCSVTemplate();
+    const filename =
+      activeTab === "mentees"
+        ? "BNM-Mentees-Vorlage.csv"
+        : "BNM-Mentoren-Vorlage.csv";
+
+    const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [activeTab]);
+
+  // ─── Import-Logik ───────────────────────────────────────────────────────────
+
+  const handleImport = useCallback(async () => {
+    const toImport = previewRows.filter((r) => r.status === "valid");
+    if (toImport.length === 0) return;
+
+    setIsImporting(true);
+    setImportResult(null);
+    setProgress(0);
+    setProgressTotal(toImport.length);
+
+    const result: ImportResult = { created: 0, failed: 0, skipped: 0, errors: [] };
+    const skipped = previewRows.filter((r) => r.status === "duplicate").length;
+    result.skipped = skipped;
+
+    // Admin-Session EINMAL sichern am Anfang
+    const { data: adminSessionData } = await supabase.auth.getSession();
+    const adminSession = adminSessionData?.session ?? null;
+
+    for (let i = 0; i < toImport.length; i++) {
+      const previewRow = toImport[i];
+      const raw = previewRow.raw;
+
+      try {
+        const role = activeTab === "mentees" ? "mentee" : "mentor";
+        const parsed = activeTab === "mentors" ? parseMentorRow(raw) : parseMenteeRow(raw);
+        const tempPassword = generateTempPassword();
+
+        const { data: signUpData, error: signUpError } = await supabaseAnon.auth.signUp({
+          email: parsed.email,
+          password: tempPassword,
+          options: {
+            data: {
+              name: parsed.name,
+              role,
+              gender: parsed.gender ?? "male",
+              city: parsed.city,
+              age: parsed.age ?? 0,
+            },
+          },
+        });
+
+        if (signUpError) {
+          if (
+            signUpError.message.includes("already registered") ||
+            signUpError.message.includes("User already registered")
+          ) {
+            result.skipped++;
+          } else {
+            result.failed++;
+            result.errors.push(`${parsed.name}: ${signUpError.message}`);
+          }
+        } else if (signUpData?.user) {
+          // Zugangsdaten per E-Mail versenden
+          await sendCredentialsEmail(parsed.email, parsed.name, tempPassword);
+          result.created++;
+        } else {
+          result.failed++;
+          result.errors.push(`${parsed.name}: Unbekannter Fehler`);
+        }
+      } catch (err) {
+        result.failed++;
+        result.errors.push(`Zeile ${previewRow.index}: ${String(err)}`);
+      }
+
+      setProgress(i + 1);
+
+      // Rate Limit vermeiden: 500ms Pause zwischen signUp-Aufrufen
+      if (i < toImport.length - 1) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    }
+
+    // Admin-Session EINMAL wiederherstellen am Ende
+    if (adminSession) {
+      await supabase.auth.setSession({
+        access_token: adminSession.access_token,
+        refresh_token: adminSession.refresh_token,
+      });
+    }
+
+    // Daten neu laden
+    await refreshData();
+
+    setIsImporting(false);
+    setImportResult(result);
+    setParsedRows([]);
+    setPreviewRows([]);
+    setProgress(0);
+    setProgressTotal(0);
+  }, [previewRows, activeTab, refreshData]);
+
+  // ─── Render ─────────────────────────────────────────────────────────────────
+
+  const validCount = previewRows.filter((r) => r.status === "valid").length;
+  const duplicateCount = previewRows.filter((r) => r.status === "duplicate").length;
+  const errorCount = previewRows.filter((r) => r.status === "error").length;
+
+  return (
+    <ScrollView style={styles.scrollView}>
+      <View style={styles.page}>
+        {/* Header */}
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+            <Text style={styles.backBtnText}>‹</Text>
+          </TouchableOpacity>
+          <Text style={styles.pageTitle}>{t("csvImport.title")}</Text>
+        </View>
+
+        {/* Tabs */}
+        <View style={styles.tabRow}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "mentees" && styles.tabActive]}
+            onPress={() => handleTabChange("mentees")}
+          >
+            <Text
+              style={[styles.tabText, activeTab === "mentees" && styles.tabTextActive]}
+            >
+              {t("csvImport.tabMentees")}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === "mentors" && styles.tabActive]}
+            onPress={() => handleTabChange("mentors")}
+          >
+            <Text
+              style={[styles.tabText, activeTab === "mentors" && styles.tabTextActive]}
+            >
+              {t("csvImport.tabMentors")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Aktionsbereich */}
+        <View style={styles.actionCard}>
+          {Platform.OS === "web" ? (
+            <>
+              <View style={styles.actionRow}>
+                <TouchableOpacity
+                  style={styles.uploadButton}
+                  onPress={handleFileUpload}
+                  disabled={isImporting}
+                >
+                  <Text style={styles.uploadButtonText}>
+                    ↑ {t("csvImport.upload")}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.templateButton}
+                  onPress={handleDownloadTemplate}
+                  disabled={isImporting}
+                >
+                  <Text style={styles.templateButtonText}>
+                    ↓ {t("csvImport.downloadTemplate")}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.uploadHint}>{t("csvImport.uploadHint")}</Text>
+            </>
+          ) : (
+            <View style={styles.nativeHintBox}>
+              <Text style={styles.nativeHintText}>{t("csvImport.nativeHint")}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Ergebnis nach Import */}
+        {importResult && (
+          <View style={styles.resultCard}>
+            <Text style={styles.resultTitle}>{t("csvImport.resultTitle")}</Text>
+            <View style={styles.resultRow}>
+              <View style={[styles.resultChip, styles.resultChipGreen]}>
+                <Text style={styles.resultChipValue}>{importResult.created}</Text>
+                <Text style={styles.resultChipLabel}>{t("csvImport.created")}</Text>
+              </View>
+              <View style={[styles.resultChip, styles.resultChipYellow]}>
+                <Text style={styles.resultChipValue}>{importResult.skipped}</Text>
+                <Text style={styles.resultChipLabel}>{t("csvImport.skipped")}</Text>
+              </View>
+              <View style={[styles.resultChip, styles.resultChipRed]}>
+                <Text style={styles.resultChipValue}>{importResult.failed}</Text>
+                <Text style={styles.resultChipLabel}>{t("csvImport.failed")}</Text>
+              </View>
+            </View>
+            {importResult.errors.length > 0 && (
+              <View style={styles.errorList}>
+                {importResult.errors.map((err, idx) => (
+                  <Text key={idx} style={styles.errorListItem}>
+                    • {err}
+                  </Text>
+                ))}
+              </View>
+            )}
+          </View>
+        )}
+
+        {/* Fortschritt während Import */}
+        {isImporting && (
+          <View style={styles.progressCard}>
+            <ActivityIndicator color={COLORS.gradientStart} size="small" />
+            <Text style={styles.progressText}>
+              {t("csvImport.importing")}{" "}
+              {t("csvImport.progress")
+                .replace("{0}", String(progress))
+                .replace("{1}", String(progressTotal))}
+            </Text>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  {
+                    width: progressTotal > 0
+                      ? `${Math.round((progress / progressTotal) * 100)}%`
+                      : "0%",
+                  } as any,
+                ]}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Vorschau-Tabelle */}
+        {previewRows.length > 0 && !isImporting && (
+          <View style={styles.previewSection}>
+            <View style={styles.previewHeader}>
+              <Text style={styles.sectionTitle}>
+                {t("csvImport.preview")} ({previewRows.length})
+              </Text>
+              <View style={styles.previewStats}>
+                {validCount > 0 && (
+                  <View style={styles.statBadgeGreen}>
+                    <Text style={styles.statBadgeText}>{validCount} OK</Text>
+                  </View>
+                )}
+                {duplicateCount > 0 && (
+                  <View style={styles.statBadgeYellow}>
+                    <Text style={styles.statBadgeText}>{duplicateCount} Duplikat</Text>
+                  </View>
+                )}
+                {errorCount > 0 && (
+                  <View style={styles.statBadgeRed}>
+                    <Text style={styles.statBadgeText}>{errorCount} Fehler</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+
+            {previewRows.map((row) => (
+              <View
+                key={row.index}
+                style={[
+                  styles.previewRow,
+                  row.status === "valid" && styles.previewRowValid,
+                  row.status === "error" && styles.previewRowError,
+                  row.status === "duplicate" && styles.previewRowDuplicate,
+                ]}
+              >
+                <View style={styles.previewRowHeader}>
+                  <Text style={styles.previewRowName}>
+                    {row.index}. {row.name || "(kein Name)"}
+                  </Text>
+                  <View
+                    style={[
+                      styles.statusBadge,
+                      row.status === "valid" && styles.statusBadgeGreen,
+                      row.status === "error" && styles.statusBadgeRed,
+                      row.status === "duplicate" && styles.statusBadgeYellow,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.statusBadgeText,
+                        row.status === "valid" && { color: "#15803d" },
+                        row.status === "error" && { color: "#b91c1c" },
+                        row.status === "duplicate" && { color: "#b45309" },
+                      ]}
+                    >
+                      {row.status === "valid"
+                        ? t("csvImport.rowValid")
+                        : row.status === "duplicate"
+                        ? t("csvImport.rowDuplicate")
+                        : t("csvImport.rowError")}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={styles.previewRowMeta}>
+                  {row.email} · {row.gender} · {row.city} · {row.age} J.
+                </Text>
+                {row.errors.length > 0 && (
+                  <Text style={styles.previewRowErrors}>
+                    {row.errors.join(", ")}
+                  </Text>
+                )}
+                {row.warnings.length > 0 && (
+                  <Text style={styles.previewRowWarnings}>
+                    {row.warnings.join(", ")}
+                  </Text>
+                )}
+              </View>
+            ))}
+
+            {/* Import-Button */}
+            {validCount > 0 && (
+              <TouchableOpacity
+                style={styles.importButton}
+                onPress={handleImport}
+                disabled={isImporting}
+              >
+                <Text style={styles.importButtonText}>
+                  {t("csvImport.import")} ({validCount})
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {parsedRows.length === 0 && previewRows.length === 0 && !importResult && Platform.OS === "web" && (
+          <View style={styles.emptyCard}>
+            <Text style={styles.emptyText}>{t("csvImport.noPreview")}</Text>
+          </View>
+        )}
+      </View>
+    </ScrollView>
+  );
+}
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  scrollView: { flex: 1, backgroundColor: COLORS.bg },
+  page: { padding: 20 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
+  errorText: { color: COLORS.error, textAlign: "center" },
+
+  // Header
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 },
+  backBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
+  backBtnText: { fontSize: 24, color: COLORS.primary, fontWeight: "300" },
+  pageTitle: { fontSize: 20, fontWeight: "700", color: COLORS.primary },
+
+  // Tabs
+  tabRow: {
+    flexDirection: "row",
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  tabActive: {
+    backgroundColor: COLORS.gradientStart,
+  },
+  tabText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: COLORS.secondary,
+  },
+  tabTextActive: {
+    color: COLORS.white,
+  },
+
+  // Aktionsbereich
+  actionCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  actionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 10,
+  },
+  uploadButton: {
+    flex: 1,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 6,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  uploadButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  templateButton: {
+    flex: 1,
+    backgroundColor: COLORS.bg,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  templateButtonText: {
+    color: COLORS.secondary,
+    fontWeight: "600",
+    fontSize: 13,
+  },
+  uploadHint: {
+    fontSize: 11,
+    color: COLORS.tertiary,
+    lineHeight: 16,
+  },
+  nativeHintBox: {
+    backgroundColor: "#fef3c7",
+    borderRadius: 6,
+    padding: 12,
+  },
+  nativeHintText: {
+    color: "#b45309",
+    fontSize: 13,
+    textAlign: "center",
+  },
+
+  // Ergebnis
+  resultCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  resultTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.primary,
+    marginBottom: 12,
+  },
+  resultRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  resultChip: {
+    flex: 1,
+    borderRadius: 6,
+    padding: 10,
+    alignItems: "center",
+  },
+  resultChipGreen: { backgroundColor: "#dcfce7" },
+  resultChipYellow: { backgroundColor: "#fef3c7" },
+  resultChipRed: { backgroundColor: "#fee2e2" },
+  resultChipValue: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+  resultChipLabel: {
+    fontSize: 10,
+    color: COLORS.secondary,
+    marginTop: 2,
+    textAlign: "center",
+  },
+  errorList: {
+    marginTop: 12,
+    padding: 10,
+    backgroundColor: "#fee2e2",
+    borderRadius: 6,
+  },
+  errorListItem: {
+    fontSize: 12,
+    color: "#b91c1c",
+    marginBottom: 4,
+  },
+
+  // Fortschritt
+  progressCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    alignItems: "center",
+    gap: 10,
+  },
+  progressText: {
+    color: COLORS.secondary,
+    fontSize: 13,
+  },
+  progressTrack: {
+    width: "100%",
+    height: 6,
+    backgroundColor: COLORS.bg,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 3,
+  },
+
+  // Vorschau
+  previewSection: { marginBottom: 16 },
+  previewHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+  previewStats: { flexDirection: "row", gap: 6 },
+  statBadgeGreen: {
+    backgroundColor: "#dcfce7",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  statBadgeYellow: {
+    backgroundColor: "#fef3c7",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  statBadgeRed: {
+    backgroundColor: "#fee2e2",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  statBadgeText: { fontSize: 11, fontWeight: "600", color: COLORS.primary },
+
+  // Vorschau-Zeilen
+  previewRow: {
+    backgroundColor: COLORS.white,
+    borderRadius: 6,
+    padding: 12,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderLeftWidth: 4,
+    borderColor: COLORS.border,
+    borderLeftColor: COLORS.border,
+  },
+  previewRowValid: {
+    borderLeftColor: COLORS.cta,
+  },
+  previewRowError: {
+    borderLeftColor: COLORS.error,
+  },
+  previewRowDuplicate: {
+    borderLeftColor: COLORS.gold,
+  },
+  previewRowHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 4,
+  },
+  previewRowName: {
+    fontWeight: "600",
+    color: COLORS.primary,
+    fontSize: 13,
+    flex: 1,
+  },
+  previewRowMeta: {
+    fontSize: 12,
+    color: COLORS.tertiary,
+  },
+  previewRowErrors: {
+    fontSize: 11,
+    color: COLORS.error,
+    marginTop: 4,
+  },
+  previewRowWarnings: {
+    fontSize: 11,
+    color: "#b45309",
+    marginTop: 2,
+  },
+
+  // Status-Badges
+  statusBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  statusBadgeGreen: { backgroundColor: "#dcfce7" },
+  statusBadgeRed: { backgroundColor: "#fee2e2" },
+  statusBadgeYellow: { backgroundColor: "#fef3c7" },
+  statusBadgeText: { fontSize: 11, fontWeight: "600" },
+
+  // Import-Button
+  importButton: {
+    backgroundColor: COLORS.cta,
+    borderRadius: 8,
+    paddingVertical: 13,
+    alignItems: "center",
+    marginTop: 8,
+  },
+  importButtonText: {
+    color: COLORS.white,
+    fontWeight: "700",
+    fontSize: 15,
+  },
+
+  // Leer-Zustand
+  emptyCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 32,
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderStyle: "dashed",
+  },
+  emptyText: {
+    color: COLORS.tertiary,
+    fontSize: 13,
+  },
+});

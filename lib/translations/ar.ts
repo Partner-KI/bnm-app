@@ -974,6 +974,30 @@ const ar: Record<TranslationKeys, string> = {
   // تحسينات الجدول الزمني للجلسات
   "timeline.duration": "{0} دقيقة",
   "timeline.attempt": "محاولة {0}",
+
+  // استيراد CSV
+  "csvImport.title": "استيراد CSV",
+  "csvImport.tabMentees": "استيراد المتدربين",
+  "csvImport.tabMentors": "استيراد المرشدين",
+  "csvImport.upload": "اختر ملف CSV",
+  "csvImport.uploadHint": "متاح على الويب فقط. CSV بفاصلة أو فاصلة منقوطة.",
+  "csvImport.downloadTemplate": "تنزيل نموذج CSV",
+  "csvImport.preview": "معاينة",
+  "csvImport.import": "استيراد",
+  "csvImport.importing": "جارٍ الاستيراد...",
+  "csvImport.resultTitle": "النتيجة",
+  "csvImport.created": "تم الإنشاء",
+  "csvImport.failed": "فشل",
+  "csvImport.skipped": "تم التخطي (مكررات)",
+  "csvImport.errorNoFile": "الرجاء اختيار ملف CSV أولاً.",
+  "csvImport.errorEmpty": "ملف CSV لا يحتوي على بيانات.",
+  "csvImport.errorFormat": "تنسيق CSV غير صالح.",
+  "csvImport.rowValid": "صحيح",
+  "csvImport.rowError": "خطأ",
+  "csvImport.rowDuplicate": "مكرر",
+  "csvImport.nativeHint": "استيراد CSV متاح فقط في إصدار الويب.",
+  "csvImport.noPreview": "لم يتم اختيار ملف.",
+  "csvImport.progress": "تمت معالجة {0} من {1}",
 };
 
 export default ar;

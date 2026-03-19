@@ -974,6 +974,30 @@ const de = {
   // Session-Timeline Verbesserungen
   "timeline.duration": "{0} Min.",
   "timeline.attempt": "Versuch {0}",
+
+  // CSV-Import
+  "csvImport.title": "CSV Import",
+  "csvImport.tabMentees": "Mentees importieren",
+  "csvImport.tabMentors": "Mentoren importieren",
+  "csvImport.upload": "CSV-Datei auswählen",
+  "csvImport.uploadHint": "Nur auf Web verfügbar. CSV mit Komma oder Semikolon als Trennzeichen.",
+  "csvImport.downloadTemplate": "CSV-Vorlage herunterladen",
+  "csvImport.preview": "Vorschau",
+  "csvImport.import": "Importieren",
+  "csvImport.importing": "Importiere...",
+  "csvImport.resultTitle": "Ergebnis",
+  "csvImport.created": "Erstellt",
+  "csvImport.failed": "Fehlgeschlagen",
+  "csvImport.skipped": "Übersprungen (Duplikate)",
+  "csvImport.errorNoFile": "Bitte zuerst eine CSV-Datei auswählen.",
+  "csvImport.errorEmpty": "Die CSV-Datei enthält keine Daten.",
+  "csvImport.errorFormat": "Ungültiges CSV-Format.",
+  "csvImport.rowValid": "OK",
+  "csvImport.rowError": "Fehler",
+  "csvImport.rowDuplicate": "Duplikat",
+  "csvImport.nativeHint": "CSV-Import ist nur in der Web-Version verfügbar.",
+  "csvImport.noPreview": "Keine Datei ausgewählt.",
+  "csvImport.progress": "{0} von {1} verarbeitet",
 } as const;
 
 export default de;

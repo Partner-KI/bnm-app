@@ -135,9 +135,17 @@ function AdminMenteesView() {
             <Text style={styles.pageTitle}>{t("mentees.allMentees")}</Text>
             <Text style={styles.pageSubtitle}>{allMentees.length} {t("mentees.registered")}</Text>
           </View>
-          <TouchableOpacity style={styles.csvButton} onPress={handleExportCsv}>
-            <Text style={styles.csvButtonText}>{t("csv.export")}</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            <TouchableOpacity
+              style={styles.csvButton}
+              onPress={() => router.push("/admin/csv-import")}
+            >
+              <Text style={styles.csvButtonText}>{t("csvImport.title")}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.csvButton} onPress={handleExportCsv}>
+              <Text style={styles.csvButtonText}>{t("csv.export")}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Suche */}

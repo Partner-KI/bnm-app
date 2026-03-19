@@ -294,6 +294,18 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </TouchableOpacity>
         )}
 
+        {/* CSV Import */}
+        <TouchableOpacity
+          style={styles.applicationsButton}
+          onPress={() => router.push("/admin/csv-import")}
+        >
+          <View style={styles.applicationsButtonContent}>
+            <Text style={styles.applicationsButtonText}>{t("csvImport.title")}</Text>
+            <Text style={styles.applicationsButtonSub}>{t("csvImport.tabMentees")} · {t("csvImport.tabMentors")}</Text>
+          </View>
+          <Text style={styles.applicationsArrow}>›</Text>
+        </TouchableOpacity>
+
         {/* Letzte Aktivitäten */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>{t("dashboard.recentActivity")}</Text>
