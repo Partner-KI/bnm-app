@@ -20,6 +20,19 @@ import { useLanguage } from "../../contexts/LanguageContext";
 
 type Step = "form" | "success";
 
+// Passwort-Stärke berechnen (0–3)
+function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
+  if (!pw || pw.length < 8) return 0;
+  let score = 0;
+  if (pw.length >= 8) score++;
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return 1;
+  if (score === 2 || score === 3) return 2;
+  return 3;
+}
+
 export default function RegisterPublicScreen() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -334,6 +347,10 @@ export default function RegisterPublicScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
+              {/* Passwort-Stärke-Anzeige */}
+              {password.length > 0 && (
+                <PasswordStrengthBar password={password} />
+              )}
             </FormField>
 
             {/* Passwort bestätigen */}
@@ -397,6 +414,52 @@ function FormField({
     </View>
   );
 }
+
+function PasswordStrengthBar({ password }: { password: string }) {
+  const { t } = useLanguage();
+  const strength = getPasswordStrength(password);
+
+  const colors: Record<number, string> = {
+    0: COLORS.border,
+    1: COLORS.error,
+    2: COLORS.gold,
+    3: COLORS.cta,
+  };
+
+  const labels: Record<number, string> = {
+    0: "",
+    1: t("passwordStrength.weak"),
+    2: t("passwordStrength.medium"),
+    3: t("passwordStrength.strong"),
+  };
+
+  const fillColor = colors[strength];
+  const fillPct = strength === 0 ? 0 : (strength / 3) * 100;
+
+  return (
+    <View style={strengthStyles.container}>
+      <View style={strengthStyles.track}>
+        <View style={[strengthStyles.fill, { width: `${fillPct}%` as any, backgroundColor: fillColor }]} />
+      </View>
+      {strength > 0 && (
+        <Text style={[strengthStyles.label, { color: fillColor }]}>{labels[strength]}</Text>
+      )}
+    </View>
+  );
+}
+
+const strengthStyles = StyleSheet.create({
+  container: { marginTop: 6, flexDirection: "row", alignItems: "center", gap: 8 },
+  track: {
+    flex: 1,
+    height: 5,
+    backgroundColor: COLORS.border,
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  fill: { height: "100%", borderRadius: 3 },
+  label: { fontSize: 12, fontWeight: "600", minWidth: 50 },
+});
 
 const fieldStyles = StyleSheet.create({
   container: { marginBottom: 12 },

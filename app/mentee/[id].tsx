@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -16,6 +17,8 @@ export default function MenteeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useLanguage();
+  const { user: authUser } = useAuth();
+  const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
 
   const CONTACT_LABELS: Record<string, string> = {
     whatsapp: "WhatsApp",
@@ -239,6 +242,16 @@ export default function MenteeDetailScreen() {
           {/* Aktionen */}
           <Text style={styles.sectionLabel}>{t("menteeDetail.actions")}</Text>
           <View style={styles.actionsCard}>
+            {isAdminOrOffice && (
+              <TouchableOpacity
+                style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
+                onPress={() =>
+                  router.push({ pathname: "/admin/edit-user", params: { id: mentee.id } })
+                }
+              >
+                <Text style={styles.actionButtonText}>{t("editUser.editProfile")}</Text>
+              </TouchableOpacity>
+            )}
             {!mentorship && (
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: COLORS.primary }]}

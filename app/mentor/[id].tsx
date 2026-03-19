@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -16,6 +17,8 @@ export default function MentorDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useLanguage();
+  const { user: authUser } = useAuth();
+  const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
   const {
     getUserById,
     getMentorshipsByMentorId,
@@ -239,6 +242,18 @@ export default function MentorDetailScreen() {
             </View>
           )}
 
+          {/* Admin-Aktionen */}
+          {isAdminOrOffice && (
+            <TouchableOpacity
+              style={styles.editProfileButton}
+              onPress={() =>
+                router.push({ pathname: "/admin/edit-user", params: { id: mentor.id } })
+              }
+            >
+              <Text style={styles.editProfileButtonText}>{t("editUser.editProfile")}</Text>
+            </TouchableOpacity>
+          )}
+
         </ScrollView>
       </View>
     </Container>
@@ -394,4 +409,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyCardText: { color: COLORS.tertiary, fontSize: 14 },
+  editProfileButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 6,
+    paddingVertical: 11,
+    alignItems: "center",
+    marginTop: 4,
+    marginBottom: 20,
+  },
+  editProfileButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
 });

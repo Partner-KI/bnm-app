@@ -206,6 +206,18 @@ function RootLayoutInner() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="admin/edit-user"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="admin/statistics"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </ThemeProvider>
   );

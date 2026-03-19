@@ -7,6 +7,7 @@ import {
   TextInput,
   RefreshControl,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -15,6 +16,8 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { showError, showSuccess } from "../../lib/errorHandler";
+import { SkeletonList } from "../../components/Skeleton";
 
 export default function MenteesScreen() {
   const { user } = useAuth();
@@ -39,7 +42,7 @@ function AdminMenteesView() {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [refreshing, setRefreshing] = useState(false);
-  const { users, mentorships, sessionTypes, getCompletedStepIds, refreshData } = useData();
+  const { users, mentorships, sessionTypes, getCompletedStepIds, refreshData, isLoading } = useData();
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -47,6 +50,44 @@ function AdminMenteesView() {
   }, [refreshData]);
 
   const allMentees = users.filter((u) => u.role === "mentee");
+
+  function handleExportCsv() {
+    try {
+      const header = "Name,E-Mail,Stadt,Alter,Geschlecht,Status,Mentor,Fortschritt";
+      const rows = allMentees.map((mentee) => {
+        const mentorship = mentorships.find((m) => m.mentee_id === mentee.id);
+        const status = mentorship
+          ? mentorship.status === "active" ? "Aktiv"
+          : mentorship.status === "completed" ? "Abgeschlossen"
+          : "Abgebrochen"
+          : "Offen";
+        const mentorName = mentorship?.mentor?.name ?? "";
+        const completedSteps = mentorship ? getCompletedStepIds(mentorship.id).length : 0;
+        const progress = sessionTypes.length > 0
+          ? `${completedSteps}/${sessionTypes.length}`
+          : "0/0";
+        const gender = mentee.gender === "male" ? "Bruder" : "Schwester";
+        return `"${mentee.name}","${mentee.email}","${mentee.city}",${mentee.age},"${gender}","${status}","${mentorName}","${progress}"`;
+      }).join("\n");
+      const csvContent = `${header}\n${rows}`;
+
+      if (Platform.OS === "web") {
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `BNM-Mentees-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        showSuccess(t("csv.exporting"));
+      }
+    } catch {
+      showError(t("csv.errorShare"));
+    }
+  }
 
   const filteredMentees = allMentees
     .filter((mentee) => {
@@ -89,8 +130,15 @@ function AdminMenteesView() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        <Text style={styles.pageTitle}>{t("mentees.allMentees")}</Text>
-        <Text style={styles.pageSubtitle}>{allMentees.length} {t("mentees.registered")}</Text>
+        <View style={styles.titleRow}>
+          <View>
+            <Text style={styles.pageTitle}>{t("mentees.allMentees")}</Text>
+            <Text style={styles.pageSubtitle}>{allMentees.length} {t("mentees.registered")}</Text>
+          </View>
+          <TouchableOpacity style={styles.csvButton} onPress={handleExportCsv}>
+            <Text style={styles.csvButtonText}>{t("csv.export")}</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* Suche */}
         <TextInput
@@ -219,7 +267,9 @@ function AdminMenteesView() {
         </View>
 
         {/* Mentee-Liste */}
-        {filteredMentees.length === 0 ? (
+        {isLoading ? (
+          <SkeletonList count={5} />
+        ) : filteredMentees.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t("mentees.noResults")}</Text>
           </View>
@@ -269,7 +319,14 @@ function AdminMenteesView() {
               >
                 <View style={styles.menteeCardHeader}>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.meneeName}>{mentee.name}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Text style={styles.meneeName}>{mentee.name}</Text>
+                      {mentee.is_active === false && (
+                        <View style={styles.blockedBadge}>
+                          <Text style={styles.blockedBadgeText}>{t("editUser.blocked")}</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.menteeSubText}>
                       {mentee.city} · {mentee.age} J. ·{" "}
                       {mentee.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
@@ -653,8 +710,19 @@ function MenteeProgressView() {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 20 },
+  titleRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 },
   pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.primary, marginBottom: 2 },
-  pageSubtitle: { color: COLORS.secondary, fontSize: 13, marginBottom: 16 },
+  pageSubtitle: { color: COLORS.secondary, fontSize: 13 },
+  csvButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    marginTop: 4,
+  },
+  csvButtonText: { color: COLORS.primary, fontSize: 12, fontWeight: "600" },
   sectionTitle: { fontSize: 18, fontWeight: "600", color: COLORS.primary, marginBottom: 10 },
   searchInput: {
     backgroundColor: COLORS.white,
@@ -772,6 +840,13 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   docChipText: { color: COLORS.cta, fontSize: 12, fontWeight: "600" },
+  blockedBadge: {
+    backgroundColor: "#fee2e2",
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  blockedBadgeText: { color: "#b91c1c", fontSize: 11, fontWeight: "600" },
   selfAssignButton: {
     backgroundColor: COLORS.gradientStart,
     borderRadius: 5,

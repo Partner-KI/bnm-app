@@ -5,6 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  TextInput,
 } from "react-native";
 import { showConfirm, showError, showSuccess } from "../../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -13,6 +14,7 @@ import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { supabase } from "../../lib/supabase";
+
 
 export default function MentorshipDetailScreen() {
   const router = useRouter();
@@ -25,13 +27,37 @@ export default function MentorshipDetailScreen() {
     getCompletedStepIds,
     sessionTypes,
     updateMentorshipStatus,
+    updateMentorshipNotes,
   } = useData();
+  const [notesText, setNotesText] = useState<string | null>(null);
+  const [isSavingNotes, setIsSavingNotes] = useState(false);
 
   const { id } = useLocalSearchParams<{ id: string }>();
 
   const mentorship = id ? getMentorshipById(id) : undefined;
   const sessions = id ? getSessionsByMentorshipId(id) : [];
   const completedStepIds = id ? getCompletedStepIds(id) : [];
+
+  // Notizen initialisieren (einmalig bei erstem Laden)
+  const currentNotes = mentorship?.notes ?? "";
+  const displayNotes = notesText !== null ? notesText : currentNotes;
+
+  const canWriteNotes = user && (user.role === "mentor" && mentorship?.mentor_id === user.id)
+    || user?.role === "admin"
+    || user?.role === "office";
+
+  async function handleSaveNotes() {
+    if (!mentorship) return;
+    setIsSavingNotes(true);
+    try {
+      await updateMentorshipNotes(mentorship.id, displayNotes);
+      showSuccess(t("notes.saved"));
+    } catch {
+      showError(t("common.error"));
+    } finally {
+      setIsSavingNotes(false);
+    }
+  }
 
   if (!mentorship) {
     return (
@@ -252,6 +278,10 @@ export default function MentorshipDetailScreen() {
                       <Text style={styles.sessionDate}>
                         {new Date(session.date).toLocaleDateString("de-DE")} ·{" "}
                         {session.is_online ? t("mentorship.online") : t("mentorship.inPerson")}
+                        {session.duration_minutes ? ` · ${t("timeline.duration").replace("{0}", String(session.duration_minutes))}` : ""}
+                        {session.attempt_number && session.attempt_number > 1
+                          ? ` · ${t("timeline.attempt").replace("{0}", String(session.attempt_number))}`
+                          : ""}
                       </Text>
                       {session.details && (
                         <Text style={styles.sessionDetails}>"{session.details}"</Text>
@@ -351,6 +381,32 @@ export default function MentorshipDetailScreen() {
               .replace("{0}", mentorship.status === "completed" ? t("mentorship.completed") : t("mentorship.cancelled"))
               .replace("{1}", new Date(mentorship.completed_at).toLocaleDateString("de-DE"))}
           </Text>
+        )}
+
+        {/* Mentor-Notizen (nur für Mentor + Admin sichtbar) */}
+        {canWriteNotes && (
+          <View style={styles.notesCard}>
+            <Text style={styles.notesTitle}>{t("notes.title")}</Text>
+            <Text style={styles.notesHint}>{t("notes.hint")}</Text>
+            <TextInput
+              style={styles.notesInput}
+              value={displayNotes}
+              onChangeText={setNotesText}
+              placeholder={t("notes.placeholder")}
+              placeholderTextColor={COLORS.tertiary}
+              multiline
+              numberOfLines={4}
+            />
+            <TouchableOpacity
+              style={[styles.notesSaveButton, isSavingNotes ? { opacity: 0.6 } : {}]}
+              onPress={handleSaveNotes}
+              disabled={isSavingNotes}
+            >
+              <Text style={styles.notesSaveButtonText}>
+                {isSavingNotes ? t("notes.saving") : t("notes.save")}
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </ScrollView>
@@ -452,4 +508,33 @@ const styles = StyleSheet.create({
   },
   allDoneButtonText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
   allDoneBannerHint: { color: "#16a34a", fontSize: 12, textAlign: "center" },
+  notesCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 14,
+    marginBottom: 20,
+  },
+  notesTitle: { fontWeight: "700", color: COLORS.primary, fontSize: 15, marginBottom: 4 },
+  notesHint: { color: COLORS.tertiary, fontSize: 12, marginBottom: 10 },
+  notesInput: {
+    backgroundColor: COLORS.bg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    padding: 10,
+    color: COLORS.primary,
+    fontSize: 14,
+    minHeight: 90,
+    textAlignVertical: "top",
+    marginBottom: 10,
+  },
+  notesSaveButton: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 9,
+    alignItems: "center",
+  },
+  notesSaveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
 });

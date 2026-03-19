@@ -16,6 +16,7 @@ export interface User {
   contact_preference: ContactPreference;
   avatar_url?: string;
   created_at: string;
+  is_active?: boolean;
 }
 
 export interface Mentorship {
@@ -26,6 +27,7 @@ export interface Mentorship {
   assigned_by: string;
   assigned_at: string;
   completed_at?: string;
+  notes?: string;
   mentor?: User;
   mentee?: User;
 }

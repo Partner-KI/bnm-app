@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform, TextInput } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -36,6 +36,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     refreshData,
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -51,6 +52,24 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const unassignedMentees = getUnassignedMentees();
   const pendingAppsCount = getPendingApplicationsCount();
   const pendingApprovalsCount = getPendingApprovalsCount();
+
+  // Globale Suche
+  const searchResults = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return null;
+    const foundMentees = allMentees.filter(
+      (u) => u.name.toLowerCase().includes(q) || u.city.toLowerCase().includes(q)
+    );
+    const foundMentors = allMentors.filter(
+      (u) => u.name.toLowerCase().includes(q) || u.city.toLowerCase().includes(q)
+    );
+    const foundMentorships = mentorships.filter((m) => {
+      const menteeName = m.mentee?.name?.toLowerCase() ?? "";
+      const mentorName = m.mentor?.name?.toLowerCase() ?? "";
+      return menteeName.includes(q) || mentorName.includes(q);
+    });
+    return { mentees: foundMentees, mentors: foundMentors, mentorships: foundMentorships };
+  }, [searchQuery, allMentees, allMentors, mentorships]);
 
   // Letzte 5 Aktivitäten: Sessions sortiert nach Datum absteigend
   const recentSessions = useMemo(() => {
@@ -72,6 +91,74 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             <Text style={styles.pageSubtitle}>{t("dashboard.overview")}</Text>
           </View>
         </View>
+
+        {/* Globale Suche */}
+        <TextInput
+          style={styles.searchInput}
+          placeholder={t("search.placeholder")}
+          placeholderTextColor={COLORS.tertiary}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+        />
+
+        {/* Suchergebnisse */}
+        {searchResults && (
+          <View style={styles.searchResultsBox}>
+            {searchResults.mentees.length === 0 && searchResults.mentors.length === 0 && searchResults.mentorships.length === 0 ? (
+              <Text style={styles.searchNoResults}>{t("search.noResults")}</Text>
+            ) : (
+              <>
+                {searchResults.mentees.length > 0 && (
+                  <View style={styles.searchSection}>
+                    <Text style={styles.searchSectionLabel}>{t("search.mentees")}</Text>
+                    {searchResults.mentees.slice(0, 3).map((u) => (
+                      <TouchableOpacity
+                        key={u.id}
+                        style={styles.searchResultRow}
+                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentee/[id]", params: { id: u.id } }); }}
+                      >
+                        <Text style={styles.searchResultName}>{u.name}</Text>
+                        <Text style={styles.searchResultSub}>{u.city}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                {searchResults.mentors.length > 0 && (
+                  <View style={styles.searchSection}>
+                    <Text style={styles.searchSectionLabel}>{t("search.mentors")}</Text>
+                    {searchResults.mentors.slice(0, 3).map((u) => (
+                      <TouchableOpacity
+                        key={u.id}
+                        style={styles.searchResultRow}
+                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentor/[id]", params: { id: u.id } }); }}
+                      >
+                        <Text style={styles.searchResultName}>{u.name}</Text>
+                        <Text style={styles.searchResultSub}>{u.city}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+                {searchResults.mentorships.length > 0 && (
+                  <View style={styles.searchSection}>
+                    <Text style={styles.searchSectionLabel}>{t("search.mentorships")}</Text>
+                    {searchResults.mentorships.slice(0, 3).map((m) => (
+                      <TouchableOpacity
+                        key={m.id}
+                        style={styles.searchResultRow}
+                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentorship/[id]", params: { id: m.id } }); }}
+                      >
+                        <Text style={styles.searchResultName}>{m.mentee?.name} → {m.mentor?.name}</Text>
+                        <Text style={styles.searchResultSub}>
+                          {m.status === "active" ? t("search.active") : t("search.completed")}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                )}
+              </>
+            )}
+          </View>
+        )}
 
         {/* KPI Karten – Reihe 1 */}
         <View style={styles.row3}>
@@ -192,6 +279,20 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </View>
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
+
+        {/* Erweiterte Statistiken */}
+        {showSystemSettings && (
+          <TouchableOpacity
+            style={styles.applicationsButton}
+            onPress={() => router.push("/admin/statistics")}
+          >
+            <View style={styles.applicationsButtonContent}>
+              <Text style={styles.applicationsButtonText}>{t("statistics.title")}</Text>
+              <Text style={styles.applicationsButtonSub}>{t("statistics.completionRate")} · {t("statistics.cityDistribution")}</Text>
+            </View>
+            <Text style={styles.applicationsArrow}>›</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Letzte Aktivitäten */}
         <View style={styles.card}>
@@ -778,7 +879,48 @@ function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 20 },
-  headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 },
+  headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
+  searchInput: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 14,
+    color: COLORS.primary,
+    marginBottom: 8,
+  },
+  searchResultsBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  searchNoResults: { color: COLORS.tertiary, fontSize: 14, padding: 16, textAlign: "center" },
+  searchSection: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  searchSectionLabel: {
+    fontSize: 10,
+    fontWeight: "600",
+    color: COLORS.tertiary,
+    letterSpacing: 1,
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 4,
+  },
+  searchResultRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+  },
+  searchResultName: { color: COLORS.primary, fontWeight: "500", fontSize: 14 },
+  searchResultSub: { color: COLORS.tertiary, fontSize: 12 },
   headerTextGroup: { flex: 1 },
   pageTitle: { fontSize: 24, fontWeight: "700", color: COLORS.primary, marginBottom: 2 },
   pageSubtitle: { color: COLORS.secondary, fontSize: 13 },

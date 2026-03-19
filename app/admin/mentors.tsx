@@ -7,18 +7,21 @@ import {
   TextInput,
   StyleSheet,
   RefreshControl,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS } from "../../constants/Colors";
 import { useAuth } from "../../contexts/AuthContext";
+import { showError, showSuccess } from "../../lib/errorHandler";
+import { SkeletonList } from "../../components/Skeleton";
 
 export default function AdminMentorsScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
-  const { users, mentorships, sessions, refreshData } = useData();
+  const { users, mentorships, sessions, refreshData, isLoading } = useData();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
@@ -50,6 +53,36 @@ export default function AdminMentorsScreen() {
     );
   }, [allMentors, search]);
 
+  function handleExportCsv() {
+    try {
+      const header = "Name,E-Mail,Stadt,Alter,Geschlecht,Aktive Betreuungen,Abgeschlossene";
+      const rows = allMentors.map((mentor) => {
+        const myMentorships = mentorships.filter((m) => m.mentor_id === mentor.id);
+        const active = myMentorships.filter((m) => m.status === "active").length;
+        const completed = myMentorships.filter((m) => m.status === "completed").length;
+        const gender = mentor.gender === "male" ? "Bruder" : "Schwester";
+        return `"${mentor.name}","${mentor.email}","${mentor.city}",${mentor.age},"${gender}",${active},${completed}`;
+      }).join("\n");
+      const csvContent = `${header}\n${rows}`;
+
+      if (Platform.OS === "web") {
+        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `BNM-Mentoren-${new Date().toISOString().split("T")[0]}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      } else {
+        showSuccess(t("csv.exporting"));
+      }
+    } catch {
+      showError(t("csv.errorShare"));
+    }
+  }
+
   return (
     <ScrollView
       style={styles.scrollView}
@@ -67,6 +100,9 @@ export default function AdminMentorsScreen() {
               {filtered.length} {t("adminMentors.mentors")}
             </Text>
           </View>
+          <TouchableOpacity style={styles.csvButton} onPress={handleExportCsv}>
+            <Text style={styles.csvButtonText}>{t("csv.export")}</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Suchfeld */}
@@ -79,7 +115,9 @@ export default function AdminMentorsScreen() {
         />
 
         {/* Mentor-Liste */}
-        {filtered.length === 0 ? (
+        {isLoading ? (
+          <SkeletonList count={4} />
+        ) : filtered.length === 0 ? (
           <View style={styles.emptyCard}>
             <Text style={styles.emptyText}>{t("adminMentors.noMentors")}</Text>
           </View>
@@ -112,7 +150,14 @@ export default function AdminMentorsScreen() {
                     <Text style={styles.avatarText}>{initials}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.mentorName}>{mentor.name}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                      <Text style={styles.mentorName}>{mentor.name}</Text>
+                      {mentor.is_active === false && (
+                        <View style={styles.blockedBadge}>
+                          <Text style={styles.blockedBadgeText}>{t("editUser.blocked")}</Text>
+                        </View>
+                      )}
+                    </View>
                     <Text style={styles.mentorMeta}>
                       {mentor.city} · {mentor.age} J. · {mentor.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
                     </Text>
@@ -208,4 +253,20 @@ const styles = StyleSheet.create({
   },
   statChipValue: { fontSize: 18, fontWeight: "700" },
   statChipLabel: { color: COLORS.tertiary, fontSize: 10, marginTop: 2, textAlign: "center" },
+  csvButton: {
+    backgroundColor: COLORS.bg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  csvButtonText: { color: COLORS.primary, fontSize: 12, fontWeight: "600" },
+  blockedBadge: {
+    backgroundColor: "#fee2e2",
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
+  },
+  blockedBadgeText: { color: "#b91c1c", fontSize: 10, fontWeight: "600" },
 });

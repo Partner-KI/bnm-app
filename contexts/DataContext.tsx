@@ -83,7 +83,11 @@ export interface DataContextValue {
   submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => Promise<void>;
 
   // User actions
-  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference" | "avatar_url">>) => Promise<void>;
+  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>) => Promise<void>;
+  setUserActive: (userId: string, isActive: boolean) => Promise<void>;
+
+  // Mentorship Notes
+  updateMentorshipNotes: (mentorshipId: string, notes: string) => Promise<void>;
 
   // Computed helpers
   getMentorshipsByMentorId: (mentorId: string) => Mentorship[];
@@ -122,6 +126,7 @@ function mapProfile(row: Record<string, unknown>): User {
     contact_preference: (row.contact_preference as User["contact_preference"]) ?? "whatsapp",
     avatar_url: (row.avatar_url as string) ?? undefined,
     created_at: row.created_at as string,
+    is_active: (row.is_active as boolean) ?? true,
   };
 }
 
@@ -245,6 +250,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           assigned_by: row.assigned_by as string,
           assigned_at: row.assigned_at as string,
           completed_at: (row.completed_at as string) ?? undefined,
+          notes: (row.notes as string) ?? "",
           mentor: profileMap[row.mentor_id as string],
           mentee: profileMap[row.mentee_id as string],
         }));
@@ -1285,7 +1291,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(
     async (
       userId: string,
-      data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference" | "avatar_url">>
+      data: Partial<Pick<User, "name" | "city" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>
     ) => {
       const { error } = await supabase
         .from("profiles")
@@ -1303,6 +1309,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
     },
     []
   );
+
+  const setUserActive = useCallback(async (userId: string, isActive: boolean) => {
+    const { error } = await supabase
+      .from("profiles")
+      .update({ is_active: isActive })
+      .eq("id", userId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, is_active: isActive } : u))
+    );
+  }, []);
+
+  const updateMentorshipNotes = useCallback(async (mentorshipId: string, notes: string) => {
+    const { error } = await supabase
+      .from("mentorships")
+      .update({ notes })
+      .eq("id", mentorshipId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    setMentorships((prev) =>
+      prev.map((m) => (m.id === mentorshipId ? { ...m, notes } : m))
+    );
+  }, []);
 
   // ─── refreshData ──────────────────────────────────────────────────────────────
 
@@ -1447,6 +1483,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         rejectApplication,
         submitApplication,
         updateUser,
+        setUserActive,
+        updateMentorshipNotes,
         getMentorshipsByMentorId,
         getMentorshipByMenteeId,
         getMentorshipById,
