@@ -29,6 +29,7 @@ import {
   sendCredentialsEmail,
   sendMenteeAssignedNotification,
 } from "../lib/emailService";
+import { sendLocalNotification } from "../lib/notificationService";
 
 export interface DataContextValue {
   // Data
@@ -170,6 +171,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  // Ref für Mentorships — immer aktuell, auch in Realtime-Callbacks (Closure-Problem vermeiden)
+  const mentorshipsRef = useRef<Mentorship[]>([]);
 
   // ─── Initial Load ────────────────────────────────────────────────────────────
 
@@ -188,6 +191,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     loadAllData();
+    // Subscriptions nach loadAllData starten (mentorships-State wird gefüllt)
     const cleanupMessages = subscribeToMessages();
     const cleanupProfiles = subscribeToProfiles();
     const cleanupMentorships = subscribeToMentorships();
@@ -197,6 +201,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       cleanupMentorships();
     };
   }, [authUser?.id]);
+
+  // Ref immer aktuell halten — wird in Realtime-Callbacks genutzt
+  useEffect(() => {
+    mentorshipsRef.current = mentorships;
+  }, [mentorships]);
 
   async function loadAllData() {
     setIsLoading(true);
@@ -255,6 +264,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
           mentee: profileMap[row.mentee_id as string],
         }));
         setMentorships(ms);
+      }
+
+      // Eigene Mentorship-IDs ermitteln (für Message-Filter)
+      const ownMentorshipIds: Set<string> = new Set();
+      if (mentorshipsRes.data && authUser) {
+        const role = authUser.role;
+        for (const row of mentorshipsRes.data) {
+          if (role === "admin" || role === "office") {
+            ownMentorshipIds.add(row.id as string);
+          } else if (role === "mentor" && row.mentor_id === authUser.id) {
+            ownMentorshipIds.add(row.id as string);
+          } else if (role === "mentee" && row.mentee_id === authUser.id) {
+            ownMentorshipIds.add(row.id as string);
+          }
+        }
       }
 
       // Sessions
@@ -319,21 +343,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      // Messages
+      // Messages — nur eigene Mentorships laden (Rollenfilter)
       if (messagesRes.data) {
         const profileMap: Record<string, User> = {};
         if (profilesRes.data) {
           profilesRes.data.map(mapProfile).forEach((u) => (profileMap[u.id] = u));
         }
-        const msgs: Message[] = messagesRes.data.map((row) => ({
-          id: row.id as string,
-          mentorship_id: row.mentorship_id as string,
-          sender_id: row.sender_id as string,
-          content: row.content as string,
-          read_at: (row.read_at as string) ?? undefined,
-          created_at: row.created_at as string,
-          sender: profileMap[row.sender_id as string],
-        }));
+        const msgs: Message[] = messagesRes.data
+          .filter((row) => ownMentorshipIds.has(row.mentorship_id as string))
+          .map((row) => ({
+            id: row.id as string,
+            mentorship_id: row.mentorship_id as string,
+            sender_id: row.sender_id as string,
+            content: row.content as string,
+            read_at: (row.read_at as string) ?? undefined,
+            created_at: row.created_at as string,
+            sender: profileMap[row.sender_id as string],
+          }));
         setMessages(msgs);
       }
       // ─── Reminder-Check (client-seitig, wird später durch Cron ersetzt) ──────
@@ -415,6 +441,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
         { event: "INSERT", schema: "public", table: "messages" },
         async (payload) => {
           const row = payload.new as Record<string, unknown>;
+          const incomingMentorshipId = row.mentorship_id as string;
+
+          // Rollenfilter: Nur Nachrichten aus eigenen Mentorships verarbeiten
+          if (authUser) {
+            const role = authUser.role;
+            if (role !== "admin" && role !== "office") {
+              // mentorshipsRef.current ist immer aktuell (kein Closure-Problem)
+              const isOwn = mentorshipsRef.current.some((m) => {
+                if (m.id !== incomingMentorshipId) return false;
+                if (role === "mentor") return m.mentor_id === authUser.id;
+                if (role === "mentee") return m.mentee_id === authUser.id;
+                return false;
+              });
+              if (!isOwn) return;
+            }
+          }
 
           // Sender aus State oder aus DB laden
           let sender: User | undefined = users.find((u) => u.id === row.sender_id);
@@ -429,7 +471,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
           const newMsg: Message = {
             id: row.id as string,
-            mentorship_id: row.mentorship_id as string,
+            mentorship_id: incomingMentorshipId,
             sender_id: row.sender_id as string,
             content: row.content as string,
             read_at: (row.read_at as string) ?? undefined,
@@ -442,6 +484,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
             if (prev.some((m) => m.id === newMsg.id)) return prev;
             return [...prev, newMsg];
           });
+
+          // Lokale Push Notification: nur wenn Nachricht nicht vom eigenen User stammt
+          if (authUser && row.sender_id !== authUser.id) {
+            const senderName = sender?.name ?? "Jemand";
+            const preview =
+              (row.content as string).length > 60
+                ? (row.content as string).substring(0, 60) + "…"
+                : (row.content as string);
+            sendLocalNotification(
+              `Neue Nachricht von ${senderName}`,
+              preview
+            ).catch(() => {});
+          }
         }
       )
       .subscribe();
@@ -591,6 +646,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
           `${mentor?.name ?? "Ein Mentor"} ist ab sofort dein Mentor.`,
           data.id
         );
+        // Lokale Push Notification nur auf dem Gerät des Mentees selbst
+        if (authUser?.id === menteeId) {
+          sendLocalNotification(
+            "Dir wurde ein Mentor zugewiesen!",
+            `${mentor?.name ?? "Ein Mentor"} ist ab sofort dein Mentor.`
+          ).catch(() => {});
+        }
       }
 
       // Automatische Registrierungs- und Zuweisungs-Sessions (nur bei aktiven Betreuungen)
@@ -967,8 +1029,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
         created_at: data.created_at,
       };
       setFeedback((prev) => [...prev, newFeedback]);
+
+      // Lokale Push Notification: Mentor erfährt von neuem Feedback
+      // (nur auf dem Gerät des Mentors sichtbar, wenn er die App gerade offen hat;
+      //  für geräteübergreifende Push Notifications → Backend Supabase Edge Function nötig)
+      const mentorship = mentorships.find(
+        (m) => m.id === feedbackData.mentorship_id
+      );
+      if (mentorship && authUser?.id === mentorship.mentor_id) {
+        const submitter = users.find((u) => u.id === feedbackData.submitted_by);
+        sendLocalNotification(
+          "Neues Feedback erhalten",
+          `${submitter?.name ?? "Dein Mentee"} hat Feedback hinterlassen (${feedbackData.rating}/5 Sterne).`
+        ).catch(() => {});
+      }
     },
-    []
+    [mentorships, users, authUser]
   );
 
   const getFeedbacks = useCallback(() => {

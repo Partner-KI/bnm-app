@@ -998,6 +998,13 @@ const tr: Record<TranslationKeys, string> = {
   "csvImport.nativeHint": "CSV içe aktarma yalnızca web sürümünde kullanılabilir.",
   "csvImport.noPreview": "Dosya seçilmedi.",
   "csvImport.progress": "{1} kişiden {0} işlendi",
+
+  // Tema / Görünüm
+  "theme.appearance": "Görünüm",
+  "theme.title": "Renk Şeması",
+  "theme.light": "Açık",
+  "theme.dark": "Koyu",
+  "theme.system": "Sistem",
 };
 
 export default tr;

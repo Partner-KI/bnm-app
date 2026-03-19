@@ -5,6 +5,7 @@ import { SymbolView } from "expo-symbols";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useThemeColors } from "../../contexts/ThemeContext";
 import { COLORS } from "../../constants/Colors";
 
 function BellButton() {
@@ -29,6 +30,27 @@ function BellButton() {
   );
 }
 
+function ChatTabIcon({ color }: { color: string }) {
+  const { getTotalUnreadMessages } = useData();
+  const unread = getTotalUnreadMessages();
+  return (
+    <View style={tabStyles.chatIconWrapper}>
+      <SymbolView
+        name={{ ios: "message.fill", android: "chat", web: "chat" }}
+        tintColor={color}
+        size={24}
+      />
+      {unread > 0 && (
+        <View style={tabStyles.badge}>
+          <Text style={tabStyles.badgeText}>
+            {unread > 9 ? "9+" : String(unread)}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 const tabStyles = StyleSheet.create({
   bellWrapper: {
     marginRight: 12,
@@ -39,42 +61,53 @@ const tabStyles = StyleSheet.create({
     justifyContent: "center",
   },
   bellIcon: { fontSize: 22 },
+  chatIconWrapper: {
+    position: "relative",
+    width: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   badge: {
     position: "absolute",
-    top: 0,
-    right: 0,
+    top: -4,
+    right: -6,
     backgroundColor: COLORS.error,
     borderRadius: 9999,
-    minWidth: 18,
-    height: 18,
+    minWidth: 16,
+    height: 16,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 3,
   },
-  badgeText: { color: COLORS.white, fontSize: 10, fontWeight: "bold" },
+  badgeText: { color: COLORS.white, fontSize: 9, fontWeight: "bold" },
 });
 
 export default function TabLayout() {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const themeColors = useThemeColors();
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
   const isMentee = user?.role === "mentee";
+  const isOffice = user?.role === "office";
   // Leaderboard nur für Admin, Office und Mentor sichtbar – nicht für Mentees
   const showLeaderboard = !isMentee;
+  // Chat nur für admin, mentor, mentee – nicht für office
+  const showChats = !isOffice;
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#101828",
-        tabBarInactiveTintColor: "#98A2B3",
+        tabBarActiveTintColor: themeColors.tabIconActive,
+        tabBarInactiveTintColor: themeColors.tabIconInactive,
         tabBarStyle: {
-          backgroundColor: "#FFFFFF",
-          borderTopColor: "#e5e7eb",
+          backgroundColor: themeColors.tabBar,
+          borderTopColor: themeColors.tabBarBorder,
         },
         headerStyle: {
-          backgroundColor: "#FFFFFF",
+          backgroundColor: themeColors.headerBackground,
         },
-        headerTintColor: "#101828",
+        headerTintColor: themeColors.headerText,
       }}
     >
       <Tabs.Screen
@@ -112,17 +145,8 @@ export default function TabLayout() {
         name="chats"
         options={{
           title: t("tabs.chats"),
-          tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={{
-                ios: "message.fill",
-                android: "chat",
-                web: "chat",
-              }}
-              tintColor={color}
-              size={24}
-            />
-          ),
+          href: showChats ? undefined : null,
+          tabBarIcon: ({ color }) => <ChatTabIcon color={color} />,
         }}
       />
       <Tabs.Screen

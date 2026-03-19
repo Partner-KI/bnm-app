@@ -998,6 +998,13 @@ const en: Record<TranslationKeys, string> = {
   "csvImport.nativeHint": "CSV import is only available in the web version.",
   "csvImport.noPreview": "No file selected.",
   "csvImport.progress": "{0} of {1} processed",
+
+  // Theme / Appearance
+  "theme.appearance": "Appearance",
+  "theme.title": "Color Scheme",
+  "theme.light": "Light",
+  "theme.dark": "Dark",
+  "theme.system": "System",
 };
 
 export default en;

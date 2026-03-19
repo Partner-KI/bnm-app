@@ -13,6 +13,8 @@ import { useAuth } from "../../contexts/AuthContext";
 import { showConfirm } from "../../lib/errorHandler";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import type { ThemeMode } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
@@ -37,6 +39,8 @@ export default function ProfileScreen() {
   const { user, logout } = useAuth();
   const { getMentorshipsByMentorId, getMentorshipByMenteeId, sessions, users, mentorships, refreshData } = useData();
   const { t } = useLanguage();
+  const { mode, setMode, isDark } = useTheme();
+  const themeColors = useThemeColors();
   const [refreshing, setRefreshing] = useState(false);
   const [showPrivacy, setShowPrivacy] = useState(false);
   const [showImprint, setShowImprint] = useState(false);
@@ -131,10 +135,16 @@ export default function ProfileScreen() {
       ? "#1d4ed8"
       : "#15803d";
 
+  const THEME_OPTIONS: { value: ThemeMode; labelKey: "theme.light" | "theme.dark" | "theme.system"; icon: string }[] = [
+    { value: "light", labelKey: "theme.light", icon: "☀️" },
+    { value: "dark", labelKey: "theme.dark", icon: "🌙" },
+    { value: "system", labelKey: "theme.system", icon: "📱" },
+  ];
+
   return (
     <Container>
     <ScrollView
-      style={styles.scrollView}
+      style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
@@ -172,9 +182,43 @@ export default function ProfileScreen() {
           </View>
         </View>
 
+        {/* Erscheinungsbild / Theme-Toggle */}
+        <View style={[styles.infoCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("theme.appearance")}</Text>
+          <View style={themeToggleStyles.row}>
+            {THEME_OPTIONS.map((option) => {
+              const isActive = mode === option.value;
+              return (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    themeToggleStyles.option,
+                    {
+                      backgroundColor: isActive ? COLORS.gradientStart : themeColors.background,
+                      borderColor: isActive ? COLORS.gradientStart : themeColors.border,
+                    },
+                  ]}
+                  onPress={() => setMode(option.value)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={themeToggleStyles.optionIcon}>{option.icon}</Text>
+                  <Text
+                    style={[
+                      themeToggleStyles.optionLabel,
+                      { color: isActive ? COLORS.white : themeColors.textSecondary },
+                    ]}
+                  >
+                    {t(option.labelKey)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
         {/* Persönliche Infos */}
-        <View style={styles.infoCard}>
-          <Text style={styles.sectionLabel}>{t("profile.personalInfo")}</Text>
+        <View style={[styles.infoCard, { backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("profile.personalInfo")}</Text>
 
           <InfoRow label={t("profile.email")} value={user.email} />
           <InfoRow label={t("profile.city")} value={user.city} />
@@ -189,29 +233,29 @@ export default function ProfileScreen() {
 
         {/* Mentor-Statistiken */}
         {user.role === "mentor" && mentorStats && (
-          <View style={styles.infoCard}>
-            <Text style={styles.sectionLabel}>{t("profile.myStats")}</Text>
+          <View style={[styles.infoCard, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("profile.myStats")}</Text>
             <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{mentorStats.active}</Text>
-                <Text style={styles.statLabel}>{t("profile.activeMentorships")}</Text>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
+                <Text style={[styles.statValue, { color: themeColors.text }]}>{mentorStats.active}</Text>
+                <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.activeMentorships")}</Text>
               </View>
-              <View style={styles.statItem}>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
                 <Text style={[styles.statValue, { color: COLORS.cta }]}>{mentorStats.completed}</Text>
-                <Text style={styles.statLabel}>{t("profile.completedMentorships")}</Text>
+                <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.completedMentorships")}</Text>
               </View>
-              <View style={styles.statItem}>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
                 <Text style={[styles.statValue, { color: COLORS.gradientStart }]}>{mentorStats.totalSessions}</Text>
-                <Text style={styles.statLabel}>{t("profile.totalSessions")}</Text>
+                <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.totalSessions")}</Text>
               </View>
-              <View style={styles.statItem}>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
                 <Text style={[styles.statValue, { color: COLORS.gold }]}>
                   #{mentorStats.rank}
                 </Text>
-                <Text style={styles.statLabel}>{t("profile.ranking")}</Text>
+                <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.ranking")}</Text>
               </View>
             </View>
-            <Text style={styles.rankHint}>
+            <Text style={[styles.rankHint, { color: themeColors.textTertiary }]}>
               {t("profile.rankingOf").replace("{0}", String(mentorStats.totalMentors))}
             </Text>
           </View>
@@ -219,9 +263,9 @@ export default function ProfileScreen() {
 
         {/* Kontaktinfo Mentorship-Partner */}
         {partnerContact && (
-          <View style={styles.infoCard}>
-            <Text style={styles.sectionLabel}>{t("profile.partnerInfo")}</Text>
-            <Text style={[styles.infoValue, { textAlign: "left", maxWidth: "100%", fontWeight: "700", color: COLORS.primary, marginBottom: 8 }]}>
+          <View style={[styles.infoCard, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("profile.partnerInfo")}</Text>
+            <Text style={[styles.infoValue, { textAlign: "left", maxWidth: "100%", fontWeight: "700", color: themeColors.text, marginBottom: 8 }]}>
               {partnerContact.label}: {partnerContact.person.name}
             </Text>
             <InfoRow label={t("profile.partnerEmail")} value={partnerContact.person.email} />
@@ -245,30 +289,30 @@ export default function ProfileScreen() {
         )}
 
         {/* Konto-Aktionen */}
-        <View style={[styles.infoCard, { padding: 0, overflow: "hidden" }]}>
-          <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }]}>
+        <View style={[styles.infoCard, { padding: 0, overflow: "hidden", backgroundColor: themeColors.card }]}>
+          <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8, color: themeColors.textTertiary }]}>
             {t("profile.account")}
           </Text>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: themeColors.border }]}
             onPress={() => router.push("/edit-profile")}
           >
-            <Text style={styles.menuItemText}>{t("profile.editProfile")}</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Text style={[styles.menuItemText, { color: themeColors.text }]}>{t("profile.editProfile")}</Text>
+            <Text style={[styles.menuArrow, { color: themeColors.textTertiary }]}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.menuItem}
+            style={[styles.menuItem, { borderBottomColor: themeColors.border }]}
             onPress={() => router.push("/change-password")}
           >
-            <Text style={styles.menuItemText}>{t("profile.changePassword")}</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Text style={[styles.menuItemText, { color: themeColors.text }]}>{t("profile.changePassword")}</Text>
+            <Text style={[styles.menuArrow, { color: themeColors.textTertiary }]}>›</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomWidth: 0 }]}
             onPress={() => router.push("/settings")}
           >
-            <Text style={styles.menuItemText}>{t("profile.settings")}</Text>
-            <Text style={styles.menuArrow}>›</Text>
+            <Text style={[styles.menuItemText, { color: themeColors.text }]}>{t("profile.settings")}</Text>
+            <Text style={[styles.menuArrow, { color: themeColors.textTertiary }]}>›</Text>
           </TouchableOpacity>
         </View>
 
@@ -279,14 +323,14 @@ export default function ProfileScreen() {
 
         {/* App-Footer */}
         <View style={styles.footerBox}>
-          <Text style={styles.footerVersion}>{t("footer.version")}</Text>
+          <Text style={[styles.footerVersion, { color: themeColors.textTertiary }]}>{t("footer.version")}</Text>
           <View style={styles.footerLinks}>
             <TouchableOpacity onPress={() => setShowPrivacy(true)}>
-              <Text style={styles.footerLink}>{t("footer.privacy")}</Text>
+              <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.privacy")}</Text>
             </TouchableOpacity>
-            <Text style={styles.footerSep}>·</Text>
+            <Text style={[styles.footerSep, { color: themeColors.textTertiary }]}>·</Text>
             <TouchableOpacity onPress={() => setShowImprint(true)}>
-              <Text style={styles.footerLink}>{t("footer.imprint")}</Text>
+              <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.imprint")}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -294,9 +338,9 @@ export default function ProfileScreen() {
         {/* Datenschutz Modal */}
         {showPrivacy && (
           <View style={styles.overlay}>
-            <View style={styles.overlayCard}>
-              <Text style={styles.overlayTitle}>{t("footer.privacyTitle")}</Text>
-              <Text style={styles.overlayText}>{t("footer.privacyText")}</Text>
+            <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
+              <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.privacyTitle")}</Text>
+              <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.privacyText")}</Text>
               <TouchableOpacity style={styles.overlayClose} onPress={() => setShowPrivacy(false)}>
                 <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
               </TouchableOpacity>
@@ -307,9 +351,9 @@ export default function ProfileScreen() {
         {/* Impressum Modal */}
         {showImprint && (
           <View style={styles.overlay}>
-            <View style={styles.overlayCard}>
-              <Text style={styles.overlayTitle}>{t("footer.imprintTitle")}</Text>
-              <Text style={styles.overlayText}>{t("footer.imprintText")}</Text>
+            <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
+              <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.imprintTitle")}</Text>
+              <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.imprintText")}</Text>
               <TouchableOpacity style={styles.overlayClose} onPress={() => setShowImprint(false)}>
                 <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
               </TouchableOpacity>
@@ -331,15 +375,16 @@ function InfoRow({
   value: string;
   isLast?: boolean;
 }) {
+  const themeColors = useThemeColors();
   return (
     <View
       style={[
         styles.infoRow,
-        isLast ? {} : { borderBottomWidth: 1, borderBottomColor: COLORS.border },
+        isLast ? {} : { borderBottomWidth: 1, borderBottomColor: themeColors.border },
       ]}
     >
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value}</Text>
+      <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{label}</Text>
+      <Text style={[styles.infoValue, { color: themeColors.text }]}>{value}</Text>
     </View>
   );
 }
@@ -502,4 +547,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   overlayCloseText: { color: COLORS.white, fontWeight: "600" },
+});
+
+// Styles für den Theme-Toggle (SegmentedControl-ähnlich)
+const themeToggleStyles = StyleSheet.create({
+  row: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  option: {
+    flex: 1,
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+    borderRadius: 8,
+    borderWidth: 1.5,
+    gap: 4,
+  },
+  optionIcon: {
+    fontSize: 18,
+  },
+  optionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+  },
 });

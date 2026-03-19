@@ -998,6 +998,13 @@ const de = {
   "csvImport.nativeHint": "CSV-Import ist nur in der Web-Version verfügbar.",
   "csvImport.noPreview": "Keine Datei ausgewählt.",
   "csvImport.progress": "{0} von {1} verarbeitet",
+
+  // Theme / Erscheinungsbild
+  "theme.appearance": "Erscheinungsbild",
+  "theme.title": "Farbschema",
+  "theme.light": "Hell",
+  "theme.dark": "Dunkel",
+  "theme.system": "System",
 } as const;
 
 export default de;

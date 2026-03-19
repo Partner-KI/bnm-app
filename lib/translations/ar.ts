@@ -998,6 +998,13 @@ const ar: Record<TranslationKeys, string> = {
   "csvImport.nativeHint": "استيراد CSV متاح فقط في إصدار الويب.",
   "csvImport.noPreview": "لم يتم اختيار ملف.",
   "csvImport.progress": "تمت معالجة {0} من {1}",
+
+  // المظهر / السمة
+  "theme.appearance": "المظهر",
+  "theme.title": "نظام الألوان",
+  "theme.light": "فاتح",
+  "theme.dark": "داكن",
+  "theme.system": "النظام",
 };
 
 export default ar;

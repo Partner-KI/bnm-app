@@ -1,15 +1,25 @@
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { DefaultTheme, ThemeProvider as NavigationThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
+import { StatusBar } from "expo-status-bar";
+import { Platform } from "react-native";
 import "react-native-reanimated";
 
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { DataProvider } from "../contexts/DataContext";
 import { ModalProvider } from "../contexts/ModalContext";
 import { LanguageProvider } from "../contexts/LanguageContext";
+import { ThemeProvider, useTheme } from "../contexts/ThemeContext";
 import { LoadingScreen } from "../components/LoadingScreen";
+import { registerForPushNotifications } from "../lib/notificationService";
+
+// Expo Notifications nur auf Native importieren
+let Notifications: typeof import("expo-notifications") | null = null;
+if (Platform.OS !== "web") {
+  Notifications = require("expo-notifications");
+}
 
 export { ErrorBoundary } from "expo-router";
 
@@ -19,15 +29,29 @@ export const unstable_settings = {
 
 SplashScreen.preventAutoHideAsync();
 
-const BNMTheme = {
+const BNMLightTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
     primary: "#101828",
-    background: "#F9FAFB",
+    background: "#F5F5F7",
     card: "#FFFFFF",
     text: "#101828",
-    border: "#e5e7eb",
+    border: "#E5E7EB",
+    notification: "#EEA71B",
+  },
+};
+
+const BNMDarkTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: "#F5F5F7",
+    background: "#0F1117",
+    card: "#1A1D28",
+    text: "#F5F5F7",
+    border: "#2D3140",
     notification: "#EEA71B",
   },
 };
@@ -36,6 +60,22 @@ function NavigationGuard() {
   const { user, isLoading } = useAuth();
   const segments = useSegments();
   const router = useRouter();
+  const pushRegisteredRef = useRef<string | null>(null);
+
+  // Push Token registrieren sobald User eingeloggt ist (einmalig pro User)
+  useEffect(() => {
+    if (!user) {
+      pushRegisteredRef.current = null;
+      return;
+    }
+    // Nicht doppelt registrieren wenn User-ID gleich bleibt
+    if (pushRegisteredRef.current === user.id) return;
+    pushRegisteredRef.current = user.id;
+
+    registerForPushNotifications(user.id).catch(() => {
+      // Fehler beim Token-Registrieren ignorieren — App funktioniert ohne Push
+    });
+  }, [user?.id]);
 
   useEffect(() => {
     // Warten bis Auth-State geladen ist — sonst falscher Redirect
@@ -55,6 +95,8 @@ function NavigationGuard() {
 
 function RootLayoutInner() {
   const { isLoading: authLoading } = useAuth();
+  const { isDark } = useTheme();
+  const router = useRouter();
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -69,6 +111,47 @@ function RootLayoutInner() {
     }
   }, [loaded]);
 
+  // Notification Listener (nur Native)
+  useEffect(() => {
+    if (Platform.OS === "web" || !Notifications) return;
+
+    // Foreground-Listener: Notification empfangen während App offen ist
+    const foregroundSub = Notifications.addNotificationReceivedListener(
+      (_notification) => {
+        // Lokale Darstellung wird durch setNotificationHandler gesteuert (in notificationService.ts)
+        // Zusätzliche App-Logik hier möglich (z.B. Badge-Counter erhöhen)
+      }
+    );
+
+    // Tap-Listener: User tippt auf eine Notification
+    const responseSub = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data as Record<
+          string,
+          unknown
+        >;
+
+        // Zur richtigen Seite navigieren basierend auf Notification-Typ
+        if (data?.type === "message" && data?.mentorshipId) {
+          router.push(`/chat/${data.mentorshipId}` as never);
+        } else if (data?.type === "assignment" && data?.mentorshipId) {
+          router.push(`/mentorship/${data.mentorshipId}` as never);
+        } else if (data?.type === "feedback") {
+          router.push("/(tabs)" as never);
+        } else {
+          // Fallback: Notifications-Screen öffnen
+          router.push("/notifications" as never);
+        }
+      }
+    );
+
+    return () => {
+      foregroundSub.remove();
+      responseSub.remove();
+    };
+  }, []);
+
+
   if (!loaded) {
     return null;
   }
@@ -78,8 +161,11 @@ function RootLayoutInner() {
     return <LoadingScreen />;
   }
 
+  const navigationTheme = isDark ? BNMDarkTheme : BNMLightTheme;
+
   return (
-    <ThemeProvider value={BNMTheme}>
+    <NavigationThemeProvider value={navigationTheme}>
+      <StatusBar style={isDark ? "light" : "dark"} />
       <NavigationGuard />
       <Stack>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
@@ -225,20 +311,22 @@ function RootLayoutInner() {
           }}
         />
       </Stack>
-    </ThemeProvider>
+    </NavigationThemeProvider>
   );
 }
 
 export default function RootLayout() {
   return (
-    <LanguageProvider>
-      <AuthProvider>
-        <DataProvider>
-          <ModalProvider>
-            <RootLayoutInner />
-          </ModalProvider>
-        </DataProvider>
-      </AuthProvider>
-    </LanguageProvider>
+    <ThemeProvider>
+      <LanguageProvider>
+        <AuthProvider>
+          <DataProvider>
+            <ModalProvider>
+              <RootLayoutInner />
+            </ModalProvider>
+          </DataProvider>
+        </AuthProvider>
+      </LanguageProvider>
+    </ThemeProvider>
   );
 }

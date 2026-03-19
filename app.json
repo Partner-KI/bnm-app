@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/bnm-logo.png",
     "scheme": "bnmapp",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/images/bnm-logo.png",
       "resizeMode": "contain",

@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import type { User, UserRole, AuthContextValue } from "../types";
 import { supabase } from "../lib/supabase";
+import { unregisterPushToken } from "../lib/notificationService";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -176,9 +177,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
+    // Push Token aus DB entfernen bevor Session ungültig wird
+    if (user?.id) {
+      await unregisterPushToken(user.id).catch(() => {});
+    }
     await supabase.auth.signOut();
     setUser(null);
-  }, []);
+  }, [user?.id]);
 
   return (
     <AuthContext.Provider value={{ user, isLoading, login, loginAs, logout }}>
