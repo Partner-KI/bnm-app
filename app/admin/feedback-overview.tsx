@@ -75,6 +75,13 @@ export default function FeedbackOverviewScreen() {
             {t("feedbackOverview.total").replace("{0}", String(allFeedbacks.length))}
           </Text>
 
+          {/* Empty State: Noch kein Feedback */}
+          {allFeedbacks.length === 0 && (
+            <View style={styles.emptyFeedbackBox}>
+              <Text style={styles.emptyFeedbackText}>{t("feedbackOverview.noFeedbackYet")}</Text>
+            </View>
+          )}
+
           {/* Suche */}
           <TextInput
             style={styles.searchInput}
@@ -238,6 +245,16 @@ const styles = StyleSheet.create({
   filterChipTextActive: { color: COLORS.white, fontSize: 13, fontWeight: "500" },
   filterChipTextInactive: { color: COLORS.secondary, fontSize: 13 },
 
+  emptyFeedbackBox: {
+    backgroundColor: COLORS.bg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 8,
+    padding: 20,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  emptyFeedbackText: { color: COLORS.tertiary, fontSize: 14, textAlign: "center", lineHeight: 20 },
   emptyCard: {
     backgroundColor: COLORS.white,
     borderRadius: 8,

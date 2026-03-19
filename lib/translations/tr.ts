@@ -747,6 +747,40 @@ const tr: Record<TranslationKeys, string> = {
   "qa.allCategories": "Tümü",
   "qa.noResults": "Sonuç bulunamadı.",
   "qa.for": "için",
+
+  // Reset Password
+  "resetPassword.title": "Yeni Şifre Belirle",
+  "resetPassword.subtitle": "Lütfen hesabın için yeni bir şifre seç.",
+  "resetPassword.newPassword": "Yeni Şifre",
+  "resetPassword.passwordPlaceholder": "En az 8 karakter",
+  "resetPassword.confirmPassword": "Şifreyi Onayla",
+  "resetPassword.confirmPlaceholder": "Şifreyi tekrarla",
+  "resetPassword.show": "Göster",
+  "resetPassword.hide": "Gizle",
+  "resetPassword.submit": "Şifreyi Belirle",
+  "resetPassword.submitting": "Kaydediliyor...",
+  "resetPassword.errorTooShort": "En az 8 karakter gereklidir.",
+  "resetPassword.errorMatch": "Şifreler eşleşmiyor.",
+  "resetPassword.successTitle": "Şifre Değiştirildi!",
+  "resetPassword.successText": "Şifren başarıyla değiştirildi. Giriş sayfasına yönlendiriliyorsun.",
+  "resetPassword.errorFailed": "Şifre değiştirilemedi. Lütfen tekrar dene.",
+  "resetPassword.backToLogin": "Girişe Dön",
+
+  // Chat – Mesaj Sil
+  "chat.deleteMessage": "Mesajı Sil",
+  "chat.deleteConfirmTitle": "Mesajı Sil",
+  "chat.deleteConfirmText": "Bu mesaj gerçekten silinsin mi?",
+  "chat.deleteSuccess": "Mesaj silindi.",
+  "chat.deleteError": "Mesaj silinemedi.",
+  "chat.unreadMessages": "{0} okunmamış mesaj",
+
+  // Empty States
+  "reports.noData": "Henüz rapor yok. Danışmanlıklar belgelendiğinde veriler gösterilecektir.",
+  "leaderboard.noMentorsYet": "Henüz kayıtlı mentor yok.",
+  "feedbackOverview.noFeedbackYet": "Henüz geri bildirim alınmadı.",
+
+  // Admin Chat
+  "admin.viewChat": "Sohbeti Görüntüle",
 };
 
 export default tr;

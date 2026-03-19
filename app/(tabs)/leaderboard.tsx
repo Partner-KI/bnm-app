@@ -229,7 +229,9 @@ export default function LeaderboardScreen() {
           <View style={styles.card}>
             <Text style={styles.cardTitle}>{listTitle}</Text>
             {ranked.length === 0 ? (
-              <Text style={styles.emptyText}>{t("leaderboard.noMentors")}</Text>
+              <View style={styles.emptyStateContainer}>
+                <Text style={styles.emptyStateText}>{t("leaderboard.noMentorsYet")}</Text>
+              </View>
             ) : (
               ranked.map((item, index) => {
                 const isTop3 = index < 3;
@@ -422,6 +424,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontWeight: "700", color: COLORS.primary, marginBottom: 16, fontSize: 15 },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
+  emptyStateContainer: { paddingVertical: 24, alignItems: "center" },
+  emptyStateText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, lineHeight: 20 },
 
   rankRow: {
     flexDirection: "row",

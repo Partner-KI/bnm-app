@@ -747,6 +747,40 @@ const en: Record<TranslationKeys, string> = {
   "qa.allCategories": "All",
   "qa.noResults": "No results found.",
   "qa.for": "for",
+
+  // Reset Password
+  "resetPassword.title": "Set New Password",
+  "resetPassword.subtitle": "Please choose a new password for your account.",
+  "resetPassword.newPassword": "New Password",
+  "resetPassword.passwordPlaceholder": "At least 8 characters",
+  "resetPassword.confirmPassword": "Confirm Password",
+  "resetPassword.confirmPlaceholder": "Repeat password",
+  "resetPassword.show": "Show",
+  "resetPassword.hide": "Hide",
+  "resetPassword.submit": "Set Password",
+  "resetPassword.submitting": "Saving...",
+  "resetPassword.errorTooShort": "At least 8 characters required.",
+  "resetPassword.errorMatch": "Passwords do not match.",
+  "resetPassword.successTitle": "Password Changed!",
+  "resetPassword.successText": "Your password has been changed successfully. You will be redirected to login.",
+  "resetPassword.errorFailed": "Password could not be changed. Please try again.",
+  "resetPassword.backToLogin": "Back to Login",
+
+  // Chat – Delete Message
+  "chat.deleteMessage": "Delete Message",
+  "chat.deleteConfirmTitle": "Delete Message",
+  "chat.deleteConfirmText": "Really delete this message?",
+  "chat.deleteSuccess": "Message deleted.",
+  "chat.deleteError": "Message could not be deleted.",
+  "chat.unreadMessages": "{0} unread message{1}",
+
+  // Empty States
+  "reports.noData": "No reports yet. Data will be shown once mentorships are documented.",
+  "leaderboard.noMentorsYet": "No mentors registered yet.",
+  "feedbackOverview.noFeedbackYet": "No feedback received yet.",
+
+  // Admin Chat
+  "admin.viewChat": "View Chat",
 };
 
 export default en;

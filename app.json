@@ -4,11 +4,11 @@
     "slug": "bnm-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/bnm-logo.png",
     "scheme": "bnmapp",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/bnm-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#F9FAFB"
     },
@@ -18,10 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#F9FAFB",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+        "foregroundImage": "./assets/images/bnm-logo.png",
+        "backgroundColor": "#F9FAFB"
       },
       "package": "com.bnm.app"
     },

@@ -293,6 +293,15 @@ function AdminMenteesView() {
                         {completedSteps.length}/{sessionTypes.length}
                       </Text>
                     </View>
+                    <TouchableOpacity
+                      style={styles.viewChatButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } });
+                      }}
+                    >
+                      <Text style={styles.viewChatButtonText}>{t("admin.viewChat")}</Text>
+                    </TouchableOpacity>
                   </>
                 ) : (
                   <TouchableOpacity
@@ -722,6 +731,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   assignButtonText: { color: COLORS.white, fontSize: 14, fontWeight: "600" },
+  viewChatButton: {
+    marginTop: 8,
+    backgroundColor: COLORS.bg,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 5,
+    paddingVertical: 7,
+    paddingHorizontal: 16,
+    alignItems: "center",
+    alignSelf: "flex-start",
+  },
+  viewChatButtonText: { color: COLORS.secondary, fontSize: 13, fontWeight: "500" },
   stepSectionLabel: {
     color: COLORS.tertiary,
     fontSize: 11,

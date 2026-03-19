@@ -331,6 +331,13 @@ export default function ReportsScreen() {
           {/* Ausgewählter Zeitraum */}
           <Text style={styles.periodTitle}>{periodLabel}</Text>
 
+          {/* Empty State: Noch keine Daten in diesem Zeitraum */}
+          {kpis.totalSessions === 0 && kpis.totalAssigned === 0 && mentorships.length === 0 && (
+            <View style={styles.emptyDataBox}>
+              <Text style={styles.emptyDataText}>{t("reports.noData")}</Text>
+            </View>
+          )}
+
           {/* KPI-Karten mit Gold-Border links */}
           <View style={styles.kpiRow}>
             <KpiCard label={t("reports.newMentorships")} value={kpis.totalAssigned} color={COLORS.gradientStart} />
@@ -594,6 +601,15 @@ const styles = StyleSheet.create({
   goldBoxTitle: { fontWeight: "700", color: COLORS.primary },
   goldMentorName: { fontSize: 20, fontWeight: "700", color: COLORS.primary, marginBottom: 2 },
   goldMentorSub: { color: COLORS.secondary, fontSize: 14 },
+  emptyDataBox: {
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  emptyDataText: { color: "#92400e", fontSize: 14, textAlign: "center", lineHeight: 20 },
   emptyMonthBox: {
     backgroundColor: COLORS.bg,
     borderWidth: 1,

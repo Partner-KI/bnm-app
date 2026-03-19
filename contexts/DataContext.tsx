@@ -65,6 +65,7 @@ export interface DataContextValue {
 
   // Message actions
   sendMessage: (mentorshipId: string, senderId: string, content: string) => Promise<void>;
+  deleteMessage: (messageId: string) => Promise<void>;
 
   // Notification actions
   markAsRead: (notificationId: string) => Promise<void>;
@@ -89,6 +90,9 @@ export interface DataContextValue {
   getUserById: (id: string) => User | undefined;
   getUnassignedMentees: () => User[];
   getPendingApplicationsCount: () => number;
+  getUnreadMessagesCount: (mentorshipId: string) => number;
+  getTotalUnreadMessages: () => number;
+  markChatAsRead: (mentorshipId: string) => Promise<void>;
 
   // Refresh
   refreshData: () => Promise<void>;
@@ -855,6 +859,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [users]
   );
 
+  // ─── deleteMessage ───────────────────────────────────────────────────────────
+
+  const deleteMessage = useCallback(async (messageId: string) => {
+    const { error } = await supabase
+      .from("messages")
+      .delete()
+      .eq("id", messageId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    setMessages((prev) => prev.filter((m) => m.id !== messageId));
+  }, []);
+
   // ─── Notification Actions ─────────────────────────────────────────────────────
 
   const markAsRead = useCallback(async (notificationId: string) => {
@@ -1153,6 +1172,53 @@ export function DataProvider({ children }: { children: ReactNode }) {
     );
   }, [users, mentorships]);
 
+  const getUnreadMessagesCount = useCallback(
+    (mentorshipId: string) => {
+      if (!authUser) return 0;
+      return messages.filter(
+        (m) =>
+          m.mentorship_id === mentorshipId &&
+          m.sender_id !== authUser.id &&
+          !m.read_at
+      ).length;
+    },
+    [messages, authUser]
+  );
+
+  const getTotalUnreadMessages = useCallback(() => {
+    if (!authUser) return 0;
+    return messages.filter(
+      (m) => m.sender_id !== authUser.id && !m.read_at
+    ).length;
+  }, [messages, authUser]);
+
+  const markChatAsRead = useCallback(
+    async (mentorshipId: string) => {
+      if (!authUser) return;
+      const now = new Date().toISOString();
+
+      // Optimistic update
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.mentorship_id === mentorshipId &&
+          m.sender_id !== authUser.id &&
+          !m.read_at
+            ? { ...m, read_at: now }
+            : m
+        )
+      );
+
+      // DB Update
+      await supabase
+        .from("messages")
+        .update({ read_at: now })
+        .eq("mentorship_id", mentorshipId)
+        .neq("sender_id", authUser.id)
+        .is("read_at", null);
+    },
+    [authUser]
+  );
+
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
@@ -1178,6 +1244,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addFeedback,
         getFeedbacks,
         sendMessage,
+        deleteMessage,
         markAsRead,
         markAllAsRead,
         getUnreadCount,
@@ -1194,6 +1261,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         getUserById,
         getUnassignedMentees,
         getPendingApplicationsCount,
+        getUnreadMessagesCount,
+        getTotalUnreadMessages,
+        markChatAsRead,
         refreshData,
         isLoading,
       }}

@@ -747,6 +747,40 @@ const ar: Record<TranslationKeys, string> = {
   "qa.allCategories": "الكل",
   "qa.noResults": "لم يُعثر على نتائج.",
   "qa.for": "لـ",
+
+  // Reset Password
+  "resetPassword.title": "تعيين كلمة مرور جديدة",
+  "resetPassword.subtitle": "يرجى اختيار كلمة مرور جديدة لحسابك.",
+  "resetPassword.newPassword": "كلمة المرور الجديدة",
+  "resetPassword.passwordPlaceholder": "8 أحرف على الأقل",
+  "resetPassword.confirmPassword": "تأكيد كلمة المرور",
+  "resetPassword.confirmPlaceholder": "أعد كلمة المرور",
+  "resetPassword.show": "إظهار",
+  "resetPassword.hide": "إخفاء",
+  "resetPassword.submit": "تعيين كلمة المرور",
+  "resetPassword.submitting": "جارٍ الحفظ...",
+  "resetPassword.errorTooShort": "يلزم 8 أحرف على الأقل.",
+  "resetPassword.errorMatch": "كلمتا المرور غير متطابقتين.",
+  "resetPassword.successTitle": "تم تغيير كلمة المرور!",
+  "resetPassword.successText": "تم تغيير كلمة مرورك بنجاح. سيتم توجيهك لتسجيل الدخول.",
+  "resetPassword.errorFailed": "تعذّر تغيير كلمة المرور. يرجى المحاولة مرة أخرى.",
+  "resetPassword.backToLogin": "العودة إلى تسجيل الدخول",
+
+  // Chat – حذف رسالة
+  "chat.deleteMessage": "حذف الرسالة",
+  "chat.deleteConfirmTitle": "حذف الرسالة",
+  "chat.deleteConfirmText": "هل تريد حذف هذه الرسالة فعلاً؟",
+  "chat.deleteSuccess": "تم حذف الرسالة.",
+  "chat.deleteError": "تعذّر حذف الرسالة.",
+  "chat.unreadMessages": "{0} رسالة غير مقروءة",
+
+  // Empty States
+  "reports.noData": "لا توجد تقارير بعد. ستظهر البيانات عند توثيق الإرشادات.",
+  "leaderboard.noMentorsYet": "لا يوجد مرشدون مسجلون بعد.",
+  "feedbackOverview.noFeedbackYet": "لم يتم استلام أي تعليقات بعد.",
+
+  // Admin Chat
+  "admin.viewChat": "عرض المحادثة",
 };
 
 export default ar;

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,14 +12,20 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { showError } from "../../lib/errorHandler";
+import { showError, showConfirm } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 
 export default function ChatScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { getMessagesByMentorshipId, getMentorshipById, sendMessage } = useData();
+  const {
+    getMessagesByMentorshipId,
+    getMentorshipById,
+    sendMessage,
+    deleteMessage,
+    markChatAsRead,
+  } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
 
   const [inputText, setInputText] = useState("");
@@ -27,6 +33,13 @@ export default function ChatScreen() {
 
   const mentorship = mentorshipId ? getMentorshipById(mentorshipId) : undefined;
   const messages = mentorshipId ? getMessagesByMentorshipId(mentorshipId) : [];
+
+  // Beim Öffnen des Chats: alle Nachrichten als gelesen markieren
+  useEffect(() => {
+    if (mentorshipId) {
+      markChatAsRead(mentorshipId);
+    }
+  }, [mentorshipId]);
 
   async function handleSend() {
     if (!inputText.trim() || !user || !mentorshipId) return;
@@ -40,6 +53,22 @@ export default function ChatScreen() {
     } catch {
       setInputText(content); // Text wiederherstellen bei Fehler
       showError("Nachricht konnte nicht gesendet werden.");
+    }
+  }
+
+  async function handleLongPress(messageId: string, isOwn: boolean) {
+    if (!isOwn) return; // Nur eigene Nachrichten löschbar
+
+    const ok = await showConfirm(
+      t("chat.deleteConfirmTitle"),
+      t("chat.deleteConfirmText")
+    );
+    if (!ok) return;
+
+    try {
+      await deleteMessage(messageId);
+    } catch {
+      showError(t("chat.deleteError"));
     }
   }
 
@@ -111,21 +140,27 @@ export default function ChatScreen() {
                 {!isOwn && (
                   <Text style={styles.senderName}>{sender.name}</Text>
                 )}
-                <View
-                  style={[
-                    styles.messageBubble,
-                    isOwn ? styles.ownBubble : styles.otherBubble,
-                  ]}
+                <TouchableOpacity
+                  activeOpacity={0.8}
+                  onLongPress={() => handleLongPress(msg.id, isOwn)}
+                  delayLongPress={500}
                 >
-                  <Text
+                  <View
                     style={[
-                      styles.messageText,
-                      isOwn ? { color: COLORS.white } : { color: COLORS.primary },
+                      styles.messageBubble,
+                      isOwn ? styles.ownBubble : styles.otherBubble,
                     ]}
                   >
-                    {msg.content}
-                  </Text>
-                </View>
+                    <Text
+                      style={[
+                        styles.messageText,
+                        isOwn ? { color: COLORS.white } : { color: COLORS.primary },
+                      ]}
+                    >
+                      {msg.content}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
                 <Text
                   style={[
                     styles.timeText,

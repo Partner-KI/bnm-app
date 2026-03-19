@@ -206,7 +206,7 @@ function MentorDashboard() {
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
-  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData } = useData();
+  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -325,6 +325,13 @@ function MentorDashboard() {
                         }}
                       >
                         <Text style={styles.chatButtonText}>{t("dashboard.openChat")}</Text>
+                        {getUnreadMessagesCount(m.id) > 0 && (
+                          <View style={styles.unreadBadge}>
+                            <Text style={styles.unreadBadgeText}>
+                              {getUnreadMessagesCount(m.id)}
+                            </Text>
+                          </View>
+                        )}
                       </TouchableOpacity>
                     </View>
                   </>
@@ -351,7 +358,7 @@ function MenteeDashboard() {
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, refreshData } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -416,6 +423,13 @@ function MenteeDashboard() {
                 }
               >
                 <Text style={styles.secondaryButtonText}>{t("dashboard.openChat")}</Text>
+                {getUnreadMessagesCount(mentorship.id) > 0 && (
+                  <View style={styles.unreadBadge}>
+                    <Text style={styles.unreadBadgeText}>
+                      {getUnreadMessagesCount(mentorship.id)}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
 
@@ -821,8 +835,23 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     paddingVertical: 8,
     alignItems: "center",
+    position: "relative",
+    overflow: "visible",
   },
   chatButtonText: { color: COLORS.secondary, fontSize: 12, fontWeight: "600" },
+  unreadBadge: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: COLORS.error,
+    borderRadius: 9999,
+    minWidth: 18,
+    height: 18,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  unreadBadgeText: { color: COLORS.white, fontSize: 11, fontWeight: "700" },
   goldBox: {
     backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
@@ -845,6 +874,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     justifyContent: "center",
+    position: "relative",
+    overflow: "visible",
   },
   secondaryButtonText: { color: COLORS.gradientStart, fontSize: 13, fontWeight: "600" },
   stepRow: {

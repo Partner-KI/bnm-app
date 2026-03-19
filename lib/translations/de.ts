@@ -745,6 +745,40 @@ const de = {
   "qa.allCategories": "Alle",
   "qa.noResults": "Keine Ergebnisse gefunden.",
   "qa.for": "für",
+
+  // Reset Password
+  "resetPassword.title": "Neues Passwort setzen",
+  "resetPassword.subtitle": "Bitte wähle ein neues Passwort für deinen Account.",
+  "resetPassword.newPassword": "Neues Passwort",
+  "resetPassword.passwordPlaceholder": "Mindestens 8 Zeichen",
+  "resetPassword.confirmPassword": "Passwort bestätigen",
+  "resetPassword.confirmPlaceholder": "Passwort wiederholen",
+  "resetPassword.show": "Zeigen",
+  "resetPassword.hide": "Verbergen",
+  "resetPassword.submit": "Passwort setzen",
+  "resetPassword.submitting": "Wird gespeichert...",
+  "resetPassword.errorTooShort": "Mindestens 8 Zeichen erforderlich.",
+  "resetPassword.errorMatch": "Passwörter stimmen nicht überein.",
+  "resetPassword.successTitle": "Passwort geändert!",
+  "resetPassword.successText": "Dein Passwort wurde erfolgreich geändert. Du wirst zum Login weitergeleitet.",
+  "resetPassword.errorFailed": "Passwort konnte nicht geändert werden. Bitte versuche es erneut.",
+  "resetPassword.backToLogin": "Zurück zum Login",
+
+  // Chat – Nachricht löschen
+  "chat.deleteMessage": "Nachricht löschen",
+  "chat.deleteConfirmTitle": "Nachricht löschen",
+  "chat.deleteConfirmText": "Diese Nachricht wirklich löschen?",
+  "chat.deleteSuccess": "Nachricht gelöscht.",
+  "chat.deleteError": "Nachricht konnte nicht gelöscht werden.",
+  "chat.unreadMessages": "{0} ungelesene Nachricht{1}",
+
+  // Empty States
+  "reports.noData": "Noch keine Berichte. Daten werden angezeigt sobald Betreuungen dokumentiert werden.",
+  "leaderboard.noMentorsYet": "Noch keine Mentoren registriert.",
+  "feedbackOverview.noFeedbackYet": "Noch kein Feedback eingegangen.",
+
+  // Admin Chat
+  "admin.viewChat": "Chat ansehen",
 } as const;
 
 export default de;

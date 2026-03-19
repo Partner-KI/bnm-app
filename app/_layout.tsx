@@ -157,6 +157,14 @@ function RootLayoutInner() {
           }}
         />
         <Stack.Screen
+          name="admin/applications"
+          options={{
+            title: "Anmeldungen & Bewerbungen",
+            headerStyle: { backgroundColor: "#FFFFFF" },
+            headerTintColor: "#101828",
+          }}
+        />
+        <Stack.Screen
           name="admin/session-types"
           options={{
             title: "Session-Typen",
@@ -168,6 +176,14 @@ function RootLayoutInner() {
           name="admin/feedback-overview"
           options={{
             title: "Feedback-Übersicht",
+            headerStyle: { backgroundColor: "#FFFFFF" },
+            headerTintColor: "#101828",
+          }}
+        />
+        <Stack.Screen
+          name="reset-password"
+          options={{
+            title: "Passwort zurücksetzen",
             headerStyle: { backgroundColor: "#FFFFFF" },
             headerTintColor: "#101828",
           }}
