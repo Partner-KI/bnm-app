@@ -58,6 +58,7 @@ export default function DocumentSessionScreen() {
   const [durationMinutes, setDurationMinutes] = useState<string>("");
   const [forceNewSession, setForceNewSession] = useState<boolean>(false);
   const [additionalStepId, setAdditionalStepId] = useState<string>("");
+  const [showRepeatSection, setShowRepeatSection] = useState<boolean>(false);
 
   const BNM_BOX_DELIVERY_OPTIONS = [
     { key: "persoenlich", label: t("docSession.deliveryPersonal") },
@@ -118,11 +119,6 @@ export default function DocumentSessionScreen() {
     (st) => st.allows_multiple && completedStepIds.includes(st.id)
   );
 
-  const showAddMoreSession =
-    !isAdmin &&
-    !isCompleted &&
-    completedAllowsMultipleSteps.length > 0 &&
-    !forceNewSession;
 
   async function handleSave() {
     if (!selectedMentorshipId || !user) return;
@@ -507,18 +503,49 @@ export default function DocumentSessionScreen() {
               </>
             )}
 
-            {!isAdmin && !isCompleted && !nextStep && !forceNewSession && (
+            {/* Alle Schritte abgeschlossen (10/10) */}
+            {!isAdmin && !isCompleted && !nextStep && (
               <View style={styles.completedBox}>
-                <Text style={styles.completedTitle}>{t("docSession.allDoneTitle")}</Text>
+                <Text style={styles.completedTitle}>{t("sessions.allComplete")}</Text>
                 <Text style={styles.completedText}>
                   {t("docSession.allDoneText")}
                 </Text>
+                <TouchableOpacity
+                  style={styles.backToMentorshipButton}
+                  onPress={() => router.back()}
+                >
+                  <Text style={styles.backToMentorshipText}>{t("sessions.backToMentorship")}</Text>
+                </TouchableOpacity>
+                {completedAllowsMultipleSteps.length > 0 && (
+                  <TouchableOpacity
+                    style={styles.aftercareLink}
+                    onPress={() => setShowRepeatSection(!showRepeatSection)}
+                  >
+                    <Text style={styles.aftercareLinkText}>{t("sessions.documentAftercare")}</Text>
+                  </TouchableOpacity>
+                )}
               </View>
             )}
 
-            {showAddMoreSession && (
+            {/* "Bereits erledigten Schritt wiederholen?" Link (nur sichtbar wenn nextStep vorhanden) */}
+            {!isAdmin && !isCompleted && nextStep && completedAllowsMultipleSteps.length > 0 && !forceNewSession && !showRepeatSection && (
+              <TouchableOpacity
+                style={styles.repeatStepLink}
+                onPress={() => setShowRepeatSection(true)}
+              >
+                <Text style={styles.repeatStepLinkText}>{t("sessions.repeatStep")}</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Wiederholbare Schritte — nur auf Anfrage sichtbar */}
+            {!isAdmin && !isCompleted && showRepeatSection && !forceNewSession && (
               <View style={styles.moreSessionBox}>
-                <Text style={styles.moreSessionTitle}>{t("docSession.moreSessionTitle")}</Text>
+                <View style={styles.moreSessionHeader}>
+                  <Text style={styles.moreSessionTitle}>{t("docSession.moreSessionTitle")}</Text>
+                  <TouchableOpacity onPress={() => { setShowRepeatSection(false); setAdditionalStepId(""); }}>
+                    <Text style={styles.moreSessionClose}>✕</Text>
+                  </TouchableOpacity>
+                </View>
                 <Text style={styles.moreSessionSub}>
                   {t("docSession.moreSessionSub")}
                 </Text>
@@ -583,7 +610,7 @@ export default function DocumentSessionScreen() {
                 </View>
                 <TouchableOpacity
                   style={styles.cancelMoreButton}
-                  onPress={() => { setForceNewSession(false); setAdditionalStepId(""); }}
+                  onPress={() => { setForceNewSession(false); setAdditionalStepId(""); setShowRepeatSection(false); }}
                 >
                   <Text style={styles.cancelMoreButtonText}>{t("docSession.cancelMore")}</Text>
                 </TouchableOpacity>
@@ -693,6 +720,20 @@ const styles = StyleSheet.create({
   },
   completedTitle: { color: "#15803d", fontWeight: "bold", fontSize: 15, marginBottom: 6 },
   completedText: { color: "#16a34a", fontSize: 13, textAlign: "center" },
+  backToMentorshipButton: {
+    marginTop: 12,
+    backgroundColor: COLORS.primary,
+    borderRadius: 5,
+    paddingVertical: 9,
+    paddingHorizontal: 20,
+    alignItems: "center",
+    width: "100%",
+  },
+  backToMentorshipText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+  aftercareLink: { marginTop: 10 },
+  aftercareLinkText: { color: COLORS.link, fontSize: 13, textDecorationLine: "underline", textAlign: "center" },
+  repeatStepLink: { marginBottom: 16, alignItems: "center" },
+  repeatStepLinkText: { color: COLORS.tertiary, fontSize: 13, textDecorationLine: "underline" },
   moreSessionBox: {
     backgroundColor: COLORS.white,
     borderRadius: 8,
@@ -701,7 +742,9 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 16,
   },
-  moreSessionTitle: { color: COLORS.primary, fontWeight: "700", fontSize: 14, marginBottom: 4 },
+  moreSessionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4 },
+  moreSessionTitle: { color: COLORS.primary, fontWeight: "700", fontSize: 14 },
+  moreSessionClose: { color: COLORS.tertiary, fontSize: 16, paddingHorizontal: 4 },
   moreSessionSub: { color: COLORS.secondary, fontSize: 13, marginBottom: 12 },
   addMoreButton: {
     backgroundColor: COLORS.gradientStart,

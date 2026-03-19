@@ -58,6 +58,8 @@ const en: Record<TranslationKeys, string> = {
   "dashboard.currentSession": "Current Session",
   "dashboard.done": "Done",
   "dashboard.mentor": "Mentor:",
+  "dashboard.completeNow": "Complete now",
+  "dashboard.allStepsDone": "All steps done!",
 
   // Tabs
   "tabs.dashboard": "Dashboard",
@@ -152,6 +154,10 @@ const en: Record<TranslationKeys, string> = {
   "sessions.offline": "In Person",
   "sessions.details": "Details",
   "sessions.duration": "Duration (Minutes)",
+  "sessions.repeatStep": "Repeat a completed step?",
+  "sessions.allComplete": "All steps are completed!",
+  "sessions.backToMentorship": "Back to mentorship",
+  "sessions.documentAftercare": "Document aftercare",
 
   // Steps
   "steps.registration": "Registration",
@@ -410,6 +416,11 @@ const en: Record<TranslationKeys, string> = {
   "docSession.sessionCountPlural": "{0} sessions so far",
 
   // Mentorship Detail
+  "mentorship.allStepsComplete": "All steps completed!",
+  "mentorship.completeNow": "Complete mentorship now",
+  "mentorship.completeHint": "A feedback form will open after completion.",
+  "mentorship.congratulations": "Congratulations!",
+  "mentorship.allStepsDone": "You have successfully completed all 10 steps!",
   "mentorship.notFound": "Mentorship not found",
   "mentorship.since": "Since {0}",
   "mentorship.mentee": "MENTEE",

@@ -250,6 +250,23 @@ export default function MentorshipDetailScreen() {
           })}
         </View>
 
+        {/* Abschluss-Banner wenn alle Steps erledigt */}
+        {mentorship.status === "active" && completedStepIds.length === sessionTypes.length && canChangeStatus && (
+          <View style={styles.allDoneBanner}>
+            <Text style={styles.allDoneBannerTitle}>✓ {t("mentorship.allStepsComplete")}</Text>
+            <TouchableOpacity
+              style={[styles.allDoneButton, isUpdatingStatus ? { opacity: 0.5 } : {}]}
+              onPress={handleComplete}
+              disabled={isUpdatingStatus}
+            >
+              <Text style={styles.allDoneButtonText}>
+                {isUpdatingStatus ? "..." : t("mentorship.completeNow")}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.allDoneBannerHint}>{t("mentorship.completeHint")}</Text>
+          </View>
+        )}
+
         {/* Aktions-Buttons */}
         {mentorship.status === "active" && (
           <View style={{ gap: 12, marginBottom: 16 }}>
@@ -395,4 +412,25 @@ const styles = StyleSheet.create({
   completedAtText: { color: COLORS.tertiary, fontSize: 12, textAlign: "center" },
   infoChip: { backgroundColor: COLORS.bg, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
   infoChipText: { color: COLORS.secondary, fontSize: 12, fontWeight: "500" },
+  allDoneBanner: {
+    backgroundColor: "#dcfce7",
+    borderWidth: 1,
+    borderColor: "#86efac",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  allDoneBannerTitle: { color: "#15803d", fontWeight: "700", fontSize: 16, marginBottom: 12, textAlign: "center" },
+  allDoneButton: {
+    backgroundColor: "#15803d",
+    borderRadius: 5,
+    paddingVertical: 10,
+    paddingHorizontal: 24,
+    alignItems: "center",
+    marginBottom: 10,
+    width: "100%",
+  },
+  allDoneButtonText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
+  allDoneBannerHint: { color: "#16a34a", fontSize: 12, textAlign: "center" },
 });

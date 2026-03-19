@@ -56,6 +56,8 @@ const de = {
   "dashboard.currentSession": "Aktuelle Session",
   "dashboard.done": "Erledigt",
   "dashboard.mentor": "Mentor:",
+  "dashboard.completeNow": "Jetzt abschließen",
+  "dashboard.allStepsDone": "Alle Schritte erledigt!",
 
   // Tabs
   "tabs.dashboard": "Dashboard",
@@ -150,6 +152,10 @@ const de = {
   "sessions.offline": "Vor Ort",
   "sessions.details": "Details",
   "sessions.duration": "Dauer (Minuten)",
+  "sessions.repeatStep": "Bereits erledigten Schritt wiederholen?",
+  "sessions.allComplete": "Alle Schritte sind abgeschlossen!",
+  "sessions.backToMentorship": "Zurück zur Betreuung",
+  "sessions.documentAftercare": "Nachbetreuung dokumentieren",
 
   // Steps
   "steps.registration": "Registrierung",
@@ -408,6 +414,11 @@ const de = {
   "docSession.sessionCountPlural": "{0} Sessions bisher",
 
   // Mentorship Detail
+  "mentorship.allStepsComplete": "Alle Schritte abgeschlossen!",
+  "mentorship.completeNow": "Betreuung jetzt abschließen",
+  "mentorship.completeHint": "Nach dem Abschluss wird ein Feedback-Formular geöffnet.",
+  "mentorship.congratulations": "Herzlichen Glückwunsch!",
+  "mentorship.allStepsDone": "Du hast alle 10 Schritte erfolgreich durchlaufen!",
   "mentorship.notFound": "Betreuung nicht gefunden",
   "mentorship.since": "Seit {0}",
   "mentorship.mentee": "MENTEE",

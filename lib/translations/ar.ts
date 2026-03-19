@@ -58,6 +58,8 @@ const ar: Record<TranslationKeys, string> = {
   "dashboard.currentSession": "الجلسة الحالية",
   "dashboard.done": "مكتمل",
   "dashboard.mentor": "المرشد:",
+  "dashboard.completeNow": "إنهاء الآن",
+  "dashboard.allStepsDone": "اكتملت جميع الخطوات!",
 
   // Tabs
   "tabs.dashboard": "لوحة التحكم",
@@ -152,6 +154,10 @@ const ar: Record<TranslationKeys, string> = {
   "sessions.offline": "حضوري",
   "sessions.details": "التفاصيل",
   "sessions.duration": "المدة (دقائق)",
+  "sessions.repeatStep": "تكرار خطوة مكتملة؟",
+  "sessions.allComplete": "اكتملت جميع الخطوات!",
+  "sessions.backToMentorship": "العودة إلى الإرشاد",
+  "sessions.documentAftercare": "توثيق متابعة ما بعد الإرشاد",
 
   // Steps
   "steps.registration": "التسجيل",
@@ -410,6 +416,11 @@ const ar: Record<TranslationKeys, string> = {
   "docSession.sessionCountPlural": "{0} جلسات حتى الآن",
 
   // Mentorship Detail
+  "mentorship.allStepsComplete": "اكتملت جميع الخطوات!",
+  "mentorship.completeNow": "إنهاء الإرشاد الآن",
+  "mentorship.completeHint": "بعد الإنهاء سيُفتح نموذج تقييم.",
+  "mentorship.congratulations": "تهانينا!",
+  "mentorship.allStepsDone": "لقد أكملت جميع الخطوات العشر بنجاح!",
   "mentorship.notFound": "لم يُعثر على الإرشاد",
   "mentorship.since": "منذ {0}",
   "mentorship.mentee": "المتعلم",

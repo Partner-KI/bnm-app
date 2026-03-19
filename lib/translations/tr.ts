@@ -58,6 +58,8 @@ const tr: Record<TranslationKeys, string> = {
   "dashboard.currentSession": "Mevcut Oturum",
   "dashboard.done": "Tamamlandı",
   "dashboard.mentor": "Mentor:",
+  "dashboard.completeNow": "Şimdi tamamla",
+  "dashboard.allStepsDone": "Tüm adımlar tamamlandı!",
 
   // Tabs
   "tabs.dashboard": "Panel",
@@ -152,6 +154,10 @@ const tr: Record<TranslationKeys, string> = {
   "sessions.offline": "Yerinde",
   "sessions.details": "Detaylar",
   "sessions.duration": "Süre (Dakika)",
+  "sessions.repeatStep": "Tamamlanan bir adımı tekrar et?",
+  "sessions.allComplete": "Tüm adımlar tamamlandı!",
+  "sessions.backToMentorship": "Danışmanlığa geri dön",
+  "sessions.documentAftercare": "Takip oturumu belgele",
 
   // Steps
   "steps.registration": "Kayıt",
@@ -410,6 +416,11 @@ const tr: Record<TranslationKeys, string> = {
   "docSession.sessionCountPlural": "{0} oturum şimdiye kadar",
 
   // Mentorship Detail
+  "mentorship.allStepsComplete": "Tüm adımlar tamamlandı!",
+  "mentorship.completeNow": "Danışmanlığı şimdi bitir",
+  "mentorship.completeHint": "Tamamlandıktan sonra bir geri bildirim formu açılacak.",
+  "mentorship.congratulations": "Tebrikler!",
+  "mentorship.allStepsDone": "10 adımın tümünü başarıyla tamamladın!",
   "mentorship.notFound": "Danışmanlık bulunamadı",
   "mentorship.since": "{0} tarihinden beri",
   "mentorship.mentee": "DANIŞAN",

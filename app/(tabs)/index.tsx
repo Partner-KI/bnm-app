@@ -259,6 +259,8 @@ function MentorDashboard() {
               (completedSteps.length / sessionTypes.length) * 100
             );
 
+            const allDone = completedSteps.length === sessionTypes.length;
+
             return (
               <TouchableOpacity
                 key={m.id}
@@ -282,34 +284,51 @@ function MentorDashboard() {
                   </View>
                 </View>
                 <ProgressBar progress={progress} />
-                {nextStep && (
-                  <View style={styles.nextStepRow}>
-                    <View style={styles.goldDot} />
-                    <Text style={styles.nextStepText}>
-                      {t("dashboard.nextStep")} {nextStep.name}
-                    </Text>
+                {allDone ? (
+                  <View style={styles.allDoneRow}>
+                    <Text style={styles.allDoneLabel}>{t("dashboard.allStepsDone")}</Text>
+                    <TouchableOpacity
+                      style={styles.completeNowButton}
+                      onPress={(e) => {
+                        e.stopPropagation();
+                        router.push({ pathname: "/mentorship/[id]", params: { id: m.id } });
+                      }}
+                    >
+                      <Text style={styles.completeNowButtonText}>{t("dashboard.completeNow")}</Text>
+                    </TouchableOpacity>
                   </View>
+                ) : (
+                  <>
+                    {nextStep && (
+                      <View style={styles.nextStepRow}>
+                        <View style={styles.goldDot} />
+                        <Text style={styles.nextStepText}>
+                          {t("dashboard.nextStep")} {nextStep.name}
+                        </Text>
+                      </View>
+                    )}
+                    <View style={styles.actionRow}>
+                      <TouchableOpacity
+                        style={styles.docButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          router.push({ pathname: "/document-session", params: { mentorshipId: m.id } });
+                        }}
+                      >
+                        <Text style={styles.docButtonText}>{t("dashboard.documentSession")}</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={styles.chatButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: m.id } });
+                        }}
+                      >
+                        <Text style={styles.chatButtonText}>{t("dashboard.openChat")}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </>
                 )}
-                <View style={styles.actionRow}>
-                  <TouchableOpacity
-                    style={styles.docButton}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      router.push({ pathname: "/document-session", params: { mentorshipId: m.id } });
-                    }}
-                  >
-                    <Text style={styles.docButtonText}>{t("dashboard.documentSession")}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={styles.chatButton}
-                    onPress={(e) => {
-                      e.stopPropagation();
-                      router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: m.id } });
-                    }}
-                  >
-                    <Text style={styles.chatButtonText}>{t("dashboard.openChat")}</Text>
-                  </TouchableOpacity>
-                </View>
               </TouchableOpacity>
             );
           })
@@ -400,12 +419,22 @@ function MenteeDashboard() {
               </TouchableOpacity>
             </View>
 
+            {/* Glückwunsch-Banner wenn alle Steps erledigt */}
+            {completedStepIds.length === sessionTypes.length && (
+              <View style={styles.congratsBanner}>
+                <Text style={styles.congratsEmoji}>🎉</Text>
+                <Text style={styles.congratsTitle}>{t("mentorship.congratulations")}</Text>
+                <Text style={styles.congratsText}>{t("mentorship.allStepsDone")}</Text>
+              </View>
+            )}
+
             {/* 10-Schritte-Gamification */}
             <Text style={styles.sectionTitle}>{t("dashboard.your10Steps")}</Text>
             <View style={[styles.card, { padding: 0, overflow: "hidden", marginBottom: 16 }]}>
               {sortedSessionTypes.map((step, idx) => {
                 const isDone = completedStepIds.includes(step.id);
-                const isCurrent = !isDone && idx === completedStepIds.length;
+                const allComplete = completedStepIds.length === sessionTypes.length;
+                const isCurrent = !isDone && !allComplete && idx === completedStepIds.length;
 
                 return (
                   <View
@@ -902,6 +931,27 @@ const styles = StyleSheet.create({
     marginTop: 6,
     textAlign: "center",
   },
+  allDoneRow: { marginTop: 12, gap: 8 },
+  allDoneLabel: { color: COLORS.cta, fontWeight: "700", fontSize: 13, textAlign: "center" },
+  completeNowButton: {
+    backgroundColor: COLORS.gold,
+    borderRadius: 5,
+    paddingVertical: 8,
+    alignItems: "center",
+  },
+  completeNowButtonText: { color: COLORS.primary, fontWeight: "700", fontSize: 13 },
+  congratsBanner: {
+    backgroundColor: "#dcfce7",
+    borderWidth: 1,
+    borderColor: "#86efac",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  congratsEmoji: { fontSize: 32, marginBottom: 6 },
+  congratsTitle: { color: "#15803d", fontWeight: "700", fontSize: 18, marginBottom: 4 },
+  congratsText: { color: "#16a34a", fontSize: 14, textAlign: "center" },
   hadithCard: {
     backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
