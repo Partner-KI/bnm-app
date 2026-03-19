@@ -126,19 +126,27 @@ export default function AssignScreen() {
 
     setIsAssigning(true);
     try {
-      await assignMentorship(selectedMenteeId, mentorId, user.id);
+      if (isMentor) {
+        // Mentor-Selbst-Zuweisung: Status "pending_approval" → Admin muss bestätigen
+        await assignMentorship(selectedMenteeId, mentorId, user.id, "pending_approval");
+        await alert(t("assign.pendingSuccessTitle"), t("assign.pendingSuccessText"), "success");
+        router.back();
+      } else {
+        // Admin/Office-Zuweisung: direkt "active"
+        await assignMentorship(selectedMenteeId, mentorId, user.id, "active");
 
-      if (mentor.email) {
-        await sendMenteeAssignedNotification(
-          mentor.name,
-          mentor.email,
-          mentee.name,
-          mentee.city
-        );
+        if (mentor.email) {
+          await sendMenteeAssignedNotification(
+            mentor.name,
+            mentor.email,
+            mentee.name,
+            mentee.city
+          );
+        }
+
+        await alert(t("assign.successTitle"), t("assign.successText"), "success");
+        router.back();
       }
-
-      await alert(t("assign.successTitle"), t("assign.successText"), "success");
-      router.back();
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
       showError(`Zuweisung fehlgeschlagen: ${msg}`);
@@ -317,6 +325,13 @@ export default function AssignScreen() {
           </>
         )}
 
+        {/* Hinweis für Mentor: Zuweisung braucht Admin-Bestätigung */}
+        {isMentor && (
+          <View style={styles.pendingHintBox}>
+            <Text style={styles.pendingHintText}>{t("assign.pendingApprovalNote")}</Text>
+          </View>
+        )}
+
         {/* Zuweisen / Übernehmen Button */}
         <TouchableOpacity
           style={[
@@ -336,7 +351,7 @@ export default function AssignScreen() {
                 : { color: COLORS.tertiary },
             ]}
           >
-            {isAssigning ? "..." : isMentor ? t("assign.takeMenteeButton") : t("assign.assignButton")}
+            {isAssigning ? "..." : isMentor ? t("assign.pendingApprovalButton") : t("assign.assignButton")}
           </Text>
         </TouchableOpacity>
       </View>
@@ -447,4 +462,13 @@ const styles = StyleSheet.create({
   selectedIndicatorText: { color: COLORS.primary, fontSize: 12, fontWeight: "600" },
   assignButton: { borderRadius: 5, paddingVertical: 9, alignItems: "center" },
   assignButtonText: { fontWeight: "600", fontSize: 14 },
+  pendingHintBox: {
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  pendingHintText: { color: "#92400e", fontSize: 13 },
 });

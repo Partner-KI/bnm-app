@@ -57,8 +57,10 @@ const tabStyles = StyleSheet.create({
 export default function TabLayout() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const isAdmin = user?.role === "admin";
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
+  const isMentee = user?.role === "mentee";
+  // Leaderboard nur für Admin, Office und Mentor sichtbar – nicht für Mentees
+  const showLeaderboard = !isMentee;
 
   return (
     <Tabs
@@ -107,9 +109,27 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="chats"
+        options={{
+          title: t("tabs.chats"),
+          tabBarIcon: ({ color }) => (
+            <SymbolView
+              name={{
+                ios: "message.fill",
+                android: "chat",
+                web: "chat",
+              }}
+              tintColor={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="leaderboard"
         options={{
           title: t("tabs.ranking"),
+          href: showLeaderboard ? undefined : null,
           tabBarIcon: ({ color }) => (
             <SymbolView
               name={{

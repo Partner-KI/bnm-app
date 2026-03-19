@@ -31,6 +31,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     getCompletedStepIds,
     getUnassignedMentees,
     getPendingApplicationsCount,
+    getPendingApprovalsCount,
     refreshData,
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
@@ -48,6 +49,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   );
   const unassignedMentees = getUnassignedMentees();
   const pendingAppsCount = getPendingApplicationsCount();
+  const pendingApprovalsCount = getPendingApprovalsCount();
 
   return (
     <ScrollView
@@ -101,6 +103,27 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               </View>
             ))}
           </View>
+        )}
+
+        {/* Ausstehende Mentor-Zuweisungen (pending_approval) */}
+        {pendingApprovalsCount > 0 && (
+          <TouchableOpacity
+            style={styles.pendingApprovalsButton}
+            onPress={() => router.push("/admin/pending-approvals")}
+          >
+            <View style={styles.applicationsButtonContent}>
+              <Text style={styles.pendingApprovalsText}>{t("dashboard.pendingApprovals")}</Text>
+              <Text style={styles.pendingApprovalsSub}>
+                {t("dashboard.pendingApprovalsCount")
+                  .replace("{0}", String(pendingApprovalsCount))
+                  .replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
+              </Text>
+            </View>
+            <View style={styles.applicationsBadge}>
+              <Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text>
+            </View>
+            <Text style={styles.applicationsArrow}>›</Text>
+          </TouchableOpacity>
         )}
 
         {/* Admin-Aktionen */}
@@ -998,4 +1021,16 @@ const styles = StyleSheet.create({
   hadithCardText: { color: COLORS.secondary, fontSize: 13, lineHeight: 20, fontStyle: "italic", marginBottom: 6 },
   hadithCardQuelle: { color: COLORS.tertiary, fontSize: 11, marginBottom: 8 },
   hadithCardLink: { color: COLORS.link, fontSize: 13, fontWeight: "600" },
+  pendingApprovalsButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fffbeb",
+    borderWidth: 1,
+    borderColor: "#fde68a",
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 12,
+  },
+  pendingApprovalsText: { fontWeight: "600", color: "#78350f", fontSize: 14 },
+  pendingApprovalsSub: { color: "#92400e", fontSize: 12, marginTop: 2 },
 });

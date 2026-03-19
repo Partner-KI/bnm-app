@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -29,6 +30,7 @@ export default function DocumentSessionScreen() {
     getSessionsByMentorshipId,
     sessionTypes,
     addSession,
+    updateSession,
     mentorships,
   } = useData();
 
@@ -47,10 +49,16 @@ export default function DocumentSessionScreen() {
   const [selectedMentorshipId, setSelectedMentorshipId] = useState<string>(
     params.mentorshipId ?? (myMentorships[0]?.id ?? "")
   );
-  const [date, setDate] = useState<string>(new Date().toLocaleDateString("de-DE"));
+
+  // Datum im ISO-Format JJJJ-MM-TT (heute vorbelegt)
+  const todayIso = new Date().toISOString().split("T")[0];
+  const [date, setDate] = useState<string>(todayIso);
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [details, setDetails] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+
+  // Edit-Mode: ID der Session die bearbeitet wird (null = neue Session)
+  const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
 
   const [adminSelectedTypeId, setAdminSelectedTypeId] = useState<string>("");
   const [attemptNumber, setAttemptNumber] = useState<string>("");
@@ -120,21 +128,75 @@ export default function DocumentSessionScreen() {
   );
 
 
+  // Datum validieren: ISO-Format JJJJ-MM-TT, nicht in der Zukunft
+  function validateAndParseDate(input: string): { ok: boolean; isoDate: string } {
+    const trimmed = input.trim();
+    if (!trimmed) return { ok: false, isoDate: "" };
+    // ISO-Format: JJJJ-MM-TT
+    const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!isoRegex.test(trimmed)) return { ok: false, isoDate: "" };
+    const parsed = new Date(trimmed + "T00:00:00");
+    if (isNaN(parsed.getTime())) return { ok: false, isoDate: "" };
+    const today = new Date();
+    today.setHours(23, 59, 59, 999);
+    if (parsed > today) return { ok: false, isoDate: "future" };
+    return { ok: true, isoDate: parsed.toISOString() };
+  }
+
   async function handleSave() {
     if (!selectedMentorshipId || !user) return;
 
-    if (isAdmin && !adminSelectedTypeId) {
+    if (isAdmin && !adminSelectedTypeId && !editingSessionId) {
       showError(t("docSession.selectTypeError"));
       return;
     }
 
-    if (!isAdmin && !isCompleted && !nextStep && !forceNewSession) {
+    if (!isAdmin && !isCompleted && !nextStep && !forceNewSession && !editingSessionId) {
       showSuccess(t("docSession.allDoneSuccess"));
       return;
     }
 
     if (!date.trim()) {
       showError(t("docSession.dateError"));
+      return;
+    }
+
+    const { ok: dateOk, isoDate } = validateAndParseDate(date);
+    if (!dateOk) {
+      if (isoDate === "future") {
+        showError(t("docSession.dateErrorFuture"));
+      } else {
+        showError(t("docSession.dateErrorFormat"));
+      }
+      return;
+    }
+
+    // Update-Modus: bestehende Session aktualisieren
+    if (editingSessionId) {
+      setIsSaving(true);
+      let finalDetails = details.trim() || undefined;
+      const durationNum = durationMinutes.trim()
+        ? parseInt(durationMinutes.trim(), 10) || undefined
+        : undefined;
+      try {
+        await updateSession(editingSessionId, {
+          date: isoDate,
+          is_online: isOnline,
+          details: finalDetails,
+          duration_minutes: durationNum,
+        });
+        const typeName = activeSessionType?.name ?? "Session";
+        setEditingSessionId(null);
+        setDate(todayIso);
+        setDetails("");
+        setDurationMinutes("");
+        showSuccess(t("docSession.historyUpdateSuccess").replace("{0}", typeName));
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+        showError(`Session konnte nicht aktualisiert werden: ${msg}`);
+      } finally {
+        setIsSaving(false);
+      }
       return;
     }
 
@@ -154,17 +216,6 @@ export default function DocumentSessionScreen() {
     }
 
     setIsSaving(true);
-
-    let isoDate: string = new Date().toISOString();
-    try {
-      const parts = date.split(".");
-      if (parts.length === 3) {
-        const [day, month, year] = parts;
-        isoDate = new Date(Number(year), Number(month) - 1, Number(day)).toISOString();
-      }
-    } catch {
-      isoDate = new Date().toISOString();
-    }
 
     let finalDetails = details.trim() || undefined;
     if (isBnmBoxStep && bnmBoxDelivery) {
@@ -422,15 +473,41 @@ export default function DocumentSessionScreen() {
                 )}
 
                 <View style={styles.formCard}>
-                  <Text style={styles.formLabel}>{t("docSession.dateLabel")}</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    value={date}
-                    onChangeText={setDate}
-                    placeholder="z.B. 18.03.2026"
-                    placeholderTextColor="#98A2B3"
-                    keyboardType="numbers-and-punctuation"
-                  />
+                  <Text style={styles.formLabel}>{t("docSession.dateLabelNew")}</Text>
+                  {Platform.OS === "web" ? (
+                    <input
+                      type="date"
+                      value={date}
+                      max={todayIso}
+                      onChange={(e) => setDate(e.target.value)}
+                      style={{
+                        borderWidth: 1,
+                        borderColor: COLORS.border,
+                        borderRadius: 6,
+                        paddingLeft: 12,
+                        paddingRight: 12,
+                        paddingTop: 8,
+                        paddingBottom: 8,
+                        color: COLORS.primary,
+                        fontSize: 14,
+                        backgroundColor: COLORS.white,
+                        width: "100%",
+                        boxSizing: "border-box",
+                        outline: "none",
+                        fontFamily: "inherit",
+                      } as React.CSSProperties}
+                    />
+                  ) : (
+                    <TextInput
+                      style={styles.textInput}
+                      value={date}
+                      onChangeText={setDate}
+                      placeholder={t("docSession.datePlaceholder")}
+                      placeholderTextColor="#98A2B3"
+                      keyboardType="numbers-and-punctuation"
+                      maxLength={10}
+                    />
+                  )}
                 </View>
 
                 <View style={styles.formCard}>
@@ -497,10 +574,73 @@ export default function DocumentSessionScreen() {
                   disabled={isSaving}
                 >
                   <Text style={styles.saveButtonText}>
-                    {isSaving ? t("docSession.saving") : t("docSession.save")}
+                    {isSaving
+                      ? editingSessionId
+                        ? t("docSession.historyUpdating")
+                        : t("docSession.saving")
+                      : editingSessionId
+                      ? t("docSession.historyUpdateSave")
+                      : t("docSession.save")}
                   </Text>
                 </TouchableOpacity>
+
+                {editingSessionId && (
+                  <TouchableOpacity
+                    style={styles.cancelEditButton}
+                    onPress={() => {
+                      setEditingSessionId(null);
+                      setDate(todayIso);
+                      setDetails("");
+                      setDurationMinutes("");
+                      setIsOnline(false);
+                    }}
+                  >
+                    <Text style={styles.cancelEditButtonText}>{t("docSession.cancelMore")}</Text>
+                  </TouchableOpacity>
+                )}
               </>
+            )}
+
+            {/* Session-History: letzte Sessions mit Edit-Möglichkeit */}
+            {selectedMentorshipId && allSessions.length > 0 && !forceNewSession && !editingSessionId && (
+              <View style={styles.historyBox}>
+                <Text style={styles.historyTitle}>{t("docSession.historyTitle")}</Text>
+                {allSessions.slice(-5).reverse().map((s) => {
+                  const stName = sessionTypes.find((st) => st.id === s.session_type_id)?.name ?? "Session";
+                  const displayDate = s.date
+                    ? new Date(s.date).toLocaleDateString("de-DE")
+                    : "–";
+                  return (
+                    <View key={s.id} style={styles.historyRow}>
+                      <View style={styles.historyInfo}>
+                        <Text style={styles.historyStepName}>{stName}</Text>
+                        <Text style={styles.historyDate}>{displayDate} · {s.is_online ? t("docSession.online") : t("docSession.inPerson")}</Text>
+                        {s.details ? (
+                          <Text style={styles.historyDetails} numberOfLines={1}>{s.details}</Text>
+                        ) : null}
+                      </View>
+                      <TouchableOpacity
+                        style={styles.historyEditButton}
+                        onPress={() => {
+                          // Felder vorausfüllen
+                          const isoDateStr = s.date
+                            ? new Date(s.date).toISOString().split("T")[0]
+                            : todayIso;
+                          setDate(isoDateStr);
+                          setIsOnline(s.is_online);
+                          setDetails(s.details ?? "");
+                          setDurationMinutes(s.duration_minutes ? String(s.duration_minutes) : "");
+                          setEditingSessionId(s.id);
+                          // AdminSelectedTypeId setzen falls admin
+                          if (isAdmin) setAdminSelectedTypeId(s.session_type_id);
+                        }}
+                      >
+                        <Text style={styles.historyEditText}>{t("docSession.historyEdit")} ✏️</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
+              </View>
             )}
 
             {/* Alle Schritte abgeschlossen (10/10) */}
@@ -763,4 +903,53 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   cancelMoreButtonText: { color: COLORS.error, fontWeight: "600", fontSize: 13 },
+
+  cancelEditButton: {
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 5,
+    paddingVertical: 8,
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  cancelEditButtonText: { color: COLORS.secondary, fontWeight: "600", fontSize: 13 },
+
+  historyBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    padding: 14,
+    marginTop: 16,
+    marginBottom: 12,
+  },
+  historyTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: COLORS.tertiary,
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  historyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    gap: 8,
+  },
+  historyInfo: { flex: 1 },
+  historyStepName: { fontWeight: "600", color: COLORS.primary, fontSize: 13 },
+  historyDate: { color: COLORS.secondary, fontSize: 12, marginTop: 1 },
+  historyDetails: { color: COLORS.tertiary, fontSize: 12, marginTop: 1 },
+  historyEditButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: COLORS.bg,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+  },
+  historyEditText: { color: COLORS.secondary, fontSize: 12, fontWeight: "500" },
 });

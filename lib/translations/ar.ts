@@ -781,6 +781,54 @@ const ar: Record<TranslationKeys, string> = {
 
   // Admin Chat
   "admin.viewChat": "عرض المحادثة",
+
+  // تبويب المحادثات
+  "tabs.chats": "المحادثات",
+  "chats.title": "المحادثات",
+  "chats.unreadHint": "{0} رسائل غير مقروءة",
+  "chats.noChats": "لا توجد محادثات بعد",
+  "chats.noChatsText": "عندما تكون الإرشادية نشطة، ستظهر المحادثة هنا.",
+  "chats.mentor": "المرشد",
+  "chats.mentee": "المتدرب",
+  "chats.unknownMentor": "مرشد غير معروف",
+  "chats.unknownMentee": "متدرب غير معروف",
+  "chats.statusActive": "نشط",
+  "chats.statusCompleted": "مكتمل",
+  "chats.statusCancelled": "ملغى",
+
+  // منتقي التاريخ (document-session)
+  "docSession.dateLabelNew": "التاريخ",
+  "docSession.datePlaceholder": "YYYY-MM-DD",
+  "docSession.dateErrorFuture": "يجب ألا يكون التاريخ في المستقبل.",
+  "docSession.dateErrorFormat": "يرجى إدخال تاريخ صالح بتنسيق YYYY-MM-DD.",
+
+  // سجل الجلسات (document-session)
+  "docSession.historyTitle": "آخر ما تم توثيقه",
+  "docSession.historyEdit": "تعديل",
+  "docSession.historyUpdateSave": "تحديث",
+  "docSession.historyUpdating": "جارٍ التحديث...",
+  "docSession.historyUpdateSuccess": "تم تحديث \"{0}\".",
+
+  // تعيين – في انتظار الموافقة
+  "assign.pendingApprovalNote": "سيتم إرسال طلبك إلى المسؤول للموافقة.",
+  "assign.pendingApprovalButton": "طلب التعيين",
+  "assign.pendingSuccessTitle": "تم إرسال الطلب",
+  "assign.pendingSuccessText": "تم إرسال طلب التعيين إلى المسؤول.",
+
+  // لوحة الإدارة – الموافقات المعلقة
+  "dashboard.pendingApprovals": "تعيينات في انتظار التأكيد",
+  "dashboard.pendingApprovalsCount": "{0} تعيين في انتظار التأكيد",
+  "dashboard.reviewAssignments": "مراجعة التعيينات",
+  "pendingApprovals.title": "التعيينات المعلقة",
+  "pendingApprovals.approve": "تأكيد",
+  "pendingApprovals.reject": "رفض",
+  "pendingApprovals.empty": "لا توجد تعيينات معلقة.",
+  "pendingApprovals.approveTitle": "تأكيد التعيين",
+  "pendingApprovals.approveText": "هل يجب أن يكون {0} مرشدًا لـ {1}؟",
+  "pendingApprovals.rejectTitle": "رفض التعيين",
+  "pendingApprovals.rejectText": "سيتم رفض طلب {0} للمتدرب {1}.",
+  "pendingApprovals.approveSuccess": "تم تأكيد التعيين.",
+  "pendingApprovals.rejectSuccess": "تم رفض التعيين.",
 };
 
 export default ar;

@@ -27,6 +27,7 @@ import { showError, showSuccess } from "../lib/errorHandler";
 import {
   sendMentorshipStatusChangeNotification,
   sendCredentialsEmail,
+  sendMenteeAssignedNotification,
 } from "../lib/emailService";
 
 export interface DataContextValue {
@@ -48,11 +49,15 @@ export interface DataContextValue {
   addUser: (user: Omit<User, "id" | "created_at">) => Promise<void>;
 
   // Mentorship actions
-  assignMentorship: (menteeId: string, mentorId: string, adminId: string) => Promise<void>;
+  assignMentorship: (menteeId: string, mentorId: string, adminId: string, status?: MentorshipStatus) => Promise<void>;
   updateMentorshipStatus: (mentorshipId: string, status: MentorshipStatus) => Promise<void>;
+  approveMentorship: (mentorshipId: string) => Promise<void>;
+  rejectMentorship: (mentorshipId: string) => Promise<void>;
+  getPendingApprovalsCount: () => number;
 
   // Session actions
   addSession: (session: Omit<Session, "id" | "session_type">) => Promise<void>;
+  updateSession: (sessionId: string, data: Partial<Pick<Session, "date" | "is_online" | "details" | "attempt_number" | "duration_minutes">>) => Promise<void>;
 
   // SessionType actions
   addSessionType: (sessionType: Omit<SessionType, "id">) => Promise<void>;
@@ -521,14 +526,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ─── Mentorship Actions ───────────────────────────────────────────────────────
 
   const assignMentorship = useCallback(
-    async (menteeId: string, mentorId: string, adminId: string) => {
+    async (menteeId: string, mentorId: string, adminId: string, status: MentorshipStatus = "active") => {
       const { data, error } = await supabase
         .from("mentorships")
         .insert({
           mentor_id: mentorId,
           mentee_id: menteeId,
           assigned_by: adminId,
-          status: "active",
+          status,
         })
         .select()
         .single();
@@ -552,7 +557,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       };
       setMentorships((prev) => [...prev, newMentorship]);
 
-      // Automatische Registrierungs- und Zuweisungs-Sessions
+      // Automatische Registrierungs- und Zuweisungs-Sessions (nur bei aktiven Betreuungen)
+      if (status !== "active") return;
+
       const registrierungType = sessionTypes.find((st) => st.sort_order === 1);
       const zuweisungType = sessionTypes.find((st) => st.sort_order === 2);
       const now = new Date().toISOString().split("T")[0]; // DATE Format
@@ -606,6 +613,109 @@ export function DataProvider({ children }: { children: ReactNode }) {
     },
     [users, sessionTypes]
   );
+
+  const approveMentorship = useCallback(
+    async (mentorshipId: string) => {
+      const { error } = await supabase
+        .from("mentorships")
+        .update({ status: "active" })
+        .eq("id", mentorshipId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // State aktualisieren
+      setMentorships((prev) =>
+        prev.map((m) =>
+          m.id === mentorshipId ? { ...m, status: "active" as MentorshipStatus } : m
+        )
+      );
+
+      // Automatische Sessions nachholen (Registrierung + Zuweisung)
+      const mentorship = mentorships.find((m) => m.id === mentorshipId);
+      if (mentorship) {
+        const registrierungType = sessionTypes.find((st) => st.sort_order === 1);
+        const zuweisungType = sessionTypes.find((st) => st.sort_order === 2);
+        const now = new Date().toISOString().split("T")[0];
+        const autoSessions = [];
+        if (registrierungType) {
+          autoSessions.push({
+            mentorship_id: mentorshipId,
+            session_type_id: registrierungType.id,
+            date: now,
+            is_online: false,
+            details: "Registrierung abgeschlossen",
+            documented_by: mentorship.assigned_by,
+            attempt_number: 1,
+          });
+        }
+        if (zuweisungType) {
+          autoSessions.push({
+            mentorship_id: mentorshipId,
+            session_type_id: zuweisungType.id,
+            date: now,
+            is_online: false,
+            details: `Zuweisung zu ${mentorship.mentor?.name ?? "Mentor"}`,
+            documented_by: mentorship.assigned_by,
+            attempt_number: 1,
+          });
+        }
+        if (autoSessions.length > 0) {
+          const { data: insertedSessions, error: sessionError } = await supabase
+            .from("sessions")
+            .insert(autoSessions)
+            .select();
+          if (!sessionError && insertedSessions) {
+            const newSessions: Session[] = insertedSessions.map((row) => ({
+              id: row.id,
+              mentorship_id: row.mentorship_id,
+              session_type_id: row.session_type_id,
+              date: row.date,
+              is_online: row.is_online,
+              details: row.details ?? undefined,
+              documented_by: row.documented_by,
+              attempt_number: row.attempt_number ?? undefined,
+              duration_minutes: row.duration_minutes ?? undefined,
+              session_type: sessionTypes.find((st) => st.id === row.session_type_id),
+            }));
+            setSessions((prev) => [...prev, ...newSessions]);
+          }
+        }
+
+        // E-Mail an Mentor senden
+        if (mentorship.mentor?.email) {
+          await sendMenteeAssignedNotification(
+            mentorship.mentor.name,
+            mentorship.mentor.email,
+            mentorship.mentee?.name ?? "Mentee",
+            mentorship.mentee?.city ?? ""
+          );
+        }
+      }
+    },
+    [mentorships, sessionTypes]
+  );
+
+  const rejectMentorship = useCallback(
+    async (mentorshipId: string) => {
+      const { error } = await supabase
+        .from("mentorships")
+        .delete()
+        .eq("id", mentorshipId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setMentorships((prev) => prev.filter((m) => m.id !== mentorshipId));
+    },
+    []
+  );
+
+  const getPendingApprovalsCount = useCallback(() => {
+    return mentorships.filter((m) => m.status === "pending_approval").length;
+  }, [mentorships]);
 
   const updateMentorshipStatus = useCallback(
     async (mentorshipId: string, status: MentorshipStatus) => {
@@ -697,6 +807,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSessions((prev) => [...prev, newSession]);
     },
     [sessionTypes]
+  );
+
+  const updateSession = useCallback(
+    async (
+      sessionId: string,
+      data: Partial<Pick<Session, "date" | "is_online" | "details" | "attempt_number" | "duration_minutes">>
+    ) => {
+      const { error } = await supabase
+        .from("sessions")
+        .update({
+          ...(data.date !== undefined && { date: data.date }),
+          ...(data.is_online !== undefined && { is_online: data.is_online }),
+          ...(data.details !== undefined && { details: data.details }),
+          ...(data.attempt_number !== undefined && { attempt_number: data.attempt_number }),
+          ...(data.duration_minutes !== undefined && { duration_minutes: data.duration_minutes }),
+        })
+        .eq("id", sessionId);
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === sessionId ? { ...s, ...data } : s
+        )
+      );
+    },
+    []
   );
 
   // ─── SessionType Actions ──────────────────────────────────────────────────────
@@ -1237,7 +1376,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         addUser,
         assignMentorship,
         updateMentorshipStatus,
+        approveMentorship,
+        rejectMentorship,
+        getPendingApprovalsCount,
         addSession,
+        updateSession,
         addSessionType,
         updateSessionTypeOrder,
         deleteSessionType,

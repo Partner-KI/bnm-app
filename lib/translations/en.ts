@@ -781,6 +781,54 @@ const en: Record<TranslationKeys, string> = {
 
   // Admin Chat
   "admin.viewChat": "View Chat",
+
+  // Chats Tab
+  "tabs.chats": "Chats",
+  "chats.title": "Chats",
+  "chats.unreadHint": "{0} unread messages",
+  "chats.noChats": "No chats yet",
+  "chats.noChatsText": "Once a mentorship is active, the chat will appear here.",
+  "chats.mentor": "Mentor",
+  "chats.mentee": "Mentee",
+  "chats.unknownMentor": "Unknown Mentor",
+  "chats.unknownMentee": "Unknown Mentee",
+  "chats.statusActive": "Active",
+  "chats.statusCompleted": "Completed",
+  "chats.statusCancelled": "Cancelled",
+
+  // Date Picker (document-session)
+  "docSession.dateLabelNew": "Date",
+  "docSession.datePlaceholder": "YYYY-MM-DD",
+  "docSession.dateErrorFuture": "The date must not be in the future.",
+  "docSession.dateErrorFormat": "Please enter a valid date in YYYY-MM-DD format.",
+
+  // Session History (document-session)
+  "docSession.historyTitle": "Recently documented",
+  "docSession.historyEdit": "Edit",
+  "docSession.historyUpdateSave": "Update",
+  "docSession.historyUpdating": "Updating...",
+  "docSession.historyUpdateSuccess": "\"{0}\" has been updated.",
+
+  // Assign – pending_approval
+  "assign.pendingApprovalNote": "Your request will be submitted to the admin for confirmation.",
+  "assign.pendingApprovalButton": "Request Assignment",
+  "assign.pendingSuccessTitle": "Request Sent",
+  "assign.pendingSuccessText": "Your assignment request has been forwarded to the admin.",
+
+  // Admin – pending approvals
+  "dashboard.pendingApprovals": "Assignments awaiting confirmation",
+  "dashboard.pendingApprovalsCount": "{0} assignment{1} awaiting confirmation",
+  "dashboard.reviewAssignments": "Review Assignments",
+  "pendingApprovals.title": "Pending Assignments",
+  "pendingApprovals.approve": "Confirm",
+  "pendingApprovals.reject": "Reject",
+  "pendingApprovals.empty": "No pending assignments.",
+  "pendingApprovals.approveTitle": "Confirm Assignment",
+  "pendingApprovals.approveText": "Should {0} mentor {1}?",
+  "pendingApprovals.rejectTitle": "Reject Assignment",
+  "pendingApprovals.rejectText": "The request from {0} for mentee {1} will be rejected.",
+  "pendingApprovals.approveSuccess": "Assignment confirmed.",
+  "pendingApprovals.rejectSuccess": "Assignment rejected.",
 };
 
 export default en;

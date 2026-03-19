@@ -781,6 +781,54 @@ const tr: Record<TranslationKeys, string> = {
 
   // Admin Chat
   "admin.viewChat": "Sohbeti Görüntüle",
+
+  // Chats Tab
+  "tabs.chats": "Sohbetler",
+  "chats.title": "Sohbetler",
+  "chats.unreadHint": "{0} okunmamış mesaj",
+  "chats.noChats": "Henüz sohbet yok",
+  "chats.noChatsText": "Bir danışmanlık aktif olduğunda sohbet burada görünecek.",
+  "chats.mentor": "Mentor",
+  "chats.mentee": "Mentee",
+  "chats.unknownMentor": "Bilinmeyen Mentor",
+  "chats.unknownMentee": "Bilinmeyen Mentee",
+  "chats.statusActive": "Aktif",
+  "chats.statusCompleted": "Tamamlandı",
+  "chats.statusCancelled": "İptal Edildi",
+
+  // Tarih Seçici (document-session)
+  "docSession.dateLabelNew": "Tarih",
+  "docSession.datePlaceholder": "YYYY-MM-GG",
+  "docSession.dateErrorFuture": "Tarih gelecekte olamaz.",
+  "docSession.dateErrorFormat": "Lütfen YYYY-MM-GG formatında geçerli bir tarih girin.",
+
+  // Oturum Geçmişi (document-session)
+  "docSession.historyTitle": "Son belgelenen",
+  "docSession.historyEdit": "Düzenle",
+  "docSession.historyUpdateSave": "Güncelle",
+  "docSession.historyUpdating": "Güncelleniyor...",
+  "docSession.historyUpdateSuccess": "\"{0}\" güncellendi.",
+
+  // Ata – bekleyen onay
+  "assign.pendingApprovalNote": "İsteğiniz onay için yöneticiye iletilecek.",
+  "assign.pendingApprovalButton": "Atama Talep Et",
+  "assign.pendingSuccessTitle": "İstek Gönderildi",
+  "assign.pendingSuccessText": "Atama isteğiniz yöneticiye iletildi.",
+
+  // Admin – bekleyen onaylar
+  "dashboard.pendingApprovals": "Onay bekleyen atamalar",
+  "dashboard.pendingApprovalsCount": "{0} atama onay bekliyor",
+  "dashboard.reviewAssignments": "Atamaları İncele",
+  "pendingApprovals.title": "Bekleyen Atamalar",
+  "pendingApprovals.approve": "Onayla",
+  "pendingApprovals.reject": "Reddet",
+  "pendingApprovals.empty": "Bekleyen atama yok.",
+  "pendingApprovals.approveTitle": "Atmayı Onayla",
+  "pendingApprovals.approveText": "{0}, {1} adlı menteeye danışmanlık yapsın mı?",
+  "pendingApprovals.rejectTitle": "Atmayı Reddet",
+  "pendingApprovals.rejectText": "{0} kişisinin {1} için isteği reddedilecek.",
+  "pendingApprovals.approveSuccess": "Atama onaylandı.",
+  "pendingApprovals.rejectSuccess": "Atama reddedildi.",
 };
 
 export default tr;

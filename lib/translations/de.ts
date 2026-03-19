@@ -779,6 +779,54 @@ const de = {
 
   // Admin Chat
   "admin.viewChat": "Chat ansehen",
+
+  // Chats Tab
+  "tabs.chats": "Chats",
+  "chats.title": "Chats",
+  "chats.unreadHint": "{0} ungelesene Nachrichten",
+  "chats.noChats": "Noch keine Chats",
+  "chats.noChatsText": "Sobald eine Betreuung aktiv ist, erscheint hier der Chat.",
+  "chats.mentor": "Mentor",
+  "chats.mentee": "Mentee",
+  "chats.unknownMentor": "Unbekannter Mentor",
+  "chats.unknownMentee": "Unbekannter Mentee",
+  "chats.statusActive": "Aktiv",
+  "chats.statusCompleted": "Abgeschlossen",
+  "chats.statusCancelled": "Abgebrochen",
+
+  // Datum-Picker (document-session)
+  "docSession.dateLabelNew": "Datum",
+  "docSession.datePlaceholder": "JJJJ-MM-TT",
+  "docSession.dateErrorFuture": "Das Datum darf nicht in der Zukunft liegen.",
+  "docSession.dateErrorFormat": "Bitte ein gültiges Datum im Format JJJJ-MM-TT eingeben.",
+
+  // Session History (document-session)
+  "docSession.historyTitle": "Zuletzt dokumentiert",
+  "docSession.historyEdit": "Bearbeiten",
+  "docSession.historyUpdateSave": "Aktualisieren",
+  "docSession.historyUpdating": "Wird aktualisiert...",
+  "docSession.historyUpdateSuccess": "\"{0}\" wurde aktualisiert.",
+
+  // Assign – pending_approval
+  "assign.pendingApprovalNote": "Deine Anfrage wird dem Admin zur Bestätigung vorgelegt.",
+  "assign.pendingApprovalButton": "Übernahme beantragen",
+  "assign.pendingSuccessTitle": "Anfrage gesendet",
+  "assign.pendingSuccessText": "Deine Übernahme-Anfrage wurde an den Admin weitergeleitet.",
+
+  // Admin – pending approvals
+  "dashboard.pendingApprovals": "Zuweisungen warten auf Bestätigung",
+  "dashboard.pendingApprovalsCount": "{0} Zuweisung{1} warten auf Bestätigung",
+  "dashboard.reviewAssignments": "Zuweisungen prüfen",
+  "pendingApprovals.title": "Ausstehende Zuweisungen",
+  "pendingApprovals.approve": "Bestätigen",
+  "pendingApprovals.reject": "Ablehnen",
+  "pendingApprovals.empty": "Keine ausstehenden Zuweisungen.",
+  "pendingApprovals.approveTitle": "Zuweisung bestätigen",
+  "pendingApprovals.approveText": "Soll {0} den Mentee {1} betreuen?",
+  "pendingApprovals.rejectTitle": "Zuweisung ablehnen",
+  "pendingApprovals.rejectText": "Die Anfrage von {0} für Mentee {1} wird abgelehnt.",
+  "pendingApprovals.approveSuccess": "Zuweisung wurde bestätigt.",
+  "pendingApprovals.rejectSuccess": "Zuweisung wurde abgelehnt.",
 } as const;
 
 export default de;
