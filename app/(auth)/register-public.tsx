@@ -90,7 +90,7 @@ export default function RegisterPublicScreen() {
       }
 
       // Account erstellen via Supabase Auth
-      const { error } = await supabase.auth.signUp({
+      const { data: signUpData, error } = await supabase.auth.signUp({
         email: emailLower,
         password: password,
         options: {
@@ -100,6 +100,8 @@ export default function RegisterPublicScreen() {
             gender: gender,
             city: city.trim(),
             age: parseInt(age, 10),
+            phone: phone.trim() || "",
+            contact_preference: contactPref || "whatsapp",
           },
         },
       });
@@ -115,12 +117,14 @@ export default function RegisterPublicScreen() {
       }
 
       // Profil mit zusätzlichen Daten updaten (Telefon, Kontaktpräferenz)
-      const { data: { user: newUser } } = await supabase.auth.getUser();
-      if (newUser) {
+      // Direkt die user.id aus dem signUp-Response nutzen — nicht getUser() aufrufen,
+      // da das bei E-Mail-Bestätigung null zurückgeben kann
+      const newUserId = signUpData?.user?.id;
+      if (newUserId) {
         await supabase.from("profiles").update({
           phone: phone.trim() || "",
           contact_preference: contactPref || "whatsapp",
-        }).eq("id", newUser.id);
+        }).eq("id", newUserId);
       }
 
       // E-Mail-Benachrichtigung an Admin

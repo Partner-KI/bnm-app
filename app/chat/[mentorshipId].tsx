@@ -12,6 +12,7 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { showError } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 
@@ -27,13 +28,19 @@ export default function ChatScreen() {
   const mentorship = mentorshipId ? getMentorshipById(mentorshipId) : undefined;
   const messages = mentorshipId ? getMessagesByMentorshipId(mentorshipId) : [];
 
-  function handleSend() {
+  async function handleSend() {
     if (!inputText.trim() || !user || !mentorshipId) return;
-    sendMessage(mentorshipId, user.id, inputText.trim());
+    const content = inputText.trim();
     setInputText("");
-    setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: true });
-    }, 100);
+    try {
+      await sendMessage(mentorshipId, user.id, content);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch {
+      setInputText(content); // Text wiederherstellen bei Fehler
+      showError("Nachricht konnte nicht gesendet werden.");
+    }
   }
 
   if (!user) return null;

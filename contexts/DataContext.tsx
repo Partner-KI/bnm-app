@@ -22,7 +22,7 @@ import type {
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 import { checkReminders } from "../lib/reminders";
-import { showError } from "../lib/errorHandler";
+import { showError, showSuccess } from "../lib/errorHandler";
 import { sendMentorshipStatusChangeNotification } from "../lib/emailService";
 
 export interface DataContextValue {
@@ -528,7 +528,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error || !data) {
         console.error("assignMentorship Fehler:", error);
-        return;
+        throw new Error(error?.message ?? "Zuweisung fehlgeschlagen");
       }
 
       const mentor = users.find((u) => u.id === mentorId);
@@ -617,7 +617,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("updateMentorshipStatus Fehler:", error);
-        return;
+        throw new Error(error.message);
       }
 
       setMentorships((prev) => {
@@ -674,7 +674,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error || !data) {
         console.error("addSession Fehler:", error);
-        return;
+        throw new Error(error?.message ?? "Session konnte nicht gespeichert werden");
       }
 
       const sessionType = sessionTypes.find((st) => st.id === data.session_type_id);
@@ -836,7 +836,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error || !data) {
         console.error("sendMessage Fehler:", error);
-        return;
+        throw new Error(error?.message ?? "Nachricht konnte nicht gesendet werden");
       }
 
       // Realtime-Insert liefert die Nachricht via onAuthStateChange zurück,
@@ -906,6 +906,80 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const app = applications.find((a) => a.id === applicationId);
       if (!app) return;
 
+      // Erst User via Supabase Auth signUp anlegen (nur bei Mentor-Bewerbungen)
+      // Bei Mentee-Anmeldungen übernimmt handleAcceptMenteeRegistration in applications.tsx den signUp
+      const isMenteeRegistration = app.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
+
+      if (!isMenteeRegistration) {
+        // Admin-Session sichern BEVOR signUp aufgerufen wird
+        // signUp loggt automatisch den neuen User ein → Admin-Session geht verloren
+        const { data: adminSession } = await supabase.auth.getSession();
+
+        // Mentor: Zufälliges temporäres Passwort
+        const tempPassword = "BNM-" + Math.floor(100000 + Math.random() * 900000);
+
+        // Separaten Client ohne Session-Persistenz verwenden
+        const { createClient } = await import("@supabase/supabase-js");
+        const anonClient = createClient(
+          "https://jbuvnmjlvebzknbmzryb.supabase.co",
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidXZubWpsdmViemtuYm16cnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjYyNTIsImV4cCI6MjA4OTQwMjI1Mn0.VKYa75wnPJ435ICu_NQSzwyQUcaWAXVKoaLlP7uSucg",
+          { auth: { persistSession: false, autoRefreshToken: false } }
+        );
+
+        const { data: signUpData, error: signUpError } = await anonClient.auth.signUp({
+          email: app.email,
+          password: tempPassword,
+          options: {
+            data: {
+              name: app.name,
+              role: "mentor",
+              gender: app.gender,
+              city: app.city,
+              age: app.age,
+            },
+          },
+        });
+
+        // Admin-Session sofort wiederherstellen
+        if (adminSession?.session) {
+          await supabase.auth.setSession({
+            access_token: adminSession.session.access_token,
+            refresh_token: adminSession.session.refresh_token,
+          });
+        }
+
+        if (signUpError) {
+          if (
+            !signUpError.message.includes("already registered") &&
+            !signUpError.message.includes("User already registered")
+          ) {
+            showError(`Fehler beim Erstellen des Accounts: ${signUpError.message}`);
+            return;
+          }
+        }
+
+        // Profil nachladen (mit Verzögerung, damit der DB-Trigger Zeit hat)
+        if (signUpData?.user) {
+          await new Promise((r) => setTimeout(r, 1000));
+          const { data: newProfile } = await supabase
+            .from("profiles")
+            .select("*")
+            .eq("id", signUpData.user.id)
+            .single();
+          if (newProfile) {
+            setUsers((prev) => {
+              if (prev.some((u) => u.id === newProfile.id)) return prev;
+              return [...prev, mapProfile(newProfile)];
+            });
+          }
+        }
+
+        showSuccess(
+          `Mentor-Account erstellt!\n\nE-Mail: ${app.email}\nPasswort: ${tempPassword}\n\nBitte diese Zugangsdaten dem Mentor mitteilen.`
+        );
+      }
+
+      // Status auf approved setzen (erst nach erfolgreichem signUp)
       const { error } = await supabase
         .from("mentor_applications")
         .update({
@@ -917,6 +991,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (error) {
         console.error("approveApplication Fehler:", error);
+        showError("Fehler beim Aktualisieren der Bewerbung.");
         return;
       }
 
@@ -925,45 +1000,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
           a.id === applicationId ? { ...a, status: "approved" as ApplicationStatus } : a
         )
       );
-
-      // Neuen Mentor-User via Supabase Auth signUp anlegen
-      // Da wir nur den Anon Key haben, geht das nur mit Email-Einladung oder signUp.
-      // Wir verwenden signUp mit einem temporären Passwort.
-      const tempPassword = Math.random().toString(36).slice(-10) + "A1!";
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-        email: app.email,
-        password: tempPassword,
-        options: {
-          data: {
-            name: app.name,
-            role: "mentor",
-            gender: app.gender,
-            city: app.city,
-            age: app.age,
-          },
-        },
-      });
-
-      if (signUpError) {
-        console.error("approveApplication signUp Fehler:", signUpError);
-        // Application bleibt approved, aber User-Erstellung fehlgeschlagen
-        return;
-      }
-
-      // Profil nachladen falls Trigger den Eintrag erstellt hat
-      if (signUpData.user) {
-        const { data: newProfile } = await supabase
-          .from("profiles")
-          .select("*")
-          .eq("id", signUpData.user.id)
-          .single();
-        if (newProfile) {
-          setUsers((prev) => {
-            if (prev.some((u) => u.id === newProfile.id)) return prev;
-            return [...prev, mapProfile(newProfile)];
-          });
-        }
-      }
     },
     [applications, authUser]
   );

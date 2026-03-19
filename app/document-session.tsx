@@ -159,14 +159,12 @@ export default function DocumentSessionScreen() {
 
     setIsSaving(true);
 
-    let isoDate: string;
+    let isoDate: string = new Date().toISOString();
     try {
       const parts = date.split(".");
       if (parts.length === 3) {
         const [day, month, year] = parts;
         isoDate = new Date(Number(year), Number(month) - 1, Number(day)).toISOString();
-      } else {
-        isoDate = new Date().toISOString();
       }
     } catch {
       isoDate = new Date().toISOString();
@@ -189,24 +187,30 @@ export default function DocumentSessionScreen() {
       ? parseInt(durationMinutes.trim(), 10) || undefined
       : undefined;
 
-    await addSession({
-      mentorship_id: selectedMentorshipId,
-      session_type_id: sessionTypeId,
-      date: isoDate,
-      is_online: isOnline,
-      details: finalDetails,
-      documented_by: user.id,
-      attempt_number: attemptNum,
-      duration_minutes: durationNum,
-    });
+    try {
+      await addSession({
+        mentorship_id: selectedMentorshipId,
+        session_type_id: sessionTypeId,
+        date: isoDate,
+        is_online: isOnline,
+        details: finalDetails,
+        documented_by: user.id,
+        attempt_number: attemptNum,
+        duration_minutes: durationNum,
+      });
 
-    setIsSaving(false);
-    setForceNewSession(false);
-    setAdditionalStepId("");
-    setDurationMinutes("");
+      setForceNewSession(false);
+      setAdditionalStepId("");
+      setDurationMinutes("");
 
-    const typeName = activeSessionType?.name ?? "Session";
-    showSuccess(t("docSession.successMsg").replace("{0}", typeName), () => router.back());
+      const typeName = activeSessionType?.name ?? "Session";
+      showSuccess(t("docSession.successMsg").replace("{0}", typeName), () => router.back());
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+      showError(`Session konnte nicht gespeichert werden: ${msg}`);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   if (!user || (user.role !== "mentor" && user.role !== "admin" && user.role !== "office")) {

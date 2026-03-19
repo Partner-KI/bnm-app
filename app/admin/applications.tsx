@@ -73,8 +73,7 @@ export default function ApplicationsScreen() {
   async function handleApproveMentor(app: MentorApplication) {
     const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
     if (ok) {
-      approveApplication(app.id);
-      showSuccess(`${app.name} wurde als Mentor hinzugefügt.`);
+      await approveApplication(app.id);
     }
   }
 
@@ -93,8 +92,18 @@ export default function ApplicationsScreen() {
     const digits = Math.floor(100000 + Math.random() * 900000).toString();
     const tempPassword = `BNM-${digits}`;
 
-    // Supabase Auth signUp für den Mentee
-    const { error: signUpError } = await supabase.auth.signUp({
+    // Admin-Session sichern (signUp loggt sonst den Admin aus!)
+    const { data: adminSession } = await supabase.auth.getSession();
+
+    // Separaten Client verwenden um Admin-Session nicht zu zerstören
+    const { createClient } = await import("@supabase/supabase-js");
+    const anonClient = createClient(
+      "https://jbuvnmjlvebzknbmzryb.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpidXZubWpsdmViemtuYm16cnliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MjYyNTIsImV4cCI6MjA4OTQwMjI1Mn0.VKYa75wnPJ435ICu_NQSzwyQUcaWAXVKoaLlP7uSucg",
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+
+    const { error: signUpError } = await anonClient.auth.signUp({
       email: app.email,
       password: tempPassword,
       options: {
@@ -107,6 +116,14 @@ export default function ApplicationsScreen() {
         },
       },
     });
+
+    // Admin-Session wiederherstellen
+    if (adminSession?.session) {
+      await supabase.auth.setSession({
+        access_token: adminSession.session.access_token,
+        refresh_token: adminSession.session.refresh_token,
+      });
+    }
 
     if (signUpError) {
       if (
@@ -121,7 +138,7 @@ export default function ApplicationsScreen() {
     }
 
     // Anmeldung als approved markieren
-    approveApplication(app.id);
+    await approveApplication(app.id);
 
     showSuccess(t("applications.tempPassword").replace("{0}", tempPassword).replace("{1}", app.name));
   }

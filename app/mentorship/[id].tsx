@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
-import { showConfirm } from "../../lib/errorHandler";
+import { showConfirm, showError } from "../../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -17,6 +17,7 @@ export default function MentorshipDetailScreen() {
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useLanguage();
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const {
     getMentorshipById,
     getSessionsByMentorshipId,
@@ -60,17 +61,29 @@ export default function MentorshipDetailScreen() {
 
   async function handleComplete() {
     const ok = await showConfirm(t("mentorship.completeTitle"), t("mentorship.completeText"));
-    if (ok) {
-      updateMentorshipStatus(mentorshipId, "completed");
+    if (!ok) return;
+    setIsUpdatingStatus(true);
+    try {
+      await updateMentorshipStatus(mentorshipId, "completed");
       router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
+    } catch {
+      showError("Fehler beim Abschließen der Betreuung.");
+    } finally {
+      setIsUpdatingStatus(false);
     }
   }
 
   async function handleCancel() {
     const ok = await showConfirm(t("mentorship.cancelTitle"), t("mentorship.cancelText"));
-    if (ok) {
-      updateMentorshipStatus(mentorshipId, "cancelled");
+    if (!ok) return;
+    setIsUpdatingStatus(true);
+    try {
+      await updateMentorshipStatus(mentorshipId, "cancelled");
       router.push({ pathname: "/feedback", params: { mentorshipId: mentorshipId } });
+    } catch {
+      showError("Fehler beim Abbrechen der Betreuung.");
+    } finally {
+      setIsUpdatingStatus(false);
     }
   }
 
@@ -263,16 +276,22 @@ export default function MentorshipDetailScreen() {
             {canChangeStatus && (
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <TouchableOpacity
-                  style={styles.completeButton}
+                  style={[styles.completeButton, isUpdatingStatus ? { opacity: 0.5 } : {}]}
                   onPress={handleComplete}
+                  disabled={isUpdatingStatus}
                 >
-                  <Text style={styles.completeButtonText}>{t("mentorship.complete")}</Text>
+                  <Text style={styles.completeButtonText}>
+                    {isUpdatingStatus ? "..." : t("mentorship.complete")}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={styles.cancelButton}
+                  style={[styles.cancelButton, isUpdatingStatus ? { opacity: 0.5 } : {}]}
                   onPress={handleCancel}
+                  disabled={isUpdatingStatus}
                 >
-                  <Text style={styles.cancelButtonText}>{t("mentorship.cancel")}</Text>
+                  <Text style={styles.cancelButtonText}>
+                    {isUpdatingStatus ? "..." : t("mentorship.cancel")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             )}

@@ -10,6 +10,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { useConfirm, useAlert } from "../contexts/ModalContext";
+import { showError } from "../lib/errorHandler";
 import type { User } from "../types";
 import { COLORS } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
@@ -90,6 +91,7 @@ export default function AssignScreen() {
     // FIX 5: Mentor ist sich selbst vorausgewählt
     isMentor && user ? user.id : ""
   );
+  const [isAssigning, setIsAssigning] = useState(false);
 
   const selectedMentee = users.find((u) => u.id === selectedMenteeId);
 
@@ -122,19 +124,27 @@ export default function AssignScreen() {
     const confirmed = await confirm(confirmTitle, confirmText);
     if (!confirmed) return;
 
-    await assignMentorship(selectedMenteeId, mentorId, user.id);
+    setIsAssigning(true);
+    try {
+      await assignMentorship(selectedMenteeId, mentorId, user.id);
 
-    if (mentor.email) {
-      await sendMenteeAssignedNotification(
-        mentor.name,
-        mentor.email,
-        mentee.name,
-        mentee.city
-      );
+      if (mentor.email) {
+        await sendMenteeAssignedNotification(
+          mentor.name,
+          mentor.email,
+          mentee.name,
+          mentee.city
+        );
+      }
+
+      await alert(t("assign.successTitle"), t("assign.successText"), "success");
+      router.back();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+      showError(`Zuweisung fehlgeschlagen: ${msg}`);
+    } finally {
+      setIsAssigning(false);
     }
-
-    await alert(t("assign.successTitle"), t("assign.successText"), "success");
-    router.back();
   }
 
   if (!isAdmin && !isMentor) {
@@ -311,22 +321,22 @@ export default function AssignScreen() {
         <TouchableOpacity
           style={[
             styles.assignButton,
-            (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId)
+            (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId) && !isAssigning
               ? { backgroundColor: COLORS.cta }
               : { backgroundColor: COLORS.border },
           ]}
           onPress={handleAssign}
-          disabled={isMentor ? !selectedMenteeId : !selectedMenteeId || !selectedMentorId}
+          disabled={isAssigning || (isMentor ? !selectedMenteeId : !selectedMenteeId || !selectedMentorId)}
         >
           <Text
             style={[
               styles.assignButtonText,
-              (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId)
+              (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId) && !isAssigning
                 ? { color: COLORS.white }
                 : { color: COLORS.tertiary },
             ]}
           >
-            {isMentor ? t("assign.takeMenteeButton") : t("assign.assignButton")}
+            {isAssigning ? "..." : isMentor ? t("assign.takeMenteeButton") : t("assign.assignButton")}
           </Text>
         </TouchableOpacity>
       </View>
