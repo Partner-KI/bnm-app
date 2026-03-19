@@ -13,6 +13,7 @@ import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
+import { supabase } from "../lib/supabase";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
@@ -36,7 +37,7 @@ export default function ChangePasswordScreen() {
     return null;
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     const error = validate();
     if (error) {
       showError(error);
@@ -44,11 +45,33 @@ export default function ChangePasswordScreen() {
     }
 
     setIsSaving(true);
-    // Mock-Submit
-    setTimeout(() => {
+    try {
+      // Altes Passwort verifizieren: neu einloggen mit aktuellem Passwort
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        showError(t("changePassword.errorCurrent"));
+        setIsSaving(false);
+        return;
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: oldPassword,
+      });
+      if (signInError) {
+        showError(t("changePassword.errorCurrent"));
+        setIsSaving(false);
+        return;
+      }
+      // Passwort aktualisieren
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
+      if (updateError) {
+        showError(updateError.message);
+      } else {
+        showSuccess(t("changePassword.successMsg"), () => router.back());
+      }
+    } finally {
       setIsSaving(false);
-      showSuccess(t("changePassword.successMsg"), () => router.back());
-    }, 600);
+    }
   }
 
   const newPasswordStrength = (() => {

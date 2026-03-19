@@ -221,7 +221,7 @@ export default function DocumentSessionScreen() {
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     if (parsed > today) return { ok: false, isoDate: "future" };
-    return { ok: true, isoDate: parsed.toISOString() };
+    return { ok: true, isoDate: trimmed };
   }
 
   async function handleSave() {

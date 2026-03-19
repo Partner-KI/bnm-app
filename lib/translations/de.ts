@@ -552,6 +552,8 @@ const de = {
   "notifications.typeReminder": "Erinnerung",
   "notifications.typeProgress": "Fortschritt",
   "notifications.typeMessage": "Nachricht",
+  "notifications.typeFeedback": "Feedback",
+  "notifications.typeSystem": "System",
   "notifications.minutesAgo": "vor {0} Min.",
   "notifications.hoursAgo": "vor {0} Std.",
   "notifications.daysAgo": "vor {0} Tag{1}",

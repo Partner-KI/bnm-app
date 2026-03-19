@@ -46,6 +46,8 @@ export default function NotificationsScreen() {
     if (type === "assignment") return t("notifications.typeAssignment");
     if (type === "reminder") return t("notifications.typeReminder");
     if (type === "progress") return t("notifications.typeProgress");
+    if (type === "feedback") return t("notifications.typeFeedback");
+    if (type === "system") return t("notifications.typeSystem");
     return t("notifications.typeMessage");
   };
 

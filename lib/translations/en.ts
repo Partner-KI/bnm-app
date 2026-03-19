@@ -554,6 +554,8 @@ const en: Record<TranslationKeys, string> = {
   "notifications.typeReminder": "Reminder",
   "notifications.typeProgress": "Progress",
   "notifications.typeMessage": "Message",
+  "notifications.typeFeedback": "Feedback",
+  "notifications.typeSystem": "System",
   "notifications.minutesAgo": "{0} min ago",
   "notifications.hoursAgo": "{0} hr ago",
   "notifications.daysAgo": "{0} day{1} ago",

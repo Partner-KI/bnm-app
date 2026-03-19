@@ -554,6 +554,8 @@ const ar: Record<TranslationKeys, string> = {
   "notifications.typeReminder": "تذكير",
   "notifications.typeProgress": "تقدم",
   "notifications.typeMessage": "رسالة",
+  "notifications.typeFeedback": "ملاحظات",
+  "notifications.typeSystem": "نظام",
   "notifications.minutesAgo": "منذ {0} د",
   "notifications.hoursAgo": "منذ {0} س",
   "notifications.daysAgo": "منذ {0} يوم{1}",

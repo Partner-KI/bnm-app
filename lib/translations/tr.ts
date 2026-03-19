@@ -554,6 +554,8 @@ const tr: Record<TranslationKeys, string> = {
   "notifications.typeReminder": "Hatırlatıcı",
   "notifications.typeProgress": "İlerleme",
   "notifications.typeMessage": "Mesaj",
+  "notifications.typeFeedback": "Geri Bildirim",
+  "notifications.typeSystem": "Sistem",
   "notifications.minutesAgo": "{0} dk önce",
   "notifications.hoursAgo": "{0} sa önce",
   "notifications.daysAgo": "{0} gün önce",
