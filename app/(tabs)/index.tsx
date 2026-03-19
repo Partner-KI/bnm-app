@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useCallback } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl } from "react-native";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
+import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -27,6 +27,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const {
     users,
     mentorships,
+    sessions,
     sessionTypes,
     getCompletedStepIds,
     getUnassignedMentees,
@@ -50,6 +51,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const unassignedMentees = getUnassignedMentees();
   const pendingAppsCount = getPendingApplicationsCount();
   const pendingApprovalsCount = getPendingApprovalsCount();
+
+  // Letzte 5 Aktivitäten: Sessions sortiert nach Datum absteigend
+  const recentSessions = useMemo(() => {
+    return [...sessions]
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .slice(0, 5);
+  }, [sessions]);
 
   return (
     <ScrollView
@@ -173,6 +181,49 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           <Text style={styles.applicationsArrow}>›</Text>
         </TouchableOpacity>
 
+        {/* Mentoren-Übersicht */}
+        <TouchableOpacity
+          style={styles.applicationsButton}
+          onPress={() => router.push("/admin/mentors")}
+        >
+          <View style={styles.applicationsButtonContent}>
+            <Text style={styles.applicationsButtonText}>{t("adminMentors.title")}</Text>
+            <Text style={styles.applicationsButtonSub}>{allMentors.length} {t("adminMentors.mentors")}</Text>
+          </View>
+          <Text style={styles.applicationsArrow}>›</Text>
+        </TouchableOpacity>
+
+        {/* Letzte Aktivitäten */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>{t("dashboard.recentActivity")}</Text>
+          <Text style={[styles.tertiaryXs, { marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
+          {recentSessions.length === 0 ? (
+            <Text style={styles.emptyText}>{t("dashboard.noRecentActivity")}</Text>
+          ) : (
+            recentSessions.map((s, idx) => {
+              const mentorship = mentorships.find((m) => m.id === s.mentorship_id);
+              const stepName = s.session_type?.name ?? `${t("dashboard.activityStep")} ${idx + 1}`;
+              const mentorName = mentorship?.mentor?.name ?? "–";
+              const menteeName = mentorship?.mentee?.name ?? "–";
+              const isLast = idx === recentSessions.length - 1;
+              return (
+                <View key={s.id} style={[styles.activityRow, isLast ? {} : styles.activityRowBorder]}>
+                  <View style={styles.activityDot} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.activityTitle}>{stepName}</Text>
+                    <Text style={styles.activitySub}>
+                      {menteeName} · {t("dashboard.activityBy")} {mentorName}
+                    </Text>
+                  </View>
+                  <Text style={styles.activityDate}>
+                    {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+                  </Text>
+                </View>
+              );
+            })
+          )}
+        </View>
+
         {/* Balkendiagramm: Neue Betreuungen pro Monat */}
         <MonthlyChart mentorships={mentorships} />
 
@@ -237,11 +288,37 @@ function MentorDashboard() {
     setRefreshing(false);
   }, [refreshData]);
 
-  if (!user) return null;
-
-  const myMentorships = getMentorshipsByMentorId(user.id);
+  const myMentorships = user ? getMentorshipsByMentorId(user.id) : [];
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
+
+  // Auto-Show Onboarding für neue Mentoren ohne Mentees (einmalig)
+  // Hook muss VOR dem early return stehen (React Hooks Rules)
+  useEffect(() => {
+    if (!user) return;
+    if (activeMentorships.length > 0) return; // Hat schon Mentees → kein Onboarding nötig
+    const key = "bnm_onboarding_seen";
+    async function checkOnboarding() {
+      try {
+        let seen = false;
+        if (Platform.OS === "web") {
+          seen = localStorage.getItem(key) === "1";
+        } else {
+          try {
+            // @ts-ignore
+            const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+            seen = (await AsyncStorage.getItem(key)) === "1";
+          } catch { seen = false; }
+        }
+        if (!seen) {
+          router.push("/onboarding");
+        }
+      } catch { /* ignorieren */ }
+    }
+    checkOnboarding();
+  }, [user?.id, activeMentorships.length]);
+
+  if (!user) return null;
 
   return (
     <ScrollView
@@ -415,6 +492,44 @@ function MenteeDashboard() {
         {/* Fortschritts-Übersicht */}
         {mentorship ? (
           <>
+            {/* Mein Mentor Karte */}
+            {mentorship.mentor && (
+              <View style={[styles.card, { marginBottom: 16 }]}>
+                <Text style={styles.cardTitle}>{t("dashboard.myMentor")}</Text>
+                <View style={styles.mentorInfoRow}>
+                  <View style={styles.mentorAvatar}>
+                    <Text style={styles.mentorAvatarText}>
+                      {mentorship.mentor.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
+                    </Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.boldPrimary}>{mentorship.mentor.name}</Text>
+                    <Text style={styles.tertiaryXs}>{mentorship.mentor.city}</Text>
+                  </View>
+                </View>
+                <View style={styles.mentorDetailRows}>
+                  <View style={styles.mentorDetailRow}>
+                    <Text style={styles.mentorDetailLabel}>{t("dashboard.mentorContact")}</Text>
+                    <Text style={styles.mentorDetailValue}>{mentorship.mentor.contact_preference}</Text>
+                  </View>
+                  {mentorship.mentor.phone && (
+                    <View style={styles.mentorDetailRow}>
+                      <Text style={styles.mentorDetailLabel}>{t("dashboard.mentorPhone")}</Text>
+                      <Text style={styles.mentorDetailValue}>{mentorship.mentor.phone}</Text>
+                    </View>
+                  )}
+                </View>
+                <TouchableOpacity
+                  style={[styles.actionButton, { backgroundColor: COLORS.gradientStart, marginTop: 10 }]}
+                  onPress={() =>
+                    router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+                  }
+                >
+                  <Text style={styles.actionButtonText}>{t("dashboard.sendMessage")}</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+
             <View style={[styles.card, { marginBottom: 16 }]}>
               <View style={styles.rowBetweenMb3}>
                 <Text style={styles.cardTitle}>{t("dashboard.yourProgress")}</Text>
@@ -1033,4 +1148,26 @@ const styles = StyleSheet.create({
   },
   pendingApprovalsText: { fontWeight: "600", color: "#78350f", fontSize: 14 },
   pendingApprovalsSub: { color: "#92400e", fontSize: 12, marginTop: 2 },
+  // Mein Mentor Karte
+  mentorInfoRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
+  mentorAvatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: COLORS.gradientStart,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  mentorAvatarText: { color: COLORS.white, fontWeight: "700", fontSize: 15 },
+  mentorDetailRows: { gap: 4 },
+  mentorDetailRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  mentorDetailLabel: { color: COLORS.secondary, fontSize: 12 },
+  mentorDetailValue: { color: COLORS.primary, fontSize: 12, fontWeight: "500" },
+  // Letzte Aktivitäten
+  activityRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, gap: 10 },
+  activityRowBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  activityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold, flexShrink: 0 },
+  activityTitle: { color: COLORS.primary, fontSize: 13, fontWeight: "500" },
+  activitySub: { color: COLORS.tertiary, fontSize: 11, marginTop: 1 },
+  activityDate: { color: COLORS.tertiary, fontSize: 11, flexShrink: 0 },
 });

@@ -181,6 +181,12 @@ function RootLayoutInner() {
           }}
         />
         <Stack.Screen
+          name="admin/mentors"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
           name="reset-password"
           options={{
             title: "Passwort zurücksetzen",

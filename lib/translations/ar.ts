@@ -829,6 +829,62 @@ const ar: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "سيتم رفض طلب {0} للمتدرب {1}.",
   "pendingApprovals.approveSuccess": "تم تأكيد التعيين.",
   "pendingApprovals.rejectSuccess": "تم رفض التعيين.",
+
+  // لوحة المتدرب: بطاقة مرشدي
+  "dashboard.myMentor": "مرشدي",
+  "dashboard.mentorCity": "المدينة",
+  "dashboard.mentorContact": "طريقة التواصل",
+  "dashboard.mentorPhone": "الهاتف",
+  "dashboard.sendMessage": "إرسال رسالة",
+
+  // المسؤول: نظرة عامة على المرشدين
+  "adminMentors.title": "نظرة عامة على المرشدين",
+  "adminMentors.search": "البحث عن مرشد...",
+  "adminMentors.activeMentorships": "نشط",
+  "adminMentors.completedMentorships": "مكتمل",
+  "adminMentors.noMentors": "لم يتم العثور على مرشدين.",
+  "adminMentors.viewProfile": "عرض الملف",
+  "adminMentors.mentors": "المرشدون",
+
+  // الإشعارات: التلقائية
+  "notifications.mentorAssigned": "تم تعيين مرشد لك!",
+  "notifications.mentorAssignedBody": "{0} هو الآن مرشدك.",
+  "notifications.stepCompleted": "تم إكمال الخطوة!",
+  "notifications.stepCompletedBody": "تمت توثيق الخطوة \"{0}\" من قبل مرشدك.",
+  "notifications.applicationApproved": "تمت الموافقة على طلبك!",
+  "notifications.applicationApprovedBody": "مرحبًا بك كمرشد في BNM. أنت الآن نشط.",
+
+  // لوحة الإدارة: آخر الأنشطة
+  "dashboard.recentActivity": "آخر الأنشطة",
+  "dashboard.recentActivitySub": "الجلسات الموثقة مؤخرًا",
+  "dashboard.noRecentActivity": "لم يتم توثيق أي جلسات بعد.",
+  "dashboard.activityStep": "خطوة",
+  "dashboard.activityBy": "بواسطة",
+
+  // الملف الشخصي: معلومات الاتصال بشريك الإرشاد
+  "profile.partnerInfo": "معلومات الاتصال بشريك الإرشاد",
+  "profile.myMentee": "متدربي",
+  "profile.myMentorSection": "مرشدي",
+  "profile.partnerEmail": "البريد الإلكتروني",
+  "profile.partnerPhone": "الهاتف",
+  "profile.partnerContact": "طريقة التواصل",
+  "profile.partnerNoContact": "لا توجد معلومات اتصال.",
+  "profile.sendMessage": "إرسال رسالة",
+
+  // الإعداد الأولي: للمرشدين الجدد
+  "onboarding.autoTitle": "مرحبًا بك كمرشد!",
+  "onboarding.autoBody": "ليس لديك متدربون بعد. ابدأ الإعداد الأولي للتحضير.",
+  "onboarding.startOnboarding": "ابدأ الإعداد الأولي",
+  "onboarding.skipOnboarding": "تخطي",
+
+  // التذييل / إصدار التطبيق
+  "footer.version": "BNM App v1.0.0",
+  "footer.privacy": "الخصوصية",
+  "footer.imprint": "بيانات النشر",
+  "footer.privacyTitle": "سياسة الخصوصية",
+  "footer.privacyText": "يتم استخدام بياناتك حصريًا لإدارة برنامج الإرشاد BNM ولا تتم مشاركتها مع أطراف ثالثة.",
+  "footer.imprintTitle": "بيانات النشر",
+  "footer.imprintText": "BNM – إرشاد المسلمين الجدد\nيُدار هذا البرنامج من قبل متطوعين.\nللتواصل: info@bnm-program.de",
 };
 
 export default ar;

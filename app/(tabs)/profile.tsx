@@ -25,12 +25,21 @@ const CONTACT_LABELS: Record<string, string> = {
   email: "E-Mail",
 };
 
+const CONTACT_LABELS_I18N: Record<string, string> = {
+  whatsapp: "WhatsApp",
+  phone: "Telefon / Phone",
+  telegram: "Telegram",
+  email: "E-Mail",
+};
+
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, logout } = useAuth();
-  const { getMentorshipsByMentorId, sessions, users, refreshData } = useData();
+  const { getMentorshipsByMentorId, getMentorshipByMenteeId, sessions, users, mentorships, refreshData } = useData();
   const { t } = useLanguage();
   const [refreshing, setRefreshing] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+  const [showImprint, setShowImprint] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -43,6 +52,24 @@ export default function ProfileScreen() {
     mentor: "Mentor",
     mentee: "Mentee (Neuer Muslim)",
   };
+
+  // Kontaktinfo des Mentorship-Partners
+  const partnerContact = useMemo(() => {
+    if (!user) return null;
+    if (user.role === "mentor") {
+      // Aktive Mentees des Mentors
+      const myMentorships = getMentorshipsByMentorId(user.id).filter((m) => m.status === "active");
+      if (myMentorships.length === 0) return null;
+      const mentee = myMentorships[0].mentee;
+      return mentee ? { person: mentee, label: t("profile.myMentee"), mentorshipId: myMentorships[0].id } : null;
+    }
+    if (user.role === "mentee") {
+      const mentorship = getMentorshipByMenteeId(user.id);
+      if (!mentorship || !mentorship.mentor) return null;
+      return { person: mentorship.mentor, label: t("profile.myMentorSection"), mentorshipId: mentorship.id };
+    }
+    return null;
+  }, [user, getMentorshipsByMentorId, getMentorshipByMenteeId, mentorships, t]);
 
   const mentorStats = useMemo(() => {
     if (!user || user.role !== "mentor") return null;
@@ -190,6 +217,33 @@ export default function ProfileScreen() {
           </View>
         )}
 
+        {/* Kontaktinfo Mentorship-Partner */}
+        {partnerContact && (
+          <View style={styles.infoCard}>
+            <Text style={styles.sectionLabel}>{t("profile.partnerInfo")}</Text>
+            <Text style={[styles.infoValue, { textAlign: "left", maxWidth: "100%", fontWeight: "700", color: COLORS.primary, marginBottom: 8 }]}>
+              {partnerContact.label}: {partnerContact.person.name}
+            </Text>
+            <InfoRow label={t("profile.partnerEmail")} value={partnerContact.person.email} />
+            {partnerContact.person.phone ? (
+              <InfoRow label={t("profile.partnerPhone")} value={partnerContact.person.phone} />
+            ) : null}
+            <InfoRow
+              label={t("profile.partnerContact")}
+              value={CONTACT_LABELS_I18N[partnerContact.person.contact_preference] ?? partnerContact.person.contact_preference}
+              isLast
+            />
+            <TouchableOpacity
+              style={[styles.partnerMessageBtn]}
+              onPress={() =>
+                router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: partnerContact.mentorshipId } })
+              }
+            >
+              <Text style={styles.partnerMessageBtnText}>{t("profile.sendMessage")}</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Konto-Aktionen */}
         <View style={[styles.infoCard, { padding: 0, overflow: "hidden" }]}>
           <Text style={[styles.sectionLabel, { paddingHorizontal: 16, paddingTop: 16, paddingBottom: 8 }]}>
@@ -223,8 +277,45 @@ export default function ProfileScreen() {
           <Text style={styles.logoutText}>{t("profile.logout")}</Text>
         </TouchableOpacity>
 
-        {/* App-Info */}
-        <Text style={styles.appInfo}>{t("profile.appInfo")}</Text>
+        {/* App-Footer */}
+        <View style={styles.footerBox}>
+          <Text style={styles.footerVersion}>{t("footer.version")}</Text>
+          <View style={styles.footerLinks}>
+            <TouchableOpacity onPress={() => setShowPrivacy(true)}>
+              <Text style={styles.footerLink}>{t("footer.privacy")}</Text>
+            </TouchableOpacity>
+            <Text style={styles.footerSep}>·</Text>
+            <TouchableOpacity onPress={() => setShowImprint(true)}>
+              <Text style={styles.footerLink}>{t("footer.imprint")}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Datenschutz Modal */}
+        {showPrivacy && (
+          <View style={styles.overlay}>
+            <View style={styles.overlayCard}>
+              <Text style={styles.overlayTitle}>{t("footer.privacyTitle")}</Text>
+              <Text style={styles.overlayText}>{t("footer.privacyText")}</Text>
+              <TouchableOpacity style={styles.overlayClose} onPress={() => setShowPrivacy(false)}>
+                <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* Impressum Modal */}
+        {showImprint && (
+          <View style={styles.overlay}>
+            <View style={styles.overlayCard}>
+              <Text style={styles.overlayTitle}>{t("footer.imprintTitle")}</Text>
+              <Text style={styles.overlayText}>{t("footer.imprintText")}</Text>
+              <TouchableOpacity style={styles.overlayClose} onPress={() => setShowImprint(false)}>
+                <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </View>
     </ScrollView>
     </Container>
@@ -371,4 +462,44 @@ const styles = StyleSheet.create({
   },
   logoutText: { color: "#dc2626", fontWeight: "600" },
   appInfo: { color: COLORS.tertiary, fontSize: 12, textAlign: "center" },
+  partnerMessageBtn: {
+    marginTop: 10,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 9,
+    alignItems: "center",
+  },
+  partnerMessageBtnText: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
+  footerBox: { alignItems: "center", marginBottom: 16 },
+  footerVersion: { color: COLORS.tertiary, fontSize: 12, marginBottom: 6 },
+  footerLinks: { flexDirection: "row", alignItems: "center", gap: 6 },
+  footerLink: { color: COLORS.link, fontSize: 12 },
+  footerSep: { color: COLORS.tertiary, fontSize: 12 },
+  overlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 100,
+    padding: 32,
+  },
+  overlayCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
+    padding: 24,
+    width: "100%",
+  },
+  overlayTitle: { fontWeight: "700", fontSize: 17, color: COLORS.primary, marginBottom: 12 },
+  overlayText: { color: COLORS.secondary, fontSize: 14, lineHeight: 22, marginBottom: 20 },
+  overlayClose: {
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: 5,
+    paddingVertical: 9,
+    alignItems: "center",
+  },
+  overlayCloseText: { color: COLORS.white, fontWeight: "600" },
 });

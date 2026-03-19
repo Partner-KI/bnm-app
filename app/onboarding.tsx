@@ -8,6 +8,7 @@ import {
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
@@ -15,6 +16,37 @@ import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
+
+export async function markOnboardingAsSeen(userId: string): Promise<void> {
+  const key = `bnm_onboarding_seen_${userId}`;
+  try {
+    if (Platform.OS === "web") {
+      localStorage.setItem(key, "1");
+    } else {
+      try {
+        // @ts-ignore
+        const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+        await AsyncStorage.setItem(key, "1");
+      } catch { /* AsyncStorage nicht verfügbar */ }
+    }
+  } catch { /* Fehler ignorieren */ }
+}
+
+export async function hasSeenOnboarding(userId: string): Promise<boolean> {
+  const key = `bnm_onboarding_seen_${userId}`;
+  try {
+    if (Platform.OS === "web") {
+      return localStorage.getItem(key) === "1";
+    } else {
+      try {
+        // @ts-ignore
+        const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+        const val = await AsyncStorage.getItem(key);
+        return val === "1";
+      } catch { return false; }
+    }
+  } catch { return false; }
+}
 
 export default function OnboardingScreen() {
   const router = useRouter();
@@ -41,15 +73,41 @@ export default function OnboardingScreen() {
     setCurrentPage(page);
   }
 
-  function goToNext() {
+  async function goToNext() {
     if (currentPage < totalPages - 1) {
       scrollRef.current?.scrollTo({ x: (currentPage + 1) * SCREEN_WIDTH, animated: true });
     } else {
+      // Beim letzten Schritt: als gesehen markieren
+      const key = `bnm_onboarding_seen`;
+      try {
+        if (Platform.OS === "web") {
+          localStorage.setItem(key, "1");
+        } else {
+          try {
+            // @ts-ignore
+            const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+            await AsyncStorage.setItem(key, "1");
+          } catch { /* ignorieren */ }
+        }
+      } catch { /* ignorieren */ }
       router.replace("/(tabs)");
     }
   }
 
-  function handleSkip() {
+  async function handleSkip() {
+    // Als gesehen markieren auch beim Überspringen
+    const key = `bnm_onboarding_seen`;
+    try {
+      if (Platform.OS === "web") {
+        localStorage.setItem(key, "1");
+      } else {
+        try {
+          // @ts-ignore
+          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+          await AsyncStorage.setItem(key, "1");
+        } catch { /* ignorieren */ }
+      }
+    } catch { /* ignorieren */ }
     router.replace("/(tabs)");
   }
 

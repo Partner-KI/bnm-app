@@ -829,6 +829,62 @@ const tr: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "{0} kişisinin {1} için isteği reddedilecek.",
   "pendingApprovals.approveSuccess": "Atama onaylandı.",
   "pendingApprovals.rejectSuccess": "Atama reddedildi.",
+
+  // Mentee Paneli: Mentorim Kartı
+  "dashboard.myMentor": "Mentorim",
+  "dashboard.mentorCity": "Şehir",
+  "dashboard.mentorContact": "İletişim Tercihi",
+  "dashboard.mentorPhone": "Telefon",
+  "dashboard.sendMessage": "Mesaj Gönder",
+
+  // Admin: Mentor Listesi
+  "adminMentors.title": "Mentor Listesi",
+  "adminMentors.search": "Mentor Ara...",
+  "adminMentors.activeMentorships": "Aktif",
+  "adminMentors.completedMentorships": "Tamam.",
+  "adminMentors.noMentors": "Mentor bulunamadı.",
+  "adminMentors.viewProfile": "Profili Gör",
+  "adminMentors.mentors": "Mentorlar",
+
+  // Bildirimler: Otomatik
+  "notifications.mentorAssigned": "Sana bir mentor atandı!",
+  "notifications.mentorAssignedBody": "{0} artık senin mentorundur.",
+  "notifications.stepCompleted": "Adım tamamlandı!",
+  "notifications.stepCompletedBody": "\"{0}\" adımı mentorun tarafından belgelendi.",
+  "notifications.applicationApproved": "Başvurun kabul edildi!",
+  "notifications.applicationApprovedBody": "BNM'e mentor olarak hoş geldin. Artık aktifsin.",
+
+  // Admin Paneli: Son Aktiviteler
+  "dashboard.recentActivity": "Son Aktiviteler",
+  "dashboard.recentActivitySub": "Son belgelenen oturumlar",
+  "dashboard.noRecentActivity": "Henüz oturum belgelenmedi.",
+  "dashboard.activityStep": "Adım",
+  "dashboard.activityBy": "tarafından",
+
+  // Profil: Danışmanlık Ortağı İletişim Bilgisi
+  "profile.partnerInfo": "DANIŞMANLIK ORTAĞI BİLGİSİ",
+  "profile.myMentee": "Danışanım",
+  "profile.myMentorSection": "Mentorim",
+  "profile.partnerEmail": "E-posta",
+  "profile.partnerPhone": "Telefon",
+  "profile.partnerContact": "İletişim Tercihi",
+  "profile.partnerNoContact": "İletişim bilgisi girilmemiş.",
+  "profile.sendMessage": "Mesaj Gönder",
+
+  // Onboarding: Yeni Mentorlar için
+  "onboarding.autoTitle": "Mentor Olarak Hoş Geldiniz!",
+  "onboarding.autoBody": "Henüz danışanın yok. Hazırlanmak için onboarding'i başlat.",
+  "onboarding.startOnboarding": "Onboarding'i Başlat",
+  "onboarding.skipOnboarding": "Atla",
+
+  // Alt Bilgi / Uygulama Sürümü
+  "footer.version": "BNM App v1.0.0",
+  "footer.privacy": "Gizlilik",
+  "footer.imprint": "Künye",
+  "footer.privacyTitle": "Gizlilik Politikası",
+  "footer.privacyText": "Verileriniz yalnızca BNM Mentorluk Programı yönetimi için kullanılır ve üçüncü taraflarla paylaşılmaz.",
+  "footer.imprintTitle": "Künye",
+  "footer.imprintText": "BNM – Yeni Müslümanlar için Danışmanlık\nBu program gönüllüler tarafından yürütülmektedir.\nİletişim: info@bnm-program.de",
 };
 
 export default tr;

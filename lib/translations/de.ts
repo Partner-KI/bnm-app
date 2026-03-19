@@ -827,6 +827,64 @@ const de = {
   "pendingApprovals.rejectText": "Die Anfrage von {0} für Mentee {1} wird abgelehnt.",
   "pendingApprovals.approveSuccess": "Zuweisung wurde bestätigt.",
   "pendingApprovals.rejectSuccess": "Zuweisung wurde abgelehnt.",
+
+  // Mentee-Dashboard: Mein Mentor Karte
+  "dashboard.myMentor": "Mein Mentor",
+  "dashboard.mentorCity": "Stadt",
+  "dashboard.mentorContact": "Kontaktpräferenz",
+  "dashboard.mentorPhone": "Telefon",
+  "dashboard.sendMessage": "Nachricht senden",
+
+  // Mentor-Dashboard: unread badge + kompakte Buttons bereits vorhanden (actionRow)
+
+  // Admin: Mentoren-Übersicht
+  "adminMentors.title": "Mentoren-Übersicht",
+  "adminMentors.search": "Mentor suchen...",
+  "adminMentors.activeMentorships": "Aktiv",
+  "adminMentors.completedMentorships": "Abgesch.",
+  "adminMentors.noMentors": "Keine Mentoren gefunden.",
+  "adminMentors.viewProfile": "Profil ansehen",
+  "adminMentors.mentors": "Mentoren",
+
+  // Notifications: automatisch
+  "notifications.mentorAssigned": "Dir wurde ein Mentor zugewiesen!",
+  "notifications.mentorAssignedBody": "{0} ist ab sofort dein Mentor.",
+  "notifications.stepCompleted": "Schritt abgeschlossen!",
+  "notifications.stepCompletedBody": "Schritt \"{0}\" wurde von deinem Mentor dokumentiert.",
+  "notifications.applicationApproved": "Deine Bewerbung wurde angenommen!",
+  "notifications.applicationApprovedBody": "Willkommen als Mentor bei BNM. Du bist jetzt aktiv.",
+
+  // Admin-Dashboard: Letzte Aktivitäten
+  "dashboard.recentActivity": "Letzte Aktivitäten",
+  "dashboard.recentActivitySub": "Zuletzt dokumentierte Sessions",
+  "dashboard.noRecentActivity": "Noch keine Sessions dokumentiert.",
+  "dashboard.activityStep": "Schritt",
+  "dashboard.activityBy": "von",
+
+  // Profil: Kontaktinfo Mentorship-Partner
+  "profile.partnerInfo": "KONTAKTINFO BETREUUNGSPARTNER",
+  "profile.myMentee": "Mein Mentee",
+  "profile.myMentorSection": "Mein Mentor",
+  "profile.partnerEmail": "E-Mail",
+  "profile.partnerPhone": "Telefon",
+  "profile.partnerContact": "Kontaktpräferenz",
+  "profile.partnerNoContact": "Keine Kontaktinfo hinterlegt.",
+  "profile.sendMessage": "Nachricht senden",
+
+  // Onboarding: Auto-Show für neue Mentoren
+  "onboarding.autoTitle": "Herzlich willkommen als Mentor!",
+  "onboarding.autoBody": "Du hast noch keine Mentees. Starte mit dem Onboarding, um dich vorzubereiten.",
+  "onboarding.startOnboarding": "Onboarding starten",
+  "onboarding.skipOnboarding": "Überspringen",
+
+  // Footer / App-Version
+  "footer.version": "BNM App v1.0.0",
+  "footer.privacy": "Datenschutz",
+  "footer.imprint": "Impressum",
+  "footer.privacyTitle": "Datenschutz",
+  "footer.privacyText": "Deine Daten werden ausschließlich zur Verwaltung des BNM-Mentoring-Programms verwendet und nicht an Dritte weitergegeben.",
+  "footer.imprintTitle": "Impressum",
+  "footer.imprintText": "BNM – Betreuung neuer Muslime\nDieses Programm wird ehrenamtlich betrieben.\nFür Anfragen: info@bnm-program.de",
 } as const;
 
 export default de;

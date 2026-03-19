@@ -525,6 +525,25 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ─── Mentorship Actions ───────────────────────────────────────────────────────
 
+  // ─── Hilfsfunktion: Notification in DB einfügen ────────────────────────────────
+  const createNotification = useCallback(
+    async (userId: string, type: Notification["type"], title: string, body: string, relatedId?: string) => {
+      const { data, error } = await supabase
+        .from("notifications")
+        .insert({ user_id: userId, type, title, body, related_id: relatedId ?? null })
+        .select()
+        .single();
+
+      if (!error && data) {
+        // Nur in State laden wenn es die eigene Notification ist
+        if (userId === authUser?.id) {
+          setNotifications((prev) => [...prev, mapNotification(data)]);
+        }
+      }
+    },
+    [authUser]
+  );
+
   const assignMentorship = useCallback(
     async (menteeId: string, mentorId: string, adminId: string, status: MentorshipStatus = "active") => {
       const { data, error } = await supabase
@@ -556,6 +575,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
         mentee,
       };
       setMentorships((prev) => [...prev, newMentorship]);
+
+      // Notification an Mentee: Mentor wurde zugewiesen
+      if (status === "active" && mentee) {
+        await createNotification(
+          menteeId,
+          "assignment",
+          "Dir wurde ein Mentor zugewiesen!",
+          `${mentor?.name ?? "Ein Mentor"} ist ab sofort dein Mentor.`,
+          data.id
+        );
+      }
 
       // Automatische Registrierungs- und Zuweisungs-Sessions (nur bei aktiven Betreuungen)
       if (status !== "active") return;
@@ -611,7 +641,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
     },
-    [users, sessionTypes]
+    [users, sessionTypes, createNotification]
   );
 
   const approveMentorship = useCallback(
@@ -805,8 +835,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         session_type: sessionType,
       };
       setSessions((prev) => [...prev, newSession]);
+
+      // Notification an Mentee: Schritt wurde dokumentiert
+      const mentorship = mentorships.find((m) => m.id === sessionData.mentorship_id);
+      if (mentorship && sessionType) {
+        await createNotification(
+          mentorship.mentee_id,
+          "progress",
+          "Schritt abgeschlossen!",
+          `Schritt "${sessionType.name}" wurde von deinem Mentor dokumentiert.`,
+          mentorship.id
+        );
+      }
     },
-    [sessionTypes]
+    [sessionTypes, mentorships, createNotification]
   );
 
   const updateSession = useCallback(
@@ -1132,6 +1174,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // Zugangsdaten per E-Mail senden statt im Alert anzeigen
         await sendCredentialsEmail(app.email, app.name, tempPassword);
         showSuccess("Account erstellt. Zugangsdaten wurden per E-Mail an den Mentor gesendet.");
+
+        // Notification an neuen Mentor: Bewerbung angenommen
+        if (signUpData?.user) {
+          await createNotification(
+            signUpData.user.id,
+            "assignment",
+            "Deine Bewerbung wurde angenommen!",
+            "Willkommen als Mentor bei BNM. Du bist jetzt aktiv.",
+          );
+        }
       }
 
       // Status auf approved setzen (erst nach erfolgreichem signUp)
@@ -1155,7 +1207,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         )
       );
     },
-    [applications, authUser]
+    [applications, authUser, createNotification]
   );
 
   const rejectApplication = useCallback(

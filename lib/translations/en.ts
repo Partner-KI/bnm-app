@@ -829,6 +829,62 @@ const en: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "The request from {0} for mentee {1} will be rejected.",
   "pendingApprovals.approveSuccess": "Assignment confirmed.",
   "pendingApprovals.rejectSuccess": "Assignment rejected.",
+
+  // Mentee Dashboard: My Mentor Card
+  "dashboard.myMentor": "My Mentor",
+  "dashboard.mentorCity": "City",
+  "dashboard.mentorContact": "Contact Preference",
+  "dashboard.mentorPhone": "Phone",
+  "dashboard.sendMessage": "Send Message",
+
+  // Admin: Mentors Overview
+  "adminMentors.title": "Mentors Overview",
+  "adminMentors.search": "Search mentor...",
+  "adminMentors.activeMentorships": "Active",
+  "adminMentors.completedMentorships": "Done",
+  "adminMentors.noMentors": "No mentors found.",
+  "adminMentors.viewProfile": "View Profile",
+  "adminMentors.mentors": "Mentors",
+
+  // Notifications: automatic
+  "notifications.mentorAssigned": "A mentor has been assigned to you!",
+  "notifications.mentorAssignedBody": "{0} is now your mentor.",
+  "notifications.stepCompleted": "Step completed!",
+  "notifications.stepCompletedBody": "Step \"{0}\" was documented by your mentor.",
+  "notifications.applicationApproved": "Your application has been approved!",
+  "notifications.applicationApprovedBody": "Welcome as a mentor at BNM. You are now active.",
+
+  // Admin Dashboard: Recent Activity
+  "dashboard.recentActivity": "Recent Activity",
+  "dashboard.recentActivitySub": "Recently documented sessions",
+  "dashboard.noRecentActivity": "No sessions documented yet.",
+  "dashboard.activityStep": "Step",
+  "dashboard.activityBy": "by",
+
+  // Profile: Contact Info for Mentorship Partner
+  "profile.partnerInfo": "MENTORSHIP PARTNER CONTACT",
+  "profile.myMentee": "My Mentee",
+  "profile.myMentorSection": "My Mentor",
+  "profile.partnerEmail": "Email",
+  "profile.partnerPhone": "Phone",
+  "profile.partnerContact": "Contact Preference",
+  "profile.partnerNoContact": "No contact info available.",
+  "profile.sendMessage": "Send Message",
+
+  // Onboarding: Auto-show for new mentors
+  "onboarding.autoTitle": "Welcome as a Mentor!",
+  "onboarding.autoBody": "You have no mentees yet. Start the onboarding to get prepared.",
+  "onboarding.startOnboarding": "Start Onboarding",
+  "onboarding.skipOnboarding": "Skip",
+
+  // Footer / App Version
+  "footer.version": "BNM App v1.0.0",
+  "footer.privacy": "Privacy",
+  "footer.imprint": "Imprint",
+  "footer.privacyTitle": "Privacy Policy",
+  "footer.privacyText": "Your data is used exclusively for managing the BNM mentoring program and is not shared with third parties.",
+  "footer.imprintTitle": "Imprint",
+  "footer.imprintText": "BNM – Mentoring for New Muslims\nThis program is run by volunteers.\nContact: info@bnm-program.de",
 };
 
 export default en;
