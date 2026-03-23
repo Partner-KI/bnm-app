@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
@@ -127,7 +128,7 @@ export default function ChatsScreen() {
 
           {chatList.length === 0 ? (
             <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <Text style={styles.emptyIcon}>💬</Text>
+              <Ionicons name="chatbubbles-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
               <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noChats")}</Text>
               <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>{t("chats.noChatsText")}</Text>
             </View>
@@ -219,7 +220,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 24,
   },
-  emptyIcon: { fontSize: 40, marginBottom: 12 },
+  emptyIcon: { marginBottom: 12 },
   emptyTitle: {
     fontWeight: "700",
     fontSize: 16,

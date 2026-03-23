@@ -44,11 +44,11 @@ export default function SettingsScreen() {
   }
 
   function handleSupportMail() {
-    Linking.openURL("mailto:support@bnm-program.de");
+    Linking.openURL("mailto:support@iman.ngo");
   }
 
   function handleWebsite() {
-    Linking.openURL("https://bnm-program.de");
+    Linking.openURL("https://iman.ngo");
   }
 
   function handleLanguageSelect(lang: Language) {
@@ -156,7 +156,7 @@ export default function SettingsScreen() {
             >
               <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{t("settings.support")}</Text>
               <Text style={[styles.infoValue, { color: themeColors.link }]}>
-                support@bnm-program.de
+                support@iman.ngo
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -165,7 +165,7 @@ export default function SettingsScreen() {
             >
               <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{t("settings.website")}</Text>
               <Text style={[styles.infoValue, { color: themeColors.link }]}>
-                bnm-program.de ↗
+                iman.ngo ↗
               </Text>
             </TouchableOpacity>
           </View>

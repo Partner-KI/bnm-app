@@ -187,7 +187,7 @@ const tr: Record<TranslationKeys, string> = {
   "settings.website": "Web Sitesi",
   "settings.privacy": "GİZLİLİK",
   "settings.privacyText1": "BNM, verilerinizi yalnızca mentorluk programını yönetmek amacıyla işler. Verileriniz üçüncü taraflarla paylaşılmaz ve rehberlik sona erdiğinde yasal saklama sürelerine uygun olarak silinir.",
-  "settings.privacyText2": "Saklanan verilerinize erişim, düzeltme ve silme hakkına sahipsiniz. Sorularınız için datenschutz@bnm-program.de adresine yazın.",
+  "settings.privacyText2": "Saklanan verilerinize erişim, düzeltme ve silme hakkına sahipsiniz. Sorularınız için datenschutz@iman.ngo adresine yazın.",
   "settings.deleteAccount": "Hesabı Sil",
   "settings.deleteTitle": "Hesabı Sil",
   "settings.deleteConfirm": "Emin misiniz? Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.",
@@ -927,7 +927,7 @@ const tr: Record<TranslationKeys, string> = {
   "footer.privacyTitle": "Gizlilik Politikası",
   "footer.privacyText": "Verileriniz yalnızca BNM Mentorluk Programı yönetimi için kullanılır ve üçüncü taraflarla paylaşılmaz.",
   "footer.imprintTitle": "Künye",
-  "footer.imprintText": "BNM – Yeni Müslümanlar için Danışmanlık\nBu program gönüllüler tarafından yürütülmektedir.\nİletişim: info@bnm-program.de",
+  "footer.imprintText": "BNM – Yeni Müslümanlar için Danışmanlık\nBu program gönüllüler tarafından yürütülmektedir.\nİletişim: info@iman.ngo",
 
   // Admin: Profili Düzenle
   "editUser.title": "Profili Düzenle",

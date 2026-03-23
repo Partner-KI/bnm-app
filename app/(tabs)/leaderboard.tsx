@@ -80,6 +80,8 @@ export default function LeaderboardScreen() {
     } else {
       base = allScored.filter((m) => m.gender === genderFilter);
     }
+    // Mentoren ohne Punkte (keine Abschlüsse, keine Sessions) ausblenden
+    base = base.filter((m) => m.score > 0);
     if (search) {
       const sl = search.toLowerCase();
       base = base.filter(

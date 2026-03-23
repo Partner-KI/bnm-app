@@ -185,7 +185,7 @@ const de = {
   "settings.website": "Website",
   "settings.privacy": "DATENSCHUTZ",
   "settings.privacyText1": "BNM verarbeitet deine Daten ausschließlich zur Verwaltung des Mentoring-Programms. Deine Daten werden nicht an Dritte weitergegeben und nach Beendigung der Betreuung entsprechend der gesetzlichen Aufbewahrungsfristen gelöscht.",
-  "settings.privacyText2": "Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner gespeicherten Daten. Wende dich bei Fragen an datenschutz@bnm-program.de.",
+  "settings.privacyText2": "Du hast das Recht auf Auskunft, Berichtigung und Löschung deiner gespeicherten Daten. Wende dich bei Fragen an datenschutz@iman.ngo.",
   "settings.deleteAccount": "Konto löschen",
   "settings.deleteTitle": "Konto löschen",
   "settings.deleteConfirm": "Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Alle deine Daten werden permanent gelöscht.",
@@ -927,7 +927,7 @@ const de = {
   "footer.privacyTitle": "Datenschutz",
   "footer.privacyText": "Deine Daten werden ausschließlich zur Verwaltung des BNM-Mentoring-Programms verwendet und nicht an Dritte weitergegeben.",
   "footer.imprintTitle": "Impressum",
-  "footer.imprintText": "BNM – Betreuung neuer Muslime\nDieses Programm wird ehrenamtlich betrieben.\nFür Anfragen: info@bnm-program.de",
+  "footer.imprintText": "BNM – Betreuung neuer Muslime\nDieses Programm wird ehrenamtlich betrieben.\nFür Anfragen: info@iman.ngo",
 
   // Admin: Profil bearbeiten
   "editUser.title": "Profil bearbeiten",

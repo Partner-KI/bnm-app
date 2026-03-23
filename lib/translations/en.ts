@@ -187,7 +187,7 @@ const en: Record<TranslationKeys, string> = {
   "settings.website": "Website",
   "settings.privacy": "PRIVACY",
   "settings.privacyText1": "BNM processes your data exclusively for managing the mentoring program. Your data is not shared with third parties and will be deleted after mentorship ends in accordance with legal retention requirements.",
-  "settings.privacyText2": "You have the right to access, correct, and delete your stored data. For questions, contact datenschutz@bnm-program.de.",
+  "settings.privacyText2": "You have the right to access, correct, and delete your stored data. For questions, contact datenschutz@iman.ngo.",
   "settings.deleteAccount": "Delete Account",
   "settings.deleteTitle": "Delete Account",
   "settings.deleteConfirm": "Are you sure? This action cannot be undone. All your data will be permanently deleted.",
@@ -927,7 +927,7 @@ const en: Record<TranslationKeys, string> = {
   "footer.privacyTitle": "Privacy Policy",
   "footer.privacyText": "Your data is used exclusively for managing the BNM mentoring program and is not shared with third parties.",
   "footer.imprintTitle": "Imprint",
-  "footer.imprintText": "BNM – Mentoring for New Muslims\nThis program is run by volunteers.\nContact: info@bnm-program.de",
+  "footer.imprintText": "BNM – Mentoring for New Muslims\nThis program is run by volunteers.\nContact: info@iman.ngo",
 
   // Admin: Edit Profile
   "editUser.title": "Edit Profile",

@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { COLORS } from "../constants/Colors";
@@ -118,7 +119,11 @@ export default function ChangePasswordScreen() {
               style={styles.eyeButton}
               onPress={() => setShowOld((v) => !v)}
             >
-              <Text style={styles.eyeText}>{showOld ? "🙈" : "👁"}</Text>
+              <Ionicons
+                name={showOld ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={themeColors.textSecondary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -139,7 +144,11 @@ export default function ChangePasswordScreen() {
               style={styles.eyeButton}
               onPress={() => setShowNew((v) => !v)}
             >
-              <Text style={styles.eyeText}>{showNew ? "🙈" : "👁"}</Text>
+              <Ionicons
+                name={showNew ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={themeColors.textSecondary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -185,7 +194,11 @@ export default function ChangePasswordScreen() {
               style={styles.eyeButton}
               onPress={() => setShowConfirm((v) => !v)}
             >
-              <Text style={styles.eyeText}>{showConfirm ? "🙈" : "👁"}</Text>
+              <Ionicons
+                name={showConfirm ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={themeColors.textSecondary}
+              />
             </TouchableOpacity>
           </View>
 

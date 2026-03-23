@@ -409,17 +409,19 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
         </TouchableOpacity>
 
-        {/* Feedback-Übersicht */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/feedback-overview")}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.feedbackOverview")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.viewAllFeedbacks")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
+        {/* Feedback-Übersicht (nur Admin) */}
+        {showSystemSettings && (
+          <TouchableOpacity
+            style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+            onPress={() => router.push("/admin/feedback-overview")}
+          >
+            <View style={styles.applicationsButtonContent}>
+              <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.feedbackOverview")}</Text>
+              <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.viewAllFeedbacks")}</Text>
+            </View>
+            <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Mentoren-Übersicht */}
         <TouchableOpacity

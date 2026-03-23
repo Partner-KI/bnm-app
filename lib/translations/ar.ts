@@ -187,7 +187,7 @@ const ar: Record<TranslationKeys, string> = {
   "settings.website": "الموقع الإلكتروني",
   "settings.privacy": "الخصوصية",
   "settings.privacyText1": "تعالج BNM بياناتك حصرياً لإدارة برنامج الإرشاد. لا تُشارَك بياناتك مع أطراف ثالثة وتُحذف بعد انتهاء الإرشاد وفقاً لمتطلبات الاحتفاظ القانونية.",
-  "settings.privacyText2": "يحق لك الاطلاع على بياناتك المخزنة وتصحيحها وحذفها. للاستفسار تواصل مع datenschutz@bnm-program.de.",
+  "settings.privacyText2": "يحق لك الاطلاع على بياناتك المخزنة وتصحيحها وحذفها. للاستفسار تواصل مع datenschutz@iman.ngo.",
   "settings.deleteAccount": "حذف الحساب",
   "settings.deleteTitle": "حذف الحساب",
   "settings.deleteConfirm": "هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء. ستُحذف جميع بياناتك بشكل دائم.",
@@ -927,7 +927,7 @@ const ar: Record<TranslationKeys, string> = {
   "footer.privacyTitle": "سياسة الخصوصية",
   "footer.privacyText": "يتم استخدام بياناتك حصريًا لإدارة برنامج الإرشاد BNM ولا تتم مشاركتها مع أطراف ثالثة.",
   "footer.imprintTitle": "بيانات النشر",
-  "footer.imprintText": "BNM – إرشاد المسلمين الجدد\nيُدار هذا البرنامج من قبل متطوعين.\nللتواصل: info@bnm-program.de",
+  "footer.imprintText": "BNM – إرشاد المسلمين الجدد\nيُدار هذا البرنامج من قبل متطوعين.\nللتواصل: info@iman.ngo",
 
   // المسؤول: تعديل الملف الشخصي
   "editUser.title": "تعديل الملف الشخصي",

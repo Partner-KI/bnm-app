@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -109,7 +110,11 @@ export default function LoginScreen() {
               style={styles.eyeButton}
               onPress={() => setShowPassword((v) => !v)}
             >
-              <Text style={styles.eyeText}>{showPassword ? "🙈" : "👁"}</Text>
+              <Ionicons
+                name={showPassword ? "eye-outline" : "eye-off-outline"}
+                size={20}
+                color={themeColors.textSecondary}
+              />
             </TouchableOpacity>
           </View>
 

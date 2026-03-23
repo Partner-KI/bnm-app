@@ -19,7 +19,7 @@ function getTypeConfig(isDark: boolean): Record<NotificationType, { icon: string
     assignment: { icon: "👤", bg: isDark ? "#1e2d4a" : "#dbeafe", color: isDark ? "#93c5fd" : "#1d4ed8" },
     reminder:   { icon: "⏰", bg: isDark ? "#3a2e1a" : "#fef3c7", color: isDark ? "#fbbf24" : "#b45309" },
     progress:   { icon: "✅", bg: isDark ? "#1a3a2a" : "#dcfce7", color: isDark ? "#4ade80" : "#15803d" },
-    message:    { icon: "💬", bg: isDark ? "#2e1a4a" : "#f3e8ff", color: isDark ? "#c084fc" : "#7e22ce" },
+    message:    { icon: "✉", bg: isDark ? "#2e1a4a" : "#f3e8ff", color: isDark ? "#c084fc" : "#7e22ce" },
     feedback:   { icon: "⭐", bg: isDark ? "#3a2e1a" : "#fef3c7", color: isDark ? "#fbbf24" : "#b45309" },
     system:     { icon: "ℹ️", bg: isDark ? "#2a2d3a" : "#f3f4f6", color: isDark ? "#9ca3af" : "#4b5563" },
   };
