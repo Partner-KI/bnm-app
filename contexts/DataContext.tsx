@@ -29,6 +29,7 @@ import {
   sendCredentialsEmail,
   sendMenteeAssignedNotification,
   sendFeedbackRequestEmail,
+  sendApplicationRejectionEmail,
 } from "../lib/emailService";
 import { sendLocalNotification } from "../lib/notificationService";
 
@@ -1481,6 +1482,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const rejectApplication = useCallback(
     async (applicationId: string) => {
+      const app = applications.find((a) => a.id === applicationId);
+
       const { error } = await supabase
         .from("mentor_applications")
         .update({
@@ -1499,8 +1502,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
           a.id === applicationId ? { ...a, status: "rejected" as ApplicationStatus } : a
         )
       );
+
+      // E-Mail an den Bewerber senden (kein Account → keine In-App-Notification möglich)
+      if (app) {
+        const isMenteeRegistration =
+          app.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
+        await sendApplicationRejectionEmail(
+          app.email,
+          app.name,
+          isMenteeRegistration ? "mentee" : "mentor"
+        );
+      }
     },
-    [authUser]
+    [applications, authUser]
   );
 
   const submitApplication = useCallback(

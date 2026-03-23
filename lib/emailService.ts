@@ -169,6 +169,41 @@ export async function sendMentorshipStatusChangeNotification(
   return sendEmail(adminEmail, subject, body);
 }
 
+export async function sendApplicationRejectionEmail(
+  applicantEmail: string,
+  applicantName: string,
+  type: "mentor" | "mentee"
+): Promise<boolean> {
+  const subject =
+    type === "mentor"
+      ? "[BNM] Deine Mentor-Bewerbung"
+      : "[BNM] Deine Anmeldung bei BNM";
+
+  const body =
+    type === "mentor"
+      ? `
+<p>Salam Aleikum ${escapeHtml(applicantName)},</p>
+<p>vielen Dank für deine Bewerbung als Mentor bei BNM – Betreuung neuer Muslime.</p>
+<p>Nach sorgfältiger Prüfung müssen wir dir leider mitteilen, dass wir deine Bewerbung zu diesem Zeitpunkt nicht annehmen können.</p>
+<p>Das bedeutet nicht, dass du nicht wertvoll für die Gemeinschaft bist. Wir ermutigen dich, es zu einem späteren Zeitpunkt erneut zu versuchen.</p>
+<p>Bei Fragen kannst du uns jederzeit kontaktieren.</p>
+<p>Barakallahu fik</p>
+<p>Das BNM-Team</p>
+<hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
+      `.trim()
+      : `
+<p>Salam Aleikum ${escapeHtml(applicantName)},</p>
+<p>vielen Dank für deine Anmeldung bei BNM – Betreuung neuer Muslime.</p>
+<p>Nach Prüfung deiner Anmeldung können wir dir leider mitteilen, dass wir dir aktuell keinen Mentor zuweisen können.</p>
+<p>Wir melden uns, sobald sich die Situation ändert. Bei Fragen kannst du uns jederzeit kontaktieren.</p>
+<p>Barakallahu fik</p>
+<p>Das BNM-Team</p>
+<hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
+      `.trim();
+
+  return sendEmail(applicantEmail, subject, body);
+}
+
 export async function sendFeedbackRequestEmail(
   menteeEmail: string,
   menteeName: string,
