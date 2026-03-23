@@ -268,25 +268,28 @@ export default function CSVImportScreen() {
       }
     }
 
-    // Admin-Session EINMAL wiederherstellen am Ende
-    try {
-      if (adminSession) {
+    // Admin-Session wiederherstellen
+    if (adminSession) {
+      try {
         await supabase.auth.setSession({
           access_token: adminSession.access_token,
           refresh_token: adminSession.refresh_token,
         });
+      } catch {
+        // Session-Restore fehlgeschlagen
       }
-      await refreshData();
-    } catch {
-      // Session-Restore fehlgeschlagen — User muss sich ggf. neu einloggen
     }
 
+    // Sofort UI aktualisieren — refreshData im Hintergrund
     setIsImporting(false);
     setImportResult(result);
     setParsedRows([]);
     setPreviewRows([]);
     setProgress(0);
     setProgressTotal(0);
+
+    // Daten im Hintergrund neu laden (nicht blockierend)
+    refreshData().catch(() => {});
   }, [previewRows, activeTab, refreshData]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
