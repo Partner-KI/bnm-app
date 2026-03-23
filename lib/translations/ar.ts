@@ -53,6 +53,7 @@ const ar: Record<TranslationKeys, string> = {
   "dashboard.feedbackOverview": "نظرة عامة على التغذية الراجعة",
   "dashboard.viewAllFeedbacks": "عرض كل التغذية الراجعة",
   "dashboard.withoutAssignment": "بدون تعيين",
+  "dashboard.newMenteesWaiting": "{0} متدرب جديد – في انتظار التعيين",
   "dashboard.assign": "تعيين",
   "dashboard.brother": "أخ",
   "dashboard.sister": "أخت",
@@ -1333,6 +1334,25 @@ const ar: Record<TranslationKeys, string> = {
   // بانر الملاحظات للمُتَدرِّب
   "feedbackBanner.title": "يرجى تقديم ملاحظاتك حول الإرشاد",
   "feedbackBanner.button": "أرسل ملاحظاتك الآن",
+
+  // رفض مع السبب (طلب المرشد)
+  "applications.rejectReasonTitle": "رفض الطلب",
+  "applications.rejectReasonSubtitle": "يرجى اختيار سبب الرفض:",
+  "applications.rejectReason1": "خبرة غير كافية",
+  "applications.rejectReason2": "طلب غير مكتمل",
+  "applications.rejectReason3": "الطاقة الاستيعابية ممتلئة حاليًا",
+  "applications.rejectReason4": "شرط السن غير مستوفٍ",
+  "applications.rejectReason5": "سبب آخر",
+  "applications.rejectReasonCustomLabel": "يرجى ذكر السبب:",
+  "applications.rejectReasonCustomPlaceholder": "سبب الرفض...",
+  "applications.rejectReasonRequired": "يرجى اختيار سبب الرفض.",
+  "applications.rejectReasonCustomRequired": "يرجى ذكر السبب.",
+  "applications.rejectConfirmButton": "رفض",
+  "applications.rejectCancelButton": "إلغاء",
+
+  // حماية التسجيل
+  "register.botDetected": "تم اكتشاف طلب غير صالح. يرجى المحاولة مرة أخرى.",
+  "register.tooFast": "تم ملء النموذج بسرعة كبيرة. يرجى أخذ وقتك.",
 
   // الأحاديث – حالة فارغة
   "hadithe.empty": "لا توجد أحاديث متاحة",

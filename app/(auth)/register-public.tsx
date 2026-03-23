@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,6 +21,9 @@ import { useLanguage } from "../../contexts/LanguageContext";
 
 type Step = "form" | "success";
 
+// Mindest-Ausfüllzeit in Millisekunden (5 Sekunden)
+const MIN_FILL_TIME_MS = 5000;
+
 // Passwort-Stärke berechnen (0–3)
 function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
   if (!pw || pw.length < 8) return 0;
@@ -41,6 +44,12 @@ export default function RegisterPublicScreen() {
   const { isDark } = useTheme();
   const [step, setStep] = useState<Step>("form");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Spam-Schutz: Timestamp beim Laden des Formulars
+  const formLoadTime = useRef<number>(Date.now());
+
+  // Spam-Schutz: Honeypot-Feld (muss leer bleiben)
+  const [honeypot, setHoneypot] = useState("");
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -81,6 +90,19 @@ export default function RegisterPublicScreen() {
   }
 
   async function handleSubmit() {
+    // Honeypot-Prüfung: Wenn das versteckte Feld ausgefüllt ist → Bot
+    if (honeypot.length > 0) {
+      showError(t("register.botDetected"));
+      return;
+    }
+
+    // Zeitprüfung: Formular in unter 5 Sekunden abgeschickt → wahrscheinlich Bot
+    const elapsed = Date.now() - formLoadTime.current;
+    if (elapsed < MIN_FILL_TIME_MS) {
+      showError(t("register.tooFast"));
+      return;
+    }
+
     if (!validate()) return;
     setIsSubmitting(true);
     try {
@@ -393,6 +415,16 @@ export default function RegisterPublicScreen() {
               </Text>
             </View>
 
+            {/* Honeypot – für Menschen unsichtbar, Bots füllen es aus */}
+            <View style={styles.honeypotField} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+              <TextInput
+                style={styles.honeypotInput}
+                value={honeypot}
+                onChangeText={setHoneypot}
+                autoComplete="off"
+              />
+            </View>
+
             {/* Submit */}
             <TouchableOpacity
               style={[styles.submitButton, isSubmitting ? { opacity: 0.6 } : {}]}
@@ -537,6 +569,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   submitButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+
+  // Honeypot-Feld (unsichtbar für echte Nutzer)
+  honeypotField: {
+    position: "absolute",
+    width: 0,
+    height: 0,
+    overflow: "hidden",
+    opacity: 0,
+  },
+  honeypotInput: {
+    width: 0,
+    height: 0,
+  },
 
   loginLinkRow: {
     flexDirection: "row",

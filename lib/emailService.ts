@@ -172,12 +172,17 @@ export async function sendMentorshipStatusChangeNotification(
 export async function sendApplicationRejectionEmail(
   applicantEmail: string,
   applicantName: string,
-  type: "mentor" | "mentee"
+  type: "mentor" | "mentee",
+  reason?: string
 ): Promise<boolean> {
   const subject =
     type === "mentor"
       ? "[BNM] Deine Mentor-Bewerbung"
       : "[BNM] Deine Anmeldung bei BNM";
+
+  const reasonHtml = reason
+    ? `<p>Grund: <strong>${escapeHtml(reason)}</strong></p>`
+    : "";
 
   const body =
     type === "mentor"
@@ -185,6 +190,7 @@ export async function sendApplicationRejectionEmail(
 <p>Salam Aleikum ${escapeHtml(applicantName)},</p>
 <p>vielen Dank für deine Bewerbung als Mentor bei BNM – Betreuung neuer Muslime.</p>
 <p>Nach sorgfältiger Prüfung müssen wir dir leider mitteilen, dass wir deine Bewerbung zu diesem Zeitpunkt nicht annehmen können.</p>
+${reasonHtml}
 <p>Das bedeutet nicht, dass du nicht wertvoll für die Gemeinschaft bist. Wir ermutigen dich, es zu einem späteren Zeitpunkt erneut zu versuchen.</p>
 <p>Bei Fragen kannst du uns jederzeit kontaktieren.</p>
 <p>Barakallahu fik</p>
@@ -195,6 +201,7 @@ export async function sendApplicationRejectionEmail(
 <p>Salam Aleikum ${escapeHtml(applicantName)},</p>
 <p>vielen Dank für deine Anmeldung bei BNM – Betreuung neuer Muslime.</p>
 <p>Nach Prüfung deiner Anmeldung können wir dir leider mitteilen, dass wir dir aktuell keinen Mentor zuweisen können.</p>
+${reasonHtml}
 <p>Wir melden uns, sobald sich die Situation ändert. Bei Fragen kannst du uns jederzeit kontaktieren.</p>
 <p>Barakallahu fik</p>
 <p>Das BNM-Team</p>

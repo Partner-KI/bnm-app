@@ -53,6 +53,7 @@ const en: Record<TranslationKeys, string> = {
   "dashboard.feedbackOverview": "Feedback Overview",
   "dashboard.viewAllFeedbacks": "View All Feedbacks",
   "dashboard.withoutAssignment": "without assignment",
+  "dashboard.newMenteesWaiting": "{0} new mentee(s) – waiting for assignment",
   "dashboard.assign": "Assign",
   "dashboard.brother": "Brother",
   "dashboard.sister": "Sister",
@@ -1287,6 +1288,25 @@ const en: Record<TranslationKeys, string> = {
   "leaderboard.monthPicker.prev": "←",
   "leaderboard.monthPicker.next": "→",
   "leaderboard.monthPicker.label": "{0} {1}",
+
+  // Rejection with reason (mentor application)
+  "applications.rejectReasonTitle": "Reject Application",
+  "applications.rejectReasonSubtitle": "Please select a rejection reason:",
+  "applications.rejectReason1": "Insufficient experience",
+  "applications.rejectReason2": "Incomplete application",
+  "applications.rejectReason3": "Capacity currently exhausted",
+  "applications.rejectReason4": "Age requirement not met",
+  "applications.rejectReason5": "Other reason",
+  "applications.rejectReasonCustomLabel": "Please provide a reason:",
+  "applications.rejectReasonCustomPlaceholder": "Your rejection reason...",
+  "applications.rejectReasonRequired": "Please select a rejection reason.",
+  "applications.rejectReasonCustomRequired": "Please provide a reason.",
+  "applications.rejectConfirmButton": "Reject",
+  "applications.rejectCancelButton": "Cancel",
+
+  // Registration protection
+  "register.botDetected": "Invalid request detected. Please try again.",
+  "register.tooFast": "The form was filled out too quickly. Please take your time.",
 
   // Age display
   "common.yearsOld": "years",

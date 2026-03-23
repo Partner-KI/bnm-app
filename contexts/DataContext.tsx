@@ -1560,7 +1560,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const getPendingApplicationsCount = useCallback(() => {
-    return applications.filter((a) => a.status === "pending").length;
+    // Nur Mentor-Bewerbungen zählen (nicht die selbst registrierten Mentees)
+    const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
+    return applications.filter(
+      (a) => a.status === "pending" && a.motivation !== PUBLIC_REGISTRATION_MARKER
+    ).length;
   }, [applications]);
 
   // ─── User Actions ─────────────────────────────────────────────────────────────

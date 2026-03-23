@@ -53,6 +53,7 @@ const tr: Record<TranslationKeys, string> = {
   "dashboard.feedbackOverview": "Geri Bildirim Genel Bakış",
   "dashboard.viewAllFeedbacks": "Tüm Geri Bildirimleri Gör",
   "dashboard.withoutAssignment": "atamasız",
+  "dashboard.newMenteesWaiting": "{0} yeni öğrenci – atama bekliyor",
   "dashboard.assign": "Ata",
   "dashboard.brother": "Kardeş",
   "dashboard.sister": "Kız Kardeş",
@@ -1333,6 +1334,25 @@ const tr: Record<TranslationKeys, string> = {
   // Geri Bildirim Pankartı (Mentee için)
   "feedbackBanner.title": "Lütfen mentorluk hakkında geri bildirim verin",
   "feedbackBanner.button": "Şimdi Geri Bildirim Ver",
+
+  // Reddetme nedeni ile (mentor başvurusu)
+  "applications.rejectReasonTitle": "Başvuruyu Reddet",
+  "applications.rejectReasonSubtitle": "Lütfen bir red nedeni seçin:",
+  "applications.rejectReason1": "Yeterli deneyim yok",
+  "applications.rejectReason2": "Eksik başvuru",
+  "applications.rejectReason3": "Kapasite şu anda dolu",
+  "applications.rejectReason4": "Yaş şartı karşılanmadı",
+  "applications.rejectReason5": "Diğer neden",
+  "applications.rejectReasonCustomLabel": "Lütfen bir neden belirtin:",
+  "applications.rejectReasonCustomPlaceholder": "Red nedeniniz...",
+  "applications.rejectReasonRequired": "Lütfen bir red nedeni seçin.",
+  "applications.rejectReasonCustomRequired": "Lütfen bir neden belirtin.",
+  "applications.rejectConfirmButton": "Reddet",
+  "applications.rejectCancelButton": "İptal",
+
+  // Kayıt koruması
+  "register.botDetected": "Geçersiz istek algılandı. Lütfen tekrar deneyin.",
+  "register.tooFast": "Form çok hızlı dolduruldu. Lütfen biraz zaman ayırın.",
 
   // Hadisler – boş durum
   "hadithe.empty": "Mevcut hadis yok",

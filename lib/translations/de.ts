@@ -51,6 +51,7 @@ const de = {
   "dashboard.feedbackOverview": "Feedback-Übersicht",
   "dashboard.viewAllFeedbacks": "Alle Feedbacks einsehen",
   "dashboard.withoutAssignment": "ohne Zuweisung",
+  "dashboard.newMenteesWaiting": "{0} neue Mentee(s) – warten auf Zuweisung",
   "dashboard.assign": "Zuweisen",
   "dashboard.brother": "Bruder",
   "dashboard.sister": "Schwester",
@@ -1287,6 +1288,25 @@ const de = {
   "leaderboard.monthPicker.prev": "←",
   "leaderboard.monthPicker.next": "→",
   "leaderboard.monthPicker.label": "{0} {1}",
+
+  // Ablehnung mit Grund (Mentor-Bewerbung)
+  "applications.rejectReasonTitle": "Bewerbung ablehnen",
+  "applications.rejectReasonSubtitle": "Bitte wähle einen Ablehnungsgrund:",
+  "applications.rejectReason1": "Nicht genügend Erfahrung",
+  "applications.rejectReason2": "Unvollständige Bewerbung",
+  "applications.rejectReason3": "Kapazitäten derzeit erschöpft",
+  "applications.rejectReason4": "Altersbeschränkung nicht erfüllt",
+  "applications.rejectReason5": "Sonstiger Grund",
+  "applications.rejectReasonCustomLabel": "Bitte Grund angeben:",
+  "applications.rejectReasonCustomPlaceholder": "Dein Ablehnungsgrund...",
+  "applications.rejectReasonRequired": "Bitte wähle einen Ablehnungsgrund.",
+  "applications.rejectReasonCustomRequired": "Bitte gib einen Grund an.",
+  "applications.rejectConfirmButton": "Ablehnen",
+  "applications.rejectCancelButton": "Abbrechen",
+
+  // Registrierungs-Schutz
+  "register.botDetected": "Ungültige Anfrage erkannt. Bitte versuche es erneut.",
+  "register.tooFast": "Das Formular wurde zu schnell ausgefüllt. Bitte nimm dir etwas Zeit.",
 
   // Alter-Anzeige
   "common.yearsOld": "Jahre",

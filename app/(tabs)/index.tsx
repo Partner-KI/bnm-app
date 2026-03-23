@@ -330,8 +330,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
         {unassignedMentees.length > 0 && (
           <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
             <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
-              {unassignedMentees.length} Mentee
-              {unassignedMentees.length > 1 ? "s" : ""} {t("dashboard.withoutAssignment")}
+              {t("dashboard.newMenteesWaiting").replace("{0}", String(unassignedMentees.length))}
             </Text>
             {unassignedMentees.map((mentee) => (
               <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>

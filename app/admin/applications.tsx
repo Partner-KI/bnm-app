@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  Modal,
 } from "react-native";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -16,7 +17,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { supabase } from "../../lib/supabase";
 import { supabaseAnon } from "../../lib/supabaseAnon";
-import { sendCredentialsEmail } from "../../lib/emailService";
+import { sendCredentialsEmail, sendApplicationRejectionEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
@@ -24,6 +25,7 @@ import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
 
 type MainTab = "mentors" | "mentees";
+type RejectReasonKey = "r1" | "r2" | "r3" | "r4" | "r5";
 
 export default function ApplicationsScreen() {
   const { user } = useAuth();
@@ -36,6 +38,13 @@ export default function ApplicationsScreen() {
   const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [menteeFilter, setMenteeFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [search, setSearch] = useState("");
+
+  // Ablehnung-Modal State
+  const [rejectModalApp, setRejectModalApp] = useState<MentorApplication | null>(null);
+  const [selectedReason, setSelectedReason] = useState<RejectReasonKey | null>(null);
+  const [customReason, setCustomReason] = useState("");
+  const [rejectReasonError, setRejectReasonError] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   if (user?.role !== "admin" && user?.role !== "office") {
     return (
@@ -75,6 +84,9 @@ export default function ApplicationsScreen() {
   const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
   const pendingMenteeCount = menteeApps.filter((a) => a.status === "pending").length;
 
+  // Nicht-zugewiesene Mentees (haben pending status = noch kein Mentor)
+  const unassignedMenteeApps = menteeApps.filter((a) => a.status === "approved");
+
   async function handleApproveMentor(app: MentorApplication) {
     const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
     if (ok) {
@@ -82,10 +94,58 @@ export default function ApplicationsScreen() {
     }
   }
 
-  async function handleRejectMentor(app: MentorApplication) {
-    const ok = await showConfirm(t("applications.rejectTitle"), t("applications.confirmReject").replace("{0}", app.name));
-    if (ok) {
-      await rejectApplication(app.id);
+  // Ablehnung-Modal öffnen (nur für Mentoren)
+  function openRejectModal(app: MentorApplication) {
+    setRejectModalApp(app);
+    setSelectedReason(null);
+    setCustomReason("");
+    setRejectReasonError("");
+  }
+
+  function closeRejectModal() {
+    setRejectModalApp(null);
+    setSelectedReason(null);
+    setCustomReason("");
+    setRejectReasonError("");
+  }
+
+  async function handleConfirmReject() {
+    if (!rejectModalApp) return;
+
+    // Validierung
+    if (!selectedReason) {
+      setRejectReasonError(t("applications.rejectReasonRequired"));
+      return;
+    }
+    if (selectedReason === "r5" && !customReason.trim()) {
+      setRejectReasonError(t("applications.rejectReasonCustomRequired"));
+      return;
+    }
+
+    const reasonLabels: Record<RejectReasonKey, string> = {
+      r1: t("applications.rejectReason1"),
+      r2: t("applications.rejectReason2"),
+      r3: t("applications.rejectReason3"),
+      r4: t("applications.rejectReason4"),
+      r5: customReason.trim(),
+    };
+    const reasonText = reasonLabels[selectedReason];
+
+    setIsRejecting(true);
+    try {
+      await rejectApplication(rejectModalApp.id);
+      await sendApplicationRejectionEmail(
+        rejectModalApp.email,
+        rejectModalApp.name,
+        "mentor",
+        reasonText
+      );
+      closeRejectModal();
+      showSuccess(t("applications.statusRejected"));
+    } catch {
+      showError(t("common.error"));
+    } finally {
+      setIsRejecting(false);
     }
   }
 
@@ -148,6 +208,15 @@ export default function ApplicationsScreen() {
       await rejectApplication(app.id);
     }
   }
+
+  // Vordefinierte Ablehnungsgründe
+  const rejectReasons: { key: RejectReasonKey; label: string }[] = [
+    { key: "r1", label: t("applications.rejectReason1") },
+    { key: "r2", label: t("applications.rejectReason2") },
+    { key: "r3", label: t("applications.rejectReason3") },
+    { key: "r4", label: t("applications.rejectReason4") },
+    { key: "r5", label: t("applications.rejectReason5") },
+  ];
 
   return (
     <Container>
@@ -266,7 +335,7 @@ export default function ApplicationsScreen() {
                     application={app}
                     type="mentor"
                     onApprove={() => handleApproveMentor(app)}
-                    onReject={() => handleRejectMentor(app)}
+                    onReject={() => openRejectModal(app)}
                   />
                 ))
               )}
@@ -276,17 +345,37 @@ export default function ApplicationsScreen() {
           {/* ─── Mentee-Anmeldungen ─── */}
           {mainTab === "mentees" && (
             <>
-              <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
-                {t("applications.pendingMentee")
-                  .replace("{0}", String(pendingMenteeCount))
-                  .replace("{1}", pendingMenteeCount !== 1 ? "en" : "")}
-              </Text>
-
+              {/* Info-Box: Mentees registrieren sich selbst, kein Genehmigen nötig */}
               <View style={[styles.infoBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
                 <Text style={[styles.infoBoxText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
                   {t("applications.infoBox")}
                 </Text>
               </View>
+
+              {/* Nicht-zugewiesene Mentees direkt anzeigen */}
+              {unassignedMenteeApps.length > 0 && (
+                <View style={[styles.unassignedBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+                  <Text style={[styles.unassignedTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
+                    {unassignedMenteeApps.length} {unassignedMenteeApps.length === 1 ? "Mentee" : "Mentees"} {t("dashboard.withoutAssignment")}
+                  </Text>
+                  {unassignedMenteeApps.map((app) => (
+                    <View key={app.id} style={[styles.unassignedRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.unassignedName, { color: themeColors.text }]}>{app.name}</Text>
+                        <Text style={[styles.unassignedSub, { color: themeColors.textTertiary }]}>
+                          {app.city} · {app.gender === "male" ? t("applications.brother") : t("applications.sister")} · {app.age} {t("common.yearsOld")}
+                        </Text>
+                      </View>
+                      <TouchableOpacity
+                        style={[styles.assignButton, { backgroundColor: COLORS.gradientStart }]}
+                        onPress={() => router.push({ pathname: "/assign", params: { menteeId: app.id } } as never)}
+                      >
+                        <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </View>
+              )}
 
               <View style={styles.filterRow}>
                 {(
@@ -345,6 +434,103 @@ export default function ApplicationsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* ─── Ablehnung-Modal (Mentor) ─── */}
+      <Modal
+        visible={rejectModalApp !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={closeRejectModal}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalBox, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+              {t("applications.rejectReasonTitle")}
+            </Text>
+            {rejectModalApp && (
+              <Text style={[styles.modalSubtitle, { color: themeColors.textSecondary }]}>
+                {rejectModalApp.name}
+              </Text>
+            )}
+            <Text style={[styles.modalLabel, { color: themeColors.textTertiary }]}>
+              {t("applications.rejectReasonSubtitle")}
+            </Text>
+
+            {rejectReasons.map((r) => (
+              <TouchableOpacity
+                key={r.key}
+                style={[
+                  styles.reasonRow,
+                  { borderColor: themeColors.border },
+                  selectedReason === r.key && [styles.reasonRowSelected, { borderColor: COLORS.error }],
+                ]}
+                onPress={() => {
+                  setSelectedReason(r.key);
+                  setRejectReasonError("");
+                }}
+              >
+                <View style={[
+                  styles.radioOuter,
+                  { borderColor: selectedReason === r.key ? COLORS.error : themeColors.border },
+                ]}>
+                  {selectedReason === r.key && (
+                    <View style={[styles.radioInner, { backgroundColor: COLORS.error }]} />
+                  )}
+                </View>
+                <Text style={[styles.reasonLabel, { color: themeColors.text }]}>{r.label}</Text>
+              </TouchableOpacity>
+            ))}
+
+            {/* Freies Textfeld bei "Sonstiger Grund" */}
+            {selectedReason === "r5" && (
+              <TextInput
+                style={[
+                  styles.customReasonInput,
+                  {
+                    backgroundColor: themeColors.background,
+                    borderColor: themeColors.border,
+                    color: themeColors.text,
+                  },
+                ]}
+                placeholder={t("applications.rejectReasonCustomPlaceholder")}
+                placeholderTextColor={themeColors.textTertiary}
+                value={customReason}
+                onChangeText={(v) => {
+                  setCustomReason(v);
+                  setRejectReasonError("");
+                }}
+                multiline
+                numberOfLines={3}
+              />
+            )}
+
+            {rejectReasonError !== "" && (
+              <Text style={styles.errorText}>{rejectReasonError}</Text>
+            )}
+
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalCancelButton, { borderColor: themeColors.border }]}
+                onPress={closeRejectModal}
+                disabled={isRejecting}
+              >
+                <Text style={[styles.modalCancelText, { color: themeColors.textSecondary }]}>
+                  {t("applications.rejectCancelButton")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalRejectButton, isRejecting ? { opacity: 0.6 } : {}]}
+                onPress={handleConfirmReject}
+                disabled={isRejecting}
+              >
+                <Text style={styles.modalRejectText}>
+                  {isRejecting ? "..." : t("applications.rejectConfirmButton")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </Container>
   );
 }
@@ -540,6 +726,30 @@ const styles = StyleSheet.create({
   },
   infoBoxText: { fontSize: 12, lineHeight: 18 },
 
+  // Nicht-zugewiesene Mentees
+  unassignedBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 14,
+    marginBottom: 14,
+  },
+  unassignedTitle: { fontWeight: "600", fontSize: 14, marginBottom: 8 },
+  unassignedRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+  },
+  unassignedName: { fontWeight: "500", fontSize: 14 },
+  unassignedSub: { fontSize: 12, marginTop: 1 },
+  assignButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 5,
+  },
+  assignButtonText: { color: COLORS.white, fontSize: 12, fontWeight: "600" },
+
   emptyCard: {
     borderRadius: 8,
     borderWidth: 1,
@@ -605,4 +815,108 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   approveButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 13 },
+
+  // Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.6)",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 24,
+  },
+  modalBox: {
+    width: "100%",
+    maxWidth: 420,
+    borderRadius: 10,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 13,
+    marginBottom: 12,
+  },
+  modalLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 10,
+    letterSpacing: 0.3,
+  },
+  reasonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 6,
+    marginBottom: 8,
+    gap: 10,
+  },
+  reasonRowSelected: {
+    borderWidth: 1.5,
+  },
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  radioInner: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  reasonLabel: {
+    fontSize: 14,
+    flex: 1,
+  },
+  customReasonInput: {
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 13,
+    marginBottom: 8,
+    minHeight: 72,
+    textAlignVertical: "top",
+  },
+  errorText: {
+    color: COLORS.error,
+    fontSize: 12,
+    marginBottom: 8,
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 8,
+  },
+  modalCancelButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  modalCancelText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  modalRejectButton: {
+    flex: 1,
+    backgroundColor: COLORS.error,
+    borderRadius: 5,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  modalRejectText: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: "700",
+  },
 });
