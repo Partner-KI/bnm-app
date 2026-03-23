@@ -273,7 +273,7 @@ function AdminMenteesView() {
             <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{allMentees.length} {t("mentees.registered")}</Text>
           </View>
           <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-            {!selectMode && (
+            {!selectMode && Platform.OS === "web" && (
               <>
                 <TouchableOpacity
                   style={[styles.csvButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}

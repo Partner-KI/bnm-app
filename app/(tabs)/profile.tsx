@@ -216,6 +216,9 @@ export default function ProfileScreen() {
               );
             })}
           </View>
+          <Text style={{ fontSize: 11, color: themeColors.textTertiary, marginTop: 6 }}>
+            Alpha-Version – noch in Entwicklung
+          </Text>
         </View>
 
         {/* Persönliche Infos */}

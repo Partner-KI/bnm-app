@@ -1898,6 +1898,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const refreshData = useCallback(async () => {
+    if (!authUser) return;
     await loadAllData();
   }, [authUser?.id]); // intentionally only depends on authUser to avoid infinite re-creation
 

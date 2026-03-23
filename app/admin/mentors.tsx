@@ -216,7 +216,7 @@ export default function AdminMentorsScreen() {
               {filtered.length} {t("adminMentors.mentors")}
             </Text>
           </View>
-          {!selectMode && (
+          {!selectMode && Platform.OS === "web" && (
             <>
               <TouchableOpacity
                 style={[styles.csvButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
