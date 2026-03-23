@@ -764,26 +764,32 @@ function MentorDashboard() {
           })
         )}
 
-        {/* Mentor des Monats Platzhalter */}
-        <View style={styles.goldBox}>
-          <View style={styles.goldBoxHeader}>
-            <Text style={styles.goldStar}>★</Text>
-            <Text style={[styles.goldBoxTitle, { color: themeColors.text }]}>{t("dashboard.mentorOfMonth")}</Text>
-          </View>
-          <Text style={[styles.goldBoxText, { color: themeColors.textSecondary }]}>{t("dashboard.mentorOfMonthText")}</Text>
-        </View>
-
-        {/* Q&A für Mentees */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card, marginTop: 4 }]}
-          onPress={() => router.push("/qa" as never)}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("qa.forMentees")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("qa.subtitle")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
+        {/* Abgeschlossene Betreuungen (read-only) */}
+        {completedMentorships.length > 0 && (
+          <>
+            <Text style={[styles.sectionTitle, { color: themeColors.text, marginTop: 16 }]}>{t("dashboard.completed")}</Text>
+            {completedMentorships.map((m) => {
+              const completedSteps = getCompletedStepIds(m.id);
+              return (
+                <TouchableOpacity
+                  key={m.id}
+                  style={[styles.menteeCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+                  onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })}
+                >
+                  <View style={styles.rowBetweenMb2}>
+                    <Text style={[styles.semiboldPrimary, { color: themeColors.text }]}>{m.mentee?.name}</Text>
+                    <View style={{ backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 }}>
+                      <Text style={{ color: isDark ? "#4ade80" : "#15803d", fontSize: 11, fontWeight: "600" }}>{t("mentorship.complete")}</Text>
+                    </View>
+                  </View>
+                  <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>
+                    {completedSteps.length}/{sessionTypes.length} Steps
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </>
+        )}
       </View>
     </ScrollView>
   );
