@@ -44,26 +44,30 @@ export default function FeedbackScreen() {
     }
 
     setIsSaving(true);
-    await addFeedback({
-      mentorship_id: params.mentorshipId,
-      submitted_by: user.id,
-      rating,
-      comments: comment.trim() || undefined,
-    });
-
-    // E-Mail-Benachrichtigung an Admin
-    if (mentorship) {
-      sendNewFeedbackNotification(
-        mentorship.mentor?.name ?? t("common.unknown"),
-        mentorship.mentee?.name ?? t("common.unknown"),
+    try {
+      await addFeedback({
+        mentorship_id: params.mentorshipId,
+        submitted_by: user.id,
         rating,
-        comment.trim() || undefined
-      );
+        comments: comment.trim() || undefined,
+      });
+
+      // E-Mail-Benachrichtigung an Admin (fire-and-forget, Fehler nicht kritisch)
+      if (mentorship) {
+        sendNewFeedbackNotification(
+          mentorship.mentor?.name ?? t("common.unknown"),
+          mentorship.mentee?.name ?? t("common.unknown"),
+          rating,
+          comment.trim() || undefined
+        ).catch(() => {});
+      }
+
+      showSuccess(t("feedback.successMsg"), () => router.replace("/(tabs)"));
+    } catch {
+      showError(t("feedback.errorMissing"));
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsSaving(false);
-
-    showSuccess(t("feedback.successMsg"), () => router.replace("/(tabs)"));
   }
 
   const statusLabel =

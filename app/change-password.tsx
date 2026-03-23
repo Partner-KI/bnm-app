@@ -77,9 +77,9 @@ export default function ChangePasswordScreen() {
 
   const newPasswordStrength = (() => {
     if (newPassword.length === 0) return null;
-    if (newPassword.length < 8) return { label: t("changePassword.strengthTooShort"), color: COLORS.error };
-    if (newPassword.length < 12) return { label: t("changePassword.strengthMedium"), color: COLORS.gold };
-    return { label: t("changePassword.strengthStrong"), color: COLORS.cta };
+    if (newPassword.length < 8) return { label: t("changePassword.strengthTooShort"), color: COLORS.error, widthPct: "33%" as const };
+    if (newPassword.length < 12) return { label: t("changePassword.strengthMedium"), color: COLORS.gold, widthPct: "66%" as const };
+    return { label: t("changePassword.strengthStrong"), color: COLORS.cta, widthPct: "100%" as const };
   })();
 
   return (
@@ -161,12 +161,7 @@ export default function ChangePasswordScreen() {
                     styles.strengthFill,
                     {
                       backgroundColor: newPasswordStrength.color,
-                      width:
-                        newPasswordStrength.label === "Zu kurz"
-                          ? "33%"
-                          : newPasswordStrength.label === "Mittel"
-                          ? "66%"
-                          : "100%",
+                      width: newPasswordStrength.widthPct,
                     },
                   ]}
                 />

@@ -931,8 +931,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         throw new Error(error.message);
       }
 
-      setMentorships((prev) => {
-        const updated = prev.map((m) =>
+      setMentorships((prev) =>
+        prev.map((m) =>
           m.id === mentorshipId
             ? {
                 ...m,
@@ -943,34 +943,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
                     : m.completed_at,
               }
             : m
-        );
+        )
+      );
 
-        // E-Mail an Admin bei Abschluss oder Abbruch
-        if (status === "completed" || status === "cancelled") {
-          const m = prev.find((ms) => ms.id === mentorshipId);
-          if (m) {
-            sendMentorshipStatusChangeNotification(
-              authUser?.email ?? "",
-              m.mentor?.name ?? "Unbekannt",
-              m.mentee?.name ?? "Unbekannt",
-              status as "completed" | "cancelled"
+      // E-Mail an Admin bei Abschluss oder Abbruch (außerhalb des setState-Updaters)
+      if (status === "completed" || status === "cancelled") {
+        const m = mentorships.find((ms) => ms.id === mentorshipId);
+        if (m) {
+          sendMentorshipStatusChangeNotification(
+            authUser?.email ?? "",
+            m.mentor?.name ?? "Unbekannt",
+            m.mentee?.name ?? "Unbekannt",
+            status as "completed" | "cancelled"
+          );
+          // E-Mail an Mentee bei Abschluss mit Feedback-Aufforderung
+          if (status === "completed" && m.mentee?.email) {
+            sendFeedbackRequestEmail(
+              m.mentee.email,
+              m.mentee.name ?? "Mentee",
+              m.mentor?.name ?? "Mentor",
+              mentorshipId
             );
-            // E-Mail an Mentee bei Abschluss mit Feedback-Aufforderung
-            if (status === "completed" && m.mentee?.email) {
-              sendFeedbackRequestEmail(
-                m.mentee.email,
-                m.mentee.name ?? "Mentee",
-                m.mentor?.name ?? "Mentor",
-                mentorshipId
-              );
-            }
           }
         }
-
-        return updated;
-      });
+      }
     },
-    [authUser]
+    [authUser, mentorships]
   );
 
   // ─── Session Actions ──────────────────────────────────────────────────────────

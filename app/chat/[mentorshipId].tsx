@@ -41,7 +41,7 @@ export default function ChatScreen() {
     if (mentorshipId) {
       markChatAsRead(mentorshipId);
     }
-  }, [mentorshipId]);
+  }, [mentorshipId, markChatAsRead]);
 
   async function handleSend() {
     if (!inputText.trim() || !user || !mentorshipId) return;

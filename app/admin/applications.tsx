@@ -85,7 +85,7 @@ export default function ApplicationsScreen() {
   async function handleRejectMentor(app: MentorApplication) {
     const ok = await showConfirm(t("applications.rejectTitle"), t("applications.confirmReject").replace("{0}", app.name));
     if (ok) {
-      rejectApplication(app.id);
+      await rejectApplication(app.id);
     }
   }
 
@@ -145,7 +145,7 @@ export default function ApplicationsScreen() {
   async function handleRejectMenteeRegistration(app: MentorApplication) {
     const ok = await showConfirm(t("applications.rejectMenteeTitle"), t("applications.confirmRejectMentee").replace("{0}", app.name));
     if (ok) {
-      rejectApplication(app.id);
+      await rejectApplication(app.id);
     }
   }
 
