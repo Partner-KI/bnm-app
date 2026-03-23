@@ -537,7 +537,9 @@ export default function DocumentSessionScreen() {
                           key={opt.key}
                           style={[
                             styles.toggleButton,
-                            bnmBoxDelivery === opt.key ? styles.toggleButtonActive : styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border },
+                            bnmBoxDelivery === opt.key
+                              ? styles.toggleButtonActive
+                              : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                           ]}
                           onPress={() => setBnmBoxDelivery(opt.key)}
                         >
@@ -753,7 +755,9 @@ export default function DocumentSessionScreen() {
                     <TouchableOpacity
                       style={[
                         styles.toggleButton,
-                        !isOnline ? styles.toggleButtonActive : styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border },
+                        !isOnline
+                          ? styles.toggleButtonActive
+                          : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setIsOnline(false)}
                     >
@@ -764,7 +768,9 @@ export default function DocumentSessionScreen() {
                     <TouchableOpacity
                       style={[
                         styles.toggleButton,
-                        isOnline ? styles.toggleButtonActive : styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border },
+                        isOnline
+                          ? styles.toggleButtonActive
+                          : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setIsOnline(true)}
                     >
@@ -836,22 +842,24 @@ export default function DocumentSessionScreen() {
                     >
                       <Text style={styles.cancelEditButtonText}>{t("docSession.cancelMore")}</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.deleteSessionButton}
-                      onPress={async () => {
-                        const ok = await showConfirm(t("sessionEdit.delete"), t("sessionEdit.confirmDelete"));
-                        if (!ok) return;
-                        try {
-                          await deleteSession(editingSessionId);
-                          showSuccess(t("sessionEdit.deleted"), () => router.back());
-                        } catch (err) {
-                          const msg = err instanceof Error ? err.message : t("assign.errorUnknown");
-                          showError(t("docSession.errorDelete").replace("{0}", msg));
-                        }
-                      }}
-                    >
-                      <Text style={styles.deleteSessionButtonText}>{t("sessionEdit.delete")}</Text>
-                    </TouchableOpacity>
+                    {isAdmin && (
+                      <TouchableOpacity
+                        style={styles.deleteSessionButton}
+                        onPress={async () => {
+                          const ok = await showConfirm(t("sessionEdit.delete"), t("sessionEdit.confirmDelete"));
+                          if (!ok) return;
+                          try {
+                            await deleteSession(editingSessionId);
+                            showSuccess(t("sessionEdit.deleted"), () => router.back());
+                          } catch (err) {
+                            const msg = err instanceof Error ? err.message : t("assign.errorUnknown");
+                            showError(t("docSession.errorDelete").replace("{0}", msg));
+                          }
+                        }}
+                      >
+                        <Text style={styles.deleteSessionButtonText}>{t("sessionEdit.delete")}</Text>
+                      </TouchableOpacity>
+                    )}
                   </>
                 )}
               </>

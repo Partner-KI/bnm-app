@@ -1645,6 +1645,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
+    gap: 8,
   },
   pendingApprovalsText: { fontWeight: "600", fontSize: 14 },
   pendingApprovalsSub: { fontSize: 12, marginTop: 2 },

@@ -62,6 +62,7 @@ function AdminMenteesView() {
         const status = mentorship
           ? mentorship.status === "active" ? t("mentees.csvStatusActive")
           : mentorship.status === "completed" ? t("mentees.csvStatusCompleted")
+          : mentorship.status === "pending_approval" ? t("mentees.pendingApproval")
           : t("mentees.csvStatusCancelled")
           : t("mentees.csvStatusOpen");
         const mentorName = mentorship?.mentor?.name ?? "";
@@ -298,6 +299,8 @@ function AdminMenteesView() {
                   ? (isDark ? "#2A2D3A" : "#F5F5F7")
                   : mentorship.status === "completed"
                   ? (isDark ? "#1a3a2a" : "#dcfce7")
+                  : mentorship.status === "pending_approval"
+                  ? (isDark ? "#3a2e1a" : "#fef3c7")
                   : (isDark ? "#3a1a1a" : "#fee2e2")
                 : (isDark ? "#3a2e1a" : "#fef3c7");
             const statusColor =
@@ -306,6 +309,8 @@ function AdminMenteesView() {
                   ? (isDark ? "#A0A0B0" : "#475467")
                   : mentorship.status === "completed"
                   ? (isDark ? "#4ade80" : "#15803d")
+                  : mentorship.status === "pending_approval"
+                  ? (isDark ? "#fbbf24" : "#b45309")
                   : (isDark ? "#f87171" : "#b91c1c")
                 : (isDark ? "#fbbf24" : "#b45309");
             const statusLabel =
@@ -314,6 +319,8 @@ function AdminMenteesView() {
                   ? t("mentees.active")
                   : mentorship.status === "completed"
                   ? t("mentees.completedStatus")
+                  : mentorship.status === "pending_approval"
+                  ? t("mentees.pendingApproval")
                   : t("mentees.cancelled")
                 : t("mentees.unassigned");
 
@@ -491,16 +498,40 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: mentorship.status === "active" ? (isDark ? "#2A2D3A" : "#F5F5F7") : (isDark ? "#1a3a2a" : "#dcfce7") },
+            {
+              backgroundColor:
+                mentorship.status === "active"
+                  ? (isDark ? "#2A2D3A" : "#F5F5F7")
+                  : mentorship.status === "completed"
+                  ? (isDark ? "#1a3a2a" : "#dcfce7")
+                  : mentorship.status === "pending_approval"
+                  ? (isDark ? "#3a2e1a" : "#fef3c7")
+                  : (isDark ? "#3a1a1a" : "#fee2e2"),
+            },
           ]}
         >
           <Text
             style={[
               styles.statusText,
-              { color: mentorship.status === "active" ? (isDark ? "#A0A0B0" : "#475467") : (isDark ? "#4ade80" : "#15803d") },
+              {
+                color:
+                  mentorship.status === "active"
+                    ? (isDark ? "#A0A0B0" : "#475467")
+                    : mentorship.status === "completed"
+                    ? (isDark ? "#4ade80" : "#15803d")
+                    : mentorship.status === "pending_approval"
+                    ? (isDark ? "#fbbf24" : "#b45309")
+                    : (isDark ? "#f87171" : "#b91c1c"),
+              },
             ]}
           >
-            {mentorship.status === "active" ? t("mentees.active") : t("mentees.completedStatus")}
+            {mentorship.status === "active"
+              ? t("mentees.active")
+              : mentorship.status === "completed"
+              ? t("mentees.completedStatus")
+              : mentorship.status === "pending_approval"
+              ? t("mentees.pendingApproval")
+              : t("mentees.cancelled")}
           </Text>
         </View>
       </View>

@@ -82,6 +82,7 @@ const en: Record<TranslationKeys, string> = {
   "mentees.active": "Active",
   "mentees.completedStatus": "Completed",
   "mentees.cancelled": "Cancelled",
+  "mentees.pendingApproval": "Awaiting Confirmation",
   "mentees.assignMentor": "Assign Mentor",
   "mentees.filterAssignment": "Assignment",
   "mentees.filterStatus": "Status",

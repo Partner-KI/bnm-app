@@ -86,6 +86,8 @@ export default function ChatScreen() {
       ? t("chat.active")
       : mentorship?.status === "completed"
       ? t("chat.completed")
+      : mentorship?.status === "pending_approval"
+      ? t("mentees.pendingApproval")
       : t("chat.cancelled");
 
   return (

@@ -80,6 +80,7 @@ const de = {
   "mentees.active": "Aktiv",
   "mentees.completedStatus": "Abgeschlossen",
   "mentees.cancelled": "Abgebrochen",
+  "mentees.pendingApproval": "Wartet auf Bestätigung",
   "mentees.assignMentor": "Mentor zuweisen",
   "mentees.filterAssignment": "Zuweisung",
   "mentees.filterStatus": "Status",

@@ -103,6 +103,8 @@ export default function ChatsScreen() {
       ? t("chats.statusActive")
       : m.status === "completed"
       ? t("chats.statusCompleted")
+      : m.status === "pending_approval"
+      ? t("mentees.pendingApproval")
       : t("chats.statusCancelled");
   }
 

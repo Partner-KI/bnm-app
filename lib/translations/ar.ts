@@ -82,6 +82,7 @@ const ar: Record<TranslationKeys, string> = {
   "mentees.active": "نشط",
   "mentees.completedStatus": "مكتمل",
   "mentees.cancelled": "ملغى",
+  "mentees.pendingApproval": "في انتظار التأكيد",
   "mentees.assignMentor": "تعيين مرشد",
   "mentees.filterAssignment": "التعيين",
   "mentees.filterStatus": "الحالة",
