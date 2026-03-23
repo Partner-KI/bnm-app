@@ -8,9 +8,9 @@ import {
   Switch,
   StyleSheet,
   Alert,
+  Platform,
   RefreshControl,
   KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -425,7 +425,7 @@ export default function QAManagementScreen() {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  page: { padding: 20, paddingBottom: 40 },
+  page: { padding: 20, paddingBottom: 40, paddingTop: Platform.OS === "ios" ? 50 : 20 },
   backRow: { marginBottom: 8 },
   backText: { fontSize: 14 },
   headerRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 },

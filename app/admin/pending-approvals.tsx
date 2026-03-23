@@ -14,8 +14,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { useConfirm } from "../../contexts/ModalContext";
-import { showError, showSuccess } from "../../lib/errorHandler";
+import { showConfirm, showError, showSuccess } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -27,7 +26,7 @@ export default function PendingApprovalsScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { mentorships, approveMentorship, rejectMentorship, refreshData } = useData();
-  const confirm = useConfirm();
+  const confirm = showConfirm;
   const [refreshing, setRefreshing] = useState(false);
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);

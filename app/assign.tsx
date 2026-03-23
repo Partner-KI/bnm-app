@@ -10,8 +10,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import type { TranslationKeys } from "../lib/translations/de";
 import { useData } from "../contexts/DataContext";
-import { useConfirm, useAlert } from "../contexts/ModalContext";
-import { showError } from "../lib/errorHandler";
+import { showConfirm, showSuccess, showError } from "../lib/errorHandler";
 import type { User } from "../types";
 import { COLORS } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
@@ -103,8 +102,8 @@ export default function AssignScreen() {
   const { isDark } = useTheme();
   const { users, mentorships, assignMentorship, getUnassignedMentees } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
-  const confirm = useConfirm();
-  const alert = useAlert();
+  const confirm = showConfirm;
+  const alert = async (title: string, msg: string, _type?: string) => { showSuccess(msg); };
 
   const isMentor = user?.role === "mentor";
   const isAdmin = user?.role === "admin" || user?.role === "office";
