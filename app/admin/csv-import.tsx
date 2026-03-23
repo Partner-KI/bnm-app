@@ -209,87 +209,78 @@ export default function CSVImportScreen() {
     const skipped = previewRows.filter((r) => r.status === "duplicate").length;
     result.skipped = skipped;
 
-    // Admin-Session EINMAL sichern am Anfang
+    // Admin-Session sichern
     const { data: adminSessionData } = await supabase.auth.getSession();
-    const adminSession = adminSessionData?.session ?? null;
+    const adminRefreshToken = adminSessionData?.session?.refresh_token ?? null;
 
-    for (let i = 0; i < toImport.length; i++) {
-      const previewRow = toImport[i];
-      const raw = previewRow.raw;
+    try {
+      for (let i = 0; i < toImport.length; i++) {
+        const previewRow = toImport[i];
+        const raw = previewRow.raw;
 
-      try {
-        const role = activeTab === "mentees" ? "mentee" : "mentor";
-        const parsed = activeTab === "mentors" ? parseMentorRow(raw) : parseMenteeRow(raw);
-        const tempPassword = generateTempPassword();
+        try {
+          const role = activeTab === "mentees" ? "mentee" : "mentor";
+          const parsed = activeTab === "mentors" ? parseMentorRow(raw) : parseMenteeRow(raw);
+          const tempPassword = generateTempPassword();
 
-        const { data: signUpData, error: signUpError } = await supabaseAnon.auth.signUp({
-          email: parsed.email,
-          password: tempPassword,
-          options: {
-            data: {
-              name: parsed.name,
-              role,
-              gender: parsed.gender ?? "male",
-              city: parsed.city,
-              plz: parsed.plz || "",
-              age: parsed.age ?? 0,
+          const { data: signUpData, error: signUpError } = await supabaseAnon.auth.signUp({
+            email: parsed.email,
+            password: tempPassword,
+            options: {
+              data: {
+                name: parsed.name,
+                role,
+                gender: parsed.gender ?? "male",
+                city: parsed.city,
+                plz: parsed.plz || "",
+                age: parsed.age ?? 0,
+              },
             },
-          },
-        });
+          });
 
-        if (signUpError) {
-          if (
-            signUpError.message.includes("already registered") ||
-            signUpError.message.includes("User already registered")
-          ) {
-            result.skipped++;
+          if (signUpError) {
+            if (
+              signUpError.message.includes("already registered") ||
+              signUpError.message.includes("User already registered")
+            ) {
+              result.skipped++;
+            } else {
+              result.failed++;
+              result.errors.push(`${parsed.name}: ${signUpError.message}`);
+            }
+          } else if (signUpData?.user) {
+            result.created++;
           } else {
             result.failed++;
-            result.errors.push(`${parsed.name}: ${signUpError.message}`);
+            result.errors.push(`${parsed.name}: Unbekannter Fehler`);
           }
-        } else if (signUpData?.user) {
-          // Zugangsdaten-E-Mail: fire-and-forget (RLS erlaubt nur Admin-Session)
-          sendCredentialsEmail(parsed.email, parsed.name, tempPassword).catch(() => {});
-          result.created++;
-        } else {
+        } catch (err) {
           result.failed++;
-          result.errors.push(`${parsed.name}: Unbekannter Fehler`);
+          result.errors.push(`Zeile ${previewRow.index}: ${String(err)}`);
         }
-      } catch (err) {
-        result.failed++;
-        result.errors.push(`Zeile ${previewRow.index}: ${String(err)}`);
-      }
 
-      setProgress(i + 1);
+        setProgress(i + 1);
 
-      // Rate Limit vermeiden: 500ms Pause zwischen signUp-Aufrufen
-      if (i < toImport.length - 1) {
-        await new Promise((r) => setTimeout(r, 500));
+        if (i < toImport.length - 1) {
+          await new Promise((r) => setTimeout(r, 500));
+        }
       }
+    } finally {
+      // IMMER: UI sofort aktualisieren
+      setIsImporting(false);
+      setImportResult(result);
+      setParsedRows([]);
+      setPreviewRows([]);
+      setProgress(0);
+      setProgressTotal(0);
     }
 
-    // Admin-Session wiederherstellen
-    if (adminSession) {
-      try {
-        await supabase.auth.setSession({
-          access_token: adminSession.access_token,
-          refresh_token: adminSession.refresh_token,
-        });
-      } catch {
-        // Session-Restore fehlgeschlagen
-      }
+    // Admin-Session im Hintergrund wiederherstellen
+    if (adminRefreshToken) {
+      supabase.auth.refreshSession({ refresh_token: adminRefreshToken }).catch(() => {});
     }
-
-    // Sofort UI aktualisieren — refreshData im Hintergrund
-    setIsImporting(false);
-    setImportResult(result);
-    setParsedRows([]);
-    setPreviewRows([]);
-    setProgress(0);
-    setProgressTotal(0);
-
-    // Daten im Hintergrund neu laden (nicht blockierend)
-    refreshData().catch(() => {});
+    // Daten im Hintergrund neu laden
+    setTimeout(() => refreshData().catch(() => {}), 1000);
   }, [previewRows, activeTab, refreshData]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
