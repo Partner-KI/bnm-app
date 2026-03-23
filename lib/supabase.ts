@@ -9,11 +9,10 @@ const SUPABASE_ANON_KEY =
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    // persistSession: true für alle Plattformen —
-    // Web nutzt localStorage (Supabase-Default), Native nutzt AsyncStorage falls konfiguriert.
-    // Damit bleibt man nach Browser-Refresh / App-Neustart eingeloggt.
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    // Kein Debug-Logging in Production
+    debug: false,
   },
 });
