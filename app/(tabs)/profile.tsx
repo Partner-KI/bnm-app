@@ -118,17 +118,17 @@ export default function ProfileScreen() {
 
   const roleBgColor =
     user.role === "admin"
-      ? "#f3e8ff"
+      ? (isDark ? "#2e1a4a" : "#f3e8ff")
       : user.role === "mentor"
-      ? "#dbeafe"
-      : "#dcfce7";
+      ? (isDark ? "#1e2d4a" : "#dbeafe")
+      : (isDark ? "#1a3a2a" : "#dcfce7");
 
   const roleTextColor =
     user.role === "admin"
-      ? "#7e22ce"
+      ? (isDark ? "#c084fc" : "#7e22ce")
       : user.role === "mentor"
-      ? "#1d4ed8"
-      : "#15803d";
+      ? (isDark ? "#93c5fd" : "#1d4ed8")
+      : (isDark ? "#4ade80" : "#15803d");
 
   const THEME_OPTIONS: { value: ThemeMode; labelKey: "theme.light" | "theme.dark" | "theme.system"; icon: string }[] = [
     { value: "light", labelKey: "theme.light", icon: "☀️" },
@@ -312,8 +312,11 @@ export default function ProfileScreen() {
         </View>
 
         {/* Logout */}
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutText}>{t("profile.logout")}</Text>
+        <TouchableOpacity
+          style={[styles.logoutButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
+          onPress={handleLogout}
+        >
+          <Text style={[styles.logoutText, { color: isDark ? "#f87171" : "#dc2626" }]}>{t("profile.logout")}</Text>
         </TouchableOpacity>
 
         {/* App-Footer */}
@@ -492,15 +495,13 @@ const styles = StyleSheet.create({
   statLabel: { color: COLORS.tertiary, fontSize: 11, marginTop: 2, textAlign: "center" },
   rankHint: { color: COLORS.tertiary, fontSize: 11, textAlign: "center", marginTop: 4 },
   logoutButton: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 5,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 12,
   },
-  logoutText: { color: "#dc2626", fontWeight: "600" },
+  logoutText: { fontWeight: "600" },
   appInfo: { color: COLORS.tertiary, fontSize: 12, textAlign: "center" },
   partnerMessageBtn: {
     marginTop: 10,

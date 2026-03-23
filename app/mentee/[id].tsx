@@ -12,13 +12,14 @@ import { useAuth } from "../../contexts/AuthContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function MenteeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { user: authUser } = useAuth();
   const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
 
@@ -80,19 +81,19 @@ export default function MenteeDetailScreen() {
 
   const statusBg = mentorship
     ? mentorship.status === "active"
-      ? "#F5F5F7"
+      ? (isDark ? "#2A2D3A" : "#F5F5F7")
       : mentorship.status === "completed"
-      ? "#dcfce7"
-      : "#fee2e2"
-    : "#fef3c7";
+      ? (isDark ? "#1a3a2a" : "#dcfce7")
+      : (isDark ? "#3a1a1a" : "#fee2e2")
+    : (isDark ? "#3a2e1a" : "#fef3c7");
 
   const statusColor = mentorship
     ? mentorship.status === "active"
-      ? "#475467"
+      ? (isDark ? "#A0A0B0" : "#475467")
       : mentorship.status === "completed"
-      ? "#15803d"
-      : "#b91c1c"
-    : "#b45309";
+      ? (isDark ? "#4ade80" : "#15803d")
+      : (isDark ? "#f87171" : "#b91c1c")
+    : (isDark ? "#fbbf24" : "#b45309");
 
   return (
     <Container>
@@ -229,8 +230,8 @@ export default function MenteeDetailScreen() {
                           {step.name}
                         </Text>
                         {isCurrent && (
-                          <View style={styles.currentChip}>
-                            <Text style={styles.currentChipText}>{t("menteeDetail.current")}</Text>
+                          <View style={[styles.currentChip, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
+                            <Text style={[styles.currentChipText, { color: isDark ? "#fbbf24" : "#b45309" }]}>{t("menteeDetail.current")}</Text>
                           </View>
                         )}
                       </View>
@@ -459,12 +460,11 @@ const styles = StyleSheet.create({
   stepIndicatorText: { fontWeight: "bold", fontSize: 12 },
   stepName: { flex: 1, fontSize: 13, fontWeight: "500" },
   currentChip: {
-    backgroundColor: "#fef3c7",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 9999,
   },
-  currentChipText: { color: "#b45309", fontSize: 11, fontWeight: "600" },
+  currentChipText: { fontSize: 11, fontWeight: "600" },
   actionsCard: {
     gap: 10,
     marginBottom: 20,

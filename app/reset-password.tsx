@@ -13,12 +13,13 @@ import { supabase } from "../lib/supabase";
 import { COLORS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { showError, showSuccess } from "../lib/errorHandler";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
 
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -89,9 +90,11 @@ export default function ResetPasswordScreen() {
         <Text style={[styles.subtitle, { color: themeColors.textSecondary }]}>{t("resetPassword.subtitle")}</Text>
 
         {isDone ? (
-          <View style={styles.successBox}>
-            <Text style={styles.successTitle}>{t("resetPassword.successTitle")}</Text>
-            <Text style={styles.successText}>{t("resetPassword.successText")}</Text>
+          <View style={[styles.successBox, {
+            backgroundColor: isDark ? "#1a3a2a" : "#dcfce7",
+          }]}>
+            <Text style={[styles.successTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("resetPassword.successTitle")}</Text>
+            <Text style={[styles.successText, { color: isDark ? "#6ee7b7" : "#166534" }]}>{t("resetPassword.successText")}</Text>
           </View>
         ) : (
           <>
@@ -258,20 +261,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   successBox: {
-    backgroundColor: "#dcfce7",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     alignItems: "center",
   },
   successTitle: {
-    color: "#15803d",
     fontWeight: "700",
     fontSize: 16,
     marginBottom: 8,
   },
   successText: {
-    color: "#166534",
     fontSize: 14,
     textAlign: "center",
   },

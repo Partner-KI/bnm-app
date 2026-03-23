@@ -18,7 +18,7 @@ import { supabase } from "../../lib/supabase";
 import { supabaseAnon } from "../../lib/supabaseAnon";
 import { sendCredentialsEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 // Öffentliche Anmeldungen sind in mentor_applications mit diesem Motivation-Marker gespeichert
 const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
@@ -30,6 +30,7 @@ export default function ApplicationsScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { applications, approveApplication, rejectApplication } = useData();
   const [mainTab, setMainTab] = useState<MainTab>("mentors");
   const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
@@ -281,8 +282,8 @@ export default function ApplicationsScreen() {
                   .replace("{1}", pendingMenteeCount !== 1 ? "en" : "")}
               </Text>
 
-              <View style={styles.infoBox}>
-                <Text style={styles.infoBoxText}>
+              <View style={[styles.infoBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+                <Text style={[styles.infoBoxText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
                   {t("applications.infoBox")}
                 </Text>
               </View>
@@ -361,11 +362,12 @@ function ApplicationCard({
 }) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const isPending = application.status === "pending";
   const isApproved = application.status === "approved";
 
-  const statusBg = isPending ? "#fef3c7" : isApproved ? "#dcfce7" : "#fee2e2";
-  const statusColor = isPending ? "#b45309" : isApproved ? "#15803d" : "#b91c1c";
+  const statusBg = isPending ? (isDark ? "#3a2e1a" : "#fef3c7") : isApproved ? (isDark ? "#1a3a2a" : "#dcfce7") : (isDark ? "#3a1a1a" : "#fee2e2");
+  const statusColor = isPending ? (isDark ? "#fbbf24" : "#b45309") : isApproved ? (isDark ? "#4ade80" : "#15803d") : (isDark ? "#f87171" : "#b91c1c");
   const statusLabel = isPending ? t("applications.statusOpen") : isApproved ? t("applications.statusApproved") : t("applications.statusRejected");
 
   const genderLabel = application.gender === "male" ? t("applications.brother") : t("applications.sister");
@@ -432,8 +434,11 @@ function ApplicationCard({
       {/* Aktions-Buttons (nur für offene Einträge) */}
       {isPending && (
         <View style={styles.actionRow}>
-          <TouchableOpacity style={styles.rejectButton} onPress={onReject}>
-            <Text style={styles.rejectButtonText}>{t("applications.reject")}</Text>
+          <TouchableOpacity
+            style={[styles.rejectButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
+            onPress={onReject}
+          >
+            <Text style={[styles.rejectButtonText, { color: isDark ? "#f87171" : "#dc2626" }]}>{t("applications.reject")}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.approveButton, { backgroundColor: approveColor }]}
@@ -528,14 +533,12 @@ const styles = StyleSheet.create({
   filterChipTextInactive: { fontSize: 12, fontWeight: "500" },
 
   infoBox: {
-    backgroundColor: "#eff6ff",
     borderWidth: 1,
-    borderColor: "#dbeafe",
     borderRadius: 6,
     padding: 12,
     marginBottom: 12,
   },
-  infoBoxText: { color: "#1e40af", fontSize: 12, lineHeight: 18 },
+  infoBoxText: { fontSize: 12, lineHeight: 18 },
 
   emptyCard: {
     borderRadius: 8,
@@ -589,14 +592,12 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: "row", gap: 10, marginTop: 4 },
   rejectButton: {
     flex: 1,
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 5,
     paddingVertical: 9,
     alignItems: "center",
   },
-  rejectButtonText: { color: "#dc2626", fontWeight: "600", fontSize: 13 },
+  rejectButtonText: { fontWeight: "600", fontSize: 13 },
   approveButton: {
     flex: 1,
     borderRadius: 5,

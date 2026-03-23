@@ -16,13 +16,14 @@ import { COLORS } from "../../constants/Colors";
 import { useAuth } from "../../contexts/AuthContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function AdminMentorsScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { users, mentorships, sessions, refreshData, isLoading } = useData();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
@@ -161,8 +162,8 @@ export default function AdminMentorsScreen() {
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Text style={[styles.mentorName, { color: themeColors.text }]}>{mentor.name}</Text>
                       {mentor.is_active === false && (
-                        <View style={styles.blockedBadge}>
-                          <Text style={styles.blockedBadgeText}>{t("editUser.blocked")}</Text>
+                        <View style={[styles.blockedBadge, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
+                          <Text style={[styles.blockedBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("editUser.blocked")}</Text>
                         </View>
                       )}
                     </View>
@@ -263,10 +264,9 @@ const styles = StyleSheet.create({
   },
   csvButtonText: { fontSize: 12, fontWeight: "600" },
   blockedBadge: {
-    backgroundColor: "#fee2e2",
     borderRadius: 4,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
-  blockedBadgeText: { color: "#b91c1c", fontSize: 10, fontWeight: "600" },
+  blockedBadgeText: { fontSize: 10, fontWeight: "600" },
 });

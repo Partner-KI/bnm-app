@@ -14,12 +14,13 @@ import { useRouter } from "expo-router";
 import { COLORS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -77,10 +78,13 @@ export default function ForgotPasswordScreen() {
 
           {sent ? (
             /* Erfolgs-State */
-            <View style={styles.successBox}>
+            <View style={[styles.successBox, {
+              backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4",
+              borderColor: isDark ? "#2d6a4a" : "#bbf7d0",
+            }]}>
               <Text style={styles.successIcon}>✓</Text>
-              <Text style={styles.successTitle}>{t("forgotPassword.successTitle")}</Text>
-              <Text style={styles.successText}>
+              <Text style={[styles.successTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("forgotPassword.successTitle")}</Text>
+              <Text style={[styles.successText, { color: isDark ? "#6ee7b7" : "#166534" }]}>
                 {t("forgotPassword.successText").replace("{0}", email.trim())}
               </Text>
               <TouchableOpacity
@@ -208,9 +212,7 @@ const styles = StyleSheet.create({
   },
   cancelButtonText: { fontWeight: "500", fontSize: 14 },
   successBox: {
-    backgroundColor: "#f0fdf4",
     borderWidth: 1,
-    borderColor: "#bbf7d0",
     borderRadius: 8,
     padding: 24,
     alignItems: "center",
@@ -224,11 +226,9 @@ const styles = StyleSheet.create({
   successTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#15803d",
     marginBottom: 8,
   },
   successText: {
-    color: "#166534",
     fontSize: 14,
     textAlign: "center",
     lineHeight: 20,

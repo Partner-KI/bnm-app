@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, StyleSheet, View, ViewStyle } from "react-native";
 import { COLORS } from "../constants/Colors";
+import { useThemeColors } from "../contexts/ThemeContext";
 
 // Gemeinsame Pulsier-Animation
 function usePulse() {
@@ -31,9 +32,10 @@ function usePulse() {
 // Basis-Skeleton-Block
 function SkeletonBase({ style }: { style?: ViewStyle }) {
   const opacity = usePulse();
+  const themeColors = useThemeColors();
   return (
     <Animated.View
-      style={[styles.base, style, { opacity }]}
+      style={[styles.base, { backgroundColor: themeColors.border }, style, { opacity }]}
     />
   );
 }
@@ -71,8 +73,9 @@ export function SkeletonCircle({ size = 44 }: { size?: number }) {
 
 // Vorgefertigtes Mentee-/Mentor-Card-Skeleton
 export function SkeletonUserCard() {
+  const themeColors = useThemeColors();
   return (
-    <View style={styles.userCard}>
+    <View style={[styles.userCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
       <SkeletonCircle size={44} />
       <View style={styles.userCardContent}>
         <SkeletonLine width="60%" height={16} style={{ marginBottom: 8 }} />
@@ -95,18 +98,16 @@ export function SkeletonList({ count = 4 }: { count?: number }) {
 
 const styles = StyleSheet.create({
   base: {
-    backgroundColor: "#E5E7EB",
+    // backgroundColor applied dynamically via themeColors.border
   },
   userCard: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: COLORS.white,
     borderRadius: 8,
     padding: 14,
     marginBottom: 10,
     gap: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
   },
   userCardContent: {
     flex: 1,

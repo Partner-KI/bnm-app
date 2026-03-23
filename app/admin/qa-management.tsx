@@ -16,7 +16,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData, type QAEntry } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 
@@ -43,6 +43,7 @@ export default function QAManagementScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { qaEntries, loadQAEntries, addQAEntry, updateQAEntry, deleteQAEntry } = useData();
 
   const [refreshing, setRefreshing] = useState(false);
@@ -360,8 +361,8 @@ export default function QAManagementScreen() {
                       </Text>
                     </View>
                     {!entry.is_published && (
-                      <View style={styles.unpublishedBadge}>
-                        <Text style={styles.unpublishedBadgeText}>{t("qa.unpublishedBadge")}</Text>
+                      <View style={[styles.unpublishedBadge, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
+                        <Text style={[styles.unpublishedBadgeText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("qa.unpublishedBadge")}</Text>
                       </View>
                     )}
                   </View>
@@ -464,12 +465,11 @@ const styles = StyleSheet.create({
   },
   categoryPillText: { fontSize: 10, fontWeight: "600" },
   unpublishedBadge: {
-    backgroundColor: "#fef3c7",
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  unpublishedBadgeText: { color: "#92400e", fontSize: 10, fontWeight: "600" },
+  unpublishedBadgeText: { fontSize: 10, fontWeight: "600" },
   entrySwitch: { flexShrink: 0 },
   entryQuestion: { fontSize: 14, fontWeight: "600", marginBottom: 4, lineHeight: 20 },
   entryAnswer: { fontSize: 13, lineHeight: 18, marginBottom: 8 },

@@ -9,7 +9,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
 import { showConfirm } from "../../lib/errorHandler";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -26,6 +26,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const {
     users,
     mentorships,
@@ -254,9 +255,9 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
         {/* Frühwarnungen */}
         {earlyWarnings.length > 0 && (
-          <View style={styles.warningBox}>
+          <View style={[styles.warningBox, { backgroundColor: isDark ? "#3a1a1a" : "#fff1f2", borderColor: isDark ? "#7a2a2a" : "#fecdd3", borderLeftColor: isDark ? "#f87171" : "#ef4444" }]}>
             <View style={styles.warningHeader}>
-              <Text style={styles.warningTitle}>{t("earlyWarning.title")}</Text>
+              <Text style={[styles.warningTitle, { color: isDark ? "#f87171" : "#991b1b" }]}>{t("earlyWarning.title")}</Text>
               <View style={styles.warningBadge}>
                 <Text style={styles.warningBadgeText}>{earlyWarnings.length}</Text>
               </View>
@@ -271,24 +272,24 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               return (
                 <TouchableOpacity
                   key={idx}
-                  style={[styles.warningRow, idx < Math.min(earlyWarnings.length, 5) - 1 && styles.warningRowBorder]}
+                  style={[styles.warningRow, idx < Math.min(earlyWarnings.length, 5) - 1 && [styles.warningRowBorder, { borderBottomColor: isDark ? "#7a2a2a" : "#fecdd3" }]]}
                   onPress={() => {
                     if (w.mentorshipId) {
                       router.push({ pathname: "/mentorship/[id]", params: { id: w.mentorshipId } });
                     }
                   }}
                 >
-                  <View style={styles.warningDot} />
+                  <View style={[styles.warningDot, { backgroundColor: isDark ? "#f87171" : "#ef4444" }]} />
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.warningLabel}>{typeLabel}</Text>
-                    <Text style={styles.warningName}>{w.label}</Text>
+                    <Text style={[styles.warningLabel, { color: isDark ? "#f87171" : "#ef4444" }]}>{typeLabel}</Text>
+                    <Text style={[styles.warningName, { color: isDark ? "#fca5a5" : "#7f1d1d" }]}>{w.label}</Text>
                   </View>
                   {daysDiff !== undefined && (
-                    <Text style={styles.warningDays}>
+                    <Text style={[styles.warningDays, { color: isDark ? "#f87171" : "#b91c1c" }]}>
                       {t("earlyWarning.daysAgo").replace("{0}", String(daysDiff))}
                     </Text>
                   )}
-                  <Text style={styles.warningArrow}>›</Text>
+                  <Text style={[styles.warningArrow, { color: isDark ? "#f87171" : "#b91c1c" }]}>›</Text>
                 </TouchableOpacity>
               );
             })}
@@ -326,15 +327,15 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
         {/* Nicht zugewiesene Mentees */}
         {unassignedMentees.length > 0 && (
-          <View style={styles.amberBox}>
-            <Text style={styles.amberTitle}>
+          <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+            <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
               {unassignedMentees.length} Mentee
               {unassignedMentees.length > 1 ? "s" : ""} {t("dashboard.withoutAssignment")}
             </Text>
             {unassignedMentees.map((mentee) => (
-              <View key={mentee.id} style={styles.amberRow}>
+              <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
                 <View>
-                  <Text style={styles.menteeNameText}>{mentee.name}</Text>
+                  <Text style={[styles.menteeNameText, { color: themeColors.text }]}>{mentee.name}</Text>
                   <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
                     {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
                   </Text>
@@ -355,12 +356,12 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
         {/* Ausstehende Mentor-Zuweisungen (pending_approval) */}
         {pendingApprovalsCount > 0 && (
           <TouchableOpacity
-            style={styles.pendingApprovalsButton}
+            style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}
             onPress={() => router.push("/admin/pending-approvals")}
           >
             <View style={styles.applicationsButtonContent}>
-              <Text style={styles.pendingApprovalsText}>{t("dashboard.pendingApprovals")}</Text>
-              <Text style={styles.pendingApprovalsSub}>
+              <Text style={[styles.pendingApprovalsText, { color: isDark ? "#fbbf24" : "#78350f" }]}>{t("dashboard.pendingApprovals")}</Text>
+              <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#fbbf24" : "#92400e" }]}>
                 {t("dashboard.pendingApprovalsCount")
                   .replace("{0}", String(pendingApprovalsCount))
                   .replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
@@ -369,7 +370,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             <View style={styles.applicationsBadge}>
               <Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text>
             </View>
-            <Text style={styles.applicationsArrow}>›</Text>
+            <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
           </TouchableOpacity>
         )}
 
@@ -586,6 +587,7 @@ function MentorDashboard() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -777,6 +779,7 @@ function MenteeDashboard() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, getUnreadMessagesCount, confirmStepAsMentee, unconfirmStepAsMentee, mentorships, feedback } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [confirmingStep, setConfirmingStep] = useState<string | null>(null);
@@ -871,8 +874,8 @@ function MenteeDashboard() {
 
         {/* Feedback-Banner für abgeschlossene Betreuungen ohne Feedback */}
         {completedMentorshipsWithoutFeedback.length > 0 && (
-          <View style={styles.feedbackBanner}>
-            <Text style={styles.feedbackBannerText}>{t("feedbackBanner.title")}</Text>
+          <View style={[styles.feedbackBanner, { backgroundColor: isDark ? "#3a2e1a" : "#fefce8", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+            <Text style={[styles.feedbackBannerText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("feedbackBanner.title")}</Text>
             <TouchableOpacity
               style={styles.feedbackBannerButton}
               onPress={() =>
@@ -971,10 +974,10 @@ function MenteeDashboard() {
 
             {/* Glückwunsch-Banner wenn alle Steps erledigt */}
             {completedStepIds.length === sessionTypes.length && (
-              <View style={styles.congratsBanner}>
+              <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
                 <Text style={styles.congratsEmoji}>🎉</Text>
-                <Text style={styles.congratsTitle}>{t("mentorship.congratulations")}</Text>
-                <Text style={styles.congratsText}>{t("mentorship.allStepsDone")}</Text>
+                <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
+                <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
               </View>
             )}
 
@@ -1004,7 +1007,7 @@ function MenteeDashboard() {
                     style={[
                       styles.stepRow,
                       idx < sessionTypes.length - 1 ? styles.stepRowBorder : {},
-                      mentorDone ? { backgroundColor: "#f0fdf4" } : pendingMentor ? { backgroundColor: "#fffbeb" } : {},
+                      mentorDone ? { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4" } : pendingMentor ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
                     ]}
                     onPress={() => !mentorDone && handleToggleStep(step)}
                     disabled={isConfirming}
@@ -1039,25 +1042,25 @@ function MenteeDashboard() {
                           mentorDone
                             ? { color: COLORS.cta }
                             : pendingMentor
-                            ? { color: "#92400e" }
+                            ? { color: isDark ? "#fbbf24" : "#92400e" }
                             : { color: COLORS.tertiary },
                         ]}
                       >
                         {step.name}
                       </Text>
                       {pendingMentor && (
-                        <Text style={styles.stepWaitingLabel}>{t("menteeProgress.waiting")}</Text>
+                        <Text style={[styles.stepWaitingLabel, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("menteeProgress.waiting")}</Text>
                       )}
                     </View>
 
                     {/* Status-Chip rechts */}
                     {mentorDone ? (
-                      <View style={styles.doneChip}>
-                        <Text style={styles.doneChipText}>{t("menteeProgress.completed")}</Text>
+                      <View style={[styles.doneChip, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
+                        <Text style={[styles.doneChipText, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("menteeProgress.completed")}</Text>
                       </View>
                     ) : pendingMentor ? (
-                      <View style={styles.waitingChip}>
-                        <Text style={styles.waitingChipText}>{t("menteeProgress.discrepancyBadge")}</Text>
+                      <View style={[styles.waitingChip, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+                        <Text style={[styles.waitingChipText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("menteeProgress.discrepancyBadge")}</Text>
                       </View>
                     ) : (
                       <View style={styles.checkboxOuter}>
@@ -1299,23 +1302,20 @@ const styles = StyleSheet.create({
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 4 },
   amberBox: {
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
-  amberTitle: { color: "#92400e", fontWeight: "600", marginBottom: 4 },
+  amberTitle: { fontWeight: "600", marginBottom: 4 },
   amberRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: "#fef3c7",
   },
-  menteeNameText: { color: COLORS.primary, fontWeight: "500" },
+  menteeNameText: { fontWeight: "500" },
   menteeSubText: { color: COLORS.tertiary, fontSize: 12 },
   assignButton: {
     backgroundColor: COLORS.gradientStart,
@@ -1503,23 +1503,20 @@ const styles = StyleSheet.create({
   stepIndicatorTextTertiary: { color: COLORS.tertiary, fontSize: 14, fontWeight: "700" },
   stepName: { fontWeight: "500", fontSize: 15 },
   currentStepLabel: { color: COLORS.secondary, fontSize: 12, marginTop: 2 },
-  stepWaitingLabel: { color: "#92400e", fontSize: 12, marginTop: 2 },
+  stepWaitingLabel: { fontSize: 12, marginTop: 2 },
   doneChip: {
-    backgroundColor: "#dcfce7",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
   },
-  doneChipText: { color: "#15803d", fontSize: 12 },
+  doneChipText: { fontSize: 12 },
   waitingChip: {
-    backgroundColor: "#fef3c7",
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: "#fde68a",
   },
-  waitingChipText: { color: "#92400e", fontSize: 12, fontWeight: "600" },
+  waitingChipText: { fontSize: 12, fontWeight: "600" },
   checkboxOuter: { width: 28, alignItems: "center", justifyContent: "center" },
   checkboxIcon: { fontSize: 22, color: COLORS.tertiary },
   checkboxLoading: { fontSize: 14, color: COLORS.tertiary },
@@ -1596,21 +1593,17 @@ const styles = StyleSheet.create({
   },
   completeNowButtonText: { color: COLORS.primary, fontWeight: "700", fontSize: 13 },
   congratsBanner: {
-    backgroundColor: "#dcfce7",
     borderWidth: 1,
-    borderColor: "#86efac",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     alignItems: "center",
   },
   congratsEmoji: { fontSize: 32, marginBottom: 6 },
-  congratsTitle: { color: "#15803d", fontWeight: "700", fontSize: 18, marginBottom: 4 },
-  congratsText: { color: "#16a34a", fontSize: 14, textAlign: "center" },
+  congratsTitle: { fontWeight: "700", fontSize: 18, marginBottom: 4 },
+  congratsText: { fontSize: 14, textAlign: "center" },
   feedbackBanner: {
-    backgroundColor: "#fefce8",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
@@ -1619,7 +1612,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 10,
   },
-  feedbackBannerText: { color: "#92400e", fontWeight: "600", fontSize: 13, flex: 1 },
+  feedbackBannerText: { fontWeight: "600", fontSize: 13, flex: 1 },
   feedbackBannerButton: {
     backgroundColor: "#f59e0b",
     borderRadius: 5,
@@ -1646,15 +1639,13 @@ const styles = StyleSheet.create({
   pendingApprovalsButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 14,
     marginBottom: 12,
   },
-  pendingApprovalsText: { fontWeight: "600", color: "#78350f", fontSize: 14 },
-  pendingApprovalsSub: { color: "#92400e", fontSize: 12, marginTop: 2 },
+  pendingApprovalsText: { fontWeight: "600", fontSize: 14 },
+  pendingApprovalsSub: { fontSize: 12, marginTop: 2 },
   // Mein Mentor Karte
   mentorInfoRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   mentorAvatar: {
@@ -1680,17 +1671,14 @@ const styles = StyleSheet.create({
 
   // Frühwarnungen Widget
   warningBox: {
-    backgroundColor: "#fff1f2",
     borderWidth: 1,
-    borderColor: "#fecdd3",
     borderLeftWidth: 4,
-    borderLeftColor: "#ef4444",
     borderRadius: 8,
     padding: 14,
     marginBottom: 14,
   },
   warningHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 8 },
-  warningTitle: { fontWeight: "700", color: "#991b1b", fontSize: 14, flex: 1 },
+  warningTitle: { fontWeight: "700", fontSize: 14, flex: 1 },
   warningBadge: {
     backgroundColor: "#ef4444",
     borderRadius: 10,
@@ -1702,12 +1690,12 @@ const styles = StyleSheet.create({
   },
   warningBadgeText: { color: COLORS.white, fontSize: 12, fontWeight: "700" },
   warningRow: { flexDirection: "row", alignItems: "center", paddingVertical: 8, gap: 8 },
-  warningRowBorder: { borderBottomWidth: 1, borderBottomColor: "#fecdd3" },
-  warningDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: "#ef4444", flexShrink: 0 },
-  warningLabel: { color: "#ef4444", fontSize: 11, fontWeight: "600" },
-  warningName: { color: "#7f1d1d", fontSize: 13, fontWeight: "500", marginTop: 1 },
-  warningDays: { color: "#b91c1c", fontSize: 11, flexShrink: 0 },
-  warningArrow: { color: "#b91c1c", fontSize: 16, marginLeft: 4 },
+  warningRowBorder: { borderBottomWidth: 1 },
+  warningDot: { width: 8, height: 8, borderRadius: 4, flexShrink: 0 },
+  warningLabel: { fontSize: 11, fontWeight: "600" },
+  warningName: { fontSize: 13, fontWeight: "500", marginTop: 1 },
+  warningDays: { fontSize: 11, flexShrink: 0 },
+  warningArrow: { fontSize: 16, marginLeft: 4 },
 
   // Mentor des Monats Card (Admin)
   momAdminCard: {

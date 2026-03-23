@@ -18,7 +18,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function MenteesScreen() {
   const { user } = useAuth();
@@ -38,6 +38,7 @@ function AdminMenteesView() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const [search, setSearch] = useState("");
   const [assignFilter, setAssignFilter] = useState<AssignmentFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -294,19 +295,19 @@ function AdminMenteesView() {
             const statusBg =
               mentorship
                 ? mentorship.status === "active"
-                  ? "#F5F5F7"
+                  ? (isDark ? "#2A2D3A" : "#F5F5F7")
                   : mentorship.status === "completed"
-                  ? "#dcfce7"
-                  : "#fee2e2"
-                : "#fef3c7";
+                  ? (isDark ? "#1a3a2a" : "#dcfce7")
+                  : (isDark ? "#3a1a1a" : "#fee2e2")
+                : (isDark ? "#3a2e1a" : "#fef3c7");
             const statusColor =
               mentorship
                 ? mentorship.status === "active"
-                  ? "#475467"
+                  ? (isDark ? "#A0A0B0" : "#475467")
                   : mentorship.status === "completed"
-                  ? "#15803d"
-                  : "#b91c1c"
-                : "#b45309";
+                  ? (isDark ? "#4ade80" : "#15803d")
+                  : (isDark ? "#f87171" : "#b91c1c")
+                : (isDark ? "#fbbf24" : "#b45309");
             const statusLabel =
               mentorship
                 ? mentorship.status === "active"
@@ -333,8 +334,8 @@ function AdminMenteesView() {
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
                       <Text style={[styles.meneeName, { color: themeColors.text }]}>{mentee.name}</Text>
                       {mentee.is_active === false && (
-                        <View style={styles.blockedBadge}>
-                          <Text style={styles.blockedBadgeText}>{t("editUser.blocked")}</Text>
+                        <View style={[styles.blockedBadge, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
+                          <Text style={[styles.blockedBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("editUser.blocked")}</Text>
                         </View>
                       )}
                     </View>
@@ -459,6 +460,7 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { getCompletedStepIds, getSessionsByMentorshipId, sessionTypes } = useData();
 
   const completedStepIds = getCompletedStepIds(mentorship.id);
@@ -489,13 +491,13 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: mentorship.status === "active" ? "#F5F5F7" : "#dcfce7" },
+            { backgroundColor: mentorship.status === "active" ? (isDark ? "#2A2D3A" : "#F5F5F7") : (isDark ? "#1a3a2a" : "#dcfce7") },
           ]}
         >
           <Text
             style={[
               styles.statusText,
-              { color: mentorship.status === "active" ? "#475467" : "#15803d" },
+              { color: mentorship.status === "active" ? (isDark ? "#A0A0B0" : "#475467") : (isDark ? "#4ade80" : "#15803d") },
             ]}
           >
             {mentorship.status === "active" ? t("mentees.active") : t("mentees.completedStatus")}
@@ -519,8 +521,8 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
         {sortedTypes.map((step, idx) => {
           const isDone = completedStepIds.includes(step.id);
           const isCurrent = !isDone && idx === completedStepIds.length;
-          const chipBg = isDone ? "#dcfce7" : isCurrent ? "#fef3c7" : themeColors.background;
-          const chipColor = isDone ? "#15803d" : isCurrent ? "#b45309" : themeColors.textTertiary;
+          const chipBg = isDone ? (isDark ? "#1a3a2a" : "#dcfce7") : isCurrent ? (isDark ? "#3a2e1a" : "#fef3c7") : themeColors.background;
+          const chipColor = isDone ? (isDark ? "#4ade80" : "#15803d") : isCurrent ? (isDark ? "#fbbf24" : "#b45309") : themeColors.textTertiary;
           const chipWeight: "normal" | "500" = isDone || isCurrent ? "500" : "normal";
           return (
             <View key={step.id} style={[styles.stepChip, { backgroundColor: chipBg }]}>
@@ -563,6 +565,7 @@ function MenteeProgressView() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const {
     getMentorshipByMenteeId,
     getCompletedStepIds,
@@ -657,7 +660,7 @@ function MenteeProgressView() {
                 style={[
                   styles.stepDetailRow,
                   idx < sessionTypes.length - 1 ? [styles.stepDetailBorder, { borderBottomColor: themeColors.border }] : {},
-                  isCurrent ? { backgroundColor: "#fffbeb" } : {},
+                  isCurrent ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
                 ]}
               >
                 <View
@@ -701,14 +704,14 @@ function MenteeProgressView() {
                       <Text style={{ color: themeColors.textTertiary, fontSize: 12 }}>{t("mentees.locked")}</Text>
                     )}
                     {isCurrent && (
-                      <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
-                        <Text style={{ color: "#b45309", fontSize: 12, fontWeight: "500" }}>{t("mentees.current")}</Text>
+                      <View style={{ backgroundColor: isDark ? "#3a2e1a" : "#fef3c7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
+                        <Text style={{ color: isDark ? "#fbbf24" : "#b45309", fontSize: 12, fontWeight: "500" }}>{t("mentees.current")}</Text>
                       </View>
                     )}
                   </View>
                   <Text style={[styles.stepDetailDesc, { color: themeColors.textTertiary }]}>{step.description}</Text>
                   {isDone && session && (
-                    <Text style={{ color: "#16a34a", fontSize: 12, marginTop: 4 }}>
+                    <Text style={{ color: isDark ? "#4ade80" : "#16a34a", fontSize: 12, marginTop: 4 }}>
                       {t("mentees.completedOn")}{" "}
                       {new Date(session.date).toLocaleDateString("de-DE")}
                       {session.is_online ? ` (${t("mentees.online")})` : ` (${t("mentees.offline")})`}
@@ -845,12 +848,11 @@ const styles = StyleSheet.create({
   },
   docChipText: { color: COLORS.cta, fontSize: 12, fontWeight: "600" },
   blockedBadge: {
-    backgroundColor: "#fee2e2",
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  blockedBadgeText: { color: "#b91c1c", fontSize: 11, fontWeight: "600" },
+  blockedBadgeText: { fontSize: 11, fontWeight: "600" },
   selfAssignButton: {
     backgroundColor: COLORS.gradientStart,
     borderRadius: 5,

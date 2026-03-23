@@ -8,7 +8,7 @@ import {
 } from "react-native";
 import { COLORS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
 export type ModalType = "confirm" | "info" | "success" | "error";
 
@@ -21,25 +21,25 @@ interface ConfirmModalProps {
   onCancel?: () => void;
 }
 
-function TypeIcon({ type }: { type: ModalType }) {
+function TypeIcon({ type, isDark }: { type: ModalType; isDark: boolean }) {
   if (type === "success") {
     return (
-      <View style={[styles.iconCircle, { backgroundColor: "#dcfce7" }]}>
-        <Text style={[styles.iconText, { color: COLORS.cta }]}>✓</Text>
+      <View style={[styles.iconCircle, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
+        <Text style={[styles.iconText, { color: isDark ? "#4ade80" : COLORS.cta }]}>✓</Text>
       </View>
     );
   }
   if (type === "error") {
     return (
-      <View style={[styles.iconCircle, { backgroundColor: "#fef2f2" }]}>
-        <Text style={[styles.iconText, { color: COLORS.error }]}>✕</Text>
+      <View style={[styles.iconCircle, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2" }]}>
+        <Text style={[styles.iconText, { color: isDark ? "#f87171" : COLORS.error }]}>✕</Text>
       </View>
     );
   }
   if (type === "info") {
     return (
-      <View style={[styles.iconCircle, { backgroundColor: "#eff6ff" }]}>
-        <Text style={[styles.iconText, { color: "#2563eb" }]}>i</Text>
+      <View style={[styles.iconCircle, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }]}>
+        <Text style={[styles.iconText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>i</Text>
       </View>
     );
   }
@@ -56,6 +56,7 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   if (!visible) return null;
 
   const isConfirm = type === "confirm";
@@ -64,7 +65,7 @@ export function ConfirmModal({
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={isConfirm ? onCancel : onConfirm} />
       <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-        {type !== "confirm" ? <TypeIcon type={type} /> : null}
+        {type !== "confirm" ? <TypeIcon type={type} isDark={isDark} /> : null}
 
         <Text style={[styles.title, { color: themeColors.text }]}>{title}</Text>
         <Text style={[styles.message, { color: themeColors.textSecondary }]}>{message}</Text>

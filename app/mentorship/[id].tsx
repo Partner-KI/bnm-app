@@ -14,7 +14,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 
 
@@ -23,6 +23,7 @@ export default function MentorshipDetailScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const {
     getMentorshipById,
@@ -174,16 +175,16 @@ export default function MentorshipDetailScreen() {
 
   const statusBg =
     mentorship.status === "active"
-      ? "#F5F5F7"
+      ? (isDark ? "#2A2D3A" : "#F5F5F7")
       : mentorship.status === "completed"
-      ? "#dcfce7"
-      : "#fee2e2";
+      ? (isDark ? "#1a3a2a" : "#dcfce7")
+      : (isDark ? "#3a1a1a" : "#fee2e2");
   const statusTextColor =
     mentorship.status === "active"
-      ? "#475467"
+      ? (isDark ? "#A0A0B0" : "#475467")
       : mentorship.status === "completed"
-      ? "#15803d"
-      : "#b91c1c";
+      ? (isDark ? "#4ade80" : "#15803d")
+      : (isDark ? "#f87171" : "#b91c1c");
   const statusLabel =
     mentorship.status === "active"
       ? t("mentorship.active")
@@ -249,13 +250,13 @@ export default function MentorshipDetailScreen() {
 
         {/* Diskrepanz-Warnung: Mentee hat bestätigt, Mentor noch nicht dokumentiert */}
         {(user?.role === "admin" || user?.role === "office" || user?.id === mentorship.mentor_id) && discrepancyStepIds.length > 0 && (
-          <View style={styles.discrepancyBanner}>
-            <Text style={styles.discrepancyTitle}>⚠ {t("menteeProgress.discrepancy")}</Text>
+          <View style={[styles.discrepancyBanner, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+            <Text style={[styles.discrepancyTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>⚠ {t("menteeProgress.discrepancy")}</Text>
             {discrepancyStepIds.map((sid) => {
               const step = sessionTypes.find((st) => st.id === sid);
               if (!step) return null;
               return (
-                <Text key={sid} style={styles.discrepancyItem}>· {step.name}</Text>
+                <Text key={sid} style={[styles.discrepancyItem, { color: isDark ? "#fbbf24" : "#b45309" }]}>· {step.name}</Text>
               );
             })}
           </View>
@@ -276,7 +277,7 @@ export default function MentorshipDetailScreen() {
                 style={[
                   styles.timelineItem,
                   !isLast ? [styles.timelineItemBorder, { borderBottomColor: themeColors.border }] : {},
-                  isCurrent ? { backgroundColor: "#fffbeb" } : {},
+                  isCurrent ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
                 ]}
               >
                 <View style={styles.timelineDotCol}>
@@ -343,7 +344,7 @@ export default function MentorshipDetailScreen() {
                       {canDocumentSession && (
                         <View style={styles.sessionActionRow}>
                           <TouchableOpacity
-                            style={styles.sessionEditButton}
+                            style={[styles.sessionEditButton, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#bfdbfe" }]}
                             onPress={() =>
                               router.push({
                                 pathname: "/document-session",
@@ -351,13 +352,13 @@ export default function MentorshipDetailScreen() {
                               })
                             }
                           >
-                            <Text style={styles.sessionEditText}>✏️ {t("sessionEdit.edit")}</Text>
+                            <Text style={[styles.sessionEditText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>✏️ {t("sessionEdit.edit")}</Text>
                           </TouchableOpacity>
                           <TouchableOpacity
-                            style={styles.sessionDeleteButton}
+                            style={[styles.sessionDeleteButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
                             onPress={() => handleDeleteSession(session.id)}
                           >
-                            <Text style={styles.sessionDeleteText}>🗑 {t("sessionEdit.delete")}</Text>
+                            <Text style={[styles.sessionDeleteText, { color: isDark ? "#f87171" : "#dc2626" }]}>🗑 {t("sessionEdit.delete")}</Text>
                           </TouchableOpacity>
                         </View>
                       )}
@@ -365,8 +366,8 @@ export default function MentorshipDetailScreen() {
                   )}
 
                   {isCurrent && (
-                    <View style={styles.currentBadge}>
-                      <Text style={styles.currentBadgeText}>{t("mentorship.nextStep")}</Text>
+                    <View style={[styles.currentBadge, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
+                      <Text style={[styles.currentBadgeText, { color: isDark ? "#fbbf24" : "#b45309" }]}>{t("mentorship.nextStep")}</Text>
                     </View>
                   )}
                 </View>
@@ -377,17 +378,17 @@ export default function MentorshipDetailScreen() {
 
         {/* Abschluss-Banner wenn alle Steps erledigt */}
         {mentorship.status === "active" && completedStepIds.length === sessionTypes.length && canChangeStatus && (
-          <View style={styles.allDoneBanner}>
-            <Text style={styles.allDoneBannerTitle}>✓ {t("mentorship.allStepsComplete")}</Text>
+          <View style={[styles.allDoneBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
+            <Text style={[styles.allDoneBannerTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>✓ {t("mentorship.allStepsComplete")}</Text>
             <TouchableOpacity
-              style={styles.allDoneButton}
+              style={[styles.allDoneButton, { backgroundColor: isDark ? "#2d6a4a" : "#15803d" }]}
               onPress={handleComplete}
             >
               <Text style={styles.allDoneButtonText}>
                 {t("mentorship.completeNow")}
               </Text>
             </TouchableOpacity>
-            <Text style={styles.allDoneBannerHint}>{t("mentorship.completeHint")}</Text>
+            <Text style={[styles.allDoneBannerHint, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.completeHint")}</Text>
           </View>
         )}
 
@@ -417,20 +418,20 @@ export default function MentorshipDetailScreen() {
             {canChangeStatus && (
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <TouchableOpacity
-                  style={[styles.completeButton, isUpdatingStatus ? { opacity: 0.5 } : {}]}
+                  style={[styles.completeButton, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2d6a4a" : "#bbf7d0" }, isUpdatingStatus ? { opacity: 0.5 } : {}]}
                   onPress={handleComplete}
                   disabled={isUpdatingStatus}
                 >
-                  <Text style={styles.completeButtonText}>
+                  <Text style={[styles.completeButtonText, { color: isDark ? "#4ade80" : "#15803d" }]}>
                     {isUpdatingStatus ? "..." : t("mentorship.complete")}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.cancelButton, isUpdatingStatus ? { opacity: 0.5 } : {}]}
+                  style={[styles.cancelButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }, isUpdatingStatus ? { opacity: 0.5 } : {}]}
                   onPress={handleCancel}
                   disabled={isUpdatingStatus}
                 >
-                  <Text style={styles.cancelButtonText}>
+                  <Text style={[styles.cancelButtonText, { color: isDark ? "#f87171" : "#dc2626" }]}>
                     {isUpdatingStatus ? "..." : t("mentorship.cancel")}
                   </Text>
                 </TouchableOpacity>
@@ -579,55 +580,46 @@ const styles = StyleSheet.create({
   stepName: { fontWeight: "600" },
   sessionDate: { fontSize: 12, marginTop: 2 },
   sessionDetails: { fontSize: 12, marginTop: 4, fontStyle: "italic" },
-  currentBadge: { marginTop: 4, backgroundColor: "#fef3c7", alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
-  currentBadgeText: { color: "#b45309", fontSize: 12, fontWeight: "500" },
+  currentBadge: { marginTop: 4, alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  currentBadgeText: { fontSize: 12, fontWeight: "500" },
   primaryButton: { borderRadius: 5, paddingVertical: 9, alignItems: "center" },
   primaryButtonText: { color: COLORS.white, fontWeight: "bold" },
   completeButton: {
     flex: 1,
-    backgroundColor: "#f0fdf4",
     borderWidth: 1,
-    borderColor: "#bbf7d0",
     borderRadius: 5,
     paddingVertical: 8,
     alignItems: "center",
   },
-  completeButtonText: { color: "#15803d", fontWeight: "600", fontSize: 13 },
+  completeButtonText: { fontWeight: "600", fontSize: 13 },
   cancelButton: {
     flex: 1,
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 5,
     paddingVertical: 8,
     alignItems: "center",
   },
-  cancelButtonText: { color: "#dc2626", fontWeight: "600", fontSize: 14 },
+  cancelButtonText: { fontWeight: "600", fontSize: 14 },
   completedAtText: { fontSize: 12, textAlign: "center" },
   infoChip: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
   infoChipText: { fontSize: 12, fontWeight: "500" },
   discrepancyBanner: {
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
-  discrepancyTitle: { color: "#92400e", fontWeight: "700", fontSize: 14, marginBottom: 6 },
-  discrepancyItem: { color: "#b45309", fontSize: 13, marginTop: 2 },
+  discrepancyTitle: { fontWeight: "700", fontSize: 14, marginBottom: 6 },
+  discrepancyItem: { fontSize: 13, marginTop: 2 },
   allDoneBanner: {
-    backgroundColor: "#dcfce7",
     borderWidth: 1,
-    borderColor: "#86efac",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
     alignItems: "center",
   },
-  allDoneBannerTitle: { color: "#15803d", fontWeight: "700", fontSize: 16, marginBottom: 12, textAlign: "center" },
+  allDoneBannerTitle: { fontWeight: "700", fontSize: 16, marginBottom: 12, textAlign: "center" },
   allDoneButton: {
-    backgroundColor: "#15803d",
     borderRadius: 5,
     paddingVertical: 10,
     paddingHorizontal: 24,
@@ -636,7 +628,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   allDoneButtonText: { color: "#ffffff", fontWeight: "700", fontSize: 15 },
-  allDoneBannerHint: { color: "#16a34a", fontSize: 12, textAlign: "center" },
+  allDoneBannerHint: { fontSize: 12, textAlign: "center" },
   notesCard: {
     borderRadius: 8,
     borderWidth: 1,
@@ -667,21 +659,17 @@ const styles = StyleSheet.create({
   sessionEditButton: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    backgroundColor: "#eff6ff",
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: "#bfdbfe",
   },
-  sessionEditText: { color: "#2563eb", fontSize: 11, fontWeight: "500" },
+  sessionEditText: { fontSize: 11, fontWeight: "500" },
   sessionDeleteButton: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    backgroundColor: "#fef2f2",
     borderRadius: 4,
     borderWidth: 1,
-    borderColor: "#fecaca",
   },
-  sessionDeleteText: { color: "#dc2626", fontSize: 11, fontWeight: "500" },
+  sessionDeleteText: { fontSize: 11, fontWeight: "500" },
 
   // Abbruch-Modal
   modalOverlay: {

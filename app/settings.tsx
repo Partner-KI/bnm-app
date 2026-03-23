@@ -15,7 +15,7 @@ import { useData } from "../contexts/DataContext";
 import { useLanguage, type Language } from "../contexts/LanguageContext";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
 const LANGUAGES: { key: Language; label: string; native: string }[] = [
   { key: "de", label: "Deutsch", native: "Deutsch" },
@@ -31,6 +31,7 @@ export default function SettingsScreen() {
   const { language, setLanguage, t } = useLanguage();
   const { mentorOfMonthVisible, toggleMentorOfMonth } = useData();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
 
   const [pushEnabled, setPushEnabled] = useState(true);
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
@@ -179,7 +180,7 @@ export default function SettingsScreen() {
 
           {/* Konto löschen */}
           <TouchableOpacity
-            style={styles.deleteButton}
+            style={[styles.deleteButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
             onPress={handleDeleteAccount}
           >
             <Text style={styles.deleteButtonText}>{t("settings.deleteAccount")}</Text>
@@ -282,9 +283,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
   },
   deleteButton: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 5,
     paddingVertical: 9,
     alignItems: "center",

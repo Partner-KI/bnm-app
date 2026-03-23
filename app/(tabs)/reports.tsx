@@ -15,7 +15,7 @@ import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 // MONTHS and QUARTERS are now built inside the component using t()
 // to support translations
@@ -37,6 +37,7 @@ export default function ReportsScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { mentorships, sessions, sessionTypes, users, mentorOfMonthVisible, toggleMentorOfMonth, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
@@ -358,8 +359,11 @@ export default function ReportsScreen() {
 
           {/* Empty State: Noch keine Daten in diesem Zeitraum */}
           {kpis.totalSessions === 0 && kpis.totalAssigned === 0 && mentorships.length === 0 && (
-            <View style={styles.emptyDataBox}>
-              <Text style={styles.emptyDataText}>{t("reports.noData")}</Text>
+            <View style={[styles.emptyDataBox, {
+              backgroundColor: isDark ? "#3a2e1a" : "#fffbeb",
+              borderColor: isDark ? "#6b4e1a" : "#fde68a",
+            }]}>
+              <Text style={[styles.emptyDataText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("reports.noData")}</Text>
             </View>
           )}
 
@@ -387,9 +391,12 @@ export default function ReportsScreen() {
 
           {/* Abbrüche */}
           {kpis.cancellations > 0 && (
-            <View style={styles.cancellationBox}>
-              <Text style={styles.cancellationLabel}>{t("reports.cancellations")}</Text>
-              <Text style={styles.cancellationValue}>{kpis.cancellations}</Text>
+            <View style={[styles.cancellationBox, {
+              backgroundColor: isDark ? "#3a1a1a" : "#fef2f2",
+              borderColor: isDark ? "#7a2a2a" : "#fecaca",
+            }]}>
+              <Text style={[styles.cancellationLabel, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("reports.cancellations")}</Text>
+              <Text style={[styles.cancellationValue, { color: isDark ? "#f87171" : "#b91c1c" }]}>{kpis.cancellations}</Text>
             </View>
           )}
 
@@ -589,9 +596,7 @@ const styles = StyleSheet.create({
   kpiLabel: { fontSize: 12, marginBottom: 2 },
   kpiValue: { fontSize: 26, fontWeight: "700" },
   cancellationBox: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
@@ -599,8 +604,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
-  cancellationLabel: { color: "#b91c1c", fontWeight: "600" },
-  cancellationValue: { color: "#b91c1c", fontWeight: "700", fontSize: 22 },
+  cancellationLabel: { fontWeight: "600" },
+  cancellationValue: { fontWeight: "700", fontSize: 22 },
   chartCard: {
     backgroundColor: COLORS.gradientStart,
     borderRadius: 8,
@@ -646,14 +651,12 @@ const styles = StyleSheet.create({
   goldMentorName: { fontSize: 20, fontWeight: "700", marginBottom: 2 },
   goldMentorSub: { fontSize: 14 },
   emptyDataBox: {
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
   },
-  emptyDataText: { color: "#92400e", fontSize: 14, textAlign: "center", lineHeight: 20 },
+  emptyDataText: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   emptyMonthBox: {
     borderWidth: 1,
     borderRadius: 8,

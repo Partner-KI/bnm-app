@@ -16,7 +16,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS } from "../../constants/Colors";
 import { showConfirm, showError, showSuccess } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import type { UserRole, Gender } from "../../types";
 
 const ROLES: { key: UserRole; labelKey: "editUser.roleMentor" | "editUser.roleMentee" | "editUser.roleAdmin" | "editUser.roleOffice" }[] = [
@@ -33,6 +33,7 @@ export default function EditUserScreen() {
   const { getUserById, updateUser, setUserActive } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
 
   const target = getUserById(id);
 
@@ -65,6 +66,7 @@ function EditUserForm({ userId }: { userId: string }) {
   const { getUserById, updateUser, setUserActive } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
 
   const target = getUserById(userId)!;
 
@@ -151,8 +153,8 @@ function EditUserForm({ userId }: { userId: string }) {
 
           {/* Gesperrt-Badge */}
           {isBlocked && (
-            <View style={styles.blockedBanner}>
-              <Text style={styles.blockedBannerText}>⚠ {t("editUser.blocked")}</Text>
+            <View style={[styles.blockedBanner, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
+              <Text style={[styles.blockedBannerText, { color: isDark ? "#f87171" : "#b91c1c" }]}>⚠ {t("editUser.blocked")}</Text>
             </View>
           )}
 
@@ -269,11 +271,16 @@ function EditUserForm({ userId }: { userId: string }) {
 
           {/* User sperren / entsperren */}
           <TouchableOpacity
-            style={[styles.blockButton, isBlocked ? styles.unblockButton : {}, isBlocking ? { opacity: 0.6 } : {}]}
-            onPress={handleToggleBlock}
+            style={[
+              styles.blockButton,
+              { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2", borderColor: isDark ? "#7a2a2a" : "#fecaca" },
+              isBlocked ? { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" } : {},
+              isBlocking ? { opacity: 0.6 } : {},
+            ]}
+onPress={handleToggleBlock}
             disabled={isBlocking}
           >
-            <Text style={[styles.blockButtonText, isBlocked ? styles.unblockButtonText : {}]}>
+            <Text style={[styles.blockButtonText, { color: isDark ? "#f87171" : "#b91c1c" }, isBlocked ? { color: isDark ? "#4ade80" : "#15803d" } : {}]}>
               {isBlocking ? "..." : isBlocked ? t("editUser.unblockUser") : t("editUser.blockUser")}
             </Text>
           </TouchableOpacity>
@@ -328,15 +335,13 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   content: { padding: 20, paddingBottom: 40 },
   blockedBanner: {
-    backgroundColor: "#fee2e2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
     alignItems: "center",
   },
-  blockedBannerText: { color: "#b91c1c", fontWeight: "700", fontSize: 14 },
+  blockedBannerText: { fontWeight: "700", fontSize: 14 },
   avatarRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -396,17 +401,12 @@ const styles = StyleSheet.create({
   },
   saveButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 15 },
   blockButton: {
-    backgroundColor: "#fee2e2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 6,
     paddingVertical: 11,
     alignItems: "center",
   },
-  blockButtonText: { color: "#b91c1c", fontWeight: "600", fontSize: 14 },
-  unblockButton: {
-    backgroundColor: "#dcfce7",
-    borderColor: "#86efac",
-  },
-  unblockButtonText: { color: "#15803d" },
+  blockButtonText: { fontWeight: "600", fontSize: 14 },
+  unblockButton: {},
+  unblockButtonText: {},
 });

@@ -13,7 +13,7 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { BNMLogo } from "../../components/BNMLogo";
@@ -23,6 +23,7 @@ export default function LoginScreen() {
   const { login, loginAs, isLoading } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -114,8 +115,8 @@ export default function LoginScreen() {
 
           {/* Fehlermeldung */}
           {errorMsg ? (
-            <View style={[styles.errorBox, { backgroundColor: "#fef2f2", borderColor: "#fecaca" }]}>
-              <Text style={styles.errorText}>{errorMsg}</Text>
+            <View style={[styles.errorBox, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
+              <Text style={[styles.errorText, { color: isDark ? "#f87171" : "#dc2626" }]}>{errorMsg}</Text>
             </View>
           ) : null}
 
@@ -274,16 +275,13 @@ const styles = StyleSheet.create({
   },
   eyeText: { fontSize: 18 },
   errorBox: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 5,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
   },
   errorText: {
-    color: "#dc2626",
     fontSize: 13,
   },
   forgotPasswordRow: {

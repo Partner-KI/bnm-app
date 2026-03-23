@@ -16,7 +16,7 @@ import { COLORS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { supabaseAnon } from "../../lib/supabaseAnon";
 import { sendCredentialsEmail } from "../../lib/emailService";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import {
   parseCSV,
   validateMenteeRow,
@@ -66,6 +66,7 @@ export default function CSVImportScreen() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { users, refreshData } = useData();
 
   const [activeTab, setActiveTab] = useState<TabType>("mentees");
@@ -351,8 +352,8 @@ export default function CSVImportScreen() {
               <Text style={[styles.uploadHint, { color: themeColors.textTertiary }]}>{t("csvImport.uploadHint")}</Text>
             </>
           ) : (
-            <View style={styles.nativeHintBox}>
-              <Text style={styles.nativeHintText}>{t("csvImport.nativeHint")}</Text>
+            <View style={[styles.nativeHintBox, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
+              <Text style={[styles.nativeHintText, { color: isDark ? "#fbbf24" : "#b45309" }]}>{t("csvImport.nativeHint")}</Text>
             </View>
           )}
         </View>
@@ -362,23 +363,23 @@ export default function CSVImportScreen() {
           <View style={[styles.resultCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
             <Text style={[styles.resultTitle, { color: themeColors.text }]}>{t("csvImport.resultTitle")}</Text>
             <View style={styles.resultRow}>
-              <View style={[styles.resultChip, styles.resultChipGreen]}>
+              <View style={[styles.resultChip, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
                 <Text style={[styles.resultChipValue, { color: themeColors.text }]}>{importResult.created}</Text>
                 <Text style={[styles.resultChipLabel, { color: themeColors.textSecondary }]}>{t("csvImport.created")}</Text>
               </View>
-              <View style={[styles.resultChip, styles.resultChipYellow]}>
+              <View style={[styles.resultChip, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
                 <Text style={[styles.resultChipValue, { color: themeColors.text }]}>{importResult.skipped}</Text>
                 <Text style={[styles.resultChipLabel, { color: themeColors.textSecondary }]}>{t("csvImport.skipped")}</Text>
               </View>
-              <View style={[styles.resultChip, styles.resultChipRed]}>
+              <View style={[styles.resultChip, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
                 <Text style={[styles.resultChipValue, { color: themeColors.text }]}>{importResult.failed}</Text>
                 <Text style={[styles.resultChipLabel, { color: themeColors.textSecondary }]}>{t("csvImport.failed")}</Text>
               </View>
             </View>
             {importResult.errors.length > 0 && (
-              <View style={styles.errorList}>
+              <View style={[styles.errorList, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
                 {importResult.errors.map((err, idx) => (
-                  <Text key={idx} style={styles.errorListItem}>
+                  <Text key={idx} style={[styles.errorListItem, { color: isDark ? "#f87171" : "#b91c1c" }]}>
                     • {err}
                   </Text>
                 ))}
@@ -421,18 +422,18 @@ export default function CSVImportScreen() {
               </Text>
               <View style={styles.previewStats}>
                 {validCount > 0 && (
-                  <View style={styles.statBadgeGreen}>
-                    <Text style={[styles.statBadgeText, { color: themeColors.text }]}>{validCount} OK</Text>
+                  <View style={[styles.statBadgeGreen, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
+                    <Text style={[styles.statBadgeText, { color: isDark ? "#4ade80" : "#15803d" }]}>{validCount} OK</Text>
                   </View>
                 )}
                 {duplicateCount > 0 && (
-                  <View style={styles.statBadgeYellow}>
-                    <Text style={[styles.statBadgeText, { color: themeColors.text }]}>{duplicateCount} Duplikat</Text>
+                  <View style={[styles.statBadgeYellow, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" }]}>
+                    <Text style={[styles.statBadgeText, { color: isDark ? "#fbbf24" : "#b45309" }]}>{duplicateCount} Duplikat</Text>
                   </View>
                 )}
                 {errorCount > 0 && (
-                  <View style={styles.statBadgeRed}>
-                    <Text style={[styles.statBadgeText, { color: themeColors.text }]}>{errorCount} Fehler</Text>
+                  <View style={[styles.statBadgeRed, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
+                    <Text style={[styles.statBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{errorCount} Fehler</Text>
                   </View>
                 )}
               </View>
@@ -456,17 +457,17 @@ export default function CSVImportScreen() {
                   <View
                     style={[
                       styles.statusBadge,
-                      row.status === "valid" && styles.statusBadgeGreen,
-                      row.status === "error" && styles.statusBadgeRed,
-                      row.status === "duplicate" && styles.statusBadgeYellow,
+                      row.status === "valid" && { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" },
+                      row.status === "error" && { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" },
+                      row.status === "duplicate" && { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7" },
                     ]}
                   >
                     <Text
                       style={[
                         styles.statusBadgeText,
-                        row.status === "valid" && { color: "#15803d" },
-                        row.status === "error" && { color: "#b91c1c" },
-                        row.status === "duplicate" && { color: "#b45309" },
+                        row.status === "valid" && { color: isDark ? "#4ade80" : "#15803d" },
+                        row.status === "error" && { color: isDark ? "#f87171" : "#b91c1c" },
+                        row.status === "duplicate" && { color: isDark ? "#fbbf24" : "#b45309" },
                       ]}
                     >
                       {row.status === "valid"
@@ -596,12 +597,10 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   nativeHintBox: {
-    backgroundColor: "#fef3c7",
     borderRadius: 6,
     padding: 12,
   },
   nativeHintText: {
-    color: "#b45309",
     fontSize: 13,
     textAlign: "center",
   },
@@ -628,9 +627,9 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: "center",
   },
-  resultChipGreen: { backgroundColor: "#dcfce7" },
-  resultChipYellow: { backgroundColor: "#fef3c7" },
-  resultChipRed: { backgroundColor: "#fee2e2" },
+  resultChipGreen: {},
+  resultChipYellow: {},
+  resultChipRed: {},
   resultChipValue: {
     fontSize: 22,
     fontWeight: "700",
@@ -643,12 +642,10 @@ const styles = StyleSheet.create({
   errorList: {
     marginTop: 12,
     padding: 10,
-    backgroundColor: "#fee2e2",
     borderRadius: 6,
   },
   errorListItem: {
     fontSize: 12,
-    color: "#b91c1c",
     marginBottom: 4,
   },
 
@@ -690,19 +687,16 @@ const styles = StyleSheet.create({
   },
   previewStats: { flexDirection: "row", gap: 6 },
   statBadgeGreen: {
-    backgroundColor: "#dcfce7",
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   statBadgeYellow: {
-    backgroundColor: "#fef3c7",
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
   statBadgeRed: {
-    backgroundColor: "#fee2e2",
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 2,
@@ -757,9 +751,9 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 4,
   },
-  statusBadgeGreen: { backgroundColor: "#dcfce7" },
-  statusBadgeRed: { backgroundColor: "#fee2e2" },
-  statusBadgeYellow: { backgroundColor: "#fef3c7" },
+  statusBadgeGreen: {},
+  statusBadgeRed: {},
+  statusBadgeYellow: {},
   statusBadgeText: { fontSize: 11, fontWeight: "600" },
 
   // Import-Button

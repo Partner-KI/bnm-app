@@ -16,7 +16,7 @@ import type { User } from "../types";
 import { COLORS } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { getCoordinatesForPLZ, haversineDistance } from "../lib/plzCoordinates";
 
 interface MatchScore {
@@ -100,6 +100,7 @@ export default function AssignScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { users, mentorships, assignMentorship, getUnassignedMentees } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
   const confirm = useConfirm();
@@ -219,9 +220,9 @@ export default function AssignScreen() {
       <View style={styles.page}>
         {/* Mentor-Modus Banner */}
         {isMentor && (
-          <View style={styles.mentorModeBox}>
-            <Text style={styles.mentorModeTitle}>{t("assign.takeMenteeTitle")}</Text>
-            <Text style={styles.mentorModeText}>
+          <View style={[styles.mentorModeBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+            <Text style={[styles.mentorModeTitle, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{t("assign.takeMenteeTitle")}</Text>
+            <Text style={[styles.mentorModeText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
               {t("assign.takeMenteeText").replace("{0}", user?.gender === "male" ? t("assign.brother") : t("assign.sister"))}
             </Text>
           </View>
@@ -275,9 +276,9 @@ export default function AssignScreen() {
             </Text>
 
             {matchedMentors.length === 0 ? (
-              <View style={styles.errorBox}>
-                <Text style={styles.errorTitle}>{t("assign.noMentorFound")}</Text>
-                <Text style={styles.errorText}>
+              <View style={[styles.errorBox, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
+                <Text style={[styles.errorTitle, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("assign.noMentorFound")}</Text>
+                <Text style={[styles.errorText, { color: isDark ? "#f87171" : "#dc2626" }]}>
                   {t("assign.noMentorFoundText")}
                 </Text>
               </View>
@@ -364,8 +365,8 @@ export default function AssignScreen() {
 
         {/* Hinweis für Mentor: Zuweisung braucht Admin-Bestätigung */}
         {isMentor && (
-          <View style={styles.pendingHintBox}>
-            <Text style={styles.pendingHintText}>{t("assign.pendingApprovalNote")}</Text>
+          <View style={[styles.pendingHintBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+            <Text style={[styles.pendingHintText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("assign.pendingApprovalNote")}</Text>
           </View>
         )}
 
@@ -408,15 +409,13 @@ const styles = StyleSheet.create({
   sectionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   sectionHint: { fontSize: 12, marginBottom: 10 },
   mentorModeBox: {
-    backgroundColor: "#eff6ff",
     borderWidth: 1,
-    borderColor: "#dbeafe",
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
   },
-  mentorModeTitle: { color: "#1e40af", fontWeight: "600", fontSize: 14, marginBottom: 4 },
-  mentorModeText: { color: "#2563eb", fontSize: 13 },
+  mentorModeTitle: { fontWeight: "600", fontSize: 14, marginBottom: 4 },
+  mentorModeText: { fontSize: 13 },
   listCard: {
     borderRadius: 8,
     borderWidth: 1,
@@ -446,15 +445,13 @@ const styles = StyleSheet.create({
   itemName: { fontWeight: "600" },
   itemSub: { fontSize: 12 },
   errorBox: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
-  errorTitle: { color: "#b91c1c", fontWeight: "500" },
-  errorText: { color: "#dc2626", fontSize: 14, marginTop: 4 },
+  errorTitle: { fontWeight: "500" },
+  errorText: { fontSize: 14, marginTop: 4 },
   mentorCard: {
     borderRadius: 8,
     borderWidth: 1,
@@ -497,12 +494,10 @@ const styles = StyleSheet.create({
   assignButton: { borderRadius: 5, paddingVertical: 9, alignItems: "center" },
   assignButtonText: { fontWeight: "600", fontSize: 14 },
   pendingHintBox: {
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 12,
     marginBottom: 12,
   },
-  pendingHintText: { color: "#92400e", fontSize: 13 },
+  pendingHintText: { fontSize: 13 },
 });

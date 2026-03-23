@@ -11,7 +11,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS } from "../../constants/Colors";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 export default function StatisticsScreen() {
   const router = useRouter();
@@ -159,15 +159,19 @@ function StatisticsContent() {
             label={t("statistics.completed")}
             count={stats.completedCount}
             total={stats.totalMentorships}
-            color="#15803d"
-            bg="#dcfce7"
+            colorLight="#15803d"
+            colorDark="#4ade80"
+            bgLight="#dcfce7"
+            bgDark="#1a3a2a"
           />
           <StatusRow
             label={t("statistics.cancelled")}
             count={stats.cancelledCount}
             total={stats.totalMentorships}
-            color="#b91c1c"
-            bg="#fee2e2"
+            colorLight="#b91c1c"
+            colorDark="#f87171"
+            bgLight="#fee2e2"
+            bgDark="#3a1a1a"
           />
           <View style={[styles.statusRow, { borderBottomWidth: 0, borderBottomColor: themeColors.border }]}>
             <Text style={[styles.statusLabel, { color: themeColors.textSecondary }]}>{t("statistics.total")}</Text>
@@ -261,16 +265,23 @@ function StatusRow({
   label,
   count,
   total,
-  color,
-  bg,
+  colorLight,
+  colorDark,
+  bgLight,
+  bgDark,
 }: {
   label: string;
   count: number;
   total: number;
-  color: string;
-  bg: string;
+  colorLight: string;
+  colorDark: string;
+  bgLight: string;
+  bgDark: string;
 }) {
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
+  const color = isDark ? colorDark : colorLight;
+  const bg = isDark ? bgDark : bgLight;
   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
   return (
     <View style={[styles.statusRow, { borderBottomColor: themeColors.border }]}>

@@ -12,7 +12,7 @@ import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 type FeedbackFilter = "all" | "positive" | "negative";
 
@@ -33,6 +33,7 @@ export default function FeedbackOverviewScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { getFeedbacks, users, mentorships } = useData();
   const [filter, setFilter] = useState<FeedbackFilter>("all");
   const [search, setSearch] = useState("");
@@ -96,11 +97,11 @@ export default function FeedbackOverviewScreen() {
 
           {/* FIX 11: Frühwarnsystem */}
           {hasNegative && (
-            <View style={styles.warningBanner}>
+            <View style={[styles.warningBanner, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
               <Text style={styles.warningIcon}>!</Text>
               <View style={{ flex: 1 }}>
-                <Text style={styles.warningTitle}>{t("feedbackOverview.warningTitle")}</Text>
-                <Text style={styles.warningText}>
+                <Text style={[styles.warningTitle, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("feedbackOverview.warningTitle")}</Text>
+                <Text style={[styles.warningText, { color: isDark ? "#fca5a5" : "#dc2626" }]}>
                   {t("feedbackOverview.warningText")}
                 </Text>
               </View>
@@ -159,7 +160,7 @@ export default function FeedbackOverviewScreen() {
                   style={[
                     styles.feedbackCard,
                     { backgroundColor: themeColors.card, borderColor: themeColors.border },
-                    isNegative ? styles.feedbackCardNegative : {},
+                    isNegative ? { borderColor: isDark ? "#7a2a2a" : "#fca5a5", backgroundColor: isDark ? "#2a1a1a" : "#fff5f5" } : {},
                   ]}
                 >
                   <View style={styles.feedbackHeader}>
@@ -190,8 +191,8 @@ export default function FeedbackOverviewScreen() {
                   )}
 
                   {isNegative && (
-                    <View style={styles.negativeBadge}>
-                      <Text style={styles.negativeBadgeText}>{t("feedbackOverview.actionNeeded")}</Text>
+                    <View style={[styles.negativeBadge, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
+                      <Text style={[styles.negativeBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("feedbackOverview.actionNeeded")}</Text>
                     </View>
                   )}
                 </View>
@@ -213,9 +214,7 @@ const styles = StyleSheet.create({
   pageSubtitle: { marginBottom: 16 },
 
   warningBanner: {
-    backgroundColor: "#fef2f2",
     borderWidth: 1,
-    borderColor: "#fecaca",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
@@ -235,8 +234,8 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     flexShrink: 0,
   },
-  warningTitle: { color: "#b91c1c", fontWeight: "bold", fontSize: 14, marginBottom: 2 },
-  warningText: { color: "#dc2626", fontSize: 13 },
+  warningTitle: { fontWeight: "bold", fontSize: 14, marginBottom: 2 },
+  warningText: { fontSize: 13 },
 
   filterCard: {
     borderRadius: 8,
@@ -282,10 +281,7 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 12,
   },
-  feedbackCardNegative: {
-    borderColor: "#fca5a5",
-    backgroundColor: "#fff5f5",
-  },
+  feedbackCardNegative: {},
   feedbackHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 },
   feedbackSubmitter: { fontWeight: "bold", fontSize: 15 },
   feedbackMeta: { fontSize: 12, marginTop: 2 },
@@ -301,10 +297,9 @@ const styles = StyleSheet.create({
   negativeBadge: {
     marginTop: 10,
     alignSelf: "flex-start",
-    backgroundColor: "#fee2e2",
     borderRadius: 9999,
     paddingHorizontal: 10,
     paddingVertical: 3,
   },
-  negativeBadgeText: { color: "#b91c1c", fontSize: 12, fontWeight: "600" },
+  negativeBadgeText: { fontSize: 12, fontWeight: "600" },
 });

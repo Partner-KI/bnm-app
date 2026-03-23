@@ -12,24 +12,25 @@ import type { Notification, NotificationType } from "../types";
 import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
-const TYPE_CONFIG: Record<
-  NotificationType,
-  { icon: string; bg: string; color: string }
-> = {
-  assignment: { icon: "👤", bg: "#dbeafe", color: "#1d4ed8" },
-  reminder: { icon: "⏰", bg: "#fef3c7", color: "#b45309" },
-  progress: { icon: "✅", bg: "#dcfce7", color: "#15803d" },
-  message: { icon: "💬", bg: "#f3e8ff", color: "#7e22ce" },
-  feedback: { icon: "⭐", bg: "#fef3c7", color: "#b45309" },
-  system: { icon: "ℹ️", bg: "#f3f4f6", color: "#4b5563" },
-};
+function getTypeConfig(isDark: boolean): Record<NotificationType, { icon: string; bg: string; color: string }> {
+  return {
+    assignment: { icon: "👤", bg: isDark ? "#1e2d4a" : "#dbeafe", color: isDark ? "#93c5fd" : "#1d4ed8" },
+    reminder:   { icon: "⏰", bg: isDark ? "#3a2e1a" : "#fef3c7", color: isDark ? "#fbbf24" : "#b45309" },
+    progress:   { icon: "✅", bg: isDark ? "#1a3a2a" : "#dcfce7", color: isDark ? "#4ade80" : "#15803d" },
+    message:    { icon: "💬", bg: isDark ? "#2e1a4a" : "#f3e8ff", color: isDark ? "#c084fc" : "#7e22ce" },
+    feedback:   { icon: "⭐", bg: isDark ? "#3a2e1a" : "#fef3c7", color: isDark ? "#fbbf24" : "#b45309" },
+    system:     { icon: "ℹ️", bg: isDark ? "#2a2d3a" : "#f3f4f6", color: isDark ? "#9ca3af" : "#4b5563" },
+  };
+}
 
 export default function NotificationsScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
+  const TYPE_CONFIG = getTypeConfig(isDark);
   const { notifications, markAsRead, markAllAsRead } = useData();
 
   function timeAgo(isoDate: string): string {
@@ -86,8 +87,11 @@ export default function NotificationsScreen() {
         </View>
 
         {unreadCount > 0 && (
-          <View style={styles.unreadBanner}>
-            <Text style={styles.unreadBannerText}>
+          <View style={[styles.unreadBanner, {
+            backgroundColor: isDark ? "#1e2d4a" : "#eff6ff",
+            borderBottomColor: isDark ? "#2d4a7a" : "#dbeafe",
+          }]}>
+            <Text style={[styles.unreadBannerText, { color: isDark ? "#93c5fd" : "#1d4ed8" }]}>
               {t("notifications.unread").replace("{0}", String(unreadCount)).replace("{1}", unreadCount > 1 ? "en" : "")}
             </Text>
           </View>
@@ -111,7 +115,10 @@ export default function NotificationsScreen() {
                   style={[
                     styles.notifCard,
                     { backgroundColor: themeColors.card, borderColor: themeColors.border },
-                    !notification.read && styles.notifCardUnread,
+                    !notification.read && [styles.notifCardUnread, {
+                      borderColor: isDark ? "#2d4a7a" : "#bfdbfe",
+                      backgroundColor: isDark ? "#1a1f2e" : "#f8faff",
+                    }],
                   ]}
                   onPress={() => handlePress(notification)}
                 >
@@ -169,13 +176,11 @@ const styles = StyleSheet.create({
   headerTitle: { fontWeight: "bold", fontSize: 16 },
   markAllText: { fontSize: 13, fontWeight: "500" },
   unreadBanner: {
-    backgroundColor: "#eff6ff",
     borderBottomWidth: 1,
-    borderBottomColor: "#dbeafe",
     paddingHorizontal: 20,
     paddingVertical: 8,
   },
-  unreadBannerText: { color: "#1d4ed8", fontSize: 13, fontWeight: "500" },
+  unreadBannerText: { fontSize: 13, fontWeight: "500" },
   scrollView: { flex: 1 },
   list: { padding: 16, gap: 12 },
   emptyBox: {
@@ -196,8 +201,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   notifCardUnread: {
-    borderColor: "#bfdbfe",
-    backgroundColor: "#f8faff",
+    // Colors applied dynamically via isDark
   },
   unreadDot: {
     position: "absolute",

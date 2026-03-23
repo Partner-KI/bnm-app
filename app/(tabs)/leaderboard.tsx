@@ -14,7 +14,7 @@ import { useData } from "../../contexts/DataContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 interface MentorScore {
   mentorId: string;
@@ -36,6 +36,7 @@ export default function LeaderboardScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { users, mentorships, sessions, mentorOfMonthVisible, refreshData } = useData();
 
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
@@ -272,8 +273,8 @@ export default function LeaderboardScreen() {
                       <View style={styles.rankNameRow}>
                         <Text style={[styles.rankName, { color: themeColors.text }]}>{item.name}</Text>
                         {isMe && (
-                          <View style={styles.meChip}>
-                            <Text style={styles.meChipText}>{t("leaderboard.you")}</Text>
+                          <View style={[styles.meChip, { backgroundColor: isDark ? "#1e2d4a" : "#dbeafe" }]}>
+                            <Text style={[styles.meChipText, { color: isDark ? "#93c5fd" : "#1d4ed8" }]}>{t("leaderboard.you")}</Text>
                           </View>
                         )}
                         {isTop3 && (
@@ -453,12 +454,11 @@ const styles = StyleSheet.create({
   rankNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },
   rankName: { fontWeight: "600", fontSize: 15 },
   meChip: {
-    backgroundColor: "#dbeafe",
     paddingHorizontal: 8,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  meChipText: { color: "#1d4ed8", fontSize: 11, fontWeight: "600" },
+  meChipText: { fontSize: 11, fontWeight: "600" },
   medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 },
   medalChipText: { color: COLORS.white, fontSize: 11, fontWeight: "600" },
   rankSub: { fontSize: 12 },

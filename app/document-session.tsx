@@ -15,7 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { COLORS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
 const ERSTKONTAKT_TYPE_NAME = "Erstkontakt";
 const BNM_BOX_TYPE_NAME = "BNM-Box";
@@ -26,6 +26,7 @@ export default function DocumentSessionScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const {
     getMentorshipsByMentorId,
     getMentorshipById,
@@ -379,7 +380,7 @@ export default function DocumentSessionScreen() {
                   style={[
                     styles.listItem,
                     idx < myMentorships.length - 1 ? styles.listItemBorder : {},
-                    selectedMentorshipId === m.id ? styles.listItemSelected : {},
+                    selectedMentorshipId === m.id ? [styles.listItemSelected, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }] : {},
                   ]}
                   onPress={() => {
                     setSelectedMentorshipId(m.id);
@@ -413,9 +414,9 @@ export default function DocumentSessionScreen() {
         {selectedMentorship && (
           <>
             {isCompleted && (
-              <View style={styles.nachbetreuungBox}>
-                <Text style={styles.nachbetreuungLabel}>{t("docSession.aftercare")}</Text>
-                <Text style={styles.nachbetreuungText}>
+              <View style={[styles.nachbetreuungBox, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2a6a4a" : "#bbf7d0" }]}>
+                <Text style={[styles.nachbetreuungLabel, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("docSession.aftercare")}</Text>
+                <Text style={[styles.nachbetreuungText, { color: isDark ? "#4ade80" : "#16a34a" }]}>
                   {t("docSession.aftercareText")}
                 </Text>
               </View>
@@ -461,7 +462,7 @@ export default function DocumentSessionScreen() {
                       style={[
                         styles.listItem,
                         idx < sortedSessionTypes.length - 1 ? styles.listItemBorder : {},
-                        adminSelectedTypeId === st.id ? styles.listItemSelected : {},
+                        adminSelectedTypeId === st.id ? [styles.listItemSelected, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }] : {},
                       ]}
                       onPress={() => setAdminSelectedTypeId(st.id)}
                     >
@@ -480,8 +481,8 @@ export default function DocumentSessionScreen() {
                         <Text style={[styles.itemSub, { color: themeColors.textTertiary }]}>{st.description}</Text>
                       </View>
                       {completedStepIds.includes(st.id) && (
-                        <View style={styles.doneChip}>
-                          <Text style={styles.doneChipText}>{t("docSession.done")}</Text>
+                        <View style={[styles.doneChip, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
+                          <Text style={[styles.doneChipText, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("docSession.done")}</Text>
                         </View>
                       )}
                     </TouchableOpacity>
@@ -491,12 +492,12 @@ export default function DocumentSessionScreen() {
             )}
 
             {!isAdmin && !isCompleted && nextStep && (
-              <View style={styles.amberBox}>
-                <Text style={styles.amberLabel}>{t("docSession.nextStep")}</Text>
-                <Text style={styles.amberStepName}>
+              <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+                <Text style={[styles.amberLabel, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("docSession.nextStep")}</Text>
+                <Text style={[styles.amberStepName, { color: isDark ? "#fde68a" : "#78350f" }]}>
                   {nextStep.sort_order}. {nextStep.name}
                 </Text>
-                <Text style={styles.amberDesc}>{nextStep.description}</Text>
+                <Text style={[styles.amberDesc, { color: isDark ? "#fbbf24" : "#b45309" }]}>{nextStep.description}</Text>
               </View>
             )}
 
@@ -900,9 +901,9 @@ export default function DocumentSessionScreen() {
 
             {/* Alle Schritte abgeschlossen (10/10) */}
             {!isAdmin && !isCompleted && !nextStep && (
-              <View style={styles.completedBox}>
-                <Text style={styles.completedTitle}>{t("sessions.allComplete")}</Text>
-                <Text style={styles.completedText}>
+              <View style={[styles.completedBox, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2a6a4a" : "#bbf7d0" }]}>
+                <Text style={[styles.completedTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("sessions.allComplete")}</Text>
+                <Text style={[styles.completedText, { color: isDark ? "#4ade80" : "#16a34a" }]}>
                   {t("docSession.allDoneText")}
                 </Text>
                 <TouchableOpacity
@@ -953,7 +954,7 @@ export default function DocumentSessionScreen() {
                         style={[
                           styles.listItem,
                           idx < completedAllowsMultipleSteps.length - 1 ? styles.listItemBorder : {},
-                          additionalStepId === st.id ? styles.listItemSelected : {},
+                          additionalStepId === st.id ? [styles.listItemSelected, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }] : {},
                         ]}
                         onPress={() => setAdditionalStepId(st.id)}
                       >
@@ -992,14 +993,14 @@ export default function DocumentSessionScreen() {
 
             {forceNewSession && (
               <>
-                <View style={styles.amberBox}>
-                  <Text style={styles.amberLabel}>{t("docSession.furtherSession")}</Text>
-                  <Text style={styles.amberStepName}>
+                <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+                  <Text style={[styles.amberLabel, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("docSession.furtherSession")}</Text>
+                  <Text style={[styles.amberStepName, { color: isDark ? "#fde68a" : "#78350f" }]}>
                     {additionalStepId
                       ? sortedSessionTypes.find((st) => st.id === additionalStepId)?.name ?? ""
                       : lastCompletedAllowsMultipleStep?.name ?? ""}
                   </Text>
-                  <Text style={styles.amberDesc}>
+                  <Text style={[styles.amberDesc, { color: isDark ? "#fbbf24" : "#b45309" }]}>
                     {t("docSession.unlimited").replace("{0}", String(activeStepSessionCount + 1))}
                   </Text>
                 </View>
@@ -1036,7 +1037,7 @@ const styles = StyleSheet.create({
   },
   listItem: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 12 },
   listItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  listItemSelected: { backgroundColor: "#eff6ff" },
+  listItemSelected: {},
   radioCircle: {
     width: 20, height: 20, borderRadius: 9999, borderWidth: 2, marginRight: 12,
     alignItems: "center", justifyContent: "center",
@@ -1046,8 +1047,8 @@ const styles = StyleSheet.create({
   radioDot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: COLORS.white },
   itemName: { fontWeight: "600" },
   itemSub: { fontSize: 12, marginTop: 2 },
-  doneChip: { backgroundColor: "#dcfce7", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
-  doneChipText: { color: "#15803d", fontSize: 11, fontWeight: "500" },
+  doneChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  doneChipText: { fontSize: 11, fontWeight: "500" },
   progressCard: { backgroundColor: COLORS.primary, borderRadius: 8, padding: 16, marginBottom: 16 },
   progressCardLabel: { color: COLORS.white, opacity: 0.7, fontSize: 13, marginBottom: 2 },
   progressCardName: { color: COLORS.white, fontSize: 17, fontWeight: "bold", marginBottom: 10 },
@@ -1056,26 +1057,22 @@ const styles = StyleSheet.create({
   miniStepText: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   progressCardSub: { color: COLORS.white, opacity: 0.6, fontSize: 12, marginTop: 12 },
   nachbetreuungBox: {
-    backgroundColor: "#f0fdf4",
     borderWidth: 1,
-    borderColor: "#bbf7d0",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
-  nachbetreuungLabel: { color: "#15803d", fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 4 },
-  nachbetreuungText: { color: "#16a34a", fontSize: 14 },
+  nachbetreuungLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 4 },
+  nachbetreuungText: { fontSize: 14 },
   amberBox: {
-    backgroundColor: "#fffbeb",
     borderWidth: 1,
-    borderColor: "#fde68a",
     borderRadius: 8,
     padding: 14,
     marginBottom: 16,
   },
-  amberLabel: { color: "#92400e", fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 2 },
-  amberStepName: { color: "#78350f", fontWeight: "bold", fontSize: 15 },
-  amberDesc: { color: "#b45309", fontSize: 13, marginTop: 2 },
+  amberLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 2 },
+  amberStepName: { fontWeight: "bold", fontSize: 15 },
+  amberDesc: { fontSize: 13, marginTop: 2 },
   formCard: {
     borderRadius: 8,
     borderWidth: 1,
@@ -1100,15 +1097,13 @@ const styles = StyleSheet.create({
   saveButton: { borderRadius: 5, paddingVertical: 9, alignItems: "center" },
   saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   completedBox: {
-    backgroundColor: "#f0fdf4",
     borderWidth: 1,
-    borderColor: "#bbf7d0",
     borderRadius: 8,
     padding: 16,
     alignItems: "center",
   },
-  completedTitle: { color: "#15803d", fontWeight: "bold", fontSize: 15, marginBottom: 6 },
-  completedText: { color: "#16a34a", fontSize: 13, textAlign: "center" },
+  completedTitle: { fontWeight: "bold", fontSize: 15, marginBottom: 6 },
+  completedText: { fontSize: 13, textAlign: "center" },
   backToMentorshipButton: {
     marginTop: 12,
     backgroundColor: COLORS.primary,
