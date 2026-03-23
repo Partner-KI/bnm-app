@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform, TextInput } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
@@ -49,6 +50,12 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   const allMentors = users.filter((u) => u.role === "mentor");
   const allMentees = users.filter((u) => u.role === "mentee");
@@ -598,6 +605,12 @@ function MentorDashboard() {
     setRefreshing(false);
   }, [refreshData]);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
+
   const myMentorships = user ? getMentorshipsByMentorId(user.id) : [];
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
@@ -791,6 +804,12 @@ function MenteeDashboard() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   if (!user) return null;
 

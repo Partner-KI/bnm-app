@@ -1,4 +1,5 @@
 import React, { useMemo, useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -46,6 +47,12 @@ export default function ChatsScreen() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   // Relevante Mentorships für den eingeloggten User
   // Nur aktive und abgeschlossene Mentorships zeigen (nicht pending_approval oder cancelled)

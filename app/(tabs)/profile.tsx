@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -37,6 +38,12 @@ export default function ProfileScreen() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   const ROLE_LABELS: Record<UserRole, string> = {
     admin: t("profile.roleAdmin"),

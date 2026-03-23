@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -57,6 +58,12 @@ export default function LeaderboardScreen() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   // Monatsnamen aus i18n
   const monthName = t(`datePicker.month.${selectedMonth}` as TranslationKeys);

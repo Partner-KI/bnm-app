@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -45,6 +46,12 @@ export default function ReportsScreen() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   // Translated month names
   const MONTHS = [

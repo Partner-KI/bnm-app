@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -66,6 +67,12 @@ function AdminMenteesView() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   function toggleSelectMode() {
     setSelectMode((prev) => !prev);
@@ -596,6 +603,12 @@ function MentorMenteesView() {
     setRefreshing(false);
   }, [refreshData]);
 
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
+
   if (!user) return null;
 
   const myMentorships = getMentorshipsByMentorId(user.id);
@@ -794,6 +807,12 @@ function MenteeProgressView() {
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
+
+  useFocusEffect(
+    useCallback(() => {
+      refreshData();
+    }, [refreshData])
+  );
 
   if (!user) return null;
 
