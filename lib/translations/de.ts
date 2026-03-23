@@ -891,6 +891,13 @@ const de = {
   "pendingApprovals.rejectText": "Die Anfrage von {0} für Mentee {1} wird abgelehnt.",
   "pendingApprovals.approveSuccess": "Zuweisung wurde bestätigt.",
   "pendingApprovals.rejectSuccess": "Zuweisung wurde abgelehnt.",
+  "pendingApprovals.rejectReasonTitle": "Grund der Ablehnung",
+  "pendingApprovals.rejectReasonPlaceholder": "Bitte gib einen Grund an...",
+  "pendingApprovals.rejectReasonRequired": "Bitte gib einen Ablehnungsgrund an.",
+  "pendingApprovals.rejectConfirm": "Ablehnen",
+  "pendingApprovals.rejectCancel": "Abbrechen",
+  "pendingApprovals.notificationTitle": "Zuweisung abgelehnt",
+  "pendingApprovals.notificationBody": "Deine Zuweisung zu {0} wurde abgelehnt. Grund: {1}",
 
   // Mentee-Dashboard: Mein Mentor Karte
   "dashboard.myMentor": "Mein Mentor",
@@ -1241,6 +1248,7 @@ const de = {
 
   // Chat – send error
   "chat.sendError": "Nachricht konnte nicht gesendet werden.",
+  "chat.notActiveHint": "Der Chat ist nur bei aktiver Betreuung verfügbar.",
 
   // Motivation / Hadith des Tages
   "motivation.title": "Motivation des Tages",

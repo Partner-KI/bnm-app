@@ -184,28 +184,36 @@ export default function ChatScreen() {
         <View style={{ height: 16 }} />
       </ScrollView>
 
-      {/* Input-Bereich */}
-      <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
-        <TextInput
-          style={[styles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text }]}
-          value={inputText}
-          onChangeText={setInputText}
-          placeholder={t("chat.placeholder")}
-          placeholderTextColor={themeColors.textTertiary}
-          multiline
-          returnKeyType="default"
-        />
-        <TouchableOpacity
-          style={[
-            styles.sendButton,
-            { backgroundColor: inputText.trim() ? COLORS.primary : themeColors.border },
-          ]}
-          onPress={handleSend}
-          disabled={!inputText.trim()}
-        >
-          <Text style={styles.sendButtonText}>→</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Input-Bereich — nur bei aktiver Betreuung */}
+      {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
+        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+          <TextInput
+            style={[styles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text }]}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder={t("chat.placeholder")}
+            placeholderTextColor={themeColors.textTertiary}
+            multiline
+            returnKeyType="default"
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              { backgroundColor: inputText.trim() ? COLORS.primary : themeColors.border },
+            ]}
+            onPress={handleSend}
+            disabled={!inputText.trim()}
+          >
+            <Text style={styles.sendButtonText}>→</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+          <Text style={[styles.inactiveHint, { color: themeColors.textTertiary }]}>
+            {t("chat.notActiveHint")}
+          </Text>
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
@@ -261,4 +269,5 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   sendButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 16 },
+  inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
 });

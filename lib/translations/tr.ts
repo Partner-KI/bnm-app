@@ -893,6 +893,13 @@ const tr: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "{0} kişisinin {1} için isteği reddedilecek.",
   "pendingApprovals.approveSuccess": "Atama onaylandı.",
   "pendingApprovals.rejectSuccess": "Atama reddedildi.",
+  "pendingApprovals.rejectReasonTitle": "Red Gerekçesi",
+  "pendingApprovals.rejectReasonPlaceholder": "Lütfen bir gerekçe belirtin...",
+  "pendingApprovals.rejectReasonRequired": "Lütfen red gerekçesi girin.",
+  "pendingApprovals.rejectConfirm": "Reddet",
+  "pendingApprovals.rejectCancel": "İptal",
+  "pendingApprovals.notificationTitle": "Atama reddedildi",
+  "pendingApprovals.notificationBody": "{0} için atamanız reddedildi. Gerekçe: {1}",
 
   // Mentee Paneli: Mentorim Kartı
   "dashboard.myMentor": "Mentorim",
@@ -1292,6 +1299,7 @@ const tr: Record<TranslationKeys, string> = {
 
   // Chat – send error
   "chat.sendError": "Mesaj gönderilemedi.",
+  "chat.notActiveHint": "Sohbet yalnızca aktif mentorluk sürecinde kullanılabilir.",
 
   // Motivation / Günün Hadisi
   "motivation.title": "Günün Motivasyonu",

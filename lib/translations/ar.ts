@@ -893,6 +893,13 @@ const ar: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "سيتم رفض طلب {0} للمتدرب {1}.",
   "pendingApprovals.approveSuccess": "تم تأكيد التعيين.",
   "pendingApprovals.rejectSuccess": "تم رفض التعيين.",
+  "pendingApprovals.rejectReasonTitle": "سبب الرفض",
+  "pendingApprovals.rejectReasonPlaceholder": "يرجى تقديم سبب...",
+  "pendingApprovals.rejectReasonRequired": "يرجى تقديم سبب للرفض.",
+  "pendingApprovals.rejectConfirm": "رفض",
+  "pendingApprovals.rejectCancel": "إلغاء",
+  "pendingApprovals.notificationTitle": "تم رفض التعيين",
+  "pendingApprovals.notificationBody": "تم رفض تعيينك إلى {0}. السبب: {1}",
 
   // لوحة المتدرب: بطاقة مرشدي
   "dashboard.myMentor": "مرشدي",
@@ -1292,6 +1299,7 @@ const ar: Record<TranslationKeys, string> = {
 
   // Chat – send error
   "chat.sendError": "تعذّر إرسال الرسالة.",
+  "chat.notActiveHint": "الدردشة متاحة فقط عند الإشراف النشط.",
 
   // Motivation / حديث اليوم
   "motivation.title": "دافع اليوم",

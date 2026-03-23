@@ -79,7 +79,7 @@ export interface DataContextValue {
   assignMentorship: (menteeId: string, mentorId: string, adminId: string, status?: MentorshipStatus) => Promise<void>;
   updateMentorshipStatus: (mentorshipId: string, status: MentorshipStatus) => Promise<void>;
   approveMentorship: (mentorshipId: string) => Promise<void>;
-  rejectMentorship: (mentorshipId: string) => Promise<void>;
+  rejectMentorship: (mentorshipId: string, reason: string) => Promise<void>;
   getPendingApprovalsCount: () => number;
 
   // Session actions
@@ -896,7 +896,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const rejectMentorship = useCallback(
-    async (mentorshipId: string) => {
+    async (mentorshipId: string, reason: string) => {
+      // Mentorship-Daten vor dem Löschen sichern (für Notification)
+      const mentorship = mentorships.find((m) => m.id === mentorshipId);
+
       const { error } = await supabase
         .from("mentorships")
         .delete()
@@ -907,8 +910,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
       }
 
       setMentorships((prev) => prev.filter((m) => m.id !== mentorshipId));
+
+      // Notification an den Mentor senden
+      if (mentorship) {
+        const menteeName = mentorship.mentee?.name ?? "Mentee";
+        await createNotification(
+          mentorship.mentor_id,
+          "assignment",
+          "Zuweisung abgelehnt",
+          `Deine Zuweisung zu ${menteeName} wurde abgelehnt. Grund: ${reason}`,
+          mentorshipId
+        );
+      }
     },
-    []
+    [mentorships, createNotification]
   );
 
   const getPendingApprovalsCount = useCallback(() => {

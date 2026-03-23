@@ -6,6 +6,10 @@ import {
   TouchableOpacity,
   RefreshControl,
   StyleSheet,
+  Modal,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -25,6 +29,9 @@ export default function PendingApprovalsScreen() {
   const { mentorships, approveMentorship, rejectMentorship, refreshData } = useData();
   const confirm = useConfirm();
   const [refreshing, setRefreshing] = useState(false);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectTargetId, setRejectTargetId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
 
   const isAdmin = user?.role === "admin" || user?.role === "office";
 
@@ -65,24 +72,28 @@ export default function PendingApprovalsScreen() {
     }
   }
 
-  async function handleReject(mentorshipId: string) {
-    const m = pendingList.find((ms) => ms.id === mentorshipId);
-    if (!m) return;
+  function handleReject(mentorshipId: string) {
+    setRejectTargetId(mentorshipId);
+    setRejectReason("");
+    setRejectModalVisible(true);
+  }
 
-    const confirmed = await confirm(
-      t("pendingApprovals.rejectTitle"),
-      t("pendingApprovals.rejectText")
-        .replace("{0}", m.mentor?.name ?? "?")
-        .replace("{1}", m.mentee?.name ?? "?")
-    );
-    if (!confirmed) return;
-
+  async function confirmReject() {
+    if (!rejectTargetId) return;
+    if (!rejectReason.trim()) {
+      showError(t("pendingApprovals.rejectReasonRequired"));
+      return;
+    }
+    setRejectModalVisible(false);
     try {
-      await rejectMentorship(mentorshipId);
+      await rejectMentorship(rejectTargetId, rejectReason.trim());
       showSuccess(t("pendingApprovals.rejectSuccess"));
     } catch (err) {
       const msg = err instanceof Error ? err.message : t("assign.errorUnknown");
       showError(t("common.errorPrefix").replace("{0}", msg));
+    } finally {
+      setRejectTargetId(null);
+      setRejectReason("");
     }
   }
 
@@ -152,6 +163,61 @@ export default function PendingApprovalsScreen() {
           )}
         </View>
       </ScrollView>
+
+      {/* Modal: Ablehnungsgrund */}
+      <Modal
+        visible={rejectModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setRejectModalVisible(false)}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalOverlay}
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+        >
+          <View style={[styles.modalBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>
+              {t("pendingApprovals.rejectReasonTitle")}
+            </Text>
+            <TextInput
+              style={[
+                styles.modalInput,
+                { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text },
+              ]}
+              placeholder={t("pendingApprovals.rejectReasonPlaceholder")}
+              placeholderTextColor={themeColors.textTertiary}
+              value={rejectReason}
+              onChangeText={setRejectReason}
+              multiline
+              numberOfLines={4}
+              textAlignVertical="top"
+              autoFocus
+            />
+            <View style={styles.modalButtonRow}>
+              <TouchableOpacity
+                style={[styles.modalCancelBtn, { borderColor: themeColors.border }]}
+                onPress={() => {
+                  setRejectModalVisible(false);
+                  setRejectTargetId(null);
+                  setRejectReason("");
+                }}
+              >
+                <Text style={[styles.modalCancelText, { color: themeColors.textSecondary }]}>
+                  {t("pendingApprovals.rejectCancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalConfirmBtn, { backgroundColor: COLORS.error }]}
+                onPress={confirmReject}
+              >
+                <Text style={styles.modalConfirmText}>
+                  {t("pendingApprovals.rejectConfirm")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </KeyboardAvoidingView>
+      </Modal>
     </Container>
   );
 }
@@ -216,4 +282,52 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   rejectButtonText: { color: COLORS.error, fontWeight: "600", fontSize: 14 },
+
+  // Modal: Ablehnungsgrund
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20,
+  },
+  modalBox: {
+    borderRadius: 10,
+    borderWidth: 1,
+    padding: 20,
+    width: "100%",
+    maxWidth: 440,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    minHeight: 90,
+    marginBottom: 14,
+  },
+  modalButtonRow: {
+    flexDirection: "row",
+    gap: 10,
+  },
+  modalCancelBtn: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: 6,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  modalCancelText: { fontWeight: "600", fontSize: 14 },
+  modalConfirmBtn: {
+    flex: 1,
+    borderRadius: 6,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  modalConfirmText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
 });

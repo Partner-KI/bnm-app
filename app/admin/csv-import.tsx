@@ -230,7 +230,7 @@ export default function CSVImportScreen() {
               data: {
                 name: parsed.name,
                 role,
-                gender: parsed.gender ?? "male",
+                gender: parsed.gender,
                 city: parsed.city,
                 plz: parsed.plz || "",
                 age: parsed.age ?? 0,

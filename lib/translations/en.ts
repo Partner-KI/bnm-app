@@ -893,6 +893,13 @@ const en: Record<TranslationKeys, string> = {
   "pendingApprovals.rejectText": "The request from {0} for mentee {1} will be rejected.",
   "pendingApprovals.approveSuccess": "Assignment confirmed.",
   "pendingApprovals.rejectSuccess": "Assignment rejected.",
+  "pendingApprovals.rejectReasonTitle": "Reason for Rejection",
+  "pendingApprovals.rejectReasonPlaceholder": "Please provide a reason...",
+  "pendingApprovals.rejectReasonRequired": "Please provide a reason for rejection.",
+  "pendingApprovals.rejectConfirm": "Reject",
+  "pendingApprovals.rejectCancel": "Cancel",
+  "pendingApprovals.notificationTitle": "Assignment rejected",
+  "pendingApprovals.notificationBody": "Your assignment to {0} was rejected. Reason: {1}",
 
   // Mentee Dashboard: My Mentor Card
   "dashboard.myMentor": "My Mentor",
@@ -1241,6 +1248,7 @@ const en: Record<TranslationKeys, string> = {
 
   // Chat – send error
   "chat.sendError": "Could not send message.",
+  "chat.notActiveHint": "Chat is only available during an active mentorship.",
 
   // Motivation / Hadith of the Day
   "motivation.title": "Motivation of the Day",

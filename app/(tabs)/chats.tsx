@@ -48,11 +48,14 @@ export default function ChatsScreen() {
   }, [refreshData]);
 
   // Relevante Mentorships für den eingeloggten User
+  // Nur aktive und abgeschlossene Mentorships zeigen (nicht pending_approval oder cancelled)
   const relevantMentorships = useMemo(() => {
     if (!user) return [];
-    if (isAdmin) return mentorships;
-    if (isMentor) return mentorships.filter((m) => m.mentor_id === user.id);
-    if (isMentee) return mentorships.filter((m) => m.mentee_id === user.id);
+    const activeMentorships = (list: typeof mentorships) =>
+      list.filter((m) => m.status === "active" || m.status === "completed");
+    if (isAdmin) return mentorships; // Admin sieht alle
+    if (isMentor) return activeMentorships(mentorships.filter((m) => m.mentor_id === user.id));
+    if (isMentee) return activeMentorships(mentorships.filter((m) => m.mentee_id === user.id));
     return [];
   }, [mentorships, user, isAdmin, isMentor, isMentee]);
 
