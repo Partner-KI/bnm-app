@@ -10,6 +10,16 @@ import { supabase } from "./supabase";
 
 const OVERRIDE_RECIPIENT = "hasan.sevenler@partner.ki";
 
+/** HTML-Sonderzeichen escapen um XSS in E-Mails zu verhindern */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -36,11 +46,11 @@ export async function sendCredentialsEmail(
 ): Promise<boolean> {
   const subject = "[BNM] Deine Zugangsdaten";
   const body = `
-<p>Salam Aleikum ${name},</p>
+<p>Salam Aleikum ${escapeHtml(name)},</p>
 <p>dein BNM-Account wurde erstellt. Hier sind deine Zugangsdaten:</p>
 <ul>
-  <li><strong>E-Mail:</strong> ${email}</li>
-  <li><strong>Temporäres Passwort:</strong> ${tempPassword}</li>
+  <li><strong>E-Mail:</strong> ${escapeHtml(email)}</li>
+  <li><strong>Temporäres Passwort:</strong> ${escapeHtml(tempPassword)}</li>
 </ul>
 <p>Bitte ändere dein Passwort nach dem ersten Login.</p>
 <p>Barakallahu fik</p>
@@ -62,10 +72,10 @@ export async function sendNewFeedbackNotification(
   const body = `
 <p>Es wurde ein neues Feedback eingegangen.</p>
 <ul>
-  <li><strong>Mentor:</strong> ${mentorName}</li>
-  <li><strong>Mentee:</strong> ${menteeName}</li>
+  <li><strong>Mentor:</strong> ${escapeHtml(mentorName)}</li>
+  <li><strong>Mentee:</strong> ${escapeHtml(menteeName)}</li>
   <li><strong>Bewertung:</strong> ${"★".repeat(rating)}${"☆".repeat(5 - rating)} (${rating}/5)</li>
-  ${comment ? `<li><strong>Kommentar:</strong> ${comment}</li>` : ""}
+  ${comment ? `<li><strong>Kommentar:</strong> ${escapeHtml(comment)}</li>` : ""}
 </ul>
 <p>Bitte im Admin-Dashboard einsehen.</p>
 <hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
@@ -83,9 +93,9 @@ export async function sendNewMenteeRegistrationNotification(
   const body = `
 <p>Eine neue Mentee-Anmeldung wurde eingereicht.</p>
 <ul>
-  <li><strong>Name:</strong> ${menteeName}</li>
-  <li><strong>E-Mail:</strong> ${menteeEmail}</li>
-  <li><strong>Stadt:</strong> ${city}</li>
+  <li><strong>Name:</strong> ${escapeHtml(menteeName)}</li>
+  <li><strong>E-Mail:</strong> ${escapeHtml(menteeEmail)}</li>
+  <li><strong>Stadt:</strong> ${escapeHtml(city)}</li>
   <li><strong>Geschlecht:</strong> ${gender === "male" ? "Bruder" : "Schwester"}</li>
 </ul>
 <p>Bitte im Admin-Dashboard unter "Anmeldungen" prüfen.</p>
@@ -104,9 +114,9 @@ export async function sendNewMentorApplicationNotification(
   const body = `
 <p>Eine neue Mentor-Bewerbung wurde eingereicht.</p>
 <ul>
-  <li><strong>Name:</strong> ${applicantName}</li>
-  <li><strong>E-Mail:</strong> ${applicantEmail}</li>
-  <li><strong>Stadt:</strong> ${city}</li>
+  <li><strong>Name:</strong> ${escapeHtml(applicantName)}</li>
+  <li><strong>E-Mail:</strong> ${escapeHtml(applicantEmail)}</li>
+  <li><strong>Stadt:</strong> ${escapeHtml(city)}</li>
   <li><strong>Geschlecht:</strong> ${gender === "male" ? "Bruder" : "Schwester"}</li>
 </ul>
 <p>Bitte im Admin-Dashboard unter "Bewerbungen" prüfen.</p>
@@ -123,11 +133,11 @@ export async function sendMenteeAssignedNotification(
 ) {
   const subject = `[BNM] Dir wurde ein Mentee zugewiesen: ${menteeName}`;
   const body = `
-<p>Salam Aleikum ${mentorName},</p>
+<p>Salam Aleikum ${escapeHtml(mentorName)},</p>
 <p>dir wurde ein neuer Mentee zugewiesen.</p>
 <ul>
-  <li><strong>Mentee:</strong> ${menteeName}</li>
-  <li><strong>Stadt:</strong> ${menteeCity}</li>
+  <li><strong>Mentee:</strong> ${escapeHtml(menteeName)}</li>
+  <li><strong>Stadt:</strong> ${escapeHtml(menteeCity)}</li>
 </ul>
 <p>Bitte melde dich zeitnah in der App, um den ersten Kontakt herzustellen.</p>
 <p>Barakallahu fik</p>
@@ -149,8 +159,8 @@ export async function sendMentorshipStatusChangeNotification(
   const body = `
 <p>Eine Betreuung wurde als <strong>${statusLabel}</strong> markiert.</p>
 <ul>
-  <li><strong>Mentor:</strong> ${mentorName}</li>
-  <li><strong>Mentee:</strong> ${menteeName}</li>
+  <li><strong>Mentor:</strong> ${escapeHtml(mentorName)}</li>
+  <li><strong>Mentee:</strong> ${escapeHtml(menteeName)}</li>
   <li><strong>Status:</strong> ${statusLabel}</li>
 </ul>
 <p>Details im Admin-Dashboard einsehen.</p>
@@ -167,8 +177,8 @@ export async function sendFeedbackRequestEmail(
 ) {
   const subject = `[BNM] Bitte gib Feedback zu deiner Betreuung`;
   const body = `
-<p>Salam Aleikum ${menteeName},</p>
-<p>deine Betreuung mit <strong>${mentorName}</strong> wurde erfolgreich abgeschlossen. Wir würden uns sehr freuen, wenn du kurz dein Feedback teilst — das hilft uns, das BNM-Programm weiter zu verbessern.</p>
+<p>Salam Aleikum ${escapeHtml(menteeName)},</p>
+<p>deine Betreuung mit <strong>${escapeHtml(mentorName)}</strong> wurde erfolgreich abgeschlossen. Wir würden uns sehr freuen, wenn du kurz dein Feedback teilst — das hilft uns, das BNM-Programm weiter zu verbessern.</p>
 <p>Bitte öffne die BNM-App und gib dein Feedback zur Betreuung (ID: ${mentorshipId}) ab.</p>
 <p>Barakallahu fik</p>
 <p>Das BNM-Team</p>

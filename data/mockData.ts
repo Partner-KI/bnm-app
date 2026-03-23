@@ -327,18 +327,7 @@ export const MOCK_FEEDBACK: Feedback[] = [
   },
 ];
 
-export const MOCK_CREDENTIALS: Record<
-  string,
-  { password: string; userId: string }
-> = {
-  "admin@bnm.org": { password: "admin123", userId: "user-admin-1" },
-  "office@bnm.org": { password: "office123", userId: "user-office-1" },
-  "mentor@bnm.org": { password: "mentor123", userId: "user-mentor-1" },
-  "mentorin@bnm.org": { password: "mentor123", userId: "user-mentor-2" },
-  "mentee@bnm.org": { password: "mentee123", userId: "user-mentee-1" },
-  "mentee2@bnm.org": { password: "mentee123", userId: "user-mentee-2" },
-  "mentee3@bnm.org": { password: "mentee123", userId: "user-mentee-3" },
-};
+// Credentials wurden entfernt — Auth läuft über Supabase, nicht über Mock-Daten
 
 export function getMentorshipsByMentorId(mentorId: string): Mentorship[] {
   return MOCK_MENTORSHIPS.filter((m) => m.mentor_id === mentorId);

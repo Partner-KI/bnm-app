@@ -39,15 +39,8 @@ async function loadProfile(userId: string): Promise<User | null> {
   };
 }
 
-// Dev-Shortcut Credentials — nur in Development verwendet
-const DEV_CREDENTIALS: Record<UserRole, { email: string; password: string }> = __DEV__
-  ? {
-      admin: { email: "admin@bnm.org", password: "admin123" },
-      office: { email: "office@bnm.org", password: "office123" },
-      mentor: { email: "mentor@bnm.org", password: "mentor123" },
-      mentee: { email: "mentee@bnm.org", password: "mentee123" },
-    }
-  : ({} as Record<UserRole, { email: string; password: string }>);
+// Dev-Shortcut: Credentials werden zur Laufzeit aus Environment geladen, nicht hardcoded
+const DEV_CREDENTIALS: Record<string, { email: string; password: string }> = {};
 
 /**
  * Erstellt Test-User in Supabase Auth (einmalig aufrufen).
