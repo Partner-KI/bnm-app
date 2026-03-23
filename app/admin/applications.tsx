@@ -33,7 +33,7 @@ export default function ApplicationsScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { applications, approveApplication, rejectApplication } = useData();
+  const { applications, approveApplication, rejectApplication, refreshData } = useData();
   const [mainTab, setMainTab] = useState<MainTab>("mentors");
   const [mentorFilter, setMentorFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [menteeFilter, setMenteeFilter] = useState<"pending" | "approved" | "rejected">("pending");
@@ -90,7 +90,13 @@ export default function ApplicationsScreen() {
   async function handleApproveMentor(app: MentorApplication) {
     const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
     if (ok) {
-      await approveApplication(app.id);
+      try {
+        await approveApplication(app.id);
+        // Daten neu laden damit die UI aktualisiert wird
+        await refreshData();
+      } catch {
+        // Fehler wird bereits in approveApplication angezeigt
+      }
     }
   }
 
@@ -142,6 +148,7 @@ export default function ApplicationsScreen() {
       );
       closeRejectModal();
       showSuccess(t("applications.statusRejected"));
+      await refreshData();
     } catch {
       showError(t("common.error"));
     } finally {
