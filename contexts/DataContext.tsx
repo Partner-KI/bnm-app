@@ -1573,38 +1573,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  // deleteUser: Soft-Delete — alle zugehörigen Daten löschen, Profil deaktivieren
+  // deleteUser: Hard-Delete — Profil löschen, CASCADE löscht alle verknüpften Daten
   const deleteUser = useCallback(async (userId: string): Promise<boolean> => {
     try {
-      // 1. Alle Sessions löschen die zu Mentorships des Users gehören
-      const userMentorships = mentorships.filter(
-        (m) => m.mentor_id === userId || m.mentee_id === userId
-      );
-      const mentorshipIds = userMentorships.map((m) => m.id);
+      const userMentorshipIds = mentorships
+        .filter((m) => m.mentor_id === userId || m.mentee_id === userId)
+        .map((m) => m.id);
 
-      if (mentorshipIds.length > 0) {
-        // Sessions löschen
-        await supabase.from("sessions").delete().in("mentorship_id", mentorshipIds);
-        // Messages löschen
-        await supabase.from("messages").delete().in("mentorship_id", mentorshipIds);
-        // Feedback löschen
-        await supabase.from("feedback").delete().in("mentorship_id", mentorshipIds);
-        // Mentorships löschen
-        await supabase.from("mentorships").delete().in("id", mentorshipIds);
-      }
-
-      // 2. Notifications löschen
-      await supabase.from("notifications").delete().eq("user_id", userId);
-
-      // 3. Profil deaktivieren + E-Mail verschleiern (Auth-User bleibt, kann sich nicht mehr sinnvoll einloggen)
-      const timestamp = Date.now();
+      // Profil löschen — ON DELETE CASCADE entfernt Sessions, Messages, Feedback, Mentorships, Notifications
       const { error } = await supabase
         .from("profiles")
-        .update({
-          is_active: false,
-          email: `deleted_${timestamp}_${userId}@deleted.invalid`,
-          name: `[gelöscht]`,
-        })
+        .delete()
         .eq("id", userId);
 
       if (error) {
@@ -1613,10 +1592,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       // State bereinigen
       setUsers((prev) => prev.filter((u) => u.id !== userId));
-      setSessions((prev) => prev.filter((s) => !mentorshipIds.includes(s.mentorship_id)));
-      setMessages((prev) => prev.filter((m) => !mentorshipIds.includes(m.mentorship_id)));
-      setFeedback((prev) => prev.filter((f) => !mentorshipIds.includes(f.mentorship_id)));
-      setMentorships((prev) => prev.filter((m) => !mentorshipIds.includes(m.id)));
+      setSessions((prev) => prev.filter((s) => !userMentorshipIds.includes(s.mentorship_id)));
+      setMessages((prev) => prev.filter((m) => !userMentorshipIds.includes(m.mentorship_id)));
+      setFeedback((prev) => prev.filter((f) => !userMentorshipIds.includes(f.mentorship_id)));
+      setMentorships((prev) => prev.filter((m) => !userMentorshipIds.includes(m.id)));
+      setNotifications([]);
 
       return true;
     } catch {
