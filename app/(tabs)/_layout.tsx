@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Tabs, useRouter, usePathname } from "expo-router";
 import { SymbolView } from "expo-symbols";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -67,7 +68,8 @@ function ChatTabIcon({ color }: { color: string }) {
 interface SidebarItemProps {
   label: string;
   href: string;
-  icon: string;
+  iconName: string;
+  iconNameActive: string;
   isActive: boolean;
   onPress: () => void;
   badge?: number;
@@ -75,7 +77,8 @@ interface SidebarItemProps {
 
 function SidebarItem({
   label,
-  icon,
+  iconName,
+  iconNameActive,
   isActive,
   onPress,
   badge,
@@ -95,7 +98,11 @@ function SidebarItem({
       ]}
       activeOpacity={0.7}
     >
-      <Text style={sidebarStyles.itemIcon}>{icon}</Text>
+      <Ionicons
+        name={(isActive ? iconNameActive : iconName) as any}
+        size={20}
+        color={isActive ? COLORS.gold : themeColors.textSecondary}
+      />
       <Text
         style={[
           sidebarStyles.itemLabel,
@@ -142,13 +149,13 @@ function AdminSidebar() {
     : "index";
 
   const items = [
-    { key: "index", label: t("tabs.dashboard"), icon: "🏠", href: "/(tabs)/" },
-    { key: "mentees", label: t("tabs.mentees"), icon: "👥", href: "/(tabs)/mentees" },
+    { key: "index", label: t("tabs.dashboard"), iconName: "home-outline", iconNameActive: "home", href: "/(tabs)/" },
+    { key: "mentees", label: t("tabs.mentees"), iconName: "people-outline", iconNameActive: "people", href: "/(tabs)/mentees" },
     ...(!isOffice
-      ? [{ key: "chats", label: t("tabs.chats"), icon: "💬", href: "/(tabs)/chats", badge: unreadCount }]
+      ? [{ key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: unreadCount }]
       : []),
-    { key: "reports", label: t("tabs.reports"), icon: "📊", href: "/(tabs)/reports" },
-    { key: "profile", label: t("tabs.profile"), icon: "👤", href: "/(tabs)/profile" },
+    { key: "reports", label: t("tabs.reports"), iconName: "bar-chart-outline", iconNameActive: "bar-chart", href: "/(tabs)/reports" },
+    { key: "profile", label: t("tabs.profile"), iconName: "person-outline", iconNameActive: "person", href: "/(tabs)/profile" },
   ];
 
   return (
@@ -173,7 +180,8 @@ function AdminSidebar() {
             key={item.key}
             label={item.label}
             href={item.href}
-            icon={item.icon}
+            iconName={item.iconName}
+            iconNameActive={item.iconNameActive}
             isActive={activeSegment === item.key}
             onPress={() => router.push(item.href as any)}
             badge={item.badge}
@@ -260,11 +268,6 @@ const sidebarStyles = StyleSheet.create({
     borderLeftWidth: 3,
     marginBottom: 2,
     gap: 12,
-  },
-  itemIcon: {
-    fontSize: 18,
-    width: 24,
-    textAlign: "center",
   },
   itemLabel: {
     fontSize: 14,
@@ -412,7 +415,7 @@ function AdminSidebarLayout() {
       <View style={{ flex: 1 }}>
         <Tabs
           screenOptions={{
-            tabBarStyle: { display: "none" },
+            tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
             headerStyle: {
               backgroundColor: themeColors.headerBackground,
             },
