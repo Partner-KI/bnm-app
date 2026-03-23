@@ -1144,6 +1144,9 @@ const tr: Record<TranslationKeys, string> = {
   "leaderboard.medalGold": "Altın",
   "leaderboard.medalSilver": "Gümüş",
   "leaderboard.medalBronze": "Bronz",
+  "leaderboard.monthPicker.prev": "←",
+  "leaderboard.monthPicker.next": "→",
+  "leaderboard.monthPicker.label": "{0} {1}",
 
   // Yaş gösterimi
   "common.yearsOld": "Yaşında",

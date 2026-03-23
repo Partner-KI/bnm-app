@@ -1144,6 +1144,9 @@ const ar: Record<TranslationKeys, string> = {
   "leaderboard.medalGold": "ذهب",
   "leaderboard.medalSilver": "فضة",
   "leaderboard.medalBronze": "برونز",
+  "leaderboard.monthPicker.prev": "←",
+  "leaderboard.monthPicker.next": "→",
+  "leaderboard.monthPicker.label": "{0} {1}",
 
   // عرض العمر
   "common.yearsOld": "سنة",

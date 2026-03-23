@@ -279,8 +279,8 @@ export default function CSVImportScreen() {
     if (adminRefreshToken) {
       supabase.auth.refreshSession({ refresh_token: adminRefreshToken }).catch(() => {});
     }
-    // Daten im Hintergrund neu laden
-    setTimeout(() => refreshData().catch(() => {}), 1000);
+    // Daten im Hintergrund neu laden (3s Delay damit Auth-Session wiederhergestellt ist)
+    setTimeout(() => refreshData().catch(() => {}), 3000);
   }, [previewRows, activeTab, refreshData]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────

@@ -1284,6 +1284,9 @@ const en: Record<TranslationKeys, string> = {
   "leaderboard.medalGold": "Gold",
   "leaderboard.medalSilver": "Silver",
   "leaderboard.medalBronze": "Bronze",
+  "leaderboard.monthPicker.prev": "←",
+  "leaderboard.monthPicker.next": "→",
+  "leaderboard.monthPicker.label": "{0} {1}",
 
   // Age display
   "common.yearsOld": "years",

@@ -1284,6 +1284,9 @@ const de = {
   "leaderboard.medalGold": "Gold",
   "leaderboard.medalSilver": "Silber",
   "leaderboard.medalBronze": "Bronze",
+  "leaderboard.monthPicker.prev": "←",
+  "leaderboard.monthPicker.next": "→",
+  "leaderboard.monthPicker.label": "{0} {1}",
 
   // Alter-Anzeige
   "common.yearsOld": "Jahre",

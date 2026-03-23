@@ -15,6 +15,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import type { TranslationKeys } from "../../lib/translations/de";
 
 interface MentorScore {
   mentorId: string;
@@ -39,24 +40,74 @@ export default function LeaderboardScreen() {
   const { isDark } = useTheme();
   const { users, mentorships, sessions, mentorOfMonthVisible, refreshData } = useData();
 
+  // Aktuelles Datum einmalig speichern (für Monats-Picker-Limit)
+  const now = useMemo(() => new Date(), []);
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  // Monat-/Jahres-Picker: Default = aktueller Monat
+  const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth); // 1-12
+  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
     setRefreshing(false);
   }, [refreshData]);
 
+  // Monatsnamen aus i18n
+  const monthName = t(`datePicker.month.${selectedMonth}` as TranslationKeys);
+
+  // Monat vor / zurück navigieren
+  const goToPrevMonth = useCallback(() => {
+    setSelectedMonth((m) => {
+      if (m === 1) { setSelectedYear((y) => y - 1); return 12; }
+      return m - 1;
+    });
+  }, []);
+  const goToNextMonth = useCallback(() => {
+    setSelectedMonth((m) => {
+      const nextM = m === 12 ? 1 : m + 1;
+      const nextY = m === 12 ? selectedYear + 1 : selectedYear;
+      // Nicht in die Zukunft navigieren
+      if (nextY > currentYear || (nextY === currentYear && nextM > currentMonth)) return m;
+      if (m === 12) setSelectedYear((y) => y + 1);
+      return nextM;
+    });
+  }, [selectedYear, currentMonth, currentYear]);
+
+  // Prüft ob der ausgewählte Monat der aktuelle ist (kein Weiter-Button mehr zeigen)
+  const isCurrentMonth = selectedMonth === currentMonth && selectedYear === currentYear;
+
   const allScored: MentorScore[] = useMemo(() => {
     const mentors = users.filter((u) => u.role === "mentor");
+
+    // Beginn und Ende des ausgewählten Monats als ISO-Strings
+    const monthStart = new Date(selectedYear, selectedMonth - 1, 1).toISOString();
+    const monthEnd = new Date(selectedYear, selectedMonth, 0, 23, 59, 59, 999).toISOString();
+
     return mentors
       .map((mentor) => {
         const myMentorships = mentorships.filter((m) => m.mentor_id === mentor.id);
-        const completedCount = myMentorships.filter((m) => m.status === "completed").length;
-        const sessionCount = sessions.filter((s) =>
-          myMentorships.some((m) => m.id === s.mentorship_id)
-        ).length;
+
+        // Abgeschlossene Betreuungen im ausgewählten Monat
+        const completedCount = myMentorships.filter((m) => {
+          if (m.status !== "completed") return false;
+          if (!m.completed_at) return false;
+          return m.completed_at >= monthStart && m.completed_at <= monthEnd;
+        }).length;
+
+        // Sessions im ausgewählten Monat
+        const sessionCount = sessions.filter((s) => {
+          if (!myMentorships.some((m) => m.id === s.mentorship_id)) return false;
+          // session.date ist ein DATE-String ("YYYY-MM-DD")
+          const sessionDate = s.date + "T00:00:00.000Z";
+          return sessionDate >= monthStart && sessionDate <= monthEnd;
+        }).length;
+
         const score = completedCount * 10 + sessionCount * 3;
         return {
           mentorId: mentor.id,
@@ -69,7 +120,7 @@ export default function LeaderboardScreen() {
         };
       })
       .sort((a, b) => b.score - a.score);
-  }, [users, mentorships, sessions]);
+  }, [users, mentorships, sessions, selectedMonth, selectedYear]);
 
   const ranked: MentorScore[] = useMemo(() => {
     let base: MentorScore[];
@@ -137,6 +188,27 @@ export default function LeaderboardScreen() {
           <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
             {t("leaderboard.subtitle")}
           </Text>
+
+          {/* Monats-Picker */}
+          <View style={[styles.monthPickerRow, { backgroundColor: themeColors.card }]}>
+            <TouchableOpacity onPress={goToPrevMonth} style={styles.monthPickerBtn}>
+              <Text style={[styles.monthPickerArrow, { color: themeColors.text }]}>
+                {t("leaderboard.monthPicker.prev")}
+              </Text>
+            </TouchableOpacity>
+            <Text style={[styles.monthPickerLabel, { color: themeColors.text }]}>
+              {monthName} {selectedYear}
+            </Text>
+            <TouchableOpacity
+              onPress={goToNextMonth}
+              style={[styles.monthPickerBtn, isCurrentMonth && styles.monthPickerBtnDisabled]}
+              disabled={isCurrentMonth}
+            >
+              <Text style={[styles.monthPickerArrow, { color: isCurrentMonth ? themeColors.textTertiary : themeColors.text }]}>
+                {t("leaderboard.monthPicker.next")}
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Suche nach Mentor-Name */}
           <TextInput
@@ -494,5 +566,33 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 14,
     marginBottom: 16,
+  },
+
+  // Monats-Picker
+  monthPickerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 10,
+    marginBottom: 16,
+  },
+  monthPickerBtn: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  monthPickerBtnDisabled: {
+    opacity: 0.3,
+  },
+  monthPickerArrow: {
+    fontSize: 22,
+    fontWeight: "300",
+  },
+  monthPickerLabel: {
+    fontSize: 16,
+    fontWeight: "700",
+    flex: 1,
+    textAlign: "center",
   },
 });
