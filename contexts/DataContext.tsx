@@ -1411,18 +1411,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
 
         if (signUpError) {
+          // Bei JEDEM Fehler: Status zurück auf "pending" und Fehlermeldung
+          await supabase
+            .from("mentor_applications")
+            .update({ status: "pending" })
+            .eq("id", applicationId);
+
           if (
-            !signUpError.message.includes("already registered") &&
-            !signUpError.message.includes("User already registered")
+            signUpError.message.includes("already registered") ||
+            signUpError.message.includes("User already registered")
           ) {
-            // Bei Fehler: Status zurück auf "pending" setzen
-            await supabase
-              .from("mentor_applications")
-              .update({ status: "pending" })
-              .eq("id", applicationId);
+            showError("Diese E-Mail ist bereits registriert. Bitte zuerst den bestehenden Account löschen.");
+          } else {
             showError(`Fehler beim Erstellen des Accounts: ${signUpError.message}`);
-            return;
           }
+          return;
         }
 
         // Profil nachladen (mit Verzögerung, damit der DB-Trigger Zeit hat)
