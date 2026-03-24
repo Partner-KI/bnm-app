@@ -1413,7 +1413,7 @@ const de = {
   // Share (Hadith / Q&A)
   "share.hadith": "Hadith teilen",
   "share.answer": "Antwort teilen",
-  "share.suffix": "— BNM App (iman.ngo)",
+  "share.suffix": "— Betreuung neuer Muslime (BNM) | Quelle: iman.ngo",
 
   // Notification Settings
   "notifSettings.title": "Benachrichtigungen",

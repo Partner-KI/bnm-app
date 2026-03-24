@@ -1413,7 +1413,7 @@ const ar: Record<TranslationKeys, string> = {
   // مشاركة (الحديث / الأسئلة والأجوبة)
   "share.hadith": "مشاركة الحديث",
   "share.answer": "مشاركة الإجابة",
-  "share.suffix": "— تطبيق BNM (iman.ngo)",
+  "share.suffix": "— رعاية المسلمين الجدد (BNM) | المصدر: iman.ngo",
 
   // إعدادات الإشعارات
   "notifSettings.title": "الإشعارات",

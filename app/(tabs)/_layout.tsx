@@ -52,11 +52,11 @@ function ChatTabIcon({ color }: { color: string }) {
   const unread = isAdminOrOffice ? 0 : getTotalUnreadMessages();
   return (
     <View style={tabStyles.chatIconWrapper}>
-      <SymbolView
-        name={"message.fill" as any}
-        tintColor={color}
-        size={24}
-      />
+      {Platform.OS === "ios" ? (
+        <SymbolView name={"message.fill" as any} tintColor={color} size={24} />
+      ) : (
+        <Ionicons name="chatbubble" size={22} color={color} />
+      )}
       {unread > 0 && (
         <View style={tabStyles.badge}>
           <Text style={tabStyles.badgeText}>
@@ -335,11 +335,7 @@ function TabsLayout() {
           title: t("tabs.dashboard"),
           headerRight: () => <BellButton />,
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={"house.fill" as any}
-              tintColor={color}
-              size={24}
-            />
+            Platform.OS === "ios" ? <SymbolView name={"house.fill" as any} tintColor={color} size={24} /> : <Ionicons name="home" size={22} color={color} />
           ),
         }}
       />
@@ -349,11 +345,7 @@ function TabsLayout() {
           title: t("tabs.mentees"),
           href: showMentees ? undefined : null,
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={"person.2.fill" as any}
-              tintColor={color}
-              size={24}
-            />
+            Platform.OS === "ios" ? <SymbolView name={"person.2.fill" as any} tintColor={color} size={24} /> : <Ionicons name="people" size={22} color={color} />
           ),
         }}
       />
@@ -371,11 +363,7 @@ function TabsLayout() {
           title: t("tabs.ranking"),
           href: showLeaderboard ? undefined : null,
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={"trophy.fill" as any}
-              tintColor={color}
-              size={24}
-            />
+            Platform.OS === "ios" ? <SymbolView name={"trophy.fill" as any} tintColor={color} size={24} /> : <Ionicons name="trophy" size={22} color={color} />
           ),
         }}
       />
@@ -385,11 +373,7 @@ function TabsLayout() {
           title: t("tabs.reports"),
           href: isAdminOrOffice ? undefined : null,
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={"chart.bar.fill" as any}
-              tintColor={color}
-              size={24}
-            />
+            Platform.OS === "ios" ? <SymbolView name={"chart.bar.fill" as any} tintColor={color} size={24} /> : <Ionicons name="bar-chart" size={22} color={color} />
           ),
         }}
       />
@@ -398,11 +382,7 @@ function TabsLayout() {
         options={{
           title: t("tabs.profile"),
           tabBarIcon: ({ color }) => (
-            <SymbolView
-              name={"person.circle.fill" as any}
-              tintColor={color}
-              size={24}
-            />
+            Platform.OS === "ios" ? <SymbolView name={"person.circle.fill" as any} tintColor={color} size={24} /> : <Ionicons name="person-circle" size={22} color={color} />
           ),
         }}
       />

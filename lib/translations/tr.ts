@@ -1413,7 +1413,7 @@ const tr: Record<TranslationKeys, string> = {
   // Paylaş (Hadis / S&C)
   "share.hadith": "Hadisi paylaş",
   "share.answer": "Cevabı paylaş",
-  "share.suffix": "— BNM Uygulaması (iman.ngo)",
+  "share.suffix": "— Yeni Müslümanların Bakımı (BNM) | Kaynak: iman.ngo",
 
   // Bildirim Ayarları
   "notifSettings.title": "Bildirimler",

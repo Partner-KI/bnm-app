@@ -1413,7 +1413,7 @@ const en: Record<TranslationKeys, string> = {
   // Share (Hadith / Q&A)
   "share.hadith": "Share hadith",
   "share.answer": "Share answer",
-  "share.suffix": "— BNM App (iman.ngo)",
+  "share.suffix": "— Care for New Muslims (BNM) | Source: iman.ngo",
 
   // Notification Settings
   "notifSettings.title": "Notifications",
