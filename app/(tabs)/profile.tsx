@@ -9,6 +9,7 @@ import {
   RefreshControl,
   StyleSheet,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -112,12 +113,17 @@ export default function ProfileScreen() {
   if (!user) return null;
 
   async function handleLogout() {
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(t("profile.logoutTitle"), t("profile.logoutConfirm"), [
-        { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-        { text: t("common.confirm"), onPress: () => resolve(true) },
-      ]);
-    });
+    let ok = false;
+    if (Platform.OS === "web") {
+      ok = window.confirm(t("profile.logoutConfirm"));
+    } else {
+      ok = await new Promise<boolean>((resolve) => {
+        Alert.alert(t("profile.logoutTitle"), t("profile.logoutConfirm"), [
+          { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
+          { text: t("common.confirm"), onPress: () => resolve(true) },
+        ]);
+      });
+    }
     if (ok) logout();
   }
 

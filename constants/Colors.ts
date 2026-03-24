@@ -48,37 +48,37 @@ export const LIGHT_COLORS = {
   input: "#FFFFFF",
 } as const;
 
-// Dark Theme Farbpalette
+// Dark Theme Farbpalette — echtes Dunkel (kein Blau)
 export const DARK_COLORS = {
-  // Backgrounds
-  background: "#1A1B2E",
-  card: "#232540",
-  elevated: "#232540",
-  // Text
-  text: "#E8E8ED",
-  textSecondary: "#9A9AB0",
-  textTertiary: "#6B6B85",
+  // Backgrounds — Material Dark, neutral-grau
+  background: "#121212",
+  card: "#1E1E1E",
+  elevated: "#252525",
+  // Text — gut lesbar auf dunklem Hintergrund
+  text: "#F0F0F0",
+  textSecondary: "#A0A0A0",
+  textTertiary: "#707070",
   // Borders
-  border: "#2E3050",
+  border: "#2C2C2C",
   // Brand (unveränderlich)
   primary: "#0A3A5A",
   primaryDark: "#012A46",
   accent: "#EEA71B",
-  // Semantic
-  success: "#27ae60",
-  error: "#dc2626",
-  link: "#818CF8",
+  // Semantic — etwas heller für Dark Mode Kontrast
+  success: "#4CAF50",
+  error: "#EF5350",
+  link: "#64B5F6",
   // Misc
-  white: "#E8E8ED",
-  black: "#1A1B2E",
-  tabBar: "#1E1F35",
-  tabBarBorder: "#2E3050",
-  tabIconActive: "#E8E8ED",
-  tabIconInactive: "#6B6B85",
-  headerBackground: "#1E1F35",
-  headerText: "#E8E8ED",
-  statItem: "#1A1B2E",
-  input: "#2A2C48",
+  white: "#F0F0F0",
+  black: "#121212",
+  tabBar: "#181818",
+  tabBarBorder: "#2C2C2C",
+  tabIconActive: "#F0F0F0",
+  tabIconInactive: "#707070",
+  headerBackground: "#181818",
+  headerText: "#F0F0F0",
+  statItem: "#1A1A1A",
+  input: "#2A2A2A",
 } as const;
 
 // Lockerer Typ für Theme-Farben (string statt Literal-Typen, damit Light + Dark zuweisbar sind)

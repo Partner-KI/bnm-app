@@ -11,6 +11,7 @@ import { Tabs, useRouter, usePathname } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
+import { BNMLogo } from "../../components/BNMLogo";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -171,9 +172,9 @@ function AdminSidebar() {
     >
       {/* Logo / App-Titel */}
       <View style={sidebarStyles.logoArea}>
-        <Text style={[sidebarStyles.logoText, { color: COLORS.gold }]}>BNM</Text>
-        <Text style={[sidebarStyles.logoSubtext, { color: themeColors.textSecondary }]}>
-          Admin
+        <BNMLogo size={36} showSubtitle={false} />
+        <Text style={[sidebarStyles.logoSubtext, { color: themeColors.textSecondary, marginTop: 4 }]}>
+          {user?.role === "admin" ? "Admin" : user?.role === "office" ? "Office" : user?.role === "mentor" ? "Mentor" : "Mentee"}
         </Text>
       </View>
 
