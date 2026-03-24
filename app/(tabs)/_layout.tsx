@@ -44,7 +44,11 @@ function BellButton() {
 
 function ChatTabIcon({ color }: { color: string }) {
   const { getTotalUnreadMessages } = useData();
-  const unread = getTotalUnreadMessages();
+  const { user } = useAuth();
+  // Admin und Office sind nur Beobachter — sie bekommen keine direkten Nachrichten,
+  // daher keinen Badge anzeigen (würde jeden Mentor↔Mentee-Chat zählen).
+  const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
+  const unread = isAdminOrOffice ? 0 : getTotalUnreadMessages();
   return (
     <View style={tabStyles.chatIconWrapper}>
       <SymbolView

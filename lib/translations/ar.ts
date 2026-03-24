@@ -1401,6 +1401,14 @@ const ar: Record<TranslationKeys, string> = {
   "datePicker.labelDay": "يوم",
   "datePicker.labelMonth": "شهر",
   "datePicker.labelYear": "سنة",
+
+  // تبويبات لوحة تحكم المشرف
+  "admin.tabOverview": "نظرة عامة",
+  "admin.tabManage": "الإدارة",
+  "admin.tabTools": "الأدوات",
+
+  // لوحة تحكم الموجه: رابط المتدربين المكتملين
+  "dashboard.completedMenteesLink": "{0} إرشاد مكتمل → عرض الكل",
 };
 
 export default ar;

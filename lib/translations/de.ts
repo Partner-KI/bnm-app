@@ -1401,6 +1401,14 @@ const de = {
   "datePicker.labelDay": "Tag",
   "datePicker.labelMonth": "Monat",
   "datePicker.labelYear": "Jahr",
+
+  // Admin Dashboard Tabs
+  "admin.tabOverview": "Übersicht",
+  "admin.tabManage": "Verwaltung",
+  "admin.tabTools": "Tools",
+
+  // Mentor Dashboard: abgeschlossene Mentees Link
+  "dashboard.completedMenteesLink": "{0} abgeschlossene Betreuungen → Alle ansehen",
 } as const;
 
 export default de;

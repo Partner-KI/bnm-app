@@ -1401,6 +1401,14 @@ const tr: Record<TranslationKeys, string> = {
   "datePicker.labelDay": "Gün",
   "datePicker.labelMonth": "Ay",
   "datePicker.labelYear": "Yıl",
+
+  // Admin Dashboard Sekmeleri
+  "admin.tabOverview": "Genel Bakış",
+  "admin.tabManage": "Yönetim",
+  "admin.tabTools": "Araçlar",
+
+  // Mentor Dashboard: tamamlanan mentiler linki
+  "dashboard.completedMenteesLink": "{0} tamamlanan rehberlik → Tümünü görüntüle",
 };
 
 export default tr;

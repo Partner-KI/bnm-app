@@ -1401,6 +1401,14 @@ const en: Record<TranslationKeys, string> = {
   "datePicker.labelDay": "Day",
   "datePicker.labelMonth": "Month",
   "datePicker.labelYear": "Year",
+
+  // Admin Dashboard Tabs
+  "admin.tabOverview": "Overview",
+  "admin.tabManage": "Management",
+  "admin.tabTools": "Tools",
+
+  // Mentor Dashboard: completed mentees link
+  "dashboard.completedMenteesLink": "{0} completed mentorships → View all",
 };
 
 export default en;

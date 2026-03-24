@@ -44,6 +44,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"overview" | "manage" | "tools">("overview");
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -180,410 +181,440 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </View>
         </View>
 
-        {/* Globale Suche */}
-        <TextInput
-          style={[styles.searchInput, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }]}
-          placeholder={t("search.placeholder")}
-          placeholderTextColor={themeColors.textTertiary}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-
-        {/* Suchergebnisse */}
-        {searchResults && (
-          <View style={[styles.searchResultsBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            {searchResults.mentees.length === 0 && searchResults.mentors.length === 0 && searchResults.mentorships.length === 0 ? (
-              <Text style={[styles.searchNoResults, { color: themeColors.textTertiary }]}>{t("search.noResults")}</Text>
-            ) : (
-              <>
-                {searchResults.mentees.length > 0 && (
-                  <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
-                    <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentees")}</Text>
-                    {searchResults.mentees.slice(0, 3).map((u) => (
-                      <TouchableOpacity
-                        key={u.id}
-                        style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
-                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentee/[id]", params: { id: u.id } }); }}
-                      >
-                        <Text style={[styles.searchResultName, { color: themeColors.text }]}>{u.name}</Text>
-                        <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>{u.city}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-                {searchResults.mentors.length > 0 && (
-                  <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
-                    <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentors")}</Text>
-                    {searchResults.mentors.slice(0, 3).map((u) => (
-                      <TouchableOpacity
-                        key={u.id}
-                        style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
-                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentor/[id]", params: { id: u.id } }); }}
-                      >
-                        <Text style={[styles.searchResultName, { color: themeColors.text }]}>{u.name}</Text>
-                        <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>{u.city}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-                {searchResults.mentorships.length > 0 && (
-                  <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
-                    <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentorships")}</Text>
-                    {searchResults.mentorships.slice(0, 3).map((m) => (
-                      <TouchableOpacity
-                        key={m.id}
-                        style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
-                        onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentorship/[id]", params: { id: m.id } }); }}
-                      >
-                        <Text style={[styles.searchResultName, { color: themeColors.text }]}>{m.mentee?.name} → {m.mentor?.name}</Text>
-                        <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>
-                          {m.status === "active" ? t("search.active") : t("search.completed")}
-                        </Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                )}
-              </>
-            )}
-          </View>
-        )}
-
-        {/* KPI Karten – Reihe 1 */}
-        <View style={styles.row3}>
-          <StatCard label={t("dashboard.activeMentorships")} value={activeMentorships.length} color={COLORS.gradientStart} />
-          <StatCard label={t("dashboard.completed")} value={completedMentorships.length} color={COLORS.cta} />
-        </View>
-
-        {/* KPI Karten – Reihe 2 */}
-        <View style={[styles.row3, { marginBottom: 16 }]}>
-          <StatCard label={t("dashboard.mentors")} value={allMentors.length} color={COLORS.gradientStart} />
-          <StatCard label={t("dashboard.totalMentees")} value={allMentees.length} color={COLORS.gold} />
-        </View>
-
-        {/* Frühwarnungen */}
-        {earlyWarnings.length > 0 && (
-          <View style={[styles.warningBox, { backgroundColor: isDark ? "#3a1a1a" : "#fff1f2", borderColor: isDark ? "#7a2a2a" : "#fecdd3", borderLeftColor: isDark ? "#f87171" : "#ef4444" }]}>
-            <View style={styles.warningHeader}>
-              <Text style={[styles.warningTitle, { color: isDark ? "#f87171" : "#991b1b" }]}>{t("earlyWarning.title")}</Text>
-              <View style={styles.warningBadge}>
-                <Text style={styles.warningBadgeText}>{earlyWarnings.length}</Text>
-              </View>
-            </View>
-            {earlyWarnings.slice(0, 5).map((w, idx) => {
-              const daysDiff = w.date ? Math.floor((Date.now() - w.date.getTime()) / 86400000) : undefined;
-              const typeLabel = w.type === "feedback"
-                ? t("earlyWarning.negativeFeedback")
-                : w.type === "discrepancy"
-                ? t("earlyWarning.discrepancy")
-                : t("earlyWarning.inactive");
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  style={[styles.warningRow, idx < Math.min(earlyWarnings.length, 5) - 1 && [styles.warningRowBorder, { borderBottomColor: isDark ? "#7a2a2a" : "#fecdd3" }]]}
-                  onPress={() => {
-                    if (w.mentorshipId) {
-                      router.push({ pathname: "/mentorship/[id]", params: { id: w.mentorshipId } });
-                    }
-                  }}
-                >
-                  <View style={[styles.warningDot, { backgroundColor: isDark ? "#f87171" : "#ef4444" }]} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.warningLabel, { color: isDark ? "#f87171" : "#ef4444" }]}>{typeLabel}</Text>
-                    <Text style={[styles.warningName, { color: isDark ? "#fca5a5" : "#7f1d1d" }]}>{w.label}</Text>
-                  </View>
-                  {daysDiff !== undefined && (
-                    <Text style={[styles.warningDays, { color: isDark ? "#f87171" : "#b91c1c" }]}>
-                      {t("earlyWarning.daysAgo").replace("{0}", String(daysDiff))}
-                    </Text>
-                  )}
-                  <Text style={[styles.warningArrow, { color: isDark ? "#f87171" : "#b91c1c" }]}>›</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        )}
-
-        {/* Mentor des Monats (Admin-Sicht) */}
-        {mentorOfMonthVisible && topMentor && (
-          <TouchableOpacity
-            style={styles.momAdminCard}
-            onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } })}
-          >
-            <View style={styles.momAdminHeader}>
-              <Text style={styles.momAdminStar}>★</Text>
-              <Text style={[styles.momAdminTitle, { color: themeColors.textSecondary }]}>{t("dashboard.currentMentorOfMonth")}</Text>
-            </View>
-            <Text style={[styles.momAdminName, { color: themeColors.text }]}>{topMentor.mentor.name}</Text>
-            <View style={styles.momAdminStatsRow}>
-              <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
-                <Text style={styles.momAdminStatValue}>{topMentor.score}</Text>
-                <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.points")}</Text>
-              </View>
-              <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
-                <Text style={styles.momAdminStatValue}>{topMentor.completedCount}</Text>
-                <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
-              </View>
-              <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
-                <Text style={styles.momAdminStatValue}>{topMentor.sessionCount}</Text>
-                <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
-              </View>
-            </View>
-            <Text style={styles.momAdminArrow}>{t("dashboard.viewProfile")} ›</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Nicht zugewiesene Mentees */}
-        {unassignedMentees.length > 0 && (
-          <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
-            <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
-              {t("dashboard.newMenteesWaiting").replace("{0}", String(unassignedMentees.length))}
-            </Text>
-            {unassignedMentees.map((mentee) => (
-              <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
-                <View>
-                  <Text style={[styles.menteeNameText, { color: themeColors.text }]}>{mentee.name}</Text>
-                  <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
-                    {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
-                  </Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.assignButton}
-                  onPress={() =>
-                    router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
-                  }
-                >
-                  <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Ausstehende Mentor-Zuweisungen (pending_approval) */}
-        {pendingApprovalsCount > 0 && (
-          <TouchableOpacity
-            style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}
-            onPress={() => router.push("/admin/pending-approvals")}
-          >
-            <View style={styles.applicationsButtonContent}>
-              <Text style={[styles.pendingApprovalsText, { color: isDark ? "#fbbf24" : "#78350f" }]}>{t("dashboard.pendingApprovals")}</Text>
-              <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#fbbf24" : "#92400e" }]}>
-                {t("dashboard.pendingApprovalsCount")
-                  .replace("{0}", String(pendingApprovalsCount))
-                  .replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
-              </Text>
-            </View>
-            <View style={styles.applicationsBadge}>
-              <Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text>
-            </View>
-            <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Admin-Aktionen */}
-        <View style={styles.row3}>
-          {showSystemSettings && (
+        {/* Tab-Switcher */}
+        <View style={[styles.adminTabRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          {(["overview", "manage", "tools"] as const).map((tab) => (
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
-              onPress={() => router.push("/admin/session-types")}
+              key={tab}
+              style={[styles.adminTabBtn, activeTab === tab && styles.adminTabBtnActive]}
+              onPress={() => setActiveTab(tab)}
             >
-              <Text style={styles.actionButtonText}>{t("dashboard.sessionTypes")}</Text>
+              <Text style={[styles.adminTabBtnText, activeTab === tab ? styles.adminTabBtnTextActive : { color: themeColors.textSecondary }]}>
+                {tab === "overview" ? t("admin.tabOverview") : tab === "manage" ? t("admin.tabManage") : t("admin.tabTools")}
+              </Text>
             </TouchableOpacity>
-          )}
-          <TouchableOpacity
-            style={[styles.actionButtonGold, !showSystemSettings ? { flex: 1 } : {}]}
-            onPress={() => router.push("/(tabs)/reports")}
-          >
-            <Text style={styles.actionButtonTextDark}>{t("dashboard.reports")}</Text>
-          </TouchableOpacity>
+          ))}
         </View>
 
-        {/* Schnellzugriff: Bewerbungen */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/applications")}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.applications")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.checkApplications")}</Text>
-          </View>
-          {pendingAppsCount > 0 && (
-            <View style={styles.applicationsBadge}>
-              <Text style={styles.applicationsBadgeText}>{pendingAppsCount}</Text>
+        {/* ── TAB: ÜBERSICHT ───────────────────────────────────────────── */}
+        {activeTab === "overview" && (
+          <>
+            {/* Globale Suche */}
+            <TextInput
+              style={[styles.searchInput, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }]}
+              placeholder={t("search.placeholder")}
+              placeholderTextColor={themeColors.textTertiary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+
+            {/* Suchergebnisse */}
+            {searchResults && (
+              <View style={[styles.searchResultsBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                {searchResults.mentees.length === 0 && searchResults.mentors.length === 0 && searchResults.mentorships.length === 0 ? (
+                  <Text style={[styles.searchNoResults, { color: themeColors.textTertiary }]}>{t("search.noResults")}</Text>
+                ) : (
+                  <>
+                    {searchResults.mentees.length > 0 && (
+                      <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
+                        <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentees")}</Text>
+                        {searchResults.mentees.slice(0, 3).map((u) => (
+                          <TouchableOpacity
+                            key={u.id}
+                            style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
+                            onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentee/[id]", params: { id: u.id } }); }}
+                          >
+                            <Text style={[styles.searchResultName, { color: themeColors.text }]}>{u.name}</Text>
+                            <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>{u.city}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                    {searchResults.mentors.length > 0 && (
+                      <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
+                        <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentors")}</Text>
+                        {searchResults.mentors.slice(0, 3).map((u) => (
+                          <TouchableOpacity
+                            key={u.id}
+                            style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
+                            onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentor/[id]", params: { id: u.id } }); }}
+                          >
+                            <Text style={[styles.searchResultName, { color: themeColors.text }]}>{u.name}</Text>
+                            <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>{u.city}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                    {searchResults.mentorships.length > 0 && (
+                      <View style={[styles.searchSection, { borderBottomColor: themeColors.border }]}>
+                        <Text style={[styles.searchSectionLabel, { color: themeColors.textTertiary }]}>{t("search.mentorships")}</Text>
+                        {searchResults.mentorships.slice(0, 3).map((m) => (
+                          <TouchableOpacity
+                            key={m.id}
+                            style={[styles.searchResultRow, { borderTopColor: themeColors.border }]}
+                            onPress={() => { setSearchQuery(""); router.push({ pathname: "/mentorship/[id]", params: { id: m.id } }); }}
+                          >
+                            <Text style={[styles.searchResultName, { color: themeColors.text }]}>{m.mentee?.name} → {m.mentor?.name}</Text>
+                            <Text style={[styles.searchResultSub, { color: themeColors.textTertiary }]}>
+                              {m.status === "active" ? t("search.active") : t("search.completed")}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    )}
+                  </>
+                )}
+              </View>
+            )}
+
+            {/* KPI Karten – Reihe 1 */}
+            <View style={styles.row3}>
+              <StatCard label={t("dashboard.activeMentorships")} value={activeMentorships.length} color={COLORS.gradientStart} />
+              <StatCard label={t("dashboard.completed")} value={completedMentorships.length} color={COLORS.cta} />
             </View>
-          )}
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
 
-        {/* Feedback-Übersicht (nur Admin) */}
-        {showSystemSettings && (
-          <TouchableOpacity
-            style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-            onPress={() => router.push("/admin/feedback-overview")}
-          >
-            <View style={styles.applicationsButtonContent}>
-              <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.feedbackOverview")}</Text>
-              <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.viewAllFeedbacks")}</Text>
+            {/* KPI Karten – Reihe 2 */}
+            <View style={[styles.row3, { marginBottom: 16 }]}>
+              <StatCard label={t("dashboard.mentors")} value={allMentors.length} color={COLORS.gradientStart} />
+              <StatCard label={t("dashboard.totalMentees")} value={allMentees.length} color={COLORS.gold} />
             </View>
-            <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-          </TouchableOpacity>
-        )}
 
-        {/* Mentoren-Übersicht */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/mentors")}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("adminMentors.title")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{allMentors.length} {t("adminMentors.mentors")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
-
-        {/* Erweiterte Statistiken */}
-        {showSystemSettings && (
-          <TouchableOpacity
-            style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-            onPress={() => router.push("/admin/statistics")}
-          >
-            <View style={styles.applicationsButtonContent}>
-              <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("statistics.title")}</Text>
-              <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("statistics.completionRate")} · {t("statistics.cityDistribution")}</Text>
-            </View>
-            <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Spender-Bericht Dashboard */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/donor-report" as never)}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("donorDashboard.title")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("donorDashboard.subtitle")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
-
-        {/* CSV Import */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/csv-import")}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("csvImport.tabMentees")} · {t("csvImport.tabMentors")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
-
-        {/* Q&A verwalten */}
-        <TouchableOpacity
-          style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-          onPress={() => router.push("/admin/qa-management" as never)}
-        >
-          <View style={styles.applicationsButtonContent}>
-            <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("qa.manage")}</Text>
-            <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("qa.subtitle")}</Text>
-          </View>
-          <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-        </TouchableOpacity>
-
-        {/* Hadithe verwalten (nur Admin) */}
-        {showSystemSettings && (
-          <TouchableOpacity
-            style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-            onPress={() => router.push("/admin/hadithe-management" as never)}
-          >
-            <View style={styles.applicationsButtonContent}>
-              <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
-              <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>
-                {hadithe.length} {hadithe.length === 1 ? t("haditheMgmt.singular") : t("haditheMgmt.plural")}
-              </Text>
-            </View>
-            <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* Letzte Aktivitäten */}
-        <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
-          <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
-          {recentSessions.length === 0 ? (
-            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noRecentActivity")}</Text>
-          ) : (
-            recentSessions.map((s, idx) => {
-              const mentorship = mentorships.find((m) => m.id === s.mentorship_id);
-              const stepName = s.session_type?.name ?? `${t("dashboard.activityStep")} ${idx + 1}`;
-              const mentorName = mentorship?.mentor?.name ?? "–";
-              const menteeName = mentorship?.mentee?.name ?? "–";
-              const isLast = idx === recentSessions.length - 1;
-              return (
-                <View key={s.id} style={[styles.activityRow, isLast ? {} : [styles.activityRowBorder, { borderBottomColor: themeColors.border }]]}>
-                  <View style={styles.activityDot} />
-                  <View style={{ flex: 1 }}>
-                    <Text style={[styles.activityTitle, { color: themeColors.text }]}>{stepName}</Text>
-                    <Text style={[styles.activitySub, { color: themeColors.textTertiary }]}>
-                      {menteeName} · {t("dashboard.activityBy")} {mentorName}
-                    </Text>
+            {/* Mentor des Monats (Admin-Sicht) */}
+            {mentorOfMonthVisible && topMentor && (
+              <TouchableOpacity
+                style={styles.momAdminCard}
+                onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } })}
+              >
+                <View style={styles.momAdminHeader}>
+                  <Text style={styles.momAdminStar}>★</Text>
+                  <Text style={[styles.momAdminTitle, { color: themeColors.textSecondary }]}>{t("dashboard.currentMentorOfMonth")}</Text>
+                </View>
+                <Text style={[styles.momAdminName, { color: themeColors.text }]}>{topMentor.mentor.name}</Text>
+                <View style={styles.momAdminStatsRow}>
+                  <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
+                    <Text style={styles.momAdminStatValue}>{topMentor.score}</Text>
+                    <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.points")}</Text>
                   </View>
-                  <Text style={[styles.activityDate, { color: themeColors.textTertiary }]}>
-                    {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+                  <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
+                    <Text style={styles.momAdminStatValue}>{topMentor.completedCount}</Text>
+                    <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
+                  </View>
+                  <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}>
+                    <Text style={styles.momAdminStatValue}>{topMentor.sessionCount}</Text>
+                    <Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
+                  </View>
+                </View>
+                <Text style={styles.momAdminArrow}>{t("dashboard.viewProfile")} ›</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Frühwarnungen */}
+            {earlyWarnings.length > 0 && (
+              <View style={[styles.warningBox, { backgroundColor: isDark ? "#3a1a1a" : "#fff1f2", borderColor: isDark ? "#7a2a2a" : "#fecdd3", borderLeftColor: isDark ? "#f87171" : "#ef4444" }]}>
+                <View style={styles.warningHeader}>
+                  <Text style={[styles.warningTitle, { color: isDark ? "#f87171" : "#991b1b" }]}>{t("earlyWarning.title")}</Text>
+                  <View style={styles.warningBadge}>
+                    <Text style={styles.warningBadgeText}>{earlyWarnings.length}</Text>
+                  </View>
+                </View>
+                {earlyWarnings.slice(0, 5).map((w, idx) => {
+                  const daysDiff = w.date ? Math.floor((Date.now() - w.date.getTime()) / 86400000) : undefined;
+                  const typeLabel = w.type === "feedback"
+                    ? t("earlyWarning.negativeFeedback")
+                    : w.type === "discrepancy"
+                    ? t("earlyWarning.discrepancy")
+                    : t("earlyWarning.inactive");
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      style={[styles.warningRow, idx < Math.min(earlyWarnings.length, 5) - 1 && [styles.warningRowBorder, { borderBottomColor: isDark ? "#7a2a2a" : "#fecdd3" }]]}
+                      onPress={() => {
+                        if (w.mentorshipId) {
+                          router.push({ pathname: "/mentorship/[id]", params: { id: w.mentorshipId } });
+                        }
+                      }}
+                    >
+                      <View style={[styles.warningDot, { backgroundColor: isDark ? "#f87171" : "#ef4444" }]} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.warningLabel, { color: isDark ? "#f87171" : "#ef4444" }]}>{typeLabel}</Text>
+                        <Text style={[styles.warningName, { color: isDark ? "#fca5a5" : "#7f1d1d" }]}>{w.label}</Text>
+                      </View>
+                      {daysDiff !== undefined && (
+                        <Text style={[styles.warningDays, { color: isDark ? "#f87171" : "#b91c1c" }]}>
+                          {t("earlyWarning.daysAgo").replace("{0}", String(daysDiff))}
+                        </Text>
+                      )}
+                      <Text style={[styles.warningArrow, { color: isDark ? "#f87171" : "#b91c1c" }]}>›</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            )}
+          </>
+        )}
+
+        {/* ── TAB: VERWALTUNG ─────────────────────────────────────────── */}
+        {activeTab === "manage" && (
+          <>
+            {/* Nicht zugewiesene Mentees */}
+            {unassignedMentees.length > 0 && (
+              <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+                <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
+                  {t("dashboard.newMenteesWaiting").replace("{0}", String(unassignedMentees.length))}
+                </Text>
+                {unassignedMentees.map((mentee) => (
+                  <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
+                    <View>
+                      <Text style={[styles.menteeNameText, { color: themeColors.text }]}>{mentee.name}</Text>
+                      <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
+                        {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={styles.assignButton}
+                      onPress={() =>
+                        router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
+                      }
+                    >
+                      <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {/* Ausstehende Mentor-Zuweisungen (pending_approval) */}
+            {pendingApprovalsCount > 0 && (
+              <TouchableOpacity
+                style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}
+                onPress={() => router.push("/admin/pending-approvals")}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.pendingApprovalsText, { color: isDark ? "#fbbf24" : "#78350f" }]}>{t("dashboard.pendingApprovals")}</Text>
+                  <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#fbbf24" : "#92400e" }]}>
+                    {t("dashboard.pendingApprovalsCount")
+                      .replace("{0}", String(pendingApprovalsCount))
+                      .replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
                   </Text>
                 </View>
-              );
-            })
-          )}
-        </View>
+                <View style={styles.applicationsBadge}>
+                  <Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text>
+                </View>
+                <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
+              </TouchableOpacity>
+            )}
 
-        {/* Balkendiagramm: Neue Betreuungen pro Monat */}
-        <MonthlyChart mentorships={mentorships} />
+            {/* Schnellzugriff: Bewerbungen */}
+            <TouchableOpacity
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/applications")}
+            >
+              <View style={styles.applicationsButtonContent}>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.applications")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.checkApplications")}</Text>
+              </View>
+              {pendingAppsCount > 0 && (
+                <View style={styles.applicationsBadge}>
+                  <Text style={styles.applicationsBadgeText}>{pendingAppsCount}</Text>
+                </View>
+              )}
+              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
 
-        {/* Aktive Betreuungen Übersicht */}
-        <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.activeMentorships")}</Text>
-          {activeMentorships.length === 0 ? (
-            <View style={{ alignItems: "center", paddingVertical: 16 }}>
-              <Ionicons name="people-outline" size={28} color={themeColors.textTertiary} style={{ marginBottom: 8 }} />
-              <Text style={[styles.emptyText, { color: themeColors.textTertiary, marginBottom: 8 }]}>
-                {t("dashboard.noActiveMentorships")}
-              </Text>
-              <Text style={{ color: COLORS.link, fontSize: 13 }}>
-                {t("dashboard.assignMenteePrompt")}
-              </Text>
+            {/* Mentoren-Übersicht */}
+            <TouchableOpacity
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/mentors")}
+            >
+              <View style={styles.applicationsButtonContent}>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("adminMentors.title")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{allMentors.length} {t("adminMentors.mentors")}</Text>
+              </View>
+              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
+
+            {/* Feedback-Übersicht (nur Admin) */}
+            {showSystemSettings && (
+              <TouchableOpacity
+                style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/feedback-overview")}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("dashboard.feedbackOverview")}</Text>
+                  <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("dashboard.viewAllFeedbacks")}</Text>
+                </View>
+                <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Letzte Aktivitäten */}
+            <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+              <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
+              <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
+              {recentSessions.length === 0 ? (
+                <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noRecentActivity")}</Text>
+              ) : (
+                recentSessions.map((s, idx) => {
+                  const mentorship = mentorships.find((m) => m.id === s.mentorship_id);
+                  const stepName = s.session_type?.name ?? `${t("dashboard.activityStep")} ${idx + 1}`;
+                  const mentorName = mentorship?.mentor?.name ?? "–";
+                  const menteeName = mentorship?.mentee?.name ?? "–";
+                  const isLast = idx === recentSessions.length - 1;
+                  return (
+                    <View key={s.id} style={[styles.activityRow, isLast ? {} : [styles.activityRowBorder, { borderBottomColor: themeColors.border }]]}>
+                      <View style={styles.activityDot} />
+                      <View style={{ flex: 1 }}>
+                        <Text style={[styles.activityTitle, { color: themeColors.text }]}>{stepName}</Text>
+                        <Text style={[styles.activitySub, { color: themeColors.textTertiary }]}>
+                          {menteeName} · {t("dashboard.activityBy")} {mentorName}
+                        </Text>
+                      </View>
+                      <Text style={[styles.activityDate, { color: themeColors.textTertiary }]}>
+                        {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+                      </Text>
+                    </View>
+                  );
+                })
+              )}
             </View>
-          ) : (
-            activeMentorships.map((m, index) => {
-              const completedSteps = getCompletedStepIds(m.id);
-              const progress = Math.round(
-                (completedSteps.length / sessionTypes.length) * 100
-              );
-              const isLast = index === activeMentorships.length - 1;
-              return (
+
+            {/* Balkendiagramm: Neue Betreuungen pro Monat */}
+            <MonthlyChart mentorships={mentorships} />
+
+            {/* Aktive Betreuungen Übersicht */}
+            <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+              <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.activeMentorships")}</Text>
+              {activeMentorships.length === 0 ? (
+                <View style={{ alignItems: "center", paddingVertical: 16 }}>
+                  <Ionicons name="people-outline" size={28} color={themeColors.textTertiary} style={{ marginBottom: 8 }} />
+                  <Text style={[styles.emptyText, { color: themeColors.textTertiary, marginBottom: 8 }]}>
+                    {t("dashboard.noActiveMentorships")}
+                  </Text>
+                  <Text style={{ color: COLORS.link, fontSize: 13 }}>
+                    {t("dashboard.assignMenteePrompt")}
+                  </Text>
+                </View>
+              ) : (
+                activeMentorships.map((m, index) => {
+                  const completedSteps = getCompletedStepIds(m.id);
+                  const progress = Math.round(
+                    (completedSteps.length / sessionTypes.length) * 100
+                  );
+                  const isLast = index === activeMentorships.length - 1;
+                  return (
+                    <TouchableOpacity
+                      key={m.id}
+                      style={[styles.listItem, isLast ? {} : [styles.listItemBorder, { borderBottomColor: themeColors.border }]]}
+                      onPress={() =>
+                        router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })
+                      }
+                    >
+                      <View style={styles.rowBetweenMb2}>
+                        <View>
+                          <Text style={[styles.semiboldPrimary, { color: themeColors.text }]}>{m.mentee?.name}</Text>
+                          <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>{t("dashboard.mentor")} {m.mentor?.name}</Text>
+                        </View>
+                        <View style={[styles.percentBadge, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
+                          <Text style={[styles.percentBadgeText, { color: themeColors.text }]}>{progress}%</Text>
+                        </View>
+                      </View>
+                      <ProgressBar progress={progress} />
+                    </TouchableOpacity>
+                  );
+                })
+              )}
+            </View>
+          </>
+        )}
+
+        {/* ── TAB: TOOLS ─────────────────────────────────────────────── */}
+        {activeTab === "tools" && (
+          <>
+            {/* Admin-Aktionen */}
+            <View style={styles.row3}>
+              {showSystemSettings && (
                 <TouchableOpacity
-                  key={m.id}
-                  style={[styles.listItem, isLast ? {} : [styles.listItemBorder, { borderBottomColor: themeColors.border }]]}
-                  onPress={() =>
-                    router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })
-                  }
+                  style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
+                  onPress={() => router.push("/admin/session-types")}
                 >
-                  <View style={styles.rowBetweenMb2}>
-                    <View>
-                      <Text style={[styles.semiboldPrimary, { color: themeColors.text }]}>{m.mentee?.name}</Text>
-                      <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>{t("dashboard.mentor")} {m.mentor?.name}</Text>
-                    </View>
-                    <View style={[styles.percentBadge, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
-                      <Text style={[styles.percentBadgeText, { color: themeColors.text }]}>{progress}%</Text>
-                    </View>
-                  </View>
-                  <ProgressBar progress={progress} />
+                  <Text style={styles.actionButtonText}>{t("dashboard.sessionTypes")}</Text>
                 </TouchableOpacity>
-              );
-            })
-          )}
-        </View>
+              )}
+              <TouchableOpacity
+                style={[styles.actionButtonGold, !showSystemSettings ? { flex: 1 } : {}]}
+                onPress={() => router.push("/(tabs)/reports")}
+              >
+                <Text style={styles.actionButtonTextDark}>{t("dashboard.reports")}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Erweiterte Statistiken */}
+            {showSystemSettings && (
+              <TouchableOpacity
+                style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/statistics")}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("statistics.title")}</Text>
+                  <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("statistics.completionRate")} · {t("statistics.cityDistribution")}</Text>
+                </View>
+                <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* Spender-Bericht Dashboard */}
+            <TouchableOpacity
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/donor-report" as never)}
+            >
+              <View style={styles.applicationsButtonContent}>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("donorDashboard.title")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("donorDashboard.subtitle")}</Text>
+              </View>
+              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
+
+            {/* CSV Import */}
+            <TouchableOpacity
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/csv-import")}
+            >
+              <View style={styles.applicationsButtonContent}>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("csvImport.tabMentees")} · {t("csvImport.tabMentors")}</Text>
+              </View>
+              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
+
+            {/* Q&A verwalten */}
+            <TouchableOpacity
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/qa-management" as never)}
+            >
+              <View style={styles.applicationsButtonContent}>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("qa.manage")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("qa.subtitle")}</Text>
+              </View>
+              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+            </TouchableOpacity>
+
+            {/* Hadithe verwalten (nur Admin) */}
+            {showSystemSettings && (
+              <TouchableOpacity
+                style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/hadithe-management" as never)}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
+                  <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>
+                    {hadithe.length} {hadithe.length === 1 ? t("haditheMgmt.singular") : t("haditheMgmt.plural")}
+                  </Text>
+                </View>
+                <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
 
       </View>
     </ScrollView>
@@ -761,6 +792,19 @@ function MentorDashboard() {
               </TouchableOpacity>
             );
           })
+        )}
+
+        {/* Link zu abgeschlossenen Betreuungen im Mentees-Tab */}
+        {completedMentorships.length > 0 && (
+          <TouchableOpacity
+            style={[styles.completedLink, { borderColor: themeColors.border }]}
+            onPress={() => router.push("/(tabs)/mentees")}
+          >
+            <Text style={[styles.completedLinkText, { color: themeColors.textSecondary }]}>
+              {t("dashboard.completedMenteesLink").replace("{0}", String(completedMentorships.length))}
+            </Text>
+            <Text style={[styles.completedLinkArrow, { color: themeColors.textTertiary }]}>›</Text>
+          </TouchableOpacity>
         )}
 
       </View>
@@ -1166,6 +1210,53 @@ const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 20 },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 },
+
+  // Admin Dashboard Tabs
+  adminTabRow: {
+    flexDirection: "row",
+    borderRadius: 10,
+    borderWidth: 1,
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  adminTabBtn: {
+    flex: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  adminTabBtnActive: {
+    backgroundColor: COLORS.gradientStart,
+  },
+  adminTabBtnText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  adminTabBtnTextActive: {
+    color: COLORS.white,
+    fontSize: 13,
+    fontWeight: "600",
+  },
+
+  // Mentor Dashboard: Link zu abgeschlossenen Betreuungen
+  completedLink: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderTopWidth: 1,
+    paddingVertical: 12,
+    marginTop: 4,
+  },
+  completedLinkText: {
+    fontSize: 13,
+    flex: 1,
+  },
+  completedLinkArrow: {
+    fontSize: 16,
+    marginLeft: 8,
+  },
+
   searchInput: {
     backgroundColor: COLORS.white,
     borderWidth: 1,

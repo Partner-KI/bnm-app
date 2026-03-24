@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { showError } from "../../lib/errorHandler";
@@ -23,6 +24,7 @@ export default function ChatScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const insets = useSafeAreaInsets();
   const {
     getMessagesByMentorshipId,
     getMentorshipById,
@@ -198,13 +200,13 @@ export default function ChatScreen() {
 
       {/* Input-Bereich — nur bei aktiver Betreuung, nicht für Admin/Office (nur Lesen) */}
       {user?.role === "admin" || user?.role === "office" ? (
-        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? insets.bottom + 8 : 10 }]}>
           <Text style={[styles.inactiveHint, { color: themeColors.textTertiary }]}>
             {t("chat.adminReadOnly")}
           </Text>
         </View>
       ) : mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
-        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? insets.bottom + 8 : 10 }]}>
           <TextInput
             style={[styles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
             value={inputText}
@@ -226,7 +228,7 @@ export default function ChatScreen() {
           </TouchableOpacity>
         </View>
       ) : (
-        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+        <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? insets.bottom + 8 : 10 }]}>
           <Text style={[styles.inactiveHint, { color: themeColors.textTertiary }]}>
             {t("chat.notActiveHint")}
           </Text>
@@ -264,7 +266,7 @@ const styles = StyleSheet.create({
   inputContainer: {
     borderTopWidth: 1,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingTop: 10,
     flexDirection: "row",
     alignItems: "flex-end",
     gap: 8,
