@@ -885,6 +885,7 @@ const tr: Record<TranslationKeys, string> = {
   "dashboard.pendingApprovals": "Onay bekleyen atamalar",
   "dashboard.openAssignments": "Açık Atamalar",
   "dashboard.menteesWithoutMentor": "Mentörsüz öğrenciler",
+  "dashboard.goToManage": "Yönetime git",
   "dashboard.pendingApprovalsCount": "{0} atama onay bekliyor",
   "dashboard.reviewAssignments": "Atamaları İncele",
   "pendingApprovals.title": "Bekleyen Atamalar",

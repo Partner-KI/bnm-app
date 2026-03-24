@@ -310,8 +310,14 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* Offene Zuweisungen Zusammenfassung */}
             {(unassignedMentees.length > 0 || pendingApprovalsCount > 0) && (
-              <View style={[styles.openAssignmentsCard, { backgroundColor: isDark ? "#1a2a1a" : "#f0fdf4", borderColor: isDark ? "#2a5a2a" : "#bbf7d0", borderLeftColor: isDark ? "#4ade80" : "#22c55e" }]}>
-                <Text style={[styles.openAssignmentsTitle, { color: isDark ? "#4ade80" : "#166534" }]}>{t("dashboard.openAssignments")}</Text>
+              <TouchableOpacity
+                style={[styles.openAssignmentsCard, { backgroundColor: isDark ? "#1a2a1a" : "#f0fdf4", borderColor: isDark ? "#2a5a2a" : "#bbf7d0", borderLeftColor: isDark ? "#4ade80" : "#22c55e" }]}
+                onPress={() => setActiveTab("manage")}
+              >
+                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+                  <Text style={[styles.openAssignmentsTitle, { color: isDark ? "#4ade80" : "#166534" }]}>{t("dashboard.openAssignments")}</Text>
+                  <Text style={{ color: isDark ? "#4ade80" : "#166534", fontSize: 13, fontWeight: "600" }}>{t("dashboard.goToManage")} ›</Text>
+                </View>
                 {unassignedMentees.length > 0 && (
                   <Text style={[styles.openAssignmentsRow, { color: isDark ? "#86efac" : "#15803d" }]}>
                     • {unassignedMentees.length} {t("dashboard.menteesWithoutMentor")}
@@ -322,7 +328,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                     • {pendingApprovalsCount} {t("dashboard.pendingApprovals")}
                   </Text>
                 )}
-              </View>
+              </TouchableOpacity>
             )}
 
             {/* Frühwarnungen */}

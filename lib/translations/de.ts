@@ -883,6 +883,7 @@ const de = {
   "dashboard.pendingApprovals": "Zuweisungen warten auf Bestätigung",
   "dashboard.openAssignments": "Offene Zuweisungen",
   "dashboard.menteesWithoutMentor": "Mentees ohne Mentor",
+  "dashboard.goToManage": "Zur Verwaltung",
   "dashboard.pendingApprovalsCount": "{0} Zuweisung{1} warten auf Bestätigung",
   "dashboard.reviewAssignments": "Zuweisungen prüfen",
   "pendingApprovals.title": "Ausstehende Zuweisungen",
