@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import {
   View,
   Text,
@@ -23,6 +23,16 @@ type Step = "form" | "success";
 
 // Mindest-Ausfüllzeit in Millisekunden (5 Sekunden)
 const MIN_FILL_TIME_MS = 5000;
+
+type ConversionTime =
+  | "under_6_months"
+  | "under_12_months"
+  | "over_12_months"
+  | "not_yet"
+  | "born_muslim"
+  | "";
+
+type Country = "AT" | "DE" | "CH" | "other" | "";
 
 // Passwort-Stärke berechnen (0–3)
 function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
@@ -51,6 +61,7 @@ export default function RegisterPublicScreen() {
   // Spam-Schutz: Honeypot-Feld (muss leer bleiben)
   const [honeypot, setHoneypot] = useState("");
 
+  // Sektion 1: Persönliche Daten
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -58,12 +69,30 @@ export default function RegisterPublicScreen() {
   const [gender, setGender] = useState<Gender | null>(null);
   const [city, setCity] = useState("");
   const [plz, setPlz] = useState("");
+  const [country, setCountry] = useState<Country>("");
   const [age, setAge] = useState("");
+
+  // Sektion 2: Über dich
+  const [conversionTime, setConversionTime] = useState<ConversionTime>("");
   const [contactPref, setContactPref] = useState<ContactPreference | null>(null);
+
+  // Sektion 3: Bestätigungen
+  const [confirm16, setConfirm16] = useState(false);
+  const [confirmConverted, setConfirmConverted] = useState(false);
+  const [confirmRegister, setConfirmRegister] = useState(false);
+  const [confirmPrivacy, setConfirmPrivacy] = useState(false);
+  const [additionalMessage, setAdditionalMessage] = useState("");
+
+  // Sektion 4: Passwort
   const [password, setPassword] = useState("");
   const [passwordConfirm, setPasswordConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const activeColor = isDark ? "#FFCA28" : COLORS.primary;
+  const activeTextColor = isDark ? "#0E0E14" : COLORS.white;
+  const femaleActiveColor = isDark ? "#c084fc" : "#7e22ce";
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
@@ -76,10 +105,16 @@ export default function RegisterPublicScreen() {
     if (!city.trim()) newErrors.city = t("register.errorCity");
     if (!plz.trim() || !/^\d{4,5}$/.test(plz.trim()))
       newErrors.plz = t("register.errorPlz");
+    if (!country) newErrors.country = t("register.errorRequired");
     const ageNum = parseInt(age, 10);
     if (!age.trim() || isNaN(ageNum) || ageNum < 12 || ageNum > 120)
       newErrors.age = t("register.errorAge");
+    if (!conversionTime) newErrors.conversionTime = t("register.errorRequired");
     if (!contactPref) newErrors.contactPref = t("register.errorContactPref");
+    if (!confirm16) newErrors.confirm16 = t("register.errorConfirmRequired");
+    if (!confirmConverted) newErrors.confirmConverted = t("register.errorConfirmRequired");
+    if (!confirmRegister) newErrors.confirmRegister = t("register.errorConfirmRequired");
+    if (!confirmPrivacy) newErrors.confirmPrivacy = t("register.errorConfirmRequired");
     if (!password.trim() || password.length < 8)
       newErrors.password = t("register.errorPassword");
     if (password !== passwordConfirm)
@@ -144,12 +179,17 @@ export default function RegisterPublicScreen() {
             age: parseInt(age, 10),
             phone: phone.trim() || "",
             contact_preference: contactPref || "whatsapp",
+            country: country,
+            conversion_time: conversionTime,
           },
         },
       });
 
       if (error) {
-        if (error.message.includes("already registered") || error.message.includes("User already registered")) {
+        if (
+          error.message.includes("already registered") ||
+          error.message.includes("User already registered")
+        ) {
           setErrors((prev) => ({ ...prev, email: t("register.errorEmailTaken") }));
         } else {
           showError(error.message);
@@ -158,16 +198,17 @@ export default function RegisterPublicScreen() {
         return;
       }
 
-      // Profil mit zusätzlichen Daten updaten (Telefon, Kontaktpräferenz)
-      // Direkt die user.id aus dem signUp-Response nutzen — nicht getUser() aufrufen,
-      // da das bei E-Mail-Bestätigung null zurückgeben kann
+      // Profil mit zusätzlichen Daten updaten
       const newUserId = signUpData?.user?.id;
       if (newUserId) {
-        await supabase.from("profiles").update({
-          phone: phone.trim() || "",
-          contact_preference: contactPref || "whatsapp",
-          plz: plz.trim(),
-        }).eq("id", newUserId);
+        await supabase
+          .from("profiles")
+          .update({
+            phone: phone.trim() || "",
+            contact_preference: contactPref || "whatsapp",
+            plz: plz.trim(),
+          })
+          .eq("id", newUserId);
       }
 
       // E-Mail-Benachrichtigung an Admin
@@ -191,9 +232,11 @@ export default function RegisterPublicScreen() {
       <Container>
         <View style={[styles.successContainer, { backgroundColor: themeColors.background }]}>
           <View style={styles.successIconBox}>
-            <Text style={styles.successIcon}>✓</Text>
+            <Text style={styles.successIconText}>✓</Text>
           </View>
-          <Text style={[styles.successTitle, { color: themeColors.text }]}>{t("register.successTitle")}</Text>
+          <Text style={[styles.successTitle, { color: themeColors.text }]}>
+            {t("register.successTitle")}
+          </Text>
           <Text style={[styles.successText, { color: themeColors.textSecondary }]}>
             {t("register.successText")}
           </Text>
@@ -211,6 +254,94 @@ export default function RegisterPublicScreen() {
     );
   }
 
+  function PillGroup<T extends string,>({
+    options,
+    value,
+    onSelect,
+    error,
+    femaleKey,
+  }: {
+    options: { value: T; label: string }[];
+    value: T | null | "";
+    onSelect: (v: T) => void;
+    error?: string;
+    femaleKey?: T;
+  }) {
+    return (
+      <>
+        <View style={styles.pillRow}>
+          {options.map((opt) => {
+            const active = value === opt.value;
+            const isFemale = femaleKey !== undefined && opt.value === femaleKey;
+            const bgColor = active
+              ? isFemale
+                ? femaleActiveColor
+                : activeColor
+              : themeColors.card;
+            const borderColor = active
+              ? isFemale
+                ? femaleActiveColor
+                : activeColor
+              : themeColors.border;
+            const textColor = active ? activeTextColor : themeColors.textSecondary;
+            return (
+              <TouchableOpacity
+                key={opt.value}
+                style={[styles.pill, { backgroundColor: bgColor, borderColor }]}
+                onPress={() => onSelect(opt.value)}
+              >
+                <Text style={[styles.pillText, { color: textColor, fontWeight: active ? "600" : "500" }]}>
+                  {opt.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </>
+    );
+  }
+
+  function CheckboxRow({
+    checked,
+    onToggle,
+    label,
+    error,
+  }: {
+    checked: boolean;
+    onToggle: () => void;
+    label: string;
+    error?: string;
+  }) {
+    return (
+      <View style={styles.checkboxWrapper}>
+        <TouchableOpacity
+          style={styles.checkboxRow}
+          onPress={onToggle}
+          activeOpacity={0.7}
+        >
+          <View
+            style={[
+              styles.checkbox,
+              {
+                backgroundColor: checked ? activeColor : themeColors.card,
+                borderColor: checked ? activeColor : (error ? "#ef4444" : themeColors.border),
+              },
+            ]}
+          >
+            {checked && (
+              <Text style={[styles.checkboxTick, { color: activeTextColor }]}>✓</Text>
+            )}
+          </View>
+          <Text style={[styles.checkboxLabel, { color: themeColors.textSecondary }]}>
+            {label}
+          </Text>
+        </TouchableOpacity>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      </View>
+    );
+  }
+
   return (
     <Container>
       <KeyboardAvoidingView
@@ -223,13 +354,33 @@ export default function RegisterPublicScreen() {
           keyboardShouldPersistTaps="handled"
         >
           <View style={styles.page}>
-            {/* Titel */}
+            {/* INTRO */}
             <View style={styles.titleSection}>
-              <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("register.title")}</Text>
+              <Text style={[styles.pageTitle, { color: themeColors.text }]}>
+                {t("register.newTitle")}
+              </Text>
               <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
-                {t("register.subtitle")}
+                {t("register.newSubtitle")}
               </Text>
             </View>
+
+            {/* Benefits-Liste */}
+            <View style={[styles.benefitsBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              {[
+                t("register.benefit1"),
+                t("register.benefit2"),
+                t("register.benefit3"),
+                t("register.benefit4"),
+              ].map((b, i) => (
+                <View key={i} style={styles.bulletRow}>
+                  <Text style={[styles.bullet, { color: activeColor }]}>•</Text>
+                  <Text style={[styles.bulletText, { color: themeColors.textSecondary }]}>{b}</Text>
+                </View>
+              ))}
+            </View>
+
+            {/* SEKTION 1: Persönliche Daten */}
+            <SectionHeader label={t("register.section1")} />
 
             {/* Vorname */}
             <FormField label={t("register.firstName")} error={errors.firstName}>
@@ -281,47 +432,15 @@ export default function RegisterPublicScreen() {
 
             {/* Geschlecht */}
             <FormField label={t("register.gender")} error={errors.gender}>
-              <View style={styles.pillRow}>
-                <TouchableOpacity
-                  style={[styles.pill, gender === "male" ? { backgroundColor: isDark ? "#FFCA28" : COLORS.primary, borderColor: isDark ? "#FFCA28" : COLORS.primary } : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }]]}
-                  onPress={() => setGender("male")}
-                >
-                  <Text style={gender === "male" ? { color: isDark ? "#0E0E14" : COLORS.white, fontWeight: "600", fontSize: 13 } : [styles.pillTextInactive, { color: themeColors.textSecondary }]}>
-                    {t("register.brother")}
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.pill, gender === "female" ? { backgroundColor: isDark ? "#c084fc" : "#7e22ce", borderColor: isDark ? "#c084fc" : "#7e22ce" } : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }]]}
-                  onPress={() => setGender("female")}
-                >
-                  <Text style={gender === "female" ? { color: isDark ? "#0E0E14" : COLORS.white, fontWeight: "600", fontSize: 13 } : [styles.pillTextInactive, { color: themeColors.textSecondary }]}>
-                    {t("register.sister")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </FormField>
-
-            {/* Stadt */}
-            <FormField label={t("register.city")} error={errors.city}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.city ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.cityPlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                value={city}
-                onChangeText={setCity}
-              />
-            </FormField>
-
-            {/* Postleitzahl */}
-            <FormField label={t("register.plz")} error={errors.plz}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.plz ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.plzPlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                keyboardType="numeric"
-                maxLength={5}
-                value={plz}
-                onChangeText={setPlz}
+              <PillGroup
+                options={[
+                  { value: "male" as Gender, label: t("register.brother") },
+                  { value: "female" as Gender, label: t("register.sister") },
+                ]}
+                value={gender}
+                onSelect={setGender}
+                error={errors.gender}
+                femaleKey={"female" as Gender}
               />
             </FormField>
 
@@ -337,38 +456,123 @@ export default function RegisterPublicScreen() {
               />
             </FormField>
 
-            {/* Kontaktpräferenz */}
-            <FormField label={t("register.contactPref")} error={errors.contactPref}>
-              <View style={styles.pillRow}>
-                {(
-                  [
-                    { key: "whatsapp", label: t("contactPref.whatsapp") },
-                    { key: "phone", label: t("contactPref.phone") },
-                    { key: "email", label: t("contactPref.email") },
-                    { key: "telegram", label: t("contactPref.telegram") },
-                  ] as const
-                ).map((opt) => (
-                  <TouchableOpacity
-                    key={opt.key}
-                    style={[
-                      styles.pill,
-                      contactPref === opt.key ? { backgroundColor: isDark ? "#FFCA28" : COLORS.primary, borderColor: isDark ? "#FFCA28" : COLORS.primary } : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
-                    ]}
-                    onPress={() => setContactPref(opt.key)}
-                  >
-                    <Text
-                      style={
-                        contactPref === opt.key
-                          ? { color: isDark ? "#0E0E14" : COLORS.white, fontWeight: "600" as const, fontSize: 13 }
-                          : [styles.pillTextInactive, { color: themeColors.textSecondary }]
-                      }
-                    >
-                      {opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+            {/* PLZ + Stadt */}
+            <FormField label={t("register.plzCity")} error={errors.plz ?? errors.city}>
+              <View style={styles.rowInputs}>
+                <TextInput
+                  style={[styles.input, styles.inputPlz, { backgroundColor: themeColors.card, color: themeColors.text }, errors.plz ? styles.inputError : { borderColor: themeColors.border }]}
+                  placeholder="PLZ"
+                  placeholderTextColor={themeColors.textTertiary}
+                  keyboardType="numeric"
+                  maxLength={5}
+                  value={plz}
+                  onChangeText={setPlz}
+                />
+                <TextInput
+                  style={[styles.input, styles.inputCity, { backgroundColor: themeColors.card, color: themeColors.text }, errors.city ? styles.inputError : { borderColor: themeColors.border }]}
+                  placeholder={t("register.cityPlaceholder")}
+                  placeholderTextColor={themeColors.textTertiary}
+                  value={city}
+                  onChangeText={setCity}
+                />
               </View>
             </FormField>
+
+            {/* Land */}
+            <FormField label={t("register.country")} error={errors.country}>
+              <PillGroup
+                options={[
+                  { value: "AT" as Country, label: "Österreich" },
+                  { value: "DE" as Country, label: "Deutschland" },
+                  { value: "CH" as Country, label: "Schweiz" },
+                  { value: "other" as Country, label: t("register.countryOther") },
+                ]}
+                value={country}
+                onSelect={setCountry}
+                error={errors.country}
+              />
+            </FormField>
+
+            {/* Telefon bereits oben — kein doppeltes Feld */}
+
+            {/* SEKTION 2: Über dich */}
+            <SectionHeader label={t("register.section2")} />
+
+            {/* Wann Islam angenommen */}
+            <FormField label={t("register.conversionTime")} error={errors.conversionTime}>
+              <PillGroup
+                options={[
+                  { value: "under_6_months" as ConversionTime, label: t("register.convUnder6") },
+                  { value: "under_12_months" as ConversionTime, label: t("register.convUnder12") },
+                  { value: "over_12_months" as ConversionTime, label: t("register.convOver12") },
+                  { value: "not_yet" as ConversionTime, label: t("register.convNotYet") },
+                  { value: "born_muslim" as ConversionTime, label: t("register.convBornMuslim") },
+                ]}
+                value={conversionTime}
+                onSelect={setConversionTime}
+                error={errors.conversionTime}
+              />
+            </FormField>
+
+            {/* Kontaktpräferenz */}
+            <FormField label={t("register.contactPref")} error={errors.contactPref}>
+              <PillGroup
+                options={[
+                  { value: "whatsapp" as ContactPreference, label: t("contactPref.whatsapp") },
+                  { value: "telegram" as ContactPreference, label: t("contactPref.telegram") },
+                  { value: "phone" as ContactPreference, label: t("contactPref.phone") },
+                  { value: "email" as ContactPreference, label: t("contactPref.email") },
+                ]}
+                value={contactPref}
+                onSelect={setContactPref}
+                error={errors.contactPref}
+              />
+            </FormField>
+
+            {/* SEKTION 3: Bestätigungen */}
+            <SectionHeader label={t("register.section3")} />
+
+            <CheckboxRow
+              checked={confirm16}
+              onToggle={() => setConfirm16((v) => !v)}
+              label={t("register.confirm16")}
+              error={errors.confirm16}
+            />
+            <CheckboxRow
+              checked={confirmConverted}
+              onToggle={() => setConfirmConverted((v) => !v)}
+              label={t("register.confirmConverted")}
+              error={errors.confirmConverted}
+            />
+            <CheckboxRow
+              checked={confirmRegister}
+              onToggle={() => setConfirmRegister((v) => !v)}
+              label={t("register.confirmRegister")}
+              error={errors.confirmRegister}
+            />
+            <CheckboxRow
+              checked={confirmPrivacy}
+              onToggle={() => setConfirmPrivacy((v) => !v)}
+              label={t("register.confirmPrivacy")}
+              error={errors.confirmPrivacy}
+            />
+
+            {/* Optionale Nachricht */}
+            <FormField label={t("register.additionalMessage")}>
+              <TextInput
+                style={[styles.input, styles.textarea, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+                placeholder={t("register.additionalMessagePlaceholder")}
+                placeholderTextColor={themeColors.textTertiary}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
+                value={additionalMessage}
+                onChangeText={setAdditionalMessage}
+              />
+            </FormField>
+
+            {/* SEKTION 4: Passwort */}
+            <SectionHeader label={t("register.section4")} />
 
             {/* Passwort */}
             <FormField label={t("register.password")} error={errors.password}>
@@ -390,10 +594,7 @@ export default function RegisterPublicScreen() {
                   </Text>
                 </TouchableOpacity>
               </View>
-              {/* Passwort-Stärke-Anzeige */}
-              {password.length > 0 && (
-                <PasswordStrengthBar password={password} />
-              )}
+              {password.length > 0 && <PasswordStrengthBar password={password} />}
             </FormField>
 
             {/* Passwort bestätigen */}
@@ -408,15 +609,12 @@ export default function RegisterPublicScreen() {
               />
             </FormField>
 
-            {/* Hinweis */}
-            <View style={[styles.infoBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
-              <Text style={[styles.infoBoxText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
-                {t("register.infoBox")}
-              </Text>
-            </View>
-
             {/* Honeypot – für Menschen unsichtbar, Bots füllen es aus */}
-            <View style={styles.honeypotField} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+            <View
+              style={styles.honeypotField}
+              accessibilityElementsHidden
+              importantForAccessibility="no-hide-descendants"
+            >
               <TextInput
                 style={styles.honeypotInput}
                 value={honeypot}
@@ -438,15 +636,28 @@ export default function RegisterPublicScreen() {
 
             {/* Link zum Login */}
             <View style={styles.loginLinkRow}>
-              <Text style={[styles.loginLinkText, { color: themeColors.textSecondary }]}>{t("register.alreadyRegistered")} </Text>
+              <Text style={[styles.loginLinkText, { color: themeColors.textSecondary }]}>
+                {t("register.alreadyRegistered")}{" "}
+              </Text>
               <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
-                <Text style={[styles.loginLink, { color: themeColors.link }]}>{t("register.loginLink")}</Text>
+                <Text style={[styles.loginLink, { color: themeColors.link }]}>
+                  {t("register.loginLink")}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </Container>
+  );
+}
+
+function SectionHeader({ label }: { label: string }) {
+  const themeColors = useThemeColors();
+  return (
+    <View style={sectionStyles.container}>
+      <Text style={[sectionStyles.label, { color: themeColors.text }]}>{label}</Text>
+    </View>
   );
 }
 
@@ -494,7 +705,12 @@ function PasswordStrengthBar({ password }: { password: string }) {
   return (
     <View style={strengthStyles.container}>
       <View style={[strengthStyles.track, { backgroundColor: themeColors.border }]}>
-        <View style={[strengthStyles.fill, { width: `${fillPct}%` as any, backgroundColor: fillColor }]} />
+        <View
+          style={[
+            strengthStyles.fill,
+            { width: `${fillPct}%` as any, backgroundColor: fillColor },
+          ]}
+        />
       </View>
       {strength > 0 && (
         <Text style={[strengthStyles.label, { color: fillColor }]}>{labels[strength]}</Text>
@@ -502,6 +718,22 @@ function PasswordStrengthBar({ password }: { password: string }) {
     </View>
   );
 }
+
+const sectionStyles = StyleSheet.create({
+  container: {
+    marginTop: 20,
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingBottom: 6,
+  },
+  label: {
+    fontSize: 12,
+    fontWeight: "700",
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
+  },
+});
 
 const strengthStyles = StyleSheet.create({
   container: { marginTop: 6, flexDirection: "row", alignItems: "center", gap: 8 },
@@ -526,9 +758,31 @@ const styles = StyleSheet.create({
   scrollContent: { flexGrow: 1 },
   page: { padding: 20, paddingBottom: 40 },
 
-  titleSection: { marginBottom: 16 },
-  pageTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 4 },
-  pageSubtitle: { fontSize: 13 },
+  titleSection: { marginBottom: 12 },
+  pageTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 6 },
+  pageSubtitle: { fontSize: 13, lineHeight: 19 },
+
+  benefitsBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 8,
+  },
+  bulletRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 4,
+  },
+  bullet: {
+    fontSize: 14,
+    marginRight: 6,
+    lineHeight: 18,
+  },
+  bulletText: {
+    fontSize: 13,
+    lineHeight: 18,
+    flex: 1,
+  },
 
   input: {
     borderWidth: 1,
@@ -538,28 +792,61 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   inputError: { borderColor: COLORS.error },
+  textarea: { height: 80 },
 
-  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  rowInputs: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  inputPlz: {
+    width: 90,
+    flex: 0,
+  },
+  inputCity: {
+    flex: 1,
+  },
+
+  pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 9999,
     borderWidth: 1,
   },
-  pillActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  pillActiveFemale: { backgroundColor: "#7e22ce", borderColor: "#7e22ce" },
-  pillInactive: {},
-  pillTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
-  pillTextInactive: { fontSize: 13 },
-
-  infoBox: {
-    borderWidth: 1,
-    borderRadius: 6,
-    padding: 12,
-    marginBottom: 16,
-    marginTop: 4,
+  pillText: { fontSize: 13 },
+  errorText: {
+    color: "#ef4444",
+    fontSize: 12,
+    marginBottom: 8,
   },
-  infoBoxText: { fontSize: 13, lineHeight: 19 },
+
+  // Checkboxen
+  checkboxWrapper: { marginBottom: 10 },
+  checkboxRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
+  },
+  checkbox: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
+    borderWidth: 1.5,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+    flexShrink: 0,
+  },
+  checkboxTick: {
+    fontSize: 13,
+    fontWeight: "700",
+    lineHeight: 16,
+  },
+  checkboxLabel: {
+    flex: 1,
+    fontSize: 13,
+    lineHeight: 19,
+  },
 
   submitButton: {
     backgroundColor: COLORS.cta,
@@ -567,6 +854,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
+    marginTop: 8,
   },
   submitButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
 
@@ -607,7 +895,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-  successIcon: { color: COLORS.white, fontSize: 28, fontWeight: "bold" },
+  successIconText: { color: COLORS.white, fontSize: 28, fontWeight: "bold" },
   successTitle: {
     fontSize: 20,
     fontWeight: "bold",
