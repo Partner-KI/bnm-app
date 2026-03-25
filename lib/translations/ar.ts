@@ -1418,6 +1418,8 @@ const ar: Record<TranslationKeys, string> = {
   "admin.tabOverview": "نظرة عامة",
   "admin.tabManage": "الإدارة",
   "admin.tabTools": "الأدوات",
+  "dashboard.quickLinks": "وصول سريع للأدوات",
+  "mentees.withoutMentor": "بدون موجه",
 
   // لوحة تحكم الموجه: رابط المتدربين المكتملين
   "dashboard.completedMenteesLink": "{0} إرشاد مكتمل → عرض الكل",

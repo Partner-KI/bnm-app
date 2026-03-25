@@ -1418,6 +1418,8 @@ const en: Record<TranslationKeys, string> = {
   "admin.tabOverview": "Overview",
   "admin.tabManage": "Management",
   "admin.tabTools": "Tools",
+  "dashboard.quickLinks": "Quick Access Tools",
+  "mentees.withoutMentor": "Without Mentor",
 
   // Mentor Dashboard: completed mentees link
   "dashboard.completedMenteesLink": "{0} completed mentorships → View all",

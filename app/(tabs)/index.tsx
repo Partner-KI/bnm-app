@@ -43,7 +43,6 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "manage" | "tools">("overview");
   const [activePeriod, setActivePeriod] = useState<"thisMonth" | "lastMonth" | "thisQuarter" | "thisYear">("thisMonth");
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -218,24 +217,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </View>
         </View>
 
-        {/* ── Tab-Switcher ─────────────────────────────────────────────────── */}
-        <View style={[styles.adminTabRow, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
-          {(["overview", "manage", "tools"] as const).map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              style={[styles.adminTabBtn, activeTab === tab && { backgroundColor: COLORS.gold }]}
-              onPress={() => setActiveTab(tab)}
-            >
-              <Text style={[styles.adminTabBtnText, activeTab === tab ? { color: COLORS.primary, fontWeight: "700" } : { color: themeColors.textSecondary }]}>
-                {tab === "overview" ? t("admin.tabOverview") : tab === "manage" ? t("admin.tabManage") : t("admin.tabTools")}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* ── TAB: ÜBERSICHT ───────────────────────────────────────────── */}
-        {activeTab === "overview" && (
-          <>
+        {/* ── ÜBERSICHT + VERWALTUNG + TOOLS (linear) ────────────────── */}
+        <>
             {/* Globale Suche */}
             <TextInput
               style={[styles.searchInput, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border, color: themeColors.text }]}
@@ -363,13 +346,11 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* Offene Zuweisungen Zusammenfassung */}
             {(unassignedMentees.length > 0 || pendingApprovalsCount > 0) && (
-              <TouchableOpacity
+              <View
                 style={[styles.openAssignmentsCard, { backgroundColor: isDark ? "#1a2a1a" : "#f0fdf4", borderColor: isDark ? "#2a5a2a" : "#bbf7d0", borderLeftColor: isDark ? "#4ade80" : "#22c55e" }]}
-                onPress={() => setActiveTab("manage")}
               >
                 <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
                   <Text style={[styles.openAssignmentsTitle, { color: isDark ? "#4ade80" : "#166534" }]}>{t("dashboard.openAssignments")}</Text>
-                  <Text style={{ color: isDark ? "#4ade80" : "#166534", fontSize: 13, fontWeight: "600" }}>{t("dashboard.goToManage")} ›</Text>
                 </View>
                 {unassignedMentees.length > 0 && (
                   <Text style={[styles.openAssignmentsRow, { color: isDark ? "#86efac" : "#15803d" }]}>
@@ -381,7 +362,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                     • {pendingApprovalsCount} {t("dashboard.pendingApprovals")}
                   </Text>
                 )}
-              </TouchableOpacity>
+              </View>
             )}
 
             {/* Frühwarnungen */}
@@ -426,12 +407,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 })}
               </View>
             )}
-          </>
-        )}
 
-        {/* ── TAB: VERWALTUNG ─────────────────────────────────────────── */}
-        {activeTab === "manage" && (
-          <>
+            {/* ── VERWALTUNG ─────────────────────────────────────────── */}
             {/* Nicht zugewiesene Mentees */}
             {unassignedMentees.length > 0 && (
               <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
@@ -600,13 +577,9 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 })
               )}
             </View>
-          </>
-        )}
 
-        {/* ── TAB: TOOLS ─────────────────────────────────────────────── */}
-        {activeTab === "tools" && (
-          <>
-            {/* Admin-Aktionen */}
+            {/* ── QUICK-LINKS TOOLS ──────────────────────────────────── */}
+            <Text style={[styles.sectionTitle, { color: themeColors.text, marginTop: 8 }]}>{t("dashboard.quickLinks")}</Text>
             <View style={styles.row3}>
               {showSystemSettings && (
                 <TouchableOpacity
@@ -689,13 +662,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
               </TouchableOpacity>
             )}
-          </>
-        )}
+        </>
 
       </View>
     </ScrollView>
   );
 }
+
 
 function MentorDashboard() {
   const { user } = useAuth();

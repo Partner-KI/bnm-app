@@ -322,121 +322,85 @@ function AdminMenteesView() {
           </View>
         )}
 
-        {/* Filter: Zuweisung */}
-        <Text style={[styles.filterGroupLabel, { color: themeColors.textTertiary }]}>{t("mentees.filterAssignment")}</Text>
-        <View style={styles.filterRow}>
-          {(
-            [
-              { key: "all", label: t("mentees.all") },
-              { key: "assigned", label: t("mentees.assigned") },
-              { key: "unassigned", label: t("mentees.unassigned") },
-            ] as const
-          ).map((tab) => (
+        {/* Filter: kompakte Zeile */}
+        <View style={[styles.filterBarRow, { marginBottom: 16 }]}>
+          {/* Schnell-Chips */}
+          <View style={styles.filterChipsGroup}>
+            {/* "Alle" */}
             <TouchableOpacity
-              key={tab.key}
               style={[
                 styles.filterChip,
-                assignFilter === tab.key ? styles.filterChipActive : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                assignFilter === "all" && statusFilter === "all"
+                  ? styles.filterChipActive
+                  : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
               ]}
-              onPress={() => setAssignFilter(tab.key)}
+              onPress={() => { setAssignFilter("all"); setStatusFilter("all"); }}
             >
-              <Text
-                style={
-                  assignFilter === tab.key ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]
-                }
-              >
-                {tab.label}
+              <Text style={assignFilter === "all" && statusFilter === "all" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                {t("mentees.all")}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Filter: Status */}
-        <Text style={[styles.filterGroupLabel, { color: themeColors.textTertiary }]}>{t("mentees.filterStatus")}</Text>
-        <View style={styles.filterRow}>
-          {(
-            [
-              { key: "all", label: t("mentees.all") },
-              { key: "active", label: t("mentees.active") },
-              { key: "completed", label: t("mentees.completedStatus") },
-              { key: "cancelled", label: t("mentees.cancelled") },
-            ] as const
-          ).map((tab) => (
+            {/* "Ohne Mentor" */}
             <TouchableOpacity
-              key={tab.key}
               style={[
                 styles.filterChip,
-                statusFilter === tab.key ? styles.filterChipActive : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                assignFilter === "unassigned"
+                  ? styles.filterChipActive
+                  : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
               ]}
-              onPress={() => setStatusFilter(tab.key)}
+              onPress={() => { setAssignFilter("unassigned"); setStatusFilter("all"); }}
             >
-              <Text
-                style={
-                  statusFilter === tab.key ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]
-                }
-              >
-                {tab.label}
+              <Text style={assignFilter === "unassigned" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                {t("mentees.withoutMentor")}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Filter: Geschlecht */}
-        <Text style={[styles.filterGroupLabel, { color: themeColors.textTertiary }]}>{t("mentees.filterGender")}</Text>
-        <View style={styles.filterRow}>
-          {(
-            [
-              { key: "all", label: t("mentees.all") },
-              { key: "male", label: t("mentees.brothers") },
-              { key: "female", label: t("mentees.sisters") },
-            ] as const
-          ).map((tab) => (
+            {/* "Aktiv" */}
             <TouchableOpacity
-              key={tab.key}
               style={[
                 styles.filterChip,
-                genderFilter === tab.key ? styles.filterChipActive : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                statusFilter === "active" && assignFilter !== "unassigned"
+                  ? styles.filterChipActive
+                  : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
               ]}
-              onPress={() => setGenderFilter(tab.key)}
+              onPress={() => { setStatusFilter("active"); setAssignFilter("all"); }}
             >
-              <Text
-                style={
-                  genderFilter === tab.key ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]
-                }
-              >
-                {tab.label}
+              <Text style={statusFilter === "active" && assignFilter !== "unassigned" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                {t("mentees.active")}
               </Text>
             </TouchableOpacity>
-          ))}
-        </View>
 
-        {/* Sortierung */}
-        <Text style={[styles.filterGroupLabel, { color: themeColors.textTertiary }]}>{t("mentees.filterSort")}</Text>
-        <View style={[styles.filterRow, { marginBottom: 24 }]}>
-          {(
-            [
-              { key: "name", label: t("mentees.sortName") },
-              { key: "city", label: t("mentees.sortCity") },
-              { key: "progress", label: t("mentees.sortProgress") },
-            ] as const
-          ).map((opt) => (
+            {/* "Abgeschlossen" */}
             <TouchableOpacity
-              key={opt.key}
               style={[
                 styles.filterChip,
-                sortKey === opt.key ? styles.filterChipActive : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                statusFilter === "completed" && assignFilter !== "unassigned"
+                  ? styles.filterChipActive
+                  : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
               ]}
-              onPress={() => setSortKey(opt.key)}
+              onPress={() => { setStatusFilter("completed"); setAssignFilter("all"); }}
             >
-              <Text
-                style={
-                  sortKey === opt.key ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]
-                }
-              >
-                {opt.label}
+              <Text style={statusFilter === "completed" && assignFilter !== "unassigned" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                {t("mentees.completedStatus")}
               </Text>
             </TouchableOpacity>
-          ))}
+          </View>
+
+          {/* Sort-Icon */}
+          <TouchableOpacity
+            style={[styles.filterIconBtn, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+            onPress={() => {
+              const order: SortKey[] = ["name", "city", "progress"];
+              const next = order[(order.indexOf(sortKey) + 1) % order.length];
+              setSortKey(next);
+            }}
+          >
+            <Ionicons name="swap-vertical-outline" size={16} color={themeColors.textSecondary} />
+            <Text style={[styles.filterIconBtnText, { color: themeColors.textSecondary }]}>
+              {sortKey === "name" ? t("mentees.sortName") : sortKey === "city" ? t("mentees.sortCity") : t("mentees.sortProgress")}
+            </Text>
+          </TouchableOpacity>
         </View>
 
         {/* Mentee-Liste */}
@@ -1162,6 +1126,19 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
+  filterBarRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  filterChipsGroup: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  filterIconBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 5,
+    borderWidth: 1,
+    flexShrink: 0,
+  },
+  filterIconBtnText: { fontSize: 11, fontWeight: "500" },
   filterChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 5, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   filterChipInactive: { borderWidth: 1 },

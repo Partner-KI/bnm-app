@@ -1418,6 +1418,8 @@ const de = {
   "admin.tabOverview": "Übersicht",
   "admin.tabManage": "Verwaltung",
   "admin.tabTools": "Tools",
+  "dashboard.quickLinks": "Schnellzugriff Tools",
+  "mentees.withoutMentor": "Ohne Mentor",
 
   // Mentor Dashboard: abgeschlossene Mentees Link
   "dashboard.completedMenteesLink": "{0} abgeschlossene Betreuungen → Alle ansehen",

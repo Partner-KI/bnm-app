@@ -1418,6 +1418,8 @@ const tr: Record<TranslationKeys, string> = {
   "admin.tabOverview": "Genel Bakış",
   "admin.tabManage": "Yönetim",
   "admin.tabTools": "Araçlar",
+  "dashboard.quickLinks": "Hızlı Erişim Araçları",
+  "mentees.withoutMentor": "Mentorsuz",
 
   // Mentor Dashboard: tamamlanan mentiler linki
   "dashboard.completedMenteesLink": "{0} tamamlanan rehberlik → Tümünü görüntüle",
