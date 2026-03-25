@@ -7,11 +7,11 @@ import {
   TextInput,
   Switch,
   StyleSheet,
-  Alert,
   Platform,
   RefreshControl,
   KeyboardAvoidingView,
 } from "react-native";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
@@ -99,11 +99,11 @@ export default function QAManagementScreen() {
 
   async function handleSave() {
     if (!form.question.trim()) {
-      Alert.alert(t("common.error"), t("qa.errorQuestion"));
+      showError(t("qa.errorQuestion"));
       return;
     }
     if (!form.answer.trim()) {
-      Alert.alert(t("common.error"), t("qa.errorAnswer"));
+      showError(t("qa.errorAnswer"));
       return;
     }
 
@@ -132,37 +132,30 @@ export default function QAManagementScreen() {
           created_by: user?.id,
         });
       }
-      Alert.alert(t("common.success"), t("qa.saveSuccess"));
+      showSuccess(t("qa.saveSuccess"));
       closeForm();
     } catch {
-      Alert.alert(t("common.error"), t("qa.loadError"));
+      showError(t("qa.loadError"));
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(entry: QAEntry) {
-    Alert.alert(t("qa.deleteTitle"), t("qa.deleteText"), [
-      { text: t("qa.cancel"), style: "cancel" },
-      {
-        text: t("qa.delete"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await deleteQAEntry(entry.id);
-          } catch {
-            Alert.alert(t("common.error"), t("qa.loadError"));
-          }
-        },
-      },
-    ]);
+    const ok = await showConfirm(t("qa.deleteTitle"), t("qa.deleteText"));
+    if (!ok) return;
+    try {
+      await deleteQAEntry(entry.id);
+    } catch {
+      showError(t("qa.loadError"));
+    }
   }
 
   async function handleTogglePublish(entry: QAEntry) {
     try {
       await updateQAEntry(entry.id, { is_published: !entry.is_published });
     } catch {
-      Alert.alert(t("common.error"), t("qa.loadError"));
+      showError(t("qa.loadError"));
     }
   }
 

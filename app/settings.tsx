@@ -7,9 +7,8 @@ import {
   Switch,
   StyleSheet,
   Linking,
-  Alert,
 } from "react-native";
-import { showSuccess } from "../lib/errorHandler";
+import { showSuccess, showConfirm } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
@@ -40,12 +39,7 @@ export default function SettingsScreen() {
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
 
   async function handleDeleteAccount() {
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(t("settings.deleteTitle"), t("settings.deleteConfirm"), [
-        { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-        { text: t("common.confirm"), onPress: () => resolve(true) },
-      ]);
-    });
+    const ok = await showConfirm(t("settings.deleteTitle"), t("settings.deleteConfirm"));
     if (ok) {
       showSuccess(t("settings.accountDeleted"), logout);
     }

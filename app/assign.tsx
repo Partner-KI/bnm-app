@@ -5,7 +5,6 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Platform,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";

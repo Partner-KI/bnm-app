@@ -7,9 +7,8 @@ import {
   StyleSheet,
   TextInput,
   Modal,
-  Alert,
 } from "react-native";
-import { showError, showSuccess } from "../../lib/errorHandler";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -104,12 +103,7 @@ export default function MentorshipDetailScreen() {
     mentorship.status === "active";
 
   async function handleComplete() {
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(t("mentorship.completeTitle"), t("mentorship.completeText"), [
-        { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-        { text: t("common.confirm"), onPress: () => resolve(true) },
-      ]);
-    });
+    const ok = await showConfirm(t("mentorship.completeTitle"), t("mentorship.completeText"));
     if (!ok) return;
     setIsUpdatingStatus(true);
     try {
@@ -169,12 +163,7 @@ export default function MentorshipDetailScreen() {
   }
 
   async function handleDeleteSession(sessionId: string) {
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(t("sessionEdit.delete"), t("sessionEdit.confirmDelete"), [
-        { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-        { text: t("common.confirm"), onPress: () => resolve(true) },
-      ]);
-    });
+    const ok = await showConfirm(t("sessionEdit.delete"), t("sessionEdit.confirmDelete"));
     if (!ok) return;
     try {
       await deleteSession(sessionId);

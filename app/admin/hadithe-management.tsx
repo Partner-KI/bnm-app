@@ -9,7 +9,6 @@ import {
   RefreshControl,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -18,7 +17,7 @@ import { useData, type Hadith } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { COLORS } from "../../constants/Colors";
-import { showError, showSuccess } from "../../lib/errorHandler";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 
 type FormData = {
   text_ar: string;
@@ -128,12 +127,7 @@ export default function HaditheManagementScreen() {
   }
 
   async function handleDelete(h: Hadith) {
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(t("haditheMgmt.delete"), t("haditheMgmt.confirmDelete"), [
-        { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-        { text: t("common.confirm"), onPress: () => resolve(true) },
-      ]);
-    });
+    const ok = await showConfirm(t("haditheMgmt.delete"), t("haditheMgmt.confirmDelete"));
     if (!ok) return;
     try {
       await deleteHadith(h.id);

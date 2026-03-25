@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Platform,
   TextInput,
-  Alert,
   useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -20,7 +19,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { showError } from "../../lib/errorHandler";
+import { showError, showConfirm } from "../../lib/errorHandler";
 
 function formatTime(dateStr: string, yesterday: string): string {
   const d = new Date(dateStr);
@@ -77,16 +76,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
 
   async function handleLongPress(messageId: string, isOwn: boolean) {
     if (!isOwn) return;
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(
-        t("chat.deleteConfirmTitle"),
-        t("chat.deleteConfirmText"),
-        [
-          { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-          { text: t("common.confirm"), onPress: () => resolve(true) },
-        ]
-      );
-    });
+    const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
     if (!ok) return;
     try {
       await deleteMessage(messageId);

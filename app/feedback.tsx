@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
-  Alert,
+  Platform,
 } from "react-native";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -64,14 +64,11 @@ export default function FeedbackScreen() {
         ).catch(() => {});
       }
 
-      // Erfolgs-Meldung anzeigen, dann nach 1,5 Sekunden zum Dashboard navigieren
-      Alert.alert(t("feedback.successMsg"), "", [
-        {
-          text: "OK",
-          onPress: () => router.replace("/(tabs)"),
-        },
-      ]);
-      setTimeout(() => router.replace("/(tabs)"), 1500);
+      // Erfolgs-Meldung anzeigen, dann zum Dashboard navigieren
+      showSuccess(t("feedback.successMsg"), () => router.replace("/(tabs)"));
+      if (Platform.OS !== "web") {
+        setTimeout(() => router.replace("/(tabs)"), 1500);
+      }
     } catch {
       showError(t("feedback.errorMissing"));
     } finally {

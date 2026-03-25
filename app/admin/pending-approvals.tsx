@@ -10,12 +10,11 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { showError, showSuccess } from "../../lib/errorHandler";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -54,18 +53,12 @@ export default function PendingApprovalsScreen() {
     const m = pendingList.find((ms) => ms.id === mentorshipId);
     if (!m) return;
 
-    const confirmed = await new Promise<boolean>((resolve) => {
-      Alert.alert(
-        t("pendingApprovals.approveTitle"),
-        t("pendingApprovals.approveText")
-          .replace("{0}", m.mentor?.name ?? "?")
-          .replace("{1}", m.mentee?.name ?? "?"),
-        [
-          { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-          { text: t("common.confirm"), onPress: () => resolve(true) },
-        ]
-      );
-    });
+    const confirmed = await showConfirm(
+      t("pendingApprovals.approveTitle"),
+      t("pendingApprovals.approveText")
+        .replace("{0}", m.mentor?.name ?? "?")
+        .replace("{1}", m.mentee?.name ?? "?")
+    );
     if (!confirmed) return;
 
     try {

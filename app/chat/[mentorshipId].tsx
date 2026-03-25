@@ -8,14 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { showError } from "../../lib/errorHandler";
+import { showError, showConfirm } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -69,16 +68,7 @@ export default function ChatScreen() {
   async function handleLongPress(messageId: string, isOwn: boolean) {
     if (!isOwn) return; // Nur eigene Nachrichten löschbar
 
-    const ok = await new Promise<boolean>((resolve) => {
-      Alert.alert(
-        t("chat.deleteConfirmTitle"),
-        t("chat.deleteConfirmText"),
-        [
-          { text: t("common.cancel"), onPress: () => resolve(false), style: "cancel" },
-          { text: t("common.confirm"), onPress: () => resolve(true) },
-        ]
-      );
-    });
+    const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
     if (!ok) return;
 
     try {

@@ -339,6 +339,12 @@ function RootLayoutInner() {
             headerShown: false,
           }}
         />
+        <Stack.Screen
+          name="admin/pending-approvals"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
     </NavigationThemeProvider>
   );
