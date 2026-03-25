@@ -252,10 +252,10 @@ const de = {
   // Register Public – neue Keys
   "register.newTitle": "Registrierung für BNM",
   "register.newSubtitle": "Du bist zum Islam konvertiert? Dann bist du hier genau richtig. Du erhältst kostenlose Unterstützung:",
-  "register.benefit1": "MentorIn Zuweisung (online & offline)",
-  "register.benefit2": "8-wöchiges Bildungswebinar",
-  "register.benefit3": "BNM-Box (Geschenkbox)",
-  "register.benefit4": "4-tägiges Retreat",
+  "register.benefit1": "Dir wird ein/e Mentor/in zugewiesen, der/die dich online und offline betreut",
+  "register.benefit2": "Du wirst für Bildungsangebote vorgemerkt",
+  "register.benefit3": "Du erhältst eine BNM-Willkommensbox",
+  "register.benefit4": "Du wirst in die muslimische Community integriert",
   "register.section1": "Persönliche Daten",
   "register.section2": "Über dich",
   "register.section3": "Bestätigungen",
@@ -273,6 +273,11 @@ const de = {
   "register.confirmConverted": "Ich bestätige, dass ich zum Islam konvertiert bin (oder es beabsichtige) *",
   "register.confirmRegister": "Ich möchte mich für das BNM-Programm registrieren *",
   "register.confirmPrivacy": "Ich stimme den Datenschutzbestimmungen zu *",
+  "register.confirmPrivacyPrefix": "Ich stimme den",
+  "register.confirmPrivacyLink1": "Datenschutzbestimmungen",
+  "register.confirmPrivacyAnd": "und den",
+  "register.confirmPrivacyLink2": "AGB",
+  "register.confirmPrivacySuffix": "zu *",
   "register.additionalMessage": "Möchtest du uns noch etwas mitteilen? (optional)",
   "register.additionalMessagePlaceholder": "Deine Nachricht...",
 
@@ -304,7 +309,7 @@ const de = {
   "registerMentor.errorUnexpected": "Ein unerwarteter Fehler ist aufgetreten.",
 
   // Register Mentor – neue Keys
-  "registerMentor.pageTitle": "Werde MentorIn für neue Muslime",
+  "registerMentor.pageTitle": "Werde Mentor/in für neue Muslime",
   "registerMentor.pageDesc": "Unterstütze konvertierte Muslime in ihrem Wachstum. Deine Rolle: Online und Offline Betreuung, Dokumentation der Fortschritte.",
   "registerMentor.requirementsTitle": "Voraussetzungen:",
   "registerMentor.req1": "Mindestens 18 Jahre alt",

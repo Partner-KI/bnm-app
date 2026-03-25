@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Linking,
 } from "react-native";
 import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -550,12 +551,52 @@ export default function RegisterPublicScreen() {
               label={t("register.confirmRegister")}
               error={errors.confirmRegister}
             />
-            <CheckboxRow
-              checked={confirmPrivacy}
-              onToggle={() => setConfirmPrivacy((v) => !v)}
-              label={t("register.confirmPrivacy")}
-              error={errors.confirmPrivacy}
-            />
+            {/* Datenschutz-Checkbox mit klickbaren Links */}
+            <View style={styles.checkboxWrapper}>
+              <TouchableOpacity
+                style={styles.checkboxRow}
+                onPress={() => setConfirmPrivacy((v) => !v)}
+                activeOpacity={0.7}
+              >
+                <View
+                  style={[
+                    styles.checkbox,
+                    {
+                      backgroundColor: confirmPrivacy ? activeColor : themeColors.card,
+                      borderColor: confirmPrivacy ? activeColor : (errors.confirmPrivacy ? "#ef4444" : themeColors.border),
+                    },
+                  ]}
+                >
+                  {confirmPrivacy && (
+                    <Text style={[styles.checkboxTick, { color: activeTextColor }]}>✓</Text>
+                  )}
+                </View>
+                <Text style={[styles.checkboxLabel, { color: themeColors.textSecondary }]}>
+                  {t("register.confirmPrivacyPrefix")}{" "}
+                  <Text
+                    style={{ color: "#3b82f6", textDecorationLine: "underline" }}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      Linking.openURL("https://iman.ngo/datenschutzerklaerung/");
+                    }}
+                  >
+                    {t("register.confirmPrivacyLink1")}
+                  </Text>
+                  {" "}{t("register.confirmPrivacyAnd")}{" "}
+                  <Text
+                    style={{ color: "#3b82f6", textDecorationLine: "underline" }}
+                    onPress={(e) => {
+                      e.stopPropagation?.();
+                      Linking.openURL("https://iman.ngo/agb/");
+                    }}
+                  >
+                    {t("register.confirmPrivacyLink2")}
+                  </Text>
+                  {" "}{t("register.confirmPrivacySuffix")}
+                </Text>
+              </TouchableOpacity>
+              {errors.confirmPrivacy ? <Text style={styles.errorText}>{errors.confirmPrivacy}</Text> : null}
+            </View>
 
             {/* Optionale Nachricht */}
             <FormField label={t("register.additionalMessage")}>
