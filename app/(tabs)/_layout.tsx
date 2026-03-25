@@ -157,6 +157,8 @@ function AdminSidebar() {
     ? "applications"
     : pathname.includes("/tools")
     ? "tools"
+    : pathname.includes("/feedback")
+    ? "feedback"
     : pathname.includes("/chats")
     ? "chats"
     : pathname.includes("/leaderboard")
@@ -172,6 +174,7 @@ function AdminSidebar() {
     { key: "mentors", label: t("sidebar.mentors"), iconName: "school-outline", iconNameActive: "school", href: "/(tabs)/mentors" },
     { key: "applications", label: t("sidebar.applications"), iconName: "document-text-outline", iconNameActive: "document-text", href: "/(tabs)/applications" },
     { key: "tools", label: "Tools", iconName: "construct-outline", iconNameActive: "construct", href: "/(tabs)/tools" },
+    { key: "feedback", label: t("tabs.feedback"), iconName: "star-outline", iconNameActive: "star", href: "/(tabs)/feedback" },
     ...(!isOffice
       ? [{ key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread }]
       : []),
@@ -487,6 +490,16 @@ function TabsLayout() {
         }}
       />
       <Tabs.Screen
+        name="feedback"
+        options={{
+          title: t("tabs.feedback"),
+          href: isAdminOrOffice ? undefined : null,
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="star" size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: t("tabs.profile"),
@@ -549,6 +562,10 @@ function AdminSidebarLayout() {
           <Tabs.Screen
             name="reports"
             options={{ title: "Berichte" }}
+          />
+          <Tabs.Screen
+            name="feedback"
+            options={{ title: "Feedback" }}
           />
           <Tabs.Screen
             name="profile"

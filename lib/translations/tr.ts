@@ -854,6 +854,8 @@ const tr: Record<TranslationKeys, string> = {
   "admin.xSelected": "{0} seçildi",
 
   "tabs.tools": "Araçlar",
+  "tabs.feedback": "Geri Bildirim",
+  "tools.sessionTypesDesc": "10 mentorluk adımını yönet",
 
   // Chats Tab
   "tabs.chats": "Sohbetler",

@@ -31,11 +31,9 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     users,
     mentorships,
     sessions,
-    sessionTypes,
     feedback,
     hadithe,
     mentorOfMonthVisible,
-    getCompletedStepIds,
     getUnassignedMentees,
     getPendingApplicationsCount,
     getPendingApprovalsCount,
@@ -486,8 +484,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
             </TouchableOpacity>
 
-            {/* Feedback-Übersicht (nur Admin) */}
-            {showSystemSettings && (
+            {/* Feedback-Übersicht wurde in eigenen Tab verschoben */}
+            {false && showSystemSettings && (
               <TouchableOpacity
                 style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
                 onPress={() => router.push("/admin/feedback-overview")}
@@ -533,50 +531,6 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* Balkendiagramm: Neue Betreuungen pro Monat */}
             <MonthlyChart mentorships={mentorships} />
-
-            {/* Aktive Betreuungen Übersicht */}
-            <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-              <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.activeMentorships")}</Text>
-              {activeMentorships.length === 0 ? (
-                <View style={{ alignItems: "center", paddingVertical: 16 }}>
-                  <Ionicons name="people-outline" size={28} color={themeColors.textTertiary} style={{ marginBottom: 8 }} />
-                  <Text style={[styles.emptyText, { color: themeColors.textTertiary, marginBottom: 8 }]}>
-                    {t("dashboard.noActiveMentorships")}
-                  </Text>
-                  <Text style={{ color: COLORS.link, fontSize: 13 }}>
-                    {t("dashboard.assignMenteePrompt")}
-                  </Text>
-                </View>
-              ) : (
-                activeMentorships.map((m, index) => {
-                  const completedSteps = getCompletedStepIds(m.id);
-                  const progress = Math.round(
-                    (completedSteps.length / sessionTypes.length) * 100
-                  );
-                  const isLast = index === activeMentorships.length - 1;
-                  return (
-                    <TouchableOpacity
-                      key={m.id}
-                      style={[styles.listItem, isLast ? {} : [styles.listItemBorder, { borderBottomColor: themeColors.border }]]}
-                      onPress={() =>
-                        router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })
-                      }
-                    >
-                      <View style={styles.rowBetweenMb2}>
-                        <View>
-                          <Text style={[styles.semiboldPrimary, { color: themeColors.text }]}>{m.mentee?.name}</Text>
-                          <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>{t("dashboard.mentor")} {m.mentor?.name}</Text>
-                        </View>
-                        <View style={[styles.percentBadge, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
-                          <Text style={[styles.percentBadgeText, { color: themeColors.text }]}>{progress}%</Text>
-                        </View>
-                      </View>
-                      <ProgressBar progress={progress} />
-                    </TouchableOpacity>
-                  );
-                })
-              )}
-            </View>
 
         </>
 

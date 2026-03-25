@@ -854,6 +854,8 @@ const ar: Record<TranslationKeys, string> = {
   "admin.xSelected": "تم تحديد {0}",
 
   "tabs.tools": "الأدوات",
+  "tabs.feedback": "التقييمات",
+  "tools.sessionTypesDesc": "إدارة خطوات الإرشاد العشر",
 
   // تبويب المحادثات
   "tabs.chats": "المحادثات",

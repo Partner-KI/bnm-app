@@ -852,6 +852,8 @@ const de = {
   "admin.xSelected": "{0} ausgewählt",
 
   "tabs.tools": "Tools",
+  "tabs.feedback": "Feedback",
+  "tools.sessionTypesDesc": "Die 10 Mentoring-Schritte verwalten",
 
   // Chats Tab
   "tabs.chats": "Chats",

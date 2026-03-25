@@ -48,24 +48,7 @@ export default function ToolsTabScreen() {
               >
                 <Ionicons name="list-outline" size={28} color={COLORS.gradientStart} />
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("dashboard.sessionTypes")}</Text>
-              </TouchableOpacity>
-            )}
-
-            <TouchableOpacity
-              style={[styles.toolItem, { backgroundColor: themeColors.card }]}
-              onPress={() => router.push("/(tabs)/reports")}
-            >
-              <Ionicons name="stats-chart-outline" size={28} color={COLORS.gold} />
-              <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("dashboard.reports")}</Text>
-            </TouchableOpacity>
-
-            {showSystemSettings && (
-              <TouchableOpacity
-                style={[styles.toolItem, { backgroundColor: themeColors.card }]}
-                onPress={() => router.push("/admin/statistics")}
-              >
-                <Ionicons name="pie-chart-outline" size={28} color={COLORS.cta} />
-                <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("statistics.title")}</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.sessionTypesDesc")}</Text>
               </TouchableOpacity>
             )}
 
@@ -102,14 +85,6 @@ export default function ToolsTabScreen() {
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
               </TouchableOpacity>
             )}
-
-            <TouchableOpacity
-              style={[styles.toolItem, { backgroundColor: themeColors.card }]}
-              onPress={() => router.push("/(tabs)/profile")}
-            >
-              <Ionicons name="settings-outline" size={28} color={themeColors.textSecondary} />
-              <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("tabs.profile")}</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -148,5 +123,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center",
     lineHeight: 16,
+  },
+  toolSubLabel: {
+    fontSize: 10,
+    textAlign: "center",
+    lineHeight: 14,
+    marginTop: 2,
   },
 });

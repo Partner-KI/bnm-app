@@ -854,6 +854,8 @@ const en: Record<TranslationKeys, string> = {
   "admin.xSelected": "{0} selected",
 
   "tabs.tools": "Tools",
+  "tabs.feedback": "Feedback",
+  "tools.sessionTypesDesc": "Manage the 10 mentoring steps",
 
   // Chats Tab
   "tabs.chats": "Chats",
