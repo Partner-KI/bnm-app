@@ -1444,6 +1444,8 @@ const de = {
   "notifSettings.back": "Zurück",
 
   // Admin Sidebar & Dashboard
+  "sidebar.mentors": "Mentoren",
+  "sidebar.applications": "Bewerbungen",
   "sidebar.logout": "Abmelden",
   "sidebar.logoutConfirm": "Wirklich abmelden?",
   "sidebar.logoutConfirmMsg": "Möchtest du dich wirklich abmelden?",

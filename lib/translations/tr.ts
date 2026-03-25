@@ -1444,6 +1444,8 @@ const tr: Record<TranslationKeys, string> = {
   "notifSettings.back": "Geri",
 
   // Admin Sidebar & Dashboard
+  "sidebar.mentors": "Mentorlar",
+  "sidebar.applications": "Başvurular",
   "sidebar.logout": "Çıkış Yap",
   "sidebar.logoutConfirm": "Çıkış yapılsın mı?",
   "sidebar.logoutConfirmMsg": "Gerçekten çıkış yapmak istiyor musunuz?",

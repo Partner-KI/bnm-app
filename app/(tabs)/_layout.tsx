@@ -15,7 +15,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { BNMLogo } from "../../components/BNMLogo";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useThemeColors, useTheme } from "../../contexts/ThemeContext";
 import { COLORS } from "../../constants/Colors";
 
 // ─── Bell Button ────────────────────────────────────────────────────────────
@@ -130,6 +130,35 @@ function SidebarItem({
   );
 }
 
+// ─── Theme Toggle (Sidebar) ──────────────────────────────────────────────────
+
+function ThemeToggle() {
+  const { mode, setMode, isDark } = useTheme();
+  const themeColors = useThemeColors();
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 8, gap: 4, marginBottom: 4 }}>
+      <TouchableOpacity
+        onPress={() => setMode("light")}
+        style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: "center", backgroundColor: mode === "light" ? (isDark ? "#FFCA28" : "#EEA71B") : "transparent" }}
+      >
+        <Ionicons name="sunny-outline" size={16} color={mode === "light" ? "#0E0E14" : themeColors.textTertiary} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setMode("dark")}
+        style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: "center", backgroundColor: mode === "dark" ? (isDark ? "#FFCA28" : "#EEA71B") : "transparent" }}
+      >
+        <Ionicons name="moon-outline" size={16} color={mode === "dark" ? "#0E0E14" : themeColors.textTertiary} />
+      </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() => setMode("system")}
+        style={{ flex: 1, paddingVertical: 6, borderRadius: 6, alignItems: "center", backgroundColor: mode === "system" ? (isDark ? "#FFCA28" : "#EEA71B") : "transparent" }}
+      >
+        <Ionicons name="phone-portrait-outline" size={16} color={mode === "system" ? "#0E0E14" : themeColors.textTertiary} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 // ─── Admin Sidebar ───────────────────────────────────────────────────────────
 
 function AdminSidebar() {
@@ -151,6 +180,10 @@ function AdminSidebar() {
     ? "reports"
     : pathname.includes("/mentees")
     ? "mentees"
+    : pathname.includes("/admin/mentors")
+    ? "mentors"
+    : pathname.includes("/admin/applications") || pathname.includes("/admin/pending")
+    ? "applications"
     : pathname.includes("/chats")
     ? "chats"
     : pathname.includes("/leaderboard")
@@ -163,6 +196,8 @@ function AdminSidebar() {
   const mainItems = [
     { key: "index", label: t("tabs.dashboard"), iconName: "grid-outline", iconNameActive: "grid", href: "/(tabs)/" },
     { key: "mentees", label: t("tabs.mentees"), iconName: "people-outline", iconNameActive: "people", href: "/(tabs)/mentees" },
+    { key: "mentors", label: t("sidebar.mentors"), iconName: "school-outline", iconNameActive: "school", href: "/admin/mentors" },
+    { key: "applications", label: t("sidebar.applications"), iconName: "document-text-outline", iconNameActive: "document-text", href: "/admin/applications" },
     ...(!isOffice
       ? [{ key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread }]
       : []),
@@ -219,8 +254,9 @@ function AdminSidebar() {
         ))}
       </View>
 
-      {/* Unten: Profil/Einstellungen + Logout */}
+      {/* Unten: Theme-Toggle + Profil + Logout */}
       <View style={[sidebarStyles.bottomArea, { borderTopColor: isDark ? "#1A1A24" : themeColors.border }]}>
+        <ThemeToggle />
         <SidebarItem
           key="profile"
           label={t("tabs.profile")}

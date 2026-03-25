@@ -1444,6 +1444,8 @@ const en: Record<TranslationKeys, string> = {
   "notifSettings.back": "Back",
 
   // Admin Sidebar & Dashboard
+  "sidebar.mentors": "Mentors",
+  "sidebar.applications": "Applications",
   "sidebar.logout": "Sign Out",
   "sidebar.logoutConfirm": "Sign out?",
   "sidebar.logoutConfirmMsg": "Do you really want to sign out?",

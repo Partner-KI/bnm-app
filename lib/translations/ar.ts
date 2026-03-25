@@ -1444,6 +1444,8 @@ const ar: Record<TranslationKeys, string> = {
   "notifSettings.back": "رجوع",
 
   // Admin Sidebar & Dashboard
+  "sidebar.mentors": "المرشدون",
+  "sidebar.applications": "الطلبات",
   "sidebar.logout": "تسجيل الخروج",
   "sidebar.logoutConfirm": "تسجيل الخروج؟",
   "sidebar.logoutConfirmMsg": "هل تريد حقاً تسجيل الخروج؟",
