@@ -1891,9 +1891,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ─── refreshData ──────────────────────────────────────────────────────────────
 
+  // Throttled refresh: nur wenn letzte Ladung > 10s her ist
+  const lastLoadRef = React.useRef<number>(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const refreshData = useCallback(async () => {
     if (!authUser) return;
+    const now = Date.now();
+    if (now - lastLoadRef.current < 10000) return; // 10s Throttle
+    lastLoadRef.current = now;
     await loadAllData();
   }, [authUser?.id]); // intentionally only depends on authUser to avoid infinite re-creation
 
