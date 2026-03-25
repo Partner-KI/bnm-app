@@ -10,6 +10,7 @@ import type { Mentorship } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { navigateToChat } from "../../lib/chatNavigation";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -561,7 +562,7 @@ function MentorDashboard() {
                         style={[styles.chatButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                         onPress={(e) => {
                           e.stopPropagation();
-                          router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: m.id } });
+                          navigateToChat(router, m.id);
                         }}
                       >
                         <Text style={[styles.chatButtonText, { color: themeColors.textSecondary }]}>{t("dashboard.openChat")}</Text>
@@ -742,7 +743,7 @@ function MenteeDashboard() {
                 <TouchableOpacity
                   style={[styles.actionButton, { backgroundColor: COLORS.gradientStart, marginTop: 10 }]}
                   onPress={() =>
-                    router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+                    navigateToChat(router, mentorship.id)
                   }
                 >
                   <Text style={styles.actionButtonText}>{t("dashboard.sendMessage")}</Text>
@@ -777,7 +778,7 @@ function MenteeDashboard() {
               <TouchableOpacity
                 style={styles.secondaryButton}
                 onPress={() =>
-                  router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+                  navigateToChat(router, mentorship.id)
                 }
               >
                 <Text style={styles.secondaryButtonText}>{t("dashboard.openChat")}</Text>

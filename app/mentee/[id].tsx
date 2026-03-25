@@ -15,6 +15,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { navigateToChat } from "../../lib/chatNavigation";
 
 export default function MenteeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -278,7 +279,7 @@ export default function MenteeDetailScreen() {
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: COLORS.cta }]}
                 onPress={() =>
-                  router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+                  navigateToChat(router, mentorship.id)
                 }
               >
                 <Text style={styles.actionButtonText}>{t("menteeDetail.sendMessage")}</Text>

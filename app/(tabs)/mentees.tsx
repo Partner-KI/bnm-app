@@ -23,6 +23,7 @@ import { Container } from "../../components/Container";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { navigateToChat } from "../../lib/chatNavigation";
 
 export default function MenteesScreen() {
   const { user } = useAuth();
@@ -522,7 +523,7 @@ function AdminMenteesView() {
                       style={[styles.viewChatButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                       onPress={(e) => {
                         e.stopPropagation();
-                        router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } });
+                        navigateToChat(router, mentorship.id);
                       }}
                     >
                       <Text style={[styles.viewChatButtonText, { color: themeColors.textSecondary }]}>{t("admin.viewChat")}</Text>

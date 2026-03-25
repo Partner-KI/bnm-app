@@ -10,6 +10,7 @@ import {
   Platform,
 } from "react-native";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
+import { navigateToChat } from "../../lib/chatNavigation";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -407,7 +408,7 @@ export default function MentorshipDetailScreen() {
             <TouchableOpacity
               style={[styles.primaryButton, { backgroundColor: COLORS.primary }]}
               onPress={() =>
-                router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+                navigateToChat(router, mentorship.id)
               }
             >
               <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>
@@ -442,7 +443,7 @@ export default function MentorshipDetailScreen() {
           <TouchableOpacity
             style={[styles.primaryButton, { backgroundColor: COLORS.primary, marginBottom: 16 }]}
             onPress={() =>
-              router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: mentorship.id } })
+              navigateToChat(router, mentorship.id)
             }
           >
             <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>

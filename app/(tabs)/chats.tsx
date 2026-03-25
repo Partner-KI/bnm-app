@@ -11,7 +11,7 @@ import {
   TextInput,
   useWindowDimensions,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -288,6 +288,7 @@ const panelStyles = StyleSheet.create({
 
 export default function ChatsScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ openChat?: string }>();
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
@@ -297,6 +298,13 @@ export default function ChatsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Wenn von einem anderen Screen mit openChat-Parameter navigiert wird
+  useEffect(() => {
+    if (params.openChat && Platform.OS === "web") {
+      setSelectedChatId(params.openChat);
+    }
+  }, [params.openChat]);
 
   // Zwei-Spalten-Layout nur auf Web bei ausreichend Breite
   const isWideWeb = Platform.OS === "web" && width > 768;

@@ -16,6 +16,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { navigateToChat } from "../../lib/chatNavigation";
 import type { ThemeMode } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
@@ -296,7 +297,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               style={[styles.partnerMessageBtn]}
               onPress={() =>
-                router.push({ pathname: "/chat/[mentorshipId]", params: { mentorshipId: partnerContact.mentorshipId } })
+                navigateToChat(router, partnerContact.mentorshipId)
               }
             >
               <Text style={styles.partnerMessageBtnText}>{t("profile.sendMessage")}</Text>
