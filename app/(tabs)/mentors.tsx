@@ -20,6 +20,8 @@ import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { Container } from "../../components/Container";
+import { SlideOverPanel } from "../../components/SlideOverPanel";
+import { MentorDetailPanel } from "../../components/MentorDetailPanel";
 
 export default function MentorsTabScreen() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function MentorsTabScreen() {
   const { users, mentorships, sessions, refreshData, isLoading, bulkDeleteUsers } = useData();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
 
   // Multi-Select State
   const [selectMode, setSelectMode] = useState(false);
@@ -300,6 +303,8 @@ export default function MentorsTabScreen() {
                 onPress={() => {
                   if (selectMode) {
                     toggleSelect(mentor.id);
+                  } else if (Platform.OS === "web") {
+                    setSelectedMentorId(mentor.id);
                   } else {
                     router.push({ pathname: "/mentor/[id]", params: { id: mentor.id } });
                   }
@@ -370,6 +375,13 @@ export default function MentorsTabScreen() {
         </TouchableOpacity>
       </View>
     )}
+
+    <SlideOverPanel
+      visible={!!selectedMentorId}
+      onClose={() => setSelectedMentorId(null)}
+    >
+      <MentorDetailPanel id={selectedMentorId} />
+    </SlideOverPanel>
     </Container>
   );
 }

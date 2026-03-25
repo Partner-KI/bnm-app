@@ -11,6 +11,9 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
+import { SlideOverPanel } from "../../components/SlideOverPanel";
+import { MentorDetailPanel } from "../../components/MentorDetailPanel";
+import { MenteeDetailPanel } from "../../components/MenteeDetailPanel";
 
 export default function DashboardScreen() {
   const { user } = useAuth();
@@ -41,6 +44,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [activePeriod, setActivePeriod] = useState<"thisMonth" | "lastMonth" | "thisQuarter" | "thisYear">("thisMonth");
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
+  const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -145,6 +150,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   }, [users, mentorships, sessions]);
 
   return (
+    <>
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
@@ -229,7 +235,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             {mentorOfMonthVisible && topMentor && (
               <TouchableOpacity
                 style={styles.momAdminCard}
-                onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } })}
+                onPress={() => {
+                  if (Platform.OS === "web") {
+                    setSelectedMentorId(topMentor.mentor.id);
+                  } else {
+                    router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } });
+                  }
+                }}
               >
                 <View style={styles.momAdminHeader}>
                   <Text style={styles.momAdminStar}>★</Text>
@@ -405,6 +417,21 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
       </View>
     </ScrollView>
+
+    <SlideOverPanel
+      visible={!!selectedMentorId}
+      onClose={() => setSelectedMentorId(null)}
+    >
+      <MentorDetailPanel id={selectedMentorId} />
+    </SlideOverPanel>
+
+    <SlideOverPanel
+      visible={!!selectedMenteeId}
+      onClose={() => setSelectedMenteeId(null)}
+    >
+      <MenteeDetailPanel id={selectedMenteeId} />
+    </SlideOverPanel>
+    </>
   );
 }
 

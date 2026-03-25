@@ -24,6 +24,8 @@ import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
+import { SlideOverPanel } from "../../components/SlideOverPanel";
+import { MenteeDetailPanel } from "../../components/MenteeDetailPanel";
 
 export default function MenteesScreen() {
   const { user } = useAuth();
@@ -50,6 +52,7 @@ function AdminMenteesView() {
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
 
   // Multi-Select State
   const [selectMode, setSelectMode] = useState(false);
@@ -476,6 +479,8 @@ function AdminMenteesView() {
                 onPress={() => {
                   if (selectMode) {
                     toggleSelect(mentee.id);
+                  } else if (Platform.OS === "web") {
+                    setSelectedMenteeId(mentee.id);
                   } else {
                     router.push({ pathname: "/mentee/[id]", params: { id: mentee.id } });
                   }
@@ -563,6 +568,13 @@ function AdminMenteesView() {
         </TouchableOpacity>
       </View>
     )}
+
+    <SlideOverPanel
+      visible={!!selectedMenteeId}
+      onClose={() => setSelectedMenteeId(null)}
+    >
+      <MenteeDetailPanel id={selectedMenteeId} />
+    </SlideOverPanel>
     </>
   );
 }
