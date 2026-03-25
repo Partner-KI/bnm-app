@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   TextInput,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -71,7 +72,7 @@ export default function FeedbackOverviewScreen() {
   }
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
         <View style={styles.page}>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("feedbackOverview.title")}</Text>

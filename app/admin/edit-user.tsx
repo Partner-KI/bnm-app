@@ -135,7 +135,7 @@ function EditUserForm({ userId }: { userId: string }) {
   }
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <KeyboardAvoidingView
         style={styles.flex1}
         behavior={Platform.OS === "ios" ? "padding" : "height"}

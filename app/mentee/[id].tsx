@@ -105,7 +105,7 @@ export default function MenteeDetailScreen() {
     : (isDark ? "#fbbf24" : "#b45309");
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>

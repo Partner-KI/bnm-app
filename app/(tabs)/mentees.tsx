@@ -30,7 +30,7 @@ export default function MenteesScreen() {
 
   if (user.role === "admin" || user.role === "office") return <Container fullWidth={Platform.OS === "web"}><AdminMenteesView /></Container>;
   if (user.role === "mentor") return <Container fullWidth={Platform.OS === "web"}><MentorMenteesView /></Container>;
-  return <Container><MenteeProgressView /></Container>;
+  return <Container fullWidth={Platform.OS === "web"}><MenteeProgressView /></Container>;
 }
 
 type AssignmentFilter = "all" | "assigned" | "unassigned";
