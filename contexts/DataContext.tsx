@@ -533,8 +533,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .channel("messages-realtime")
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
+        { event: "*", schema: "public", table: "messages" },
         async (payload) => {
+          // UPDATE: read_at geändert → lokalen State aktualisieren
+          if (payload.eventType === "UPDATE") {
+            const row = payload.new as Record<string, unknown>;
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === (row.id as string)
+                  ? { ...m, read_at: (row.read_at as string) || undefined }
+                  : m
+              )
+            );
+            return;
+          }
+          // DELETE
+          if (payload.eventType === "DELETE") {
+            const oldRow = payload.old as Record<string, unknown>;
+            if (oldRow.id) {
+              setMessages((prev) => prev.filter((m) => m.id !== (oldRow.id as string)));
+            }
+            return;
+          }
+          // INSERT
           const row = payload.new as Record<string, unknown>;
           const incomingMentorshipId = row.mentorship_id as string;
 
@@ -1981,18 +2002,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     async (mentorshipId: string) => {
       if (!authUser) return;
 
-      // Prüfen ob überhaupt ungelesene Nachrichten vorhanden sind (Performance)
-      const hasUnread = messages.some(
-        (m) =>
-          m.mentorship_id === mentorshipId &&
-          m.sender_id !== authUser.id &&
-          !m.read_at
-      );
-      if (!hasUnread) return;
-
       const now = new Date().toISOString();
 
-      // DB Update zuerst — nur bei Erfolg optimistic update anwenden
+      // DB Update (idempotent — auch ohne lokalen Check sicher)
       const { error } = await supabase
         .from("messages")
         .update({ read_at: now })
@@ -2000,12 +2012,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .neq("sender_id", authUser.id)
         .is("read_at", null);
 
-      if (error) {
-        // Update fehlgeschlagen (z.B. RLS) — State nicht ändern, sonst Badge bei Refresh zurück
-        return;
-      }
+      if (error) return;
 
-      // State erst nach erfolgreichem DB-Update aktualisieren
+      // Lokalen State aktualisieren
       setMessages((prev) =>
         prev.map((m) =>
           m.mentorship_id === mentorshipId &&
@@ -2016,7 +2025,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         )
       );
     },
-    [authUser, messages]
+    [authUser?.id] // Stabile Dependency — kein messages-Array mehr
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────────
