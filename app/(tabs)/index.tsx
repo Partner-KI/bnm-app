@@ -415,7 +415,7 @@ function MentorDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData, getUnreadMessagesCount } = useData();
+  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, sessions, users, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -432,6 +432,32 @@ function MentorDashboard() {
   const myMentorships = user ? getMentorshipsByMentorId(user.id) : [];
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
+
+  // Mentor-Statistiken (wie im Profil-Tab)
+  const mentorStats = useMemo(() => {
+    if (!user) return null;
+    const totalSessions = sessions.filter((s) =>
+      myMentorships.some((m) => m.id === s.mentorship_id)
+    ).length;
+    const allMentors = users.filter((u) => u.role === "mentor");
+    const scores = allMentors.map((mentor) => {
+      const ms = getMentorshipsByMentorId(mentor.id);
+      const completed = ms.filter((m) => m.status === "completed").length;
+      const sessionsCnt = sessions.filter((s) =>
+        ms.some((m) => m.id === s.mentorship_id)
+      ).length;
+      return { mentorId: mentor.id, score: completed * 10 + sessionsCnt * 3 };
+    });
+    scores.sort((a, b) => b.score - a.score);
+    const myRank = scores.findIndex((s) => s.mentorId === user.id) + 1;
+    return {
+      active: activeMentorships.length,
+      completed: completedMentorships.length,
+      totalSessions,
+      rank: myRank,
+      totalMentors: allMentors.length,
+    };
+  }, [user, myMentorships, activeMentorships.length, completedMentorships.length, sessions, users, getMentorshipsByMentorId]);
 
   // Auto-Show Onboarding für neue Mentoren ohne Mentees (einmalig)
   // Hook muss VOR dem early return stehen (React Hooks Rules)
@@ -476,11 +502,20 @@ function MentorDashboard() {
           </Text>
         </View>
 
-        {/* Stats */}
-        <View style={[styles.row3, { marginBottom: 16 }]}>
-          <StatCard label={t("dashboard.activeMentees")} value={activeMentorships.length} color={COLORS.gradientStart} />
-          <StatCard label={t("dashboard.completed")} value={completedMentorships.length} color={COLORS.cta} />
-        </View>
+        {/* Stats – 4 Karten wie im Profil, aber hier prominent */}
+        {mentorStats && (
+          <>
+            <KpiGrid style={{ marginBottom: 8 }}>
+              <StatCard label={t("dashboard.statsActive")} value={mentorStats.active} color={COLORS.gradientStart} iconName="people-outline" />
+              <StatCard label={t("dashboard.statsCompleted")} value={mentorStats.completed} color={COLORS.cta} iconName="checkmark-circle-outline" />
+              <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="calendar-outline" />
+              <StatCard label={t("dashboard.statsRank")} value={mentorStats.rank} color="#6366f1" iconName="trophy-outline" sublabel={`/ ${mentorStats.totalMentors}`} />
+            </KpiGrid>
+            <Text style={[styles.rankHintText, { color: themeColors.textTertiary, marginBottom: 16 }]}>
+              {t("dashboard.statsRankHint").replace("{0}", String(mentorStats.totalMentors))}
+            </Text>
+          </>
+        )}
 
         {/* Aktive Betreuungen */}
         <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t("dashboard.myActiveMentorships")}</Text>
@@ -872,26 +907,14 @@ function MenteeDashboard() {
               })}
             </View>
 
-            {/* Hadithe-Link */}
+            {/* Wissen & FAQ → Verweis auf FAQ-Tab */}
             <TouchableOpacity
-              style={styles.hadithCard}
-              onPress={() => router.push("/hadithe")}
-            >
-              <View style={styles.hadithCardHeader}>
-                <Text style={styles.hadithStar}>★</Text>
-                <Text style={styles.hadithCardLabel}>{t("dashboard.hadithOfDay")}</Text>
-              </View>
-              <Text style={styles.hadithCardLink}>{t("dashboard.viewAllHadithe")}</Text>
-            </TouchableOpacity>
-
-            {/* Häufige Fragen */}
-            <TouchableOpacity
-              style={[styles.applicationsButton, { backgroundColor: themeColors.card, marginTop: 4 }]}
-              onPress={() => router.push("/qa" as never)}
+              style={[styles.applicationsButton, { backgroundColor: themeColors.card, marginTop: 4, marginBottom: 4 }]}
+              onPress={() => router.push("/(tabs)/faq" as never)}
             >
               <View style={styles.applicationsButtonContent}>
-                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("qa.frequentQuestions")}</Text>
-                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("qa.subtitle")}</Text>
+                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("faq.title")}</Text>
+                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("faq.subtitle")}</Text>
               </View>
               <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
             </TouchableOpacity>
@@ -1251,6 +1274,7 @@ const styles = StyleSheet.create({
   statLabel: { fontSize: 13, marginTop: 4 },
   statSublabel: { fontSize: 11, marginTop: 2 },
   statValue: { fontSize: 32, fontWeight: "800" },
+  rankHintText: { fontSize: 11, textAlign: "center", marginTop: -4 },
   progressTrack: { height: 8, borderRadius: 4, overflow: "hidden" },
   progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 4 },
   amberBox: {

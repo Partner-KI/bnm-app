@@ -1467,6 +1467,25 @@ const ar: Record<TranslationKeys, string> = {
   "dashboard.periodLastMonth": "الشهر الماضي",
   "dashboard.periodThisQuarter": "هذا الربع",
   "dashboard.periodThisYear": "هذا العام",
+
+  // FAQ Tab
+  "tabs.faq": "الأسئلة",
+  "faq.title": "المعرفة والأسئلة",
+  "faq.subtitle": "الأحاديث والأسئلة الشائعة",
+  "faq.hadithSection": "حديث اليوم",
+  "faq.viewAllHadithe": "عرض جميع الأحاديث ←",
+  "faq.qaSection": "الأسئلة الشائعة",
+
+  // الملف الشخصي: الإشعارات
+  "profile.notifications": "الإشعارات",
+
+  // لوحة التحكم: إحصائيات المرشد
+  "dashboard.myStats": "إحصائياتي",
+  "dashboard.statsActive": "المتعلمون النشطون",
+  "dashboard.statsCompleted": "مكتمل",
+  "dashboard.statsSessions": "إجمالي الجلسات",
+  "dashboard.statsRank": "الترتيب",
+  "dashboard.statsRankHint": "من أصل {0} مرشد · النقاط = الإكمالات × 10 + الجلسات × 3",
 };
 
 export default ar;

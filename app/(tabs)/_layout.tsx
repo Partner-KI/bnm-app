@@ -379,6 +379,8 @@ function TabsLayout() {
   const showChats = !isOffice;
   // Leaderboard: nur für Mentor auf Mobile; für Admin/Office auf Mobile ausblenden (zu viele Tabs)
   const showLeaderboard = !isMentee && !(isAdminOrOffice && isMobile);
+  // FAQ: nur für Mentees sichtbar
+  const showFAQ = isMentee;
   // Admin-only Tabs (Mentors, Applications, Tools, Reports, Feedback): auf Mobile ausblenden
   const showAdminTabOnMobile = isAdminOrOffice && !isMobile;
 
@@ -432,6 +434,16 @@ function TabsLayout() {
           href: showLeaderboard ? undefined : null,
           tabBarIcon: ({ color }) => (
             Platform.OS === "ios" ? <SymbolView name={"trophy.fill" as any} tintColor={color} size={24} /> : <Ionicons name="trophy" size={22} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="faq"
+        options={{
+          title: t("tabs.faq"),
+          href: showFAQ ? undefined : null,
+          tabBarIcon: ({ color }) => (
+            Platform.OS === "ios" ? <SymbolView name={"questionmark.circle.fill" as any} tintColor={color} size={24} /> : <Ionicons name="help-circle" size={22} color={color} />
           ),
         }}
       />
@@ -533,6 +545,10 @@ function AdminSidebarLayout() {
           />
           <Tabs.Screen
             name="leaderboard"
+            options={{ href: null }}
+          />
+          <Tabs.Screen
+            name="faq"
             options={{ href: null }}
           />
           <Tabs.Screen

@@ -7,6 +7,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react";
+import { Platform } from "react-native";
 import type {
   User,
   Mentorship,
@@ -205,6 +206,59 @@ function mapNotification(row: Record<string, unknown>): Notification {
   };
 }
 
+// ─── Cache-Konstanten ────────────────────────────────────────────────────────
+
+const CACHE_KEY = "bnm-data-cache";
+const CACHE_MAX_AGE_MS = 30 * 60 * 1000; // 30 Minuten
+const CACHE_FRESH_MS = 5 * 60 * 1000;    // < 5 Minuten → kein Background-Refresh
+
+interface CachePayload {
+  users: User[];
+  mentorships: Omit<Mentorship, "mentor" | "mentee">[];
+  sessions: Session[];
+  sessionTypes: SessionType[];
+  feedback: Feedback[];
+  hadithe: Hadith[];
+  qaEntries: QAEntry[];
+  appSettings: Record<string, string>;
+  mentorOfMonthVisible: boolean;
+  timestamp: number;
+}
+
+async function readCache(): Promise<CachePayload | null> {
+  try {
+    let raw: string | null = null;
+    if (Platform.OS === "web") {
+      raw = localStorage.getItem(CACHE_KEY);
+    } else {
+      // @ts-ignore — optionale Abhängigkeit
+      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+      raw = await AsyncStorage.getItem(CACHE_KEY);
+    }
+    if (!raw) return null;
+    const parsed: CachePayload = JSON.parse(raw);
+    if (Date.now() - parsed.timestamp > CACHE_MAX_AGE_MS) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+async function writeCache(payload: CachePayload): Promise<void> {
+  try {
+    const raw = JSON.stringify(payload);
+    if (Platform.OS === "web") {
+      localStorage.setItem(CACHE_KEY, raw);
+    } else {
+      // @ts-ignore — optionale Abhängigkeit
+      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+      await AsyncStorage.setItem(CACHE_KEY, raw);
+    }
+  } catch {
+    // Cache-Fehler sind nicht kritisch
+  }
+}
+
 export function DataProvider({ children }: { children: ReactNode }) {
   const { user: authUser } = useAuth();
 
@@ -242,7 +296,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    loadAllData();
+    // Cache-first: Zuerst gecachte Daten anzeigen, dann im Hintergrund frisch laden
+    (async () => {
+      const cached = await readCache();
+      if (cached) {
+        // Cache sofort anzeigen → kein leerer Screen während des Ladens
+        setUsers(cached.users);
+        // Mentorships ohne mentor/mentee-Objekte (werden beim Background-Refresh aufgelöst)
+        setMentorships(cached.mentorships as Mentorship[]);
+        setSessions(cached.sessions);
+        setSessionTypes(cached.sessionTypes);
+        setFeedback(cached.feedback);
+        setHadithe(cached.hadithe);
+        setQAEntries(cached.qaEntries);
+        setAppSettings(cached.appSettings);
+        setMentorOfMonthVisible(cached.mentorOfMonthVisible);
+        setIsLoading(false);
+
+        // Cache frisch genug (< 5 Min)? → kein Background-Refresh
+        if (Date.now() - cached.timestamp < CACHE_FRESH_MS) {
+          return;
+        }
+        // Sonst: Im Hintergrund frisch laden (isLoading bleibt false → UI sichtbar)
+        loadAllData(/* background */ true);
+      } else {
+        // Kein Cache: normal laden mit Loading-Indikator
+        loadAllData(false);
+      }
+    })();
+
     // Subscriptions nach loadAllData starten (mentorships-State wird gefüllt)
     const cleanupMessages = subscribeToMessages();
     const cleanupProfiles = subscribeToProfiles();
@@ -259,8 +341,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     mentorshipsRef.current = mentorships;
   }, [mentorships]);
 
-  async function loadAllData() {
-    setIsLoading(true);
+  async function loadAllData(background = false) {
+    if (!background) setIsLoading(true);
     try {
       const [
         profilesRes,
@@ -457,6 +539,92 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setQAEntries(entries);
       }
 
+      // ─── Cache schreiben (messages werden NICHT gecacht — Realtime) ─────────
+      {
+        const cachedUsers = profilesRes.data ? profilesRes.data.map(mapProfile) : [];
+        const cachedMentorships = mentorshipsRes.data
+          ? mentorshipsRes.data.map((row) => ({
+              id: row.id as string,
+              mentor_id: row.mentor_id as string,
+              mentee_id: row.mentee_id as string,
+              status: row.status as MentorshipStatus,
+              assigned_by: row.assigned_by as string,
+              assigned_at: row.assigned_at as string,
+              completed_at: (row.completed_at as string) ?? undefined,
+              notes: (row.notes as string) ?? "",
+              mentee_confirmed_steps: (row.mentee_confirmed_steps as string[]) ?? [],
+            }))
+          : [];
+        const cachedSessions = sessionsRes.data
+          ? sessionsRes.data.map((row) => ({
+              id: row.id as string,
+              mentorship_id: row.mentorship_id as string,
+              session_type_id: row.session_type_id as string,
+              date: row.date as string,
+              is_online: row.is_online as boolean,
+              details: (row.details as string) ?? undefined,
+              documented_by: row.documented_by as string,
+              attempt_number: (row.attempt_number as number) ?? undefined,
+              duration_minutes: (row.duration_minutes as number) ?? undefined,
+            }))
+          : [];
+        const cachedSessionTypes = sessionTypesRes.data ? sessionTypesRes.data.map(mapSessionType) : [];
+        const cachedFeedback = feedbackRes.data
+          ? feedbackRes.data.map((row) => ({
+              id: row.id as string,
+              mentorship_id: row.mentorship_id as string,
+              submitted_by: row.submitted_by as string,
+              rating: row.rating as number,
+              comments: (row.comments as string) ?? undefined,
+              created_at: row.created_at as string,
+            }))
+          : [];
+        const cachedHadithe = haditheRes.data
+          ? haditheRes.data.map((row) => ({
+              id: row.id as string,
+              text_de: (row.text_de as string) ?? "",
+              text_ar: (row.text_ar as string) ?? undefined,
+              source: (row.source as string) ?? undefined,
+              sort_order: (row.sort_order as number) ?? 0,
+            }))
+          : [];
+        const cachedQAEntries = qaEntriesRes.data
+          ? qaEntriesRes.data.map((row) => ({
+              id: row.id as string,
+              question: row.question as string,
+              answer: row.answer as string,
+              category: (row.category as string) ?? "allgemein",
+              tags: (row.tags as string[]) ?? [],
+              is_published: (row.is_published as boolean) ?? true,
+              created_by: (row.created_by as string) ?? undefined,
+              created_at: row.created_at as string,
+              updated_at: row.updated_at as string,
+            }))
+          : [];
+        const cachedSettings: Record<string, string> = {};
+        if (settingsRes.data) {
+          for (const row of settingsRes.data) {
+            cachedSettings[row.key as string] = row.value as string;
+          }
+        }
+        const cachedMentorOfMonthVisible = settingsRes.data
+          ? (settingsRes.data.find((s) => s.key === "mentor_of_month_visible")?.value ?? "true") === "true"
+          : true;
+
+        writeCache({
+          users: cachedUsers,
+          mentorships: cachedMentorships,
+          sessions: cachedSessions as Session[],
+          sessionTypes: cachedSessionTypes,
+          feedback: cachedFeedback as Feedback[],
+          hadithe: cachedHadithe,
+          qaEntries: cachedQAEntries as QAEntry[],
+          appSettings: cachedSettings,
+          mentorOfMonthVisible: cachedMentorOfMonthVisible,
+          timestamp: Date.now(),
+        });
+      }
+
       // ─── Reminder-Check (client-seitig, wird später durch Cron ersetzt) ──────
       if (authUser?.role === 'mentor' && mentorshipsRes.data && sessionsRes.data && notificationsRes.data) {
         // Daten direkt aus den frischen Responses verwenden (State noch nicht gesetzt)
@@ -520,9 +688,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch {
-      showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
+      if (!background) {
+        showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
+      }
     } finally {
-      setIsLoading(false);
+      if (!background) setIsLoading(false);
     }
   }
 

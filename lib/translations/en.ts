@@ -1467,6 +1467,25 @@ const en: Record<TranslationKeys, string> = {
   "dashboard.periodLastMonth": "Last Month",
   "dashboard.periodThisQuarter": "This Quarter",
   "dashboard.periodThisYear": "This Year",
+
+  // FAQ Tab
+  "tabs.faq": "FAQ",
+  "faq.title": "Knowledge & FAQ",
+  "faq.subtitle": "Hadiths and frequently asked questions",
+  "faq.hadithSection": "Hadith of the Day",
+  "faq.viewAllHadithe": "View all Hadiths →",
+  "faq.qaSection": "Frequently Asked Questions",
+
+  // Profile: Notifications for all roles
+  "profile.notifications": "Notifications",
+
+  // Dashboard: Mentor Statistics
+  "dashboard.myStats": "My Statistics",
+  "dashboard.statsActive": "Active Mentees",
+  "dashboard.statsCompleted": "Completed",
+  "dashboard.statsSessions": "Total Sessions",
+  "dashboard.statsRank": "Rank",
+  "dashboard.statsRankHint": "of {0} mentors · Score = completions × 10 + sessions × 3",
 };
 
 export default en;

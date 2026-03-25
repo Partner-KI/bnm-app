@@ -1467,6 +1467,25 @@ const tr: Record<TranslationKeys, string> = {
   "dashboard.periodLastMonth": "Geçen Ay",
   "dashboard.periodThisQuarter": "Bu Çeyrek",
   "dashboard.periodThisYear": "Bu Yıl",
+
+  // FAQ Tab
+  "tabs.faq": "SSS",
+  "faq.title": "Bilgi & SSS",
+  "faq.subtitle": "Hadisler ve sıkça sorulan sorular",
+  "faq.hadithSection": "Günün Hadisi",
+  "faq.viewAllHadithe": "Tüm Hadisleri Gör →",
+  "faq.qaSection": "Sık Sorulan Sorular",
+
+  // Profil: Bildirimler
+  "profile.notifications": "Bildirimler",
+
+  // Dashboard: Mentor İstatistikleri
+  "dashboard.myStats": "İstatistiklerim",
+  "dashboard.statsActive": "Aktif Danışanlar",
+  "dashboard.statsCompleted": "Tamamlanan",
+  "dashboard.statsSessions": "Toplam Oturumlar",
+  "dashboard.statsRank": "Sıralama",
+  "dashboard.statsRankHint": "{0} mentor arasında · Puan = Tamamlama × 10 + Oturum × 3",
 };
 
 export default tr;

@@ -1467,6 +1467,25 @@ const de = {
   "dashboard.periodLastMonth": "Letzter Monat",
   "dashboard.periodThisQuarter": "Dieses Quartal",
   "dashboard.periodThisYear": "Dieses Jahr",
+
+  // FAQ Tab
+  "tabs.faq": "FAQ",
+  "faq.title": "Wissen & FAQ",
+  "faq.subtitle": "Hadithe und häufige Fragen",
+  "faq.hadithSection": "Hadith des Tages",
+  "faq.viewAllHadithe": "Alle Hadithe ansehen →",
+  "faq.qaSection": "Häufige Fragen",
+
+  // Profil: Benachrichtigungen für alle Rollen
+  "profile.notifications": "Benachrichtigungen",
+
+  // Dashboard: Mentor-Statistiken (für MentorDashboard)
+  "dashboard.myStats": "Meine Statistiken",
+  "dashboard.statsActive": "Aktive Mentees",
+  "dashboard.statsCompleted": "Abgeschlossen",
+  "dashboard.statsSessions": "Sessions gesamt",
+  "dashboard.statsRank": "Rang",
+  "dashboard.statsRankHint": "von {0} Mentoren · Score = Abschlüsse × 10 + Sessions × 3",
 } as const;
 
 export default de;
