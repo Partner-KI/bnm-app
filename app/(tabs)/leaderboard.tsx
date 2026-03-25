@@ -8,6 +8,7 @@ import {
   TextInput,
   RefreshControl,
   StyleSheet,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -185,7 +186,7 @@ export default function LeaderboardScreen() {
   }, [user, genderFilter, t]);
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <ScrollView
         style={styles.scrollView}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}

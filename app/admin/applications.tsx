@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   Modal,
+  Platform,
 } from "react-native";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -226,12 +227,14 @@ export default function ApplicationsScreen() {
   ];
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
         <View style={styles.page}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-            <Text style={[styles.backButtonText, { color: themeColors.link }]}>{t("applications.back")}</Text>
-          </TouchableOpacity>
+          {Platform.OS !== "web" && (
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Text style={[styles.backButtonText, { color: themeColors.link }]}>{t("applications.back")}</Text>
+            </TouchableOpacity>
+          )}
 
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("applications.title")}</Text>
 

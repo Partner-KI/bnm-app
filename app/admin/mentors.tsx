@@ -20,6 +20,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { Container } from "../../components/Container";
 
 export default function AdminMentorsScreen() {
   const router = useRouter();
@@ -137,7 +138,7 @@ export default function AdminMentorsScreen() {
   }
 
   return (
-    <>
+    <Container fullWidth={Platform.OS === "web"}>
     {/* Erstes Bestätigungs-Modal */}
     <Modal visible={confirmModal1} transparent animationType="fade" onRequestClose={() => setConfirmModal1(false)}>
       <View style={styles.modalOverlay}>
@@ -206,12 +207,14 @@ export default function AdminMentorsScreen() {
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
-      <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
+      <View style={[styles.page, { paddingTop: Platform.OS === "web" ? 12 : insets.top + 12 }]}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-            <Text style={[styles.backBtnText, { color: themeColors.text }]}>‹</Text>
-          </TouchableOpacity>
+          {Platform.OS !== "web" && (
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+              <Text style={[styles.backBtnText, { color: themeColors.text }]}>‹</Text>
+            </TouchableOpacity>
+          )}
           <View style={{ flex: 1 }}>
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("adminMentors.title")}</Text>
             <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
@@ -369,7 +372,7 @@ export default function AdminMentorsScreen() {
         </TouchableOpacity>
       </View>
     )}
-    </>
+    </Container>
   );
 }
 

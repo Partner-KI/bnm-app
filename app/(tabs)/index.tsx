@@ -580,88 +580,70 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* ── QUICK-LINKS TOOLS ──────────────────────────────────── */}
             <Text style={[styles.sectionTitle, { color: themeColors.text, marginTop: 8 }]}>{t("dashboard.quickLinks")}</Text>
-            <View style={styles.row3}>
+            <View style={styles.quickToolGrid}>
               {showSystemSettings && (
                 <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
+                  style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
                   onPress={() => router.push("/admin/session-types")}
                 >
-                  <Text style={styles.actionButtonText}>{t("dashboard.sessionTypes")}</Text>
+                  <Ionicons name="list-outline" size={22} color={COLORS.gradientStart} />
+                  <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("dashboard.sessionTypes")}</Text>
                 </TouchableOpacity>
               )}
               <TouchableOpacity
-                style={[styles.actionButtonGold, !showSystemSettings ? { flex: 1 } : {}]}
+                style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
                 onPress={() => router.push("/(tabs)/reports")}
               >
-                <Text style={styles.actionButtonTextDark}>{t("dashboard.reports")}</Text>
+                <Ionicons name="stats-chart-outline" size={22} color={COLORS.gold} />
+                <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("dashboard.reports")}</Text>
+              </TouchableOpacity>
+              {showSystemSettings && (
+                <TouchableOpacity
+                  style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                  onPress={() => router.push("/admin/statistics")}
+                >
+                  <Ionicons name="pie-chart-outline" size={22} color={COLORS.cta} />
+                  <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("statistics.title")}</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/donor-report" as never)}
+              >
+                <Ionicons name="heart-outline" size={22} color={COLORS.error} />
+                <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("donorDashboard.title")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/csv-import")}
+              >
+                <Ionicons name="download-outline" size={22} color={COLORS.gradientStart} />
+                <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/admin/qa-management" as never)}
+              >
+                <Ionicons name="help-circle-outline" size={22} color={COLORS.gold} />
+                <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("qa.manage")}</Text>
+              </TouchableOpacity>
+              {showSystemSettings && (
+                <TouchableOpacity
+                  style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                  onPress={() => router.push("/admin/hadithe-management" as never)}
+                >
+                  <Ionicons name="book-outline" size={22} color={COLORS.cta} />
+                  <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.quickToolItem, { backgroundColor: themeColors.card }]}
+                onPress={() => router.push("/(tabs)/profile")}
+              >
+                <Ionicons name="settings-outline" size={22} color={themeColors.textSecondary} />
+                <Text style={[styles.quickToolLabel, { color: themeColors.text }]}>{t("tabs.profile")}</Text>
               </TouchableOpacity>
             </View>
-
-            {/* Erweiterte Statistiken */}
-            {showSystemSettings && (
-              <TouchableOpacity
-                style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-                onPress={() => router.push("/admin/statistics")}
-              >
-                <View style={styles.applicationsButtonContent}>
-                  <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("statistics.title")}</Text>
-                  <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("statistics.completionRate")} · {t("statistics.cityDistribution")}</Text>
-                </View>
-                <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-              </TouchableOpacity>
-            )}
-
-            {/* Spender-Bericht Dashboard */}
-            <TouchableOpacity
-              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-              onPress={() => router.push("/admin/donor-report" as never)}
-            >
-              <View style={styles.applicationsButtonContent}>
-                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("donorDashboard.title")}</Text>
-                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("donorDashboard.subtitle")}</Text>
-              </View>
-              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-            </TouchableOpacity>
-
-            {/* CSV Import */}
-            <TouchableOpacity
-              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-              onPress={() => router.push("/admin/csv-import")}
-            >
-              <View style={styles.applicationsButtonContent}>
-                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
-                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("csvImport.tabMentees")} · {t("csvImport.tabMentors")}</Text>
-              </View>
-              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-            </TouchableOpacity>
-
-            {/* Q&A verwalten */}
-            <TouchableOpacity
-              style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-              onPress={() => router.push("/admin/qa-management" as never)}
-            >
-              <View style={styles.applicationsButtonContent}>
-                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("qa.manage")}</Text>
-                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("qa.subtitle")}</Text>
-              </View>
-              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-            </TouchableOpacity>
-
-            {/* Hadithe verwalten (nur Admin) */}
-            {showSystemSettings && (
-              <TouchableOpacity
-                style={[styles.applicationsButton, { backgroundColor: themeColors.card }]}
-                onPress={() => router.push("/admin/hadithe-management" as never)}
-              >
-                <View style={styles.applicationsButtonContent}>
-                  <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
-                  <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>
-                    {hadithe.length} {hadithe.length === 1 ? t("haditheMgmt.singular") : t("haditheMgmt.plural")}
-                  </Text>
-                </View>
-                <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-              </TouchableOpacity>
-            )}
         </>
 
       </View>
@@ -2020,4 +2002,32 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
   },
   motivationNextText: { color: "#EEA71B", fontSize: 12, fontWeight: "600" },
+
+  // Quick-Tool Grid
+  quickToolGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 8,
+  },
+  quickToolItem: {
+    width: "22%",
+    minWidth: 72,
+    flex: 1,
+    borderRadius: 8,
+    padding: 12,
+    alignItems: "center",
+    gap: 6,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  quickToolLabel: {
+    fontSize: 11,
+    fontWeight: "500",
+    textAlign: "center",
+    lineHeight: 14,
+  },
 });
