@@ -197,30 +197,42 @@ export default function LeaderboardScreen() {
       >
         <View style={styles.page}>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("leaderboard.title")}</Text>
-          <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
-            {t("leaderboard.subtitle")}
-          </Text>
 
-          {/* ── KPI-Cards: Eigene Position ──────────────────────────────── */}
+          {/* ── Geschlechter-Hinweis direkt nach Titel ──────────────────── */}
+          {(user?.role === "mentor" || user?.role === "mentee") && (
+            <View style={styles.genderHintBox}>
+              <Text style={styles.genderHintText}>
+                {user.gender === "male"
+                  ? t("leaderboard.hintBrothers")
+                  : t("leaderboard.hintSisters")}
+              </Text>
+            </View>
+          )}
+
+          {/* ── Eigene Position — prominent ganz oben ───────────────────── */}
           {user?.role === "mentor" && myEntry && (
-            <View style={styles.kpiRow}>
-              <View style={[styles.kpiCard, { backgroundColor: themeColors.card, borderColor: COLORS.gold }]}>
-                <Text style={[styles.kpiLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.yourPosition")}</Text>
-                <Text style={[styles.kpiValue, { color: COLORS.gold }]}>
+            <View style={[styles.myPositionCard, { backgroundColor: isDark ? "#1A1A2E" : "#FFF8E1", borderColor: COLORS.gold }]}>
+              <View style={styles.myPositionLeft}>
+                <Text style={[styles.myPositionRank, { color: COLORS.gold }]}>
                   {t("leaderboard.place").replace("{0}", String(myRankIndex + 1))}
                 </Text>
+                <Text style={[styles.myPositionLabel, { color: themeColors.textSecondary }]}>
+                  {t("leaderboard.yourPosition")}
+                </Text>
               </View>
-              <View style={[styles.kpiCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                <Text style={[styles.kpiLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.points")}</Text>
-                <Text style={[styles.kpiValue, { color: themeColors.text }]}>{myEntry.score}</Text>
-              </View>
-              <View style={[styles.kpiCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                <Text style={[styles.kpiLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
-                <Text style={[styles.kpiValue, { color: COLORS.cta }]}>{myEntry.completedCount}</Text>
-              </View>
-              <View style={[styles.kpiCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                <Text style={[styles.kpiLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
-                <Text style={[styles.kpiValue, { color: themeColors.text }]}>{myEntry.sessionCount}</Text>
+              <View style={styles.myPositionStats}>
+                <View style={styles.myPositionStat}>
+                  <Text style={[styles.myPositionStatVal, { color: themeColors.text }]}>{myEntry.score}</Text>
+                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.points_short")}</Text>
+                </View>
+                <View style={styles.myPositionStat}>
+                  <Text style={[styles.myPositionStatVal, { color: COLORS.cta }]}>{myEntry.completedCount}</Text>
+                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
+                </View>
+                <View style={styles.myPositionStat}>
+                  <Text style={[styles.myPositionStatVal, { color: themeColors.text }]}>{myEntry.sessionCount}</Text>
+                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
+                </View>
               </View>
             </View>
           )}
@@ -287,17 +299,6 @@ export default function LeaderboardScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-            </View>
-          )}
-
-          {/* Hinweis für Mentor/Mentee */}
-          {(user?.role === "mentor" || user?.role === "mentee") && (
-            <View style={styles.genderHintBox}>
-              <Text style={styles.genderHintText}>
-                {user.gender === "male"
-                  ? t("leaderboard.hintBrothers")
-                  : t("leaderboard.hintSisters")}
-              </Text>
             </View>
           )}
 
@@ -514,18 +515,23 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 28, fontWeight: "700", marginBottom: 4 },
   pageSubtitle: { marginBottom: 24, fontSize: 13 },
 
-  // KPI-Cards (eigene Position)
-  kpiRow: { flexDirection: "row", gap: 8, marginBottom: 16, flexWrap: "wrap" },
-  kpiCard: {
-    flex: 1,
-    minWidth: 70,
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 12,
+  // Eigene Position (prominente Card ganz oben)
+  myPositionCard: {
+    flexDirection: "row",
     alignItems: "center",
+    borderRadius: 14,
+    borderWidth: 2,
+    padding: 16,
+    marginBottom: 16,
+    gap: 12,
   },
-  kpiLabel: { fontSize: 10, fontWeight: "600", letterSpacing: 0.5, textAlign: "center", marginBottom: 4 },
-  kpiValue: { fontSize: 22, fontWeight: "700" },
+  myPositionLeft: { alignItems: "center", minWidth: 70 },
+  myPositionRank: { fontSize: 30, fontWeight: "800" },
+  myPositionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 0.3, textAlign: "center", marginTop: 2 },
+  myPositionStats: { flex: 1, flexDirection: "row", justifyContent: "space-around" },
+  myPositionStat: { alignItems: "center" },
+  myPositionStatVal: { fontSize: 20, fontWeight: "700" },
+  myPositionStatLbl: { fontSize: 10, fontWeight: "500", marginTop: 2 },
 
   // Podium
   podiumContainer: { marginBottom: 16 },
@@ -653,22 +659,6 @@ const styles = StyleSheet.create({
   momStatValue: { fontSize: 20, fontWeight: "700", color: COLORS.gold },
   momStatLabel: { color: COLORS.secondary, fontSize: 11, marginTop: 2 },
 
-  myPositionCard: {
-    backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  myPositionLabel: { color: COLORS.white, opacity: 0.75, fontSize: 13 },
-  myPositionRank: { color: COLORS.gold, fontWeight: "700", fontSize: 20 },
   myPositionScore: { color: COLORS.white, fontWeight: "700", fontSize: 16 },
 
   card: {

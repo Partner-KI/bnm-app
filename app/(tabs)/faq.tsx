@@ -91,6 +91,7 @@ export default function FAQScreen() {
     <Container fullWidth={Platform.OS === "web"}>
       <ScrollView
         style={[styles.scrollView, { backgroundColor: themeColors.background }]}
+        contentContainerStyle={{ flexGrow: 1 }}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />
         }
@@ -299,8 +300,8 @@ export default function FAQScreen() {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  page: { padding: 20, paddingBottom: 40 },
-  pageWide: { maxWidth: 800, alignSelf: "center", width: "100%" },
+  page: { padding: 16, paddingBottom: 40 },
+  pageWide: { maxWidth: 800, alignSelf: "center", width: "100%", padding: 24 },
 
   // Hadith Card
   hadithCard: {

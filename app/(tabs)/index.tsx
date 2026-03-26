@@ -568,89 +568,106 @@ function MentorDashboard() {
           </>
         )}
 
-        {/* ── Aktive Betreuungen ───────────────────────────────────────── */}
-        <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t("dashboard.myActiveMentorships")}</Text>
-        {activeMentorships.length === 0 ? (
-          <View style={[styles.card, { backgroundColor: themeColors.card, padding: 24, alignItems: "center", marginBottom: 16 }]}>
-            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noMenteesAssigned")}</Text>
+        {/* ── Aktive Betreuungen (kompakt) ────────────────────────────── */}
+        <View style={[styles.compactMenteesCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+          <View style={styles.compactMenteesHeader}>
+            <View>
+              <Text style={[styles.compactMenteesTitle, { color: themeColors.text }]}>
+                {activeMentorships.length} {t("dashboard.myActiveMentorships")}
+              </Text>
+              {completedMentorships.length > 0 && (
+                <Text style={[styles.compactMenteesCompleted, { color: themeColors.textSecondary }]}>
+                  + {completedMentorships.length} {t("dashboard.statsCompleted")}
+                </Text>
+              )}
+            </View>
+            <TouchableOpacity onPress={() => router.push("/(tabs)/mentees")}>
+              <Text style={[styles.compactMenteesAllLink, { color: COLORS.gold }]}>
+                {t("dashboard.myActiveMentorships")} →
+              </Text>
+            </TouchableOpacity>
           </View>
-        ) : (
-          activeMentorships.map((m) => {
-            const completedSteps = getCompletedStepIds(m.id);
-            const nextStepIdx = completedSteps.length;
-            const sortedTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
-            const nextStep = nextStepIdx < sortedTypes.length ? sortedTypes[nextStepIdx] : null;
-            const progress = Math.round((completedSteps.length / Math.max(sessionTypes.length, 1)) * 100);
-            const allDone = completedSteps.length === sessionTypes.length;
-            const unread = getUnreadMessagesCount(m.id);
 
-            return (
-              <TouchableOpacity
-                key={m.id}
-                style={[
-                  styles.menteeCardNew,
-                  {
-                    backgroundColor: themeColors.card,
-                    borderColor: isDark ? "#3A3520" : themeColors.border,
-                  },
-                ]}
-                activeOpacity={0.75}
-                onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })}
-              >
-                {/* Header: Name + Schritt-Badge */}
-                <View style={styles.menteeCardHeader}>
+          {activeMentorships.length === 0 ? (
+            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noMenteesAssigned")}</Text>
+          ) : (
+            activeMentorships.slice(0, 4).map((m, idx) => {
+              const completedSteps = getCompletedStepIds(m.id);
+              const sortedTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
+              const nextStepIdx = completedSteps.length;
+              const nextStep = nextStepIdx < sortedTypes.length ? sortedTypes[nextStepIdx] : null;
+              const progress = Math.round((completedSteps.length / Math.max(sessionTypes.length, 1)) * 100);
+              const allDone = completedSteps.length === sessionTypes.length;
+              const unread = getUnreadMessagesCount(m.id);
+              const isLast = idx === Math.min(activeMentorships.length, 4) - 1;
+              return (
+                <TouchableOpacity
+                  key={m.id}
+                  style={[styles.compactMenteeRow, !isLast && { borderBottomWidth: 1, borderBottomColor: isDark ? "#2A2520" : themeColors.border }]}
+                  onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })}
+                  activeOpacity={0.7}
+                >
                   <View style={{ flex: 1 }}>
-                    <View style={styles.menteeCardNameRow}>
-                      <Text style={[styles.menteeCardName, { color: themeColors.text }]}>{m.mentee?.name}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                      <Text style={[styles.compactMenteeName, { color: themeColors.text }]} numberOfLines={1}>
+                        {m.mentee?.name}
+                      </Text>
                       {unread > 0 && (
-                        <View style={styles.unreadBadge}>
-                          <Text style={styles.unreadBadgeText}>{unread}</Text>
-                        </View>
+                        <View style={styles.unreadBadge}><Text style={styles.unreadBadgeText}>{unread}</Text></View>
                       )}
                     </View>
-                    <Text style={[styles.menteeCardCity, { color: themeColors.textTertiary }]}>
-                      {m.mentee?.city}
+                    <View style={[styles.menteeProgressTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border, marginBottom: 2 }]}>
+                      <View style={[styles.menteeProgressFill, { width: `${progress}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold }]} />
+                    </View>
+                    <Text style={[{ fontSize: 11, color: themeColors.textTertiary }]} numberOfLines={1}>
+                      {allDone ? `✓ ${t("dashboard.allStepsDone")}` : nextStep ? `→ ${nextStep.name}` : ""}
                     </Text>
                   </View>
-                  <View style={[styles.stepsBadgeNew, { backgroundColor: isDark ? "#2A2518" : "#FFF8E1", borderColor: isDark ? "#6B4E1A" : "#FDE68A" }]}>
-                    <Text style={[styles.stepsBadgeNewText, { color: COLORS.gold }]}>
-                      {completedSteps.length}/{sessionTypes.length}
-                    </Text>
-                  </View>
-                </View>
-
-                {/* Fortschrittsbalken */}
-                <View style={[styles.menteeProgressTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
-                  <View
-                    style={[
-                      styles.menteeProgressFill,
-                      {
-                        width: `${progress}%` as any,
-                        backgroundColor: allDone ? COLORS.cta : COLORS.gold,
-                      },
-                    ]}
-                  />
-                </View>
-
-                {/* Nächster Schritt oder Abschluss */}
-                {allDone ? (
-                  <Text style={[styles.menteeNextStep, { color: COLORS.cta }]}>
-                    ✓ {t("dashboard.allStepsDone")}
+                  <Text style={[{ fontSize: 12, color: COLORS.gold, fontWeight: "600", marginLeft: 8 }]}>
+                    {completedSteps.length}/{sessionTypes.length}
                   </Text>
-                ) : nextStep ? (
-                  <Text style={[styles.menteeNextStep, { color: themeColors.textSecondary }]} numberOfLines={1}>
-                    → {t("dashboard.nextStep")} {nextStep.name}
-                  </Text>
-                ) : null}
+                </TouchableOpacity>
+              );
+            })
+          )}
 
-                {/* Tap-Hinweis */}
-                <Text style={[styles.menteeCardTap, { color: themeColors.textTertiary }]}>
-                  Tippen für Details ›
-                </Text>
-              </TouchableOpacity>
-            );
-          })
-        )}
+          {activeMentorships.length > 4 && (
+            <TouchableOpacity onPress={() => router.push("/(tabs)/mentees")} style={{ paddingTop: 10, alignItems: "center" }}>
+              <Text style={[{ fontSize: 13, color: themeColors.textSecondary }]}>
+                + {activeMentorships.length - 4} weitere → Alle anzeigen
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* ── Quick Actions ────────────────────────────────────────────── */}
+        <Text style={[styles.sectionTitle, { color: themeColors.text, marginTop: 8 }]}>Quick Actions</Text>
+        <View style={styles.quickActionsGrid}>
+          <TouchableOpacity
+            style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+            onPress={() => router.push("/document-session")}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="document-text-outline" size={22} color={COLORS.gold} />
+            <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>{t("sessions.document")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+            onPress={() => router.push("/assign")}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="person-add-outline" size={22} color={COLORS.gradientStart} />
+            <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>{t("mentees.takeMentee")}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+            onPress={() => router.push("/(tabs)/mentees")}
+            activeOpacity={0.75}
+          >
+            <Ionicons name="people-outline" size={22} color="#6366f1" />
+            <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>{t("mentees.myMentees")} →</Text>
+          </TouchableOpacity>
+        </View>
 
         {/* ── Motivations-Hadith ───────────────────────────────────────── */}
         {todayHadith && (
@@ -744,6 +761,11 @@ function MenteeDashboard() {
     return hadithe[idx];
   }, [hadithe, hadithOffset]);
 
+  // Anzahl Tage seit Start der Betreuung
+  const daysSinceStart = mentorship?.assigned_at
+    ? Math.max(0, Math.floor((Date.now() - new Date(mentorship.assigned_at).getTime()) / 86400000))
+    : null;
+
   return (
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
@@ -758,15 +780,9 @@ function MenteeDashboard() {
               SALAM ALEIKUM
             </Text>
             <Text style={[styles.mentorGreetingName, { color: themeColors.text }]}>{user.name}</Text>
-            {mentorship ? (
-              <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
-                {t("dashboard.mentor")} {mentorship.mentor?.name}
-              </Text>
-            ) : (
-              <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
-                {t("dashboard.noMentorYet")}
-              </Text>
-            )}
+          </View>
+          <View style={[styles.mentorLogoBadge, { backgroundColor: isDark ? "#1A1A2E" : "#EBF0FF", borderColor: isDark ? "#3A3520" : "#C5CEE0" }]}>
+            <Text style={styles.mentorLogoText}>BNM</Text>
           </View>
         </View>
 
@@ -781,7 +797,33 @@ function MenteeDashboard() {
 
         {mentorship ? (
           <>
-            {/* ── Mentor-Info Karte ──────────────────────────────────── */}
+            {/* ── KPI-Cards ──────────────────────────────────────────── */}
+            <KpiGrid style={{ marginBottom: 16 }}>
+              <StatCard
+                label={t("dashboard.yourProgress")}
+                value={progressPercent}
+                color={allDone ? COLORS.cta : COLORS.gold}
+                iconName="trending-up-outline"
+                sublabel="%"
+              />
+              <StatCard
+                label={t("menteeProgress.title")}
+                value={completedStepIds.length}
+                color={COLORS.gradientStart}
+                iconName="checkmark-done-outline"
+                sublabel={`/ ${sessionTypes.length}`}
+              />
+              {daysSinceStart !== null && (
+                <StatCard
+                  label="Tage dabei"
+                  value={daysSinceStart}
+                  color="#6366f1"
+                  iconName="calendar-outline"
+                />
+              )}
+            </KpiGrid>
+
+            {/* ── Mentor-Info kompakt ────────────────────────────────── */}
             {mentorship.mentor && (
               <View style={[styles.menteeInfoCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
                 <View style={styles.mentorInfoRow}>
@@ -800,75 +842,80 @@ function MenteeDashboard() {
               </View>
             )}
 
-            {/* ── Fortschritt groß ──────────────────────────────────── */}
+            {/* ── Fortschrittsbalken ────────────────────────────────── */}
             <View style={[styles.menteeProgressCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
               <View style={styles.menteeProgressHeader}>
-                <View>
-                  <Text style={[styles.menteeProgressTitle, { color: themeColors.text }]}>{t("dashboard.yourProgress")}</Text>
-                  <Text style={[styles.menteeProgressSub, { color: themeColors.textSecondary }]}>
-                    {completedStepIds.length === sessionTypes.length
-                      ? t("menteeProgress.allDone")
-                      : t("menteeProgress.progress")
-                          .replace("{0}", String(completedStepIds.length))
-                          .replace("{1}", String(sessionTypes.length))}
-                  </Text>
-                </View>
-                <View style={styles.menteeProgressBig}>
-                  <Text style={[styles.menteeProgressBigNum, { color: COLORS.gold }]}>{progressPercent}%</Text>
-                  <Text style={[styles.menteeProgressBigSteps, { color: themeColors.textSecondary }]}>
-                    {completedStepIds.length}/{sessionTypes.length}
-                  </Text>
-                </View>
+                <Text style={[styles.menteeProgressTitle, { color: themeColors.text }]}>{t("dashboard.yourProgress")}</Text>
+                <Text style={[styles.menteeProgressBigNum, { color: COLORS.gold, fontSize: 22, fontWeight: "800" }]}>{progressPercent}%</Text>
               </View>
-              <View style={[styles.levelTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border, marginTop: 12 }]}>
-                <View
-                  style={[
-                    styles.levelFill,
-                    {
-                      width: `${progressPercent}%` as any,
-                      backgroundColor: allDone ? COLORS.cta : COLORS.gold,
-                    },
-                  ]}
-                />
+              <View style={[styles.levelTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border, marginTop: 8 }]}>
+                <View style={[styles.levelFill, { width: `${progressPercent}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold }]} />
               </View>
+              <Text style={[styles.tertiaryXs, { color: themeColors.textSecondary, marginTop: 6 }]}>
+                {completedStepIds.length === sessionTypes.length
+                  ? t("menteeProgress.allDone")
+                  : t("menteeProgress.progress")
+                      .replace("{0}", String(completedStepIds.length))
+                      .replace("{1}", String(sessionTypes.length))}
+              </Text>
             </View>
 
-            {/* ── Steps als Chips ────────────────────────────────────── */}
+            {/* ── Steps als horizontale Timeline ─────────────────────── */}
             <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t("menteeProgress.title")}</Text>
-            <View style={styles.stepsChipGrid}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }} contentContainerStyle={{ gap: 0, paddingRight: 8 }}>
               {sortedSessionTypes.map((step, idx) => {
                 const isDone = completedStepIds.includes(step.id);
                 const isCurrent = !isDone && idx === completedStepIds.length;
-                const chipBg = isDone
-                  ? (isDark ? "#1a3a2a" : "#dcfce7")
-                  : isCurrent
-                  ? (isDark ? "#3a2e1a" : "#fef3c7")
-                  : (isDark ? "#1E1E28" : themeColors.border);
-                const chipBorder = isDone
-                  ? (isDark ? "#2d6a4a" : "#86efac")
-                  : isCurrent
-                  ? (isDark ? "#6b4e1a" : "#fde68a")
-                  : (isDark ? "#2A2A3A" : themeColors.border);
-                const chipText = isDone
-                  ? (isDark ? "#4ade80" : "#15803d")
-                  : isCurrent
-                  ? (isDark ? "#fbbf24" : "#92400e")
-                  : themeColors.textTertiary;
-
+                const dotBg = isDone ? COLORS.cta : isCurrent ? COLORS.gold : (isDark ? "#2A2A3A" : themeColors.border);
+                const textColor = isDone ? (isDark ? "#4ade80" : "#15803d") : isCurrent ? COLORS.gold : themeColors.textTertiary;
+                const isLast = idx === sortedSessionTypes.length - 1;
                 return (
-                  <View
-                    key={step.id}
-                    style={[styles.stepChip, { backgroundColor: chipBg, borderColor: chipBorder }]}
-                  >
-                    <Text style={[styles.stepChipNum, { color: chipText }]}>
-                      {isDone ? "✓" : String(idx + 1)}
-                    </Text>
-                    <Text style={[styles.stepChipName, { color: chipText }]} numberOfLines={2}>
-                      {step.name}
-                    </Text>
+                  <View key={step.id} style={{ flexDirection: "row", alignItems: "flex-start" }}>
+                    <View style={{ alignItems: "center", width: 72 }}>
+                      <View style={[styles.timelineDot, { backgroundColor: dotBg, borderColor: isDone ? COLORS.cta : isCurrent ? COLORS.gold : (isDark ? "#3A3A4A" : themeColors.border) }]}>
+                        <Text style={{ color: isDone ? "#fff" : isCurrent ? "#0E0E14" : themeColors.textTertiary, fontSize: 12, fontWeight: "700" }}>
+                          {isDone ? "✓" : String(idx + 1)}
+                        </Text>
+                      </View>
+                      <Text style={[{ fontSize: 10, textAlign: "center", marginTop: 4, color: textColor, fontWeight: isCurrent ? "700" : "400" }]} numberOfLines={2}>
+                        {step.name}
+                      </Text>
+                    </View>
+                    {!isLast && (
+                      <View style={[styles.timelineConnector, { backgroundColor: isDone ? COLORS.cta : (isDark ? "#2A2A3A" : themeColors.border), marginTop: 14 }]} />
+                    )}
                   </View>
                 );
               })}
+            </ScrollView>
+
+            {/* ── Quick Actions ──────────────────────────────────────── */}
+            <Text style={[styles.sectionTitle, { color: themeColors.text }]}>Quick Actions</Text>
+            <View style={[styles.quickActionsGrid, { marginBottom: 20 }]}>
+              <TouchableOpacity
+                style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+                onPress={() => mentorship && navigateToChat(router, mentorship.id)}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="chatbubble-outline" size={22} color={COLORS.gradientStart} />
+                <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>Chat</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+                onPress={() => router.push("/(tabs)/faq")}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="help-circle-outline" size={22} color={COLORS.gold} />
+                <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>FAQ</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.quickActionBtn, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}
+                onPress={() => router.push("/profile")}
+                activeOpacity={0.75}
+              >
+                <Ionicons name="person-outline" size={22} color="#6366f1" />
+                <Text style={[styles.quickActionLabel, { color: themeColors.text }]}>Profil</Text>
+              </TouchableOpacity>
             </View>
           </>
         ) : (
@@ -880,29 +927,29 @@ function MenteeDashboard() {
           </View>
         )}
 
-        {/* ── Motivations-Hadith ─────────────────────────────────────── */}
+        {/* ── Hadith — prominente große Card ───────────────────────── */}
         {todayHadith && (
-          <View style={[styles.mentorHadithCard, { borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)", marginTop: 8 }]}>
+          <View style={[styles.menteeHadithBigCard, { backgroundColor: isDark ? "#1A1A2E" : "#f0f4ff", borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
             <View style={styles.hadithCardHeader}>
               <Text style={styles.hadithStar}>★</Text>
-              <Text style={[styles.hadithCardLabel, { color: themeColors.text }]}>{t("motivation.title")}</Text>
+              <Text style={[styles.hadithCardLabel, { color: themeColors.text, fontSize: 16 }]}>{t("motivation.title")}</Text>
             </View>
             {todayHadith.text_ar ? (
-              <Text style={[styles.mentorHadithArabic, { color: themeColors.text }]}>{todayHadith.text_ar}</Text>
+              <Text style={[styles.mentorHadithArabic, { color: themeColors.text, fontSize: 22, marginBottom: 12 }]}>{todayHadith.text_ar}</Text>
             ) : null}
-            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary }]}>"{todayHadith.text_de}"</Text>
+            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary, fontSize: 16, lineHeight: 26 }]}>"{todayHadith.text_de}"</Text>
             {todayHadith.source ? (
-              <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
+              <Text style={[styles.hadithCardQuelle, { color: COLORS.gold, marginTop: 10 }]}>{t("motivation.source")}: {todayHadith.source}</Text>
             ) : null}
-            <View style={styles.motivationActionsRow}>
+            <View style={[styles.motivationActionsRow, { marginTop: 16 }]}>
               <TouchableOpacity
-                style={styles.motivationNextBtn}
+                style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]}
                 onPress={() => setHadithOffset((prev) => prev + 1)}
               >
-                <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
+                <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={styles.motivationShareBtn}
+                style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]}
                 onPress={() => {
                   const shareText = todayHadith.text_ar
                     ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}`
@@ -910,7 +957,7 @@ function MenteeDashboard() {
                   shareHadith(shareText, t("share.suffix"));
                 }}
               >
-                <Ionicons name="share-outline" size={18} color={COLORS.gold} />
+                <Ionicons name="share-outline" size={20} color={COLORS.gold} />
               </TouchableOpacity>
             </View>
           </View>
@@ -1868,6 +1915,62 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginTop: 6,
   },
+  // Kompakte Mentees-Card im Mentor-Dashboard
+  compactMenteesCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+  },
+  compactMenteesHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  compactMenteesTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  compactMenteesCompleted: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  compactMenteesAllLink: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  compactMenteeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    gap: 8,
+  },
+  compactMenteeName: {
+    fontSize: 14,
+    fontWeight: "600",
+    flex: 1,
+  },
+  // Quick Actions
+  quickActionsGrid: {
+    flexDirection: "row",
+    gap: 10,
+    marginBottom: 16,
+  },
+  quickActionBtn: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    alignItems: "center",
+    gap: 8,
+  },
+  quickActionLabel: {
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+
   menteeCardNew: {
     borderRadius: 12,
     borderWidth: 1,
@@ -1907,7 +2010,7 @@ const styles = StyleSheet.create({
     height: 6,
     borderRadius: 3,
     overflow: "hidden",
-    marginBottom: 8,
+    marginBottom: 4,
   },
   menteeProgressFill: {
     height: "100%",
@@ -1935,6 +2038,30 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     marginBottom: 8,
     fontWeight: "500",
+  },
+
+  // Timeline Steps
+  timelineDot: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  timelineConnector: {
+    width: 24,
+    height: 3,
+    borderRadius: 2,
+    alignSelf: "flex-start",
+  },
+
+  // Große Hadith-Card für Mentee Dashboard
+  menteeHadithBigCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 22,
+    marginBottom: 16,
   },
 
   // ── Mentee Dashboard Redesign ──────────────────────────────────────────

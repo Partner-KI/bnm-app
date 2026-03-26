@@ -11,7 +11,6 @@ import {
   Platform,
   Modal,
   KeyboardAvoidingView,
-  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -587,10 +586,9 @@ function MentorMenteesView() {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
   const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, refreshData } = useData();
-  const { width } = useWindowDimensions();
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<"active" | "completed">("active");
-  const [selectedMentorshipId, setSelectedMentorshipId] = useState<string | null>(null);
+  const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -609,12 +607,7 @@ function MentorMenteesView() {
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
 
-  const isWide = Platform.OS === "web" && width > 768;
-  const selectedMentorship = selectedMentorshipId
-    ? myMentorships.find((m) => m.id === selectedMentorshipId) ?? null
-    : null;
-
-  // Linke Liste (kompakte Cards für Web-Split, normale Cards für Mobile)
+  // Liste für beide Tabs
   function renderList() {
     if (activeTab === "active") {
       return (
@@ -647,47 +640,45 @@ function MentorMenteesView() {
             </View>
           ) : (
             activeMentorships.map((mentorship) => {
-              if (isWide) {
-                const completedSteps = getCompletedStepIds(mentorship.id);
-                const progress = sessionTypes.length > 0
-                  ? Math.round((completedSteps.length / sessionTypes.length) * 100)
-                  : 0;
-                const isSelected = selectedMentorshipId === mentorship.id;
-                return (
-                  <TouchableOpacity
-                    key={mentorship.id}
-                    style={[
-                      styles.mentorSplitCard,
-                      { backgroundColor: themeColors.card, borderColor: isSelected ? COLORS.gold : themeColors.border },
-                      isSelected && styles.mentorSplitCardSelected,
-                    ]}
-                    onPress={() => setSelectedMentorshipId(mentorship.id)}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                      <Text style={[styles.mentorSplitName, { color: themeColors.text }]} numberOfLines={1}>
-                        {mentorship.mentee?.name}
+              const completedSteps = getCompletedStepIds(mentorship.id);
+              const progress = sessionTypes.length > 0
+                ? Math.round((completedSteps.length / sessionTypes.length) * 100)
+                : 0;
+              return (
+                <TouchableOpacity
+                  key={mentorship.id}
+                  style={[styles.menteeCard, { backgroundColor: themeColors.card }, styles.menteeCardAssigned]}
+                  onPress={() => {
+                    if (Platform.OS === "web") {
+                      setSelectedMenteeId(mentorship.mentee_id);
+                    } else {
+                      router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } });
+                    }
+                  }}
+                >
+                  <View style={styles.menteeCardHeader}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.meneeName, { color: themeColors.text }]}>{mentorship.mentee?.name}</Text>
+                      <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
+                        {mentorship.mentee?.city} · {mentorship.mentee?.age} J.
                       </Text>
-                      <View style={[styles.mentorSplitStatus, { backgroundColor: isDark ? "#2A3A28" : "#dcfce7" }]}>
-                        <Text style={[styles.mentorSplitStatusText, { color: isDark ? "#4ade80" : "#15803d" }]}>
-                          {t("mentees.active")}
-                        </Text>
-                      </View>
                     </View>
-                    <Text style={[styles.mentorSplitCity, { color: themeColors.textTertiary }]} numberOfLines={1}>
-                      {mentorship.mentee?.city} · {mentorship.mentee?.age} J.
+                    <View style={[styles.mentorSplitStatus, { backgroundColor: isDark ? "#2A3A28" : "#dcfce7" }]}>
+                      <Text style={[styles.mentorSplitStatusText, { color: isDark ? "#4ade80" : "#15803d" }]}>
+                        {t("mentees.active")}
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={styles.mentorSplitProgressRow}>
+                    <View style={[styles.mentorSplitTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
+                      <View style={[styles.mentorSplitFill, { width: `${progress}%` as any }]} />
+                    </View>
+                    <Text style={[styles.mentorSplitProgressText, { color: themeColors.textSecondary }]}>
+                      {completedSteps.length}/{sessionTypes.length}
                     </Text>
-                    <View style={styles.mentorSplitProgressRow}>
-                      <View style={[styles.mentorSplitTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
-                        <View style={[styles.mentorSplitFill, { width: `${progress}%` as any }]} />
-                      </View>
-                      <Text style={[styles.mentorSplitProgressText, { color: themeColors.textSecondary }]}>
-                        {completedSteps.length}/{sessionTypes.length}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                );
-              }
-              return <MentorMenteeCard key={mentorship.id} mentorship={mentorship} />;
+                  </View>
+                </TouchableOpacity>
+              );
             })
           )}
         </>
@@ -707,44 +698,17 @@ function MentorMenteesView() {
         ) : (
           completedMentorships.map((mentorship) => {
             const completedSteps = getCompletedStepIds(mentorship.id);
-            if (isWide) {
-              const isSelected = selectedMentorshipId === mentorship.id;
-              return (
-                <TouchableOpacity
-                  key={mentorship.id}
-                  style={[
-                    styles.mentorSplitCard,
-                    { backgroundColor: themeColors.card, borderColor: isSelected ? COLORS.gold : isDark ? "#2d6a4a" : "#bbf7d0" },
-                    isSelected && styles.mentorSplitCardSelected,
-                  ]}
-                  onPress={() => setSelectedMentorshipId(mentorship.id)}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
-                    <Text style={[styles.mentorSplitName, { color: themeColors.text }]} numberOfLines={1}>
-                      {mentorship.mentee?.name}
-                    </Text>
-                    <View style={[styles.mentorSplitStatus, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
-                      <Text style={[styles.mentorSplitStatusText, { color: isDark ? "#4ade80" : "#15803d" }]}>
-                        {t("mentees.completedStatus")}
-                      </Text>
-                    </View>
-                  </View>
-                  {mentorship.completed_at && (
-                    <Text style={[styles.mentorSplitCity, { color: themeColors.textTertiary }]}>
-                      {new Date(mentorship.completed_at).toLocaleDateString("de-DE")}
-                    </Text>
-                  )}
-                  <Text style={[styles.mentorSplitProgressText, { color: themeColors.textSecondary, marginTop: 4 }]}>
-                    {completedSteps.length}/{sessionTypes.length} Schritte
-                  </Text>
-                </TouchableOpacity>
-              );
-            }
             return (
               <TouchableOpacity
                 key={mentorship.id}
                 style={[styles.completedCompactCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#2d6a4a" : "#bbf7d0" }]}
-                onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })}
+                onPress={() => {
+                  if (Platform.OS === "web") {
+                    setSelectedMenteeId(mentorship.mentee_id);
+                  } else {
+                    router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } });
+                  }
+                }}
               >
                 <View style={styles.completedCardRow}>
                   <View style={{ flex: 1 }}>
@@ -783,7 +747,7 @@ function MentorMenteesView() {
       <View style={[styles.tabSwitcher, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
         <TouchableOpacity
           style={[styles.tabSwitcherBtn, activeTab === "active" && styles.tabSwitcherBtnActive]}
-          onPress={() => { setActiveTab("active"); setSelectedMentorshipId(null); }}
+          onPress={() => setActiveTab("active")}
         >
           <Text style={[styles.tabSwitcherText, activeTab === "active" ? styles.tabSwitcherTextActive : { color: themeColors.textSecondary }]}>
             {t("mentees.active")}
@@ -796,7 +760,7 @@ function MentorMenteesView() {
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tabSwitcherBtn, activeTab === "completed" && styles.tabSwitcherBtnActive]}
-          onPress={() => { setActiveTab("completed"); setSelectedMentorshipId(null); }}
+          onPress={() => setActiveTab("completed")}
         >
           <Text style={[styles.tabSwitcherText, activeTab === "completed" ? styles.tabSwitcherTextActive : { color: themeColors.textSecondary }]}>
             {t("mentees.completedStatus")}
@@ -811,66 +775,26 @@ function MentorMenteesView() {
     </>
   );
 
-  if (isWide) {
-    return (
-      <View style={[styles.splitContainer, { backgroundColor: themeColors.background }]}>
-        {/* Linke Spalte: Liste */}
-        <View style={[styles.splitLeft, { borderRightColor: themeColors.border }]}>
-          <ScrollView
-            style={[styles.scrollView, { backgroundColor: themeColors.background }]}
-            refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
-          >
-            <View style={styles.splitLeftInner}>
-              {headerAndTabs}
-              {renderList()}
-            </View>
-          </ScrollView>
-        </View>
-
-        {/* Rechte Spalte: Detail */}
-        <View style={[styles.splitRight, { backgroundColor: themeColors.background }]}>
-          {selectedMentorship ? (
-            <ScrollView style={{ flex: 1 }}>
-              <View style={{ padding: 24 }}>
-                {/* Kopf-Zeile mit "Öffnen" Button */}
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                  <Text style={[{ fontSize: 20, fontWeight: "700", color: themeColors.text }]}>
-                    {selectedMentorship.mentee?.name}
-                  </Text>
-                  <TouchableOpacity
-                    style={[styles.splitOpenBtn, { backgroundColor: COLORS.gradientStart }]}
-                    onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: selectedMentorship.id } })}
-                  >
-                    <Text style={styles.splitOpenBtnText}>Vollansicht ›</Text>
-                  </TouchableOpacity>
-                </View>
-                <MentorMenteeCard mentorship={selectedMentorship} />
-              </View>
-            </ScrollView>
-          ) : (
-            <View style={styles.splitEmptyRight}>
-              <Ionicons name="people-outline" size={48} color={themeColors.textTertiary} style={{ marginBottom: 12 }} />
-              <Text style={[styles.splitEmptyText, { color: themeColors.textTertiary }]}>
-                Mentee auswählen
-              </Text>
-            </View>
-          )}
-        </View>
-      </View>
-    );
-  }
-
-  // Mobile: wie bisher
+  // Web + Mobile: immer normale ScrollView, Klick auf Web öffnet Modal
   return (
-    <ScrollView
-      style={[styles.scrollView, { backgroundColor: themeColors.background }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
-    >
-      <View style={styles.page}>
-        {headerAndTabs}
-        {renderList()}
-      </View>
-    </ScrollView>
+    <>
+      <ScrollView
+        style={[styles.scrollView, { backgroundColor: themeColors.background }]}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+      >
+        <View style={styles.page}>
+          {headerAndTabs}
+          {renderList()}
+        </View>
+      </ScrollView>
+
+      <SlideOverPanel
+        visible={!!selectedMenteeId}
+        onClose={() => setSelectedMenteeId(null)}
+      >
+        <MenteeDetailPanel id={selectedMenteeId} />
+      </SlideOverPanel>
+    </>
   );
 }
 
