@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
@@ -36,7 +36,6 @@ export default function SettingsScreen() {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
 
-  const [pushEnabled, setPushEnabled] = useState(true);
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
 
   async function handleDeleteAccount() {
@@ -71,23 +70,6 @@ export default function SettingsScreen() {
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
-
-          {/* Sektion: Benachrichtigungen */}
-          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("settings.notifications")}</Text>
-          <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleInfo}>
-                <Text style={[styles.toggleTitle, { color: themeColors.text }]}>{t("settings.pushNotifications")}</Text>
-                <Text style={[styles.toggleSubtitle, { color: themeColors.textTertiary }]}>{t("settings.pushSubtitle")}</Text>
-              </View>
-              <Switch
-                value={pushEnabled}
-                onValueChange={setPushEnabled}
-                trackColor={{ false: themeColors.border, true: COLORS.cta }}
-                thumbColor={COLORS.white}
-              />
-            </View>
-          </View>
 
           {/* Sektion: Admin-Einstellungen */}
           {isAdminOrOffice && (

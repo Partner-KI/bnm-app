@@ -1025,6 +1025,10 @@ const en: Record<TranslationKeys, string> = {
   "notifications.stepCompletedBody": "Step \"{0}\" was documented by your mentor.",
   "notifications.applicationApproved": "Your application has been approved!",
   "notifications.applicationApprovedBody": "Welcome as a mentor at BNM. You are now active.",
+  "notifications.newMenteeAssigned": "New mentee assigned",
+  "notifications.newMenteeAssignedBody": "{0} has been assigned to you as a mentee.",
+  "notifications.menteeConfirmedStep": "Mentee confirmed a step",
+  "notifications.menteeConfirmedStepBody": "{0} confirmed step \"{1}\".",
 
   // Admin Dashboard: Recent Activity
   "dashboard.recentActivity": "Recent Activity",
@@ -1535,6 +1539,9 @@ const en: Record<TranslationKeys, string> = {
   // Notification Settings
   "notifSettings.title": "Notifications",
   "notifSettings.subtitle": "Choose what you want to be notified about.",
+  "notifSettings.pushEnabled": "Push notifications enabled",
+  "notifSettings.pushEnabledSub": "Receive reminders and news on your device",
+  "notifSettings.pushMasterLabel": "PUSH NOTIFICATIONS",
   "notifSettings.chatMessages": "Chat messages",
   "notifSettings.chatMessagesSub": "New messages in your chat",
   "notifSettings.assignments": "Assignments",

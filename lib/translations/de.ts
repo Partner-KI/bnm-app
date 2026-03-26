@@ -1025,6 +1025,10 @@ const de = {
   "notifications.stepCompletedBody": "Schritt \"{0}\" wurde von deinem Mentor dokumentiert.",
   "notifications.applicationApproved": "Deine Bewerbung wurde angenommen!",
   "notifications.applicationApprovedBody": "Willkommen als Mentor bei BNM. Du bist jetzt aktiv.",
+  "notifications.newMenteeAssigned": "Neuer Mentee zugewiesen",
+  "notifications.newMenteeAssignedBody": "{0} wurde dir als Mentee zugewiesen.",
+  "notifications.menteeConfirmedStep": "Mentee hat Schritt bestätigt",
+  "notifications.menteeConfirmedStepBody": "{0} hat Schritt \"{1}\" bestätigt.",
 
   // Admin-Dashboard: Letzte Aktivitäten
   "dashboard.recentActivity": "Letzte Aktivitäten",
@@ -1535,6 +1539,9 @@ const de = {
   // Notification Settings
   "notifSettings.title": "Benachrichtigungen",
   "notifSettings.subtitle": "Wähle, worüber du informiert werden möchtest.",
+  "notifSettings.pushEnabled": "Push-Benachrichtigungen aktiviert",
+  "notifSettings.pushEnabledSub": "Erhalte Erinnerungen und Neuigkeiten auf deinem Gerät",
+  "notifSettings.pushMasterLabel": "PUSH-BENACHRICHTIGUNGEN",
   "notifSettings.chatMessages": "Chat-Nachrichten",
   "notifSettings.chatMessagesSub": "Neue Nachrichten in deinem Chat",
   "notifSettings.assignments": "Zuweisungen",

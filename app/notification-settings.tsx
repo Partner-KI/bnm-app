@@ -25,6 +25,7 @@ if (Platform.OS !== "web") {
 const STORAGE_KEY = "bnm_notification_settings";
 
 export interface NotificationSettings {
+  pushEnabled: boolean;
   chatMessages: boolean;
   assignments: boolean;
   applicationStatus: boolean;
@@ -32,6 +33,7 @@ export interface NotificationSettings {
 }
 
 const DEFAULT_SETTINGS: NotificationSettings = {
+  pushEnabled: true,
   chatMessages: true,
   assignments: true,
   applicationStatus: true,
@@ -130,6 +132,21 @@ export default function NotificationSettingsScreen() {
           {t("notifSettings.subtitle")}
         </Text>
 
+        {/* Master-Toggle: Push-Benachrichtigungen an/aus */}
+        <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>
+          {t("notifSettings.pushMasterLabel")}
+        </Text>
+        <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border, marginBottom: 20 }]}>
+          <ToggleRow
+            label={t("notifSettings.pushEnabled")}
+            subtitle={t("notifSettings.pushEnabledSub")}
+            value={settings.pushEnabled}
+            onToggle={() => toggle("pushEnabled")}
+            themeColors={themeColors}
+            isLast
+          />
+        </View>
+
         {/* Einzel-Toggles */}
         <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
           <ToggleRow
@@ -222,6 +239,13 @@ const styles = StyleSheet.create({
   headerTitle: { fontSize: 20, fontWeight: "700" },
   page: { padding: 16 },
   subtitle: { fontSize: 13, marginBottom: 20, lineHeight: 18 },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    letterSpacing: 1,
+    marginBottom: 6,
+    marginTop: 4,
+  },
   card: {
     borderRadius: 12,
     borderWidth: 1,

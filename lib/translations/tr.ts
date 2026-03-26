@@ -1025,6 +1025,10 @@ const tr: Record<TranslationKeys, string> = {
   "notifications.stepCompletedBody": "\"{0}\" adımı mentorun tarafından belgelendi.",
   "notifications.applicationApproved": "Başvurun kabul edildi!",
   "notifications.applicationApprovedBody": "BNM'e mentor olarak hoş geldin. Artık aktifsin.",
+  "notifications.newMenteeAssigned": "Yeni danışan atandı",
+  "notifications.newMenteeAssignedBody": "{0} sana danışan olarak atandı.",
+  "notifications.menteeConfirmedStep": "Danışan adımı onayladı",
+  "notifications.menteeConfirmedStepBody": "{0}, \"{1}\" adımını onayladı.",
 
   // Admin Paneli: Son Aktiviteler
   "dashboard.recentActivity": "Son Aktiviteler",
@@ -1535,6 +1539,9 @@ const tr: Record<TranslationKeys, string> = {
   // Bildirim Ayarları
   "notifSettings.title": "Bildirimler",
   "notifSettings.subtitle": "Hangi konularda bildirim almak istediğini seç.",
+  "notifSettings.pushEnabled": "Anlık bildirimler etkin",
+  "notifSettings.pushEnabledSub": "Cihazında hatırlatıcılar ve haberler al",
+  "notifSettings.pushMasterLabel": "ANLIK BİLDİRİMLER",
   "notifSettings.chatMessages": "Sohbet mesajları",
   "notifSettings.chatMessagesSub": "Sohbetindeki yeni mesajlar",
   "notifSettings.assignments": "Atamalar",

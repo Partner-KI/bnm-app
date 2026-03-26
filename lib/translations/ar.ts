@@ -1025,6 +1025,10 @@ const ar: Record<TranslationKeys, string> = {
   "notifications.stepCompletedBody": "تمت توثيق الخطوة \"{0}\" من قبل مرشدك.",
   "notifications.applicationApproved": "تمت الموافقة على طلبك!",
   "notifications.applicationApprovedBody": "مرحبًا بك كمرشد في BNM. أنت الآن نشط.",
+  "notifications.newMenteeAssigned": "تم تعيين متدرب جديد",
+  "notifications.newMenteeAssignedBody": "تم تعيين {0} كمتدرب لك.",
+  "notifications.menteeConfirmedStep": "أكد المتدرب الخطوة",
+  "notifications.menteeConfirmedStepBody": "أكد {0} الخطوة \"{1}\".",
 
   // لوحة الإدارة: آخر الأنشطة
   "dashboard.recentActivity": "آخر الأنشطة",
@@ -1535,6 +1539,9 @@ const ar: Record<TranslationKeys, string> = {
   // إعدادات الإشعارات
   "notifSettings.title": "الإشعارات",
   "notifSettings.subtitle": "اختر ما تريد أن يتم إخطارك به.",
+  "notifSettings.pushEnabled": "الإشعارات الفورية مفعّلة",
+  "notifSettings.pushEnabledSub": "تلقَّ التذكيرات والأخبار على جهازك",
+  "notifSettings.pushMasterLabel": "الإشعارات الفورية",
   "notifSettings.chatMessages": "رسائل الدردشة",
   "notifSettings.chatMessagesSub": "رسائل جديدة في محادثتك",
   "notifSettings.assignments": "التعيينات",

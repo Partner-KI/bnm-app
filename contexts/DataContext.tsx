@@ -941,6 +941,21 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Notification an Mentor: Neuer Mentee zugewiesen
+      if (status === "active" && mentor) {
+        await createNotification(
+          mentorId,
+          "assignment",
+          "Neuer Mentee zugewiesen",
+          `${mentee?.name ?? "Ein Mentee"} wurde dir als Mentee zugewiesen.`,
+          data.id
+        );
+        // Lokale Push Notification nur auf dem Gerät des Mentors selbst
+        if (authUser?.id === mentorId) {
+          notifyMenteeAssigned(mentee?.name ?? "Ein Mentee").catch(() => {});
+        }
+      }
+
       // Automatische Registrierungs- und Zuweisungs-Sessions (nur bei aktiven Betreuungen)
       if (status !== "active") return;
 
@@ -1076,9 +1091,27 @@ export function DataProvider({ children }: { children: ReactNode }) {
             mentorship.mentee?.city ?? ""
           );
         }
+
+        // In-App Notification an Mentor: Neuer Mentee nach Approval zugewiesen
+        await createNotification(
+          mentorship.mentor_id,
+          "assignment",
+          "Neuer Mentee zugewiesen",
+          `${mentorship.mentee?.name ?? "Ein Mentee"} wurde dir als Mentee zugewiesen.`,
+          mentorshipId
+        );
+
+        // In-App Notification an Mentee: Betreuung genehmigt
+        await createNotification(
+          mentorship.mentee_id,
+          "assignment",
+          "Dir wurde ein Mentor zugewiesen!",
+          `${mentorship.mentor?.name ?? "Ein Mentor"} ist ab sofort dein Mentor.`,
+          mentorshipId
+        );
       }
     },
-    [mentorships, sessionTypes]
+    [mentorships, sessionTypes, createNotification]
   );
 
   const rejectMentorship = useCallback(
@@ -1874,7 +1907,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
         m.id === mentorshipId ? { ...m, mentee_confirmed_steps: updated } : m
       )
     );
-  }, [mentorships]);
+
+    // Notification an Mentor: Mentee hat Schritt bestätigt
+    const sessionType = sessionTypes.find((st) => st.id === sessionTypeId);
+    const menteeName = mentorship.mentee?.name ?? authUser?.id ?? "Dein Mentee";
+    const stepName = sessionType?.name ?? "Schritt";
+    await createNotification(
+      mentorship.mentor_id,
+      "progress",
+      "Mentee hat Schritt bestätigt",
+      `${menteeName} hat Schritt "${stepName}" bestätigt.`,
+      mentorshipId
+    );
+  }, [mentorships, sessionTypes, authUser, createNotification]);
 
   const unconfirmStepAsMentee = useCallback(async (mentorshipId: string, sessionTypeId: string) => {
     const mentorship = mentorships.find((m) => m.id === mentorshipId);
