@@ -508,6 +508,7 @@ const en: Record<TranslationKeys, string> = {
   "docSession.completed": "Completed",
   "docSession.selectTypeError": "Please select a session type.",
   "docSession.allDoneSuccess": "All steps for this mentorship are already completed.",
+  "docSession.detailsRequired": "Please enter notes for the session.",
   "docSession.dateError": "Please enter a date.",
   "docSession.noTypeError": "No valid session type found.",
   "docSession.successMsg": "\"{0}\" was documented successfully.",

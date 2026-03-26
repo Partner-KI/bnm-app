@@ -508,6 +508,7 @@ const ar: Record<TranslationKeys, string> = {
   "docSession.completed": "مكتمل",
   "docSession.selectTypeError": "يرجى اختيار نوع الجلسة.",
   "docSession.allDoneSuccess": "جميع خطوات هذا الإرشاد مكتملة بالفعل.",
+  "docSession.detailsRequired": "يرجى إدخال ملاحظات للجلسة.",
   "docSession.dateError": "يرجى إدخال تاريخ.",
   "docSession.noTypeError": "لم يُعثر على نوع جلسة صحيح.",
   "docSession.successMsg": "تم توثيق \"{0}\" بنجاح.",

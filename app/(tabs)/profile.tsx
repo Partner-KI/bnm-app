@@ -326,7 +326,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.menuItem, { borderBottomColor: themeColors.border }]}
-            onPress={() => router.push("/notifications")}
+            onPress={() => router.push("/notification-settings")}
           >
             <Text style={[styles.menuItemText, { color: themeColors.text }]}>{t("profile.notifications")}</Text>
             <Text style={[styles.menuArrow, { color: themeColors.textTertiary }]}>›</Text>

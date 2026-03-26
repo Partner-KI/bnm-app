@@ -506,6 +506,7 @@ const de = {
   "docSession.completed": "Abgeschlossen",
   "docSession.selectTypeError": "Bitte wähle einen Session-Typ.",
   "docSession.allDoneSuccess": "Alle Steps für diese Betreuung sind bereits abgeschlossen.",
+  "docSession.detailsRequired": "Bitte gib Notizen zur Session ein.",
   "docSession.dateError": "Bitte gib ein Datum ein.",
   "docSession.noTypeError": "Kein gültiger Session-Typ gefunden.",
   "docSession.successMsg": "\"{0}\" wurde erfolgreich dokumentiert.",

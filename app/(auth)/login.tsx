@@ -151,7 +151,7 @@ export default function LoginScreen() {
             style={styles.publicRegisterButton}
             onPress={() => router.push("/(auth)/register-public")}
           >
-            <Text style={styles.publicRegisterText}>{t("login.publicRegister")}</Text>
+            <Text style={[styles.publicRegisterText, { color: themeColors.text }]}>{t("login.publicRegister")}</Text>
           </TouchableOpacity>
 
           {/* Mentor-Bewerbung */}

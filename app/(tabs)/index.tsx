@@ -293,26 +293,6 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               </TouchableOpacity>
             )}
 
-            {/* Offene Zuweisungen Zusammenfassung */}
-            {(unassignedMentees.length > 0 || pendingApprovalsCount > 0) && (
-              <View
-                style={[styles.openAssignmentsCard, { backgroundColor: isDark ? "#1a2a1a" : "#f0fdf4", borderColor: isDark ? "#2a5a2a" : "#bbf7d0", borderLeftColor: isDark ? "#4ade80" : "#22c55e" }]}
-              >
-                <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                  <Text style={[styles.openAssignmentsTitle, { color: isDark ? "#4ade80" : "#166534" }]}>{t("dashboard.openAssignments")}</Text>
-                </View>
-                {unassignedMentees.length > 0 && (
-                  <Text style={[styles.openAssignmentsRow, { color: isDark ? "#86efac" : "#15803d" }]}>
-                    • {unassignedMentees.length} {t("dashboard.menteesWithoutMentor")}
-                  </Text>
-                )}
-                {pendingApprovalsCount > 0 && (
-                  <Text style={[styles.openAssignmentsRow, { color: isDark ? "#86efac" : "#15803d" }]}>
-                    • {pendingApprovalsCount} {t("dashboard.pendingApprovals")}
-                  </Text>
-                )}
-              </View>
-            )}
 
             {/* Frühwarnungen */}
             {earlyWarnings.length > 0 && (
@@ -826,32 +806,15 @@ function MenteeDashboard() {
               />
             </View>
 
-            {/* Betreuungsdetails + Chat */}
-            <View style={[styles.row3, { marginBottom: 16 }]}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
-                onPress={() =>
-                  router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
-                }
-              >
-                <Text style={styles.actionButtonText}>{t("dashboard.viewMentorship")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.secondaryButton}
-                onPress={() =>
-                  navigateToChat(router, mentorship.id)
-                }
-              >
-                <Text style={styles.secondaryButtonText}>{t("dashboard.openChat")}</Text>
-                {getUnreadMessagesCount(mentorship.id) > 0 && (
-                  <View style={styles.unreadBadge}>
-                    <Text style={styles.unreadBadgeText}>
-                      {getUnreadMessagesCount(mentorship.id)}
-                    </Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
+            {/* Betreuungsdetails */}
+            <TouchableOpacity
+              style={[styles.actionButton, { backgroundColor: COLORS.gradientStart, marginBottom: 16 }]}
+              onPress={() =>
+                router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
+              }
+            >
+              <Text style={styles.actionButtonText}>{t("dashboard.viewMentorship")}</Text>
+            </TouchableOpacity>
 
             {/* Glückwunsch-Banner wenn alle Steps erledigt */}
             {completedStepIds.length === sessionTypes.length && (
@@ -933,17 +896,6 @@ function MenteeDashboard() {
               })}
             </View>
 
-            {/* Wissen & FAQ → Verweis auf FAQ-Tab */}
-            <TouchableOpacity
-              style={[styles.applicationsButton, { backgroundColor: themeColors.card, marginTop: 4, marginBottom: 4 }]}
-              onPress={() => router.push("/(tabs)/faq" as never)}
-            >
-              <View style={styles.applicationsButtonContent}>
-                <Text style={[styles.applicationsButtonText, { color: themeColors.text }]}>{t("faq.title")}</Text>
-                <Text style={[styles.applicationsButtonSub, { color: themeColors.textTertiary }]}>{t("faq.subtitle")}</Text>
-              </View>
-              <Text style={[styles.applicationsArrow, { color: themeColors.textTertiary }]}>›</Text>
-            </TouchableOpacity>
           </>
         ) : (
           <View style={[styles.card, { padding: 32, alignItems: "center" }]}>

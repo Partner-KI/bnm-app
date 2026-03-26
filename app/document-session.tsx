@@ -239,6 +239,11 @@ export default function DocumentSessionScreen() {
       return;
     }
 
+    if (!details.trim()) {
+      showError(t("docSession.detailsRequired"));
+      return;
+    }
+
     if (!date.trim()) {
       showError(t("docSession.dateError"));
       return;
@@ -373,8 +378,8 @@ export default function DocumentSessionScreen() {
     >
     <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
       <View style={styles.page}>
-        {/* Mentee auswählen (wenn mehrere oder Admin) */}
-        {(myMentorships.length > 1 || isAdmin) && (
+        {/* Mentee auswählen (wenn mehrere oder Admin, aber NICHT wenn mentorshipId per Parameter fix vorgegeben) */}
+        {(myMentorships.length > 1 || isAdmin) && !params.mentorshipId && (
           <>
             <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>
               {isAdmin ? t("docSession.chooseAll") : t("docSession.choose")}

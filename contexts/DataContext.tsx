@@ -2182,7 +2182,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .neq("sender_id", authUser.id)
         .is("read_at", null);
 
-      if (error) return;
+      if (error) {
+        console.warn("markChatAsRead failed:", error.message);
+        return;
+      }
 
       // Lokalen State aktualisieren
       setMessages((prev) =>

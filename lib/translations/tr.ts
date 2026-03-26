@@ -508,6 +508,7 @@ const tr: Record<TranslationKeys, string> = {
   "docSession.completed": "Tamamlandı",
   "docSession.selectTypeError": "Lütfen bir oturum türü seçin.",
   "docSession.allDoneSuccess": "Bu danışmanlığın tüm adımları zaten tamamlandı.",
+  "docSession.detailsRequired": "Lütfen oturum için notlar girin.",
   "docSession.dateError": "Lütfen bir tarih girin.",
   "docSession.noTypeError": "Geçerli oturum türü bulunamadı.",
   "docSession.successMsg": "\"{0}\" başarıyla belgelendi.",
