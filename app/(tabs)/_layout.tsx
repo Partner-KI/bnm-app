@@ -140,9 +140,12 @@ function AdminSidebar() {
   const { t } = useLanguage();
   const { getUnreadCount, getTotalUnreadMessages } = useData();
   const { user, logout } = useAuth();
+  const { width } = useWindowDimensions();
   const unreadCount = getUnreadCount();
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
   const chatUnread = isAdminOrOffice ? 0 : getTotalUnreadMessages();
+  // Bei sehr schmalen Viewports (768-900px) Logo kompakter darstellen
+  const isNarrow = width < 900;
 
   const isOffice = user?.role === "office";
 
@@ -212,7 +215,7 @@ function AdminSidebar() {
     >
       {/* Logo */}
       <View style={sidebarStyles.logoArea}>
-        <BNMLogo size={72} showSubtitle />
+        <BNMLogo size={isNarrow ? 48 : 72} showSubtitle={!isNarrow} />
       </View>
 
       {/* Haupt-Navigation */}
@@ -291,9 +294,11 @@ const tabStyles = StyleSheet.create({
 const sidebarStyles = StyleSheet.create({
   sidebar: {
     width: 240,
+    minWidth: 200,
     borderRightWidth: 1,
     flexDirection: "column",
     paddingTop: 24,
+    flexShrink: 0,
   },
   logoArea: {
     paddingHorizontal: 20,
@@ -306,6 +311,7 @@ const sidebarStyles = StyleSheet.create({
     flex: 1,
     paddingTop: 12,
     paddingHorizontal: 8,
+    overflow: "hidden",
   },
   item: {
     flexDirection: "row",
@@ -315,11 +321,13 @@ const sidebarStyles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 4,
     gap: 12,
+    flexShrink: 0,
   },
   itemLabel: {
     fontSize: 14,
     fontWeight: "500",
     flex: 1,
+    flexShrink: 1,
   },
   badge: {
     backgroundColor: COLORS.error,
@@ -329,6 +337,7 @@ const sidebarStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 4,
+    flexShrink: 0,
   },
   badgeText: {
     color: COLORS.white,
@@ -339,6 +348,8 @@ const sidebarStyles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 12,
     borderTopWidth: 1,
+    gap: 2,
+    flexShrink: 0,
   },
   logoutButton: {
     flexDirection: "row",
@@ -349,12 +360,14 @@ const sidebarStyles = StyleSheet.create({
     gap: 12,
     marginTop: 4,
     width: "100%",
+    flexShrink: 0,
   },
   logoutLabel: {
     fontSize: 14,
     fontWeight: "500",
     color: COLORS.error,
     flex: 1,
+    flexShrink: 1,
   },
 });
 

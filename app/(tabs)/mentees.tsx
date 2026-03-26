@@ -101,11 +101,13 @@ function AdminMenteesView() {
   }
 
   async function handleBulkDelete() {
+    console.warn("Step 3: handleBulkDelete called, ids:", Array.from(selectedIds));
     setConfirmModal2(false);
     setIsDeleting(true);
     try {
       const ids = Array.from(selectedIds);
       const result = await bulkDeleteUsers(ids);
+      console.warn("Step 4: bulkDeleteUsers result:", result);
       if (result.failed === 0) {
         showSuccess(t("admin.deleteSuccess").replace("{0}", String(result.success)));
       } else if (result.success === 0) {
@@ -231,7 +233,7 @@ function AdminMenteesView() {
             </TouchableOpacity>
             <TouchableOpacity
               style={[styles.modalBtn, styles.modalBtnDanger]}
-              onPress={() => { setConfirmModal1(false); setConfirmModal2(true); setDeleteInput(""); }}
+              onPress={() => { console.warn("Step 2: Modal2 opened, confirmWord:", t("admin.deleteConfirmInput")); setConfirmModal1(false); setConfirmModal2(true); setDeleteInput(""); }}
             >
               <Text style={[styles.modalBtnText, { color: COLORS.white }]}>{t("common.confirm")}</Text>
             </TouchableOpacity>
@@ -249,7 +251,7 @@ function AdminMenteesView() {
             {t("admin.deleteConfirmSecondMessage")}
           </Text>
           <TextInput
-            style={[styles.deleteInput, { backgroundColor: themeColors.background, borderColor: deleteInput === confirmWord ? COLORS.error : themeColors.border, color: themeColors.text }]}
+            style={[styles.deleteInput, { backgroundColor: themeColors.background, borderColor: deleteInput.toUpperCase() === confirmWord.toUpperCase() ? COLORS.error : themeColors.border, color: themeColors.text }]}
             placeholder={t("admin.deleteConfirmPlaceholder")}
             placeholderTextColor={themeColors.textTertiary}
             value={deleteInput}
@@ -265,9 +267,9 @@ function AdminMenteesView() {
               <Text style={[styles.modalBtnText, { color: themeColors.text }]}>{t("common.cancel")}</Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.modalBtn, deleteInput === confirmWord ? styles.modalBtnDanger : styles.modalBtnDisabled]}
-              onPress={deleteInput === confirmWord ? handleBulkDelete : undefined}
-              disabled={deleteInput !== confirmWord || isDeleting}
+              style={[styles.modalBtn, deleteInput.toUpperCase() === confirmWord.toUpperCase() ? styles.modalBtnDanger : styles.modalBtnDisabled]}
+              onPress={deleteInput.toUpperCase() === confirmWord.toUpperCase() ? handleBulkDelete : undefined}
+              disabled={deleteInput.toUpperCase() !== confirmWord.toUpperCase() || isDeleting}
             >
               <Text style={[styles.modalBtnText, { color: COLORS.white }]}>
                 {isDeleting ? t("admin.deleting") : t("admin.deleteConfirmInput")}
@@ -560,7 +562,7 @@ function AdminMenteesView() {
         </Text>
         <TouchableOpacity
           style={styles.footerDeleteBtn}
-          onPress={() => setConfirmModal1(true)}
+          onPress={() => { console.warn("Step 1: Modal1 opened"); setConfirmModal1(true); }}
         >
           <Text style={styles.footerDeleteBtnText}>
             {t("admin.deleteSelected").replace("{0}", String(selectedCount))}
