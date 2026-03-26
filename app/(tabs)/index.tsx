@@ -60,10 +60,37 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
   const allMentors = users.filter((u) => u.role === "mentor");
   const allMentees = users.filter((u) => u.role === "mentee");
+
+  // Zeitraum-Filter für KPIs
+  const periodRange = useMemo(() => {
+    const now = new Date();
+    let start: Date;
+    let end: Date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    if (activePeriod === "lastMonth") {
+      start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+    } else if (activePeriod === "thisQuarter") {
+      const q = Math.floor(now.getMonth() / 3) * 3;
+      start = new Date(now.getFullYear(), q, 1);
+    } else if (activePeriod === "thisYear") {
+      start = new Date(now.getFullYear(), 0, 1);
+    } else {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+    }
+    return { start, end };
+  }, [activePeriod]);
+
+  const inPeriod = (dateStr?: string) => {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    return d >= periodRange.start && d <= periodRange.end;
+  };
+
   const activeMentorships = mentorships.filter((m) => m.status === "active");
   const completedMentorships = mentorships.filter(
-    (m) => m.status === "completed"
+    (m) => m.status === "completed" && inPeriod(m.completed_at ?? m.assigned_at)
   );
+  const newMentorshipsInPeriod = mentorships.filter((m) => inPeriod(m.assigned_at));
   const unassignedMentees = getUnassignedMentees();
   const pendingApprovalsCount = getPendingApprovalsCount();
 
