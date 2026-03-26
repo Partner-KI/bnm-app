@@ -729,7 +729,7 @@ function MenteeDashboard() {
         </View>
 
         {/* Glückwunsch-Banner wenn alle Steps erledigt und Betreuung noch aktiv */}
-        {mentorship && mentorship.status === "active" && sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length && (
+        {mentorship && (mentorship.status === "active" || mentorship.status === "completed") && sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length && (
           <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
             <Ionicons name="ribbon-outline" size={32} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 6 }} />
             <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
