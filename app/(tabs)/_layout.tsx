@@ -212,7 +212,7 @@ function AdminSidebar() {
     >
       {/* Logo */}
       <View style={sidebarStyles.logoArea}>
-        <BNMLogo size={36} showSubtitle={false} />
+        <BNMLogo size={52} showSubtitle={false} />
       </View>
 
       {/* Haupt-Navigation */}
@@ -297,7 +297,8 @@ const sidebarStyles = StyleSheet.create({
   },
   logoArea: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingTop: 8,
+    paddingBottom: 28,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(128,128,128,0.15)",
   },

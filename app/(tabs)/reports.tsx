@@ -288,6 +288,13 @@ export default function ReportsScreen() {
   const isOffice = user?.role === "office";
   const isAdminOrOffice = user?.role === "admin" || isOffice;
 
+  // Dark-Mode-angepasste Button-Styles
+  // Im Dark Mode: COLORS.gradientStart (#0A3A5A) ist kaum sichtbar → Gold verwenden
+  const dynamicPrimaryBg = isDark ? COLORS.gold : COLORS.gradientStart;
+  const dynamicPrimaryText = isDark ? COLORS.primary : COLORS.white;
+  const dynamicOutlineBorderColor = isDark ? COLORS.gold : COLORS.gradientStart;
+  const dynamicOutlineTextColor = isDark ? COLORS.gold : COLORS.gradientStart;
+
   if (!isAdminOrOffice) {
     return (
       <View style={[styles.centerContainer, { backgroundColor: themeColors.background }]}>
@@ -331,7 +338,7 @@ export default function ReportsScreen() {
                   style={[
                     styles.quickFilterBtn,
                     quickPeriod === opt.key
-                      ? styles.quickFilterBtnActive
+                      ? [styles.quickFilterBtnActive, { backgroundColor: dynamicPrimaryBg, borderColor: dynamicPrimaryBg }]
                       : [styles.quickFilterBtnInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }],
                   ]}
                   onPress={() => applyQuickPeriod(opt.key)}
@@ -339,7 +346,7 @@ export default function ReportsScreen() {
                   <Text
                     style={
                       quickPeriod === opt.key
-                        ? styles.quickFilterTextActive
+                        ? [styles.quickFilterTextActive, { color: dynamicPrimaryText }]
                         : [styles.quickFilterTextInactive, { color: themeColors.textSecondary }]
                     }
                   >
@@ -365,13 +372,17 @@ export default function ReportsScreen() {
                       key={opt.key}
                       style={[
                         styles.modeButton,
-                        periodMode === opt.key ? styles.modeButtonActive : [styles.modeButtonInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }],
+                        periodMode === opt.key
+                          ? [styles.modeButtonActive, { backgroundColor: dynamicPrimaryBg, borderColor: dynamicPrimaryBg }]
+                          : [styles.modeButtonInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setPeriodMode(opt.key)}
                     >
                       <Text
                         style={
-                          periodMode === opt.key ? styles.modeTextActive : [styles.modeTextInactive, { color: themeColors.textSecondary }]
+                          periodMode === opt.key
+                            ? [styles.modeTextActive, { color: dynamicPrimaryText }]
+                            : [styles.modeTextInactive, { color: themeColors.textSecondary }]
                         }
                       >
                         {opt.label}
@@ -387,13 +398,17 @@ export default function ReportsScreen() {
                       key={year}
                       style={[
                         styles.yearButton,
-                        selectedYear === year ? styles.yearButtonActive : [styles.yearButtonInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }],
+                        selectedYear === year
+                          ? [styles.yearButtonActive, { backgroundColor: dynamicPrimaryBg, borderColor: dynamicPrimaryBg }]
+                          : [styles.yearButtonInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setSelectedYear(year)}
                     >
                       <Text
                         style={
-                          selectedYear === year ? styles.yearButtonTextActive : [styles.yearButtonTextInactive, { color: themeColors.textSecondary }]
+                          selectedYear === year
+                            ? [styles.yearButtonTextActive, { color: dynamicPrimaryText }]
+                            : [styles.yearButtonTextInactive, { color: themeColors.textSecondary }]
                         }
                       >
                         {year}
@@ -553,10 +568,10 @@ export default function ReportsScreen() {
           {/* Mentor des Monats Toggle – nur für Admin */}
           {!isOffice && (
             <TouchableOpacity
-              style={styles.toggleMomButton}
+              style={[styles.toggleMomButton, { borderColor: dynamicOutlineBorderColor }]}
               onPress={toggleMentorOfMonth}
             >
-              <Text style={styles.toggleMomText}>
+              <Text style={[styles.toggleMomText, { color: dynamicOutlineTextColor }]}>
                 {mentorOfMonthVisible
                   ? t("reports.hideMentorOfMonth")
                   : t("reports.showMentorOfMonth")}
@@ -568,10 +583,10 @@ export default function ReportsScreen() {
 
           {/* Export-Button – Primär */}
           <TouchableOpacity
-            style={styles.exportButton}
+            style={[styles.exportButton, { backgroundColor: dynamicPrimaryBg }]}
             onPress={handleExport}
           >
-            <Text style={styles.exportButtonText}>
+            <Text style={[styles.exportButtonText, { color: dynamicPrimaryText }]}>
               {Platform.OS === "web" ? t("reports.csvDownload") : t("reports.export")}
             </Text>
           </TouchableOpacity>
@@ -591,7 +606,7 @@ export default function ReportsScreen() {
             style={styles.donorReportButton}
             onPress={() => router.push("/donor-report" as never)}
           >
-            <Text style={styles.donorReportButtonText}>
+            <Text style={[styles.donorReportButtonText, { color: COLORS.primary }]}>
               {t("reports.donorReportVisual")}
             </Text>
           </TouchableOpacity>
@@ -599,10 +614,10 @@ export default function ReportsScreen() {
           {/* Erweitertes Spender-Bericht Dashboard (nur Admin) */}
           {user?.role === "admin" && (
             <TouchableOpacity
-              style={styles.donorDashboardButton}
+              style={[styles.donorDashboardButton, { backgroundColor: dynamicPrimaryBg }]}
               onPress={() => router.push("/admin/donor-report" as never)}
             >
-              <Text style={styles.donorDashboardButtonText}>
+              <Text style={[styles.donorDashboardButtonText, { color: isDark ? COLORS.primary : COLORS.gold }]}>
                 {t("reports.donorDashboard")}
               </Text>
             </TouchableOpacity>
@@ -611,10 +626,10 @@ export default function ReportsScreen() {
           {/* Bericht drucken (nur Web) */}
           {Platform.OS === "web" && (
             <TouchableOpacity
-              style={styles.printButton}
+              style={[styles.printButton, { borderColor: themeColors.textSecondary }]}
               onPress={handlePrint}
             >
-              <Text style={styles.printButtonText}>{t("reports.printBeta")}</Text>
+              <Text style={[styles.printButtonText, { color: themeColors.textSecondary }]}>{t("reports.printBeta")}</Text>
             </TouchableOpacity>
           )}
         </View>

@@ -297,9 +297,18 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     // Cache-first: Zuerst gecachte Daten anzeigen, dann im Hintergrund frisch laden
+    // Safety-Timeout: Wenn nach 10 Sekunden kein Ergebnis (z.B. hängender Fetch), force-refresh
+    const safetyTimer = setTimeout(() => {
+      loadAllData(false);
+    }, 10_000);
+
     (async () => {
       const cached = await readCache();
-      if (cached) {
+
+      // Cache gilt als nutzbar, wenn users vorhanden (mind. 2 Einträge)
+      const cacheUsable = cached !== null && cached.users.length >= 2;
+
+      if (cacheUsable && cached) {
         // Cache sofort anzeigen → kein leerer Screen während des Ladens
         setUsers(cached.users);
         // Mentorships ohne mentor/mentee-Objekte (werden beim Background-Refresh aufgelöst)
@@ -312,6 +321,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setAppSettings(cached.appSettings);
         setMentorOfMonthVisible(cached.mentorOfMonthVisible);
         setIsLoading(false);
+        // Safety-Timer nicht mehr nötig, da Cache geladen
+        clearTimeout(safetyTimer);
 
         // Cache frisch genug (< 5 Min)? → kein Background-Refresh
         if (Date.now() - cached.timestamp < CACHE_FRESH_MS) {
@@ -320,7 +331,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // Sonst: Im Hintergrund frisch laden (isLoading bleibt false → UI sichtbar)
         loadAllData(/* background */ true);
       } else {
-        // Kein Cache: normal laden mit Loading-Indikator
+        // Kein Cache oder Cache leer/veraltet: normal laden mit Loading-Indikator
+        // Safety-Timer läuft weiter und löst nach 10s nochmal aus falls nötig
         loadAllData(false);
       }
     })();
@@ -330,6 +342,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const cleanupProfiles = subscribeToProfiles();
     const cleanupMentorships = subscribeToMentorships();
     return () => {
+      clearTimeout(safetyTimer);
       cleanupMessages();
       cleanupProfiles();
       cleanupMentorships();
