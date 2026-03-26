@@ -956,6 +956,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
+      // Notification an Admin/Office: Mentor Self-Assignment wartet auf Bestätigung
+      if (status === "pending_approval") {
+        const admins = users.filter((u) => u.role === "admin" || u.role === "office");
+        for (const admin of admins) {
+          await createNotification(
+            admin.id,
+            "assignment",
+            "Mentor-Zuweisung wartet auf Bestätigung",
+            `${mentor?.name ?? "Ein Mentor"} möchte ${mentee?.name ?? "einen Mentee"} betreuen. Bitte bestätige die Zuweisung.`,
+            data.id
+          );
+        }
+      }
+
       // Automatische Registrierungs- und Zuweisungs-Sessions (nur bei aktiven Betreuungen)
       if (status !== "active") return;
 
@@ -1201,10 +1215,24 @@ export function DataProvider({ children }: { children: ReactNode }) {
               mentorshipId
             );
           }
+          // In-App Notification an Mentee: Betreuung abgeschlossen → Feedback anfragen
+          if (status === "completed") {
+            await createNotification(
+              m.mentee_id,
+              "feedback",
+              "Betreuung abgeschlossen",
+              "Deine Betreuung wurde abgeschlossen. Bitte gib dein Feedback ab.",
+              mentorshipId
+            );
+            if (authUser?.id === m.mentee_id) {
+              notifyMentorshipCompleted(m.mentee?.name ?? "").catch(() => {});
+              notifyFeedbackRequested(m.mentor?.name ?? "Deinem Mentor").catch(() => {});
+            }
+          }
         }
       }
     },
-    [authUser, mentorships]
+    [authUser, mentorships, createNotification]
   );
 
   // ─── Session Actions ──────────────────────────────────────────────────────────
@@ -1430,22 +1458,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
       };
       setFeedback((prev) => [...prev, newFeedback]);
 
-      // Lokale Push Notification: Mentor erfährt von neuem Feedback
-      // (nur auf dem Gerät des Mentors sichtbar, wenn er die App gerade offen hat;
-      //  für geräteübergreifende Push Notifications → Backend Supabase Edge Function nötig)
+      // In-App Notification an Mentor: Feedback erhalten (persistente DB-Notification)
       const mentorship = mentorships.find(
         (m) => m.id === feedbackData.mentorship_id
       );
-      if (mentorship && authUser?.id === mentorship.mentor_id) {
+      if (mentorship) {
         const submitter = users.find((u) => u.id === feedbackData.submitted_by);
-        sendLocalNotification(
-          "Neues Feedback erhalten",
+        await createNotification(
+          mentorship.mentor_id,
+          "feedback",
+          "Feedback erhalten",
           `${submitter?.name ?? "Dein Mentee"} hat Feedback hinterlassen (${feedbackData.rating}/5 Sterne).`,
-          "feedback"
-        ).catch(() => {});
+          feedbackData.mentorship_id
+        );
+        // Lokale Push Notification: zusätzlich auf dem Gerät des Mentors (wenn App offen)
+        if (authUser?.id === mentorship.mentor_id) {
+          sendLocalNotification(
+            "Neues Feedback erhalten",
+            `${submitter?.name ?? "Dein Mentee"} hat Feedback hinterlassen (${feedbackData.rating}/5 Sterne).`,
+            "feedback"
+          ).catch(() => {});
+        }
       }
     },
-    [mentorships, users, authUser]
+    [mentorships, users, authUser, createNotification]
   );
 
   const getFeedbacks = useCallback(() => {
@@ -1777,8 +1813,32 @@ export function DataProvider({ children }: { children: ReactNode }) {
         submitted_at: inserted.created_at,
       };
       setApplications((prev) => [...prev, newApp]);
+
+      // Notification an Admin/Office: Neue Mentor-Bewerbung eingegangen
+      const isMenteeRegistration =
+        inserted.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
+      const admins = users.filter((u) => u.role === "admin" || u.role === "office");
+      for (const admin of admins) {
+        if (isMenteeRegistration) {
+          await createNotification(
+            admin.id,
+            "system",
+            "Neuer Mentee registriert",
+            `${inserted.name} hat sich als neuer Muslim angemeldet und wartet auf Zuweisung.`,
+            inserted.id
+          );
+        } else {
+          await createNotification(
+            admin.id,
+            "system",
+            "Neue Mentor-Bewerbung eingegangen",
+            `${inserted.name} aus ${inserted.city} hat sich als Mentor beworben.`,
+            inserted.id
+          );
+        }
+      }
     },
-    []
+    [users, createNotification]
   );
 
   const getPendingApplicationsCount = useCallback(() => {

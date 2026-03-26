@@ -10,6 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { Notification, NotificationType } from "../types";
 import { COLORS } from "../constants/Colors";
@@ -35,7 +36,18 @@ export default function NotificationsScreen() {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
   const TYPE_CONFIG = getTypeConfig(isDark);
-  const { notifications, markAsRead, markAllAsRead } = useData();
+  const { notifications, feedback, markAsRead, markAllAsRead } = useData();
+  const { user } = useAuth();
+
+  // Feedback-Notifications ausblenden wenn Feedback bereits abgegeben
+  const visibleNotifications = notifications.filter((n) => {
+    if (n.type === "feedback" && n.related_id && user) {
+      return !feedback.some(
+        (f) => f.mentorship_id === n.related_id && f.submitted_by === user.id
+      );
+    }
+    return true;
+  });
 
   function timeAgo(isoDate: string): string {
     const diff = Date.now() - new Date(isoDate).getTime();
@@ -56,8 +68,8 @@ export default function NotificationsScreen() {
     return t("notifications.typeMessage");
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
-  const sorted = [...notifications].sort(
+  const unreadCount = visibleNotifications.filter((n) => !n.read).length;
+  const sorted = [...visibleNotifications].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 

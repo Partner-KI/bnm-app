@@ -733,6 +733,15 @@ function MenteeDashboard() {
           )}
         </View>
 
+        {/* Glückwunsch-Banner wenn alle Steps erledigt und Betreuung noch aktiv */}
+        {mentorship && mentorship.status === "active" && sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length && (
+          <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
+            <Ionicons name="ribbon-outline" size={32} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 6 }} />
+            <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
+            <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
+          </View>
+        )}
+
         {/* Feedback-Banner für abgeschlossene Betreuungen ohne Feedback */}
         {completedMentorshipsWithoutFeedback.length > 0 && (
           <View style={[styles.feedbackBanner, { backgroundColor: isDark ? "#3a2e1a" : "#fefce8", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
@@ -794,7 +803,7 @@ function MenteeDashboard() {
 
             <View style={[styles.card, { marginBottom: 16 }]}>
               <View style={styles.rowBetweenMb3}>
-                <Text style={styles.cardTitle}>{t("dashboard.yourProgress")}</Text>
+                <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.yourProgress")}</Text>
                 <Text style={styles.goldBold}>
                   {completedStepIds.length}/{sessionTypes.length}
                 </Text>
@@ -805,25 +814,6 @@ function MenteeDashboard() {
                 )}
               />
             </View>
-
-            {/* Betreuungsdetails */}
-            <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: COLORS.gradientStart, marginBottom: 16 }]}
-              onPress={() =>
-                router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
-              }
-            >
-              <Text style={styles.actionButtonText}>{t("dashboard.viewMentorship")}</Text>
-            </TouchableOpacity>
-
-            {/* Glückwunsch-Banner wenn alle Steps erledigt und Betreuung noch aktiv */}
-            {mentorship.status === "active" && sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length && (
-              <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-                <Ionicons name="ribbon-outline" size={32} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 6 }} />
-                <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
-                <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
-              </View>
-            )}
 
             {/* Schritte-Übersicht (read-only) */}
             <Text style={styles.sectionTitle}>{t("menteeProgress.title")}</Text>
