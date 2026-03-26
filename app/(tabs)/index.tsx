@@ -642,7 +642,7 @@ function MenteeDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, getUnreadMessagesCount, mentorships, feedback } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
   const onRefresh = useCallback(async () => {
@@ -662,11 +662,6 @@ function MenteeDashboard() {
   const mentorship = getMentorshipByMenteeId(user.id);
   const completedStepIds = mentorship ? getCompletedStepIds(mentorship.id) : [];
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
-
-  // Prüfe ob es abgeschlossene Betreuungen ohne Feedback gibt
-  const completedMentorshipsWithoutFeedback = mentorships.filter(
-    (m) => m.mentee_id === user.id && m.status === "completed" && !feedback.some((f) => f.mentorship_id === m.id && f.submitted_by === user.id)
-  );
 
 
   return (
@@ -742,23 +737,6 @@ function MenteeDashboard() {
           </View>
         )}
 
-        {/* Feedback-Banner für abgeschlossene Betreuungen ohne Feedback */}
-        {completedMentorshipsWithoutFeedback.length > 0 && (
-          <View style={[styles.feedbackBanner, { backgroundColor: isDark ? "#3a2e1a" : "#fefce8", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
-            <Text style={[styles.feedbackBannerText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("feedbackBanner.title")}</Text>
-            <TouchableOpacity
-              style={styles.feedbackBannerButton}
-              onPress={() =>
-                router.push({
-                  pathname: "/feedback",
-                  params: { mentorshipId: completedMentorshipsWithoutFeedback[0].id },
-                })
-              }
-            >
-              <Text style={styles.feedbackBannerButtonText}>{t("feedbackBanner.button")}</Text>
-            </TouchableOpacity>
-          </View>
-        )}
 
         {/* Fortschritts-Übersicht */}
         {mentorship ? (

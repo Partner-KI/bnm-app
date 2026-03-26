@@ -487,7 +487,7 @@ const tr: Record<TranslationKeys, string> = {
   "docSession.execution": "Uygulama",
   "docSession.inPerson": "Yüz Yüze",
   "docSession.online": "Çevrimiçi",
-  "docSession.detailsLabel": "Detaylar (isteğe bağlı)",
+  "docSession.detailsLabel": "Detaylar",
   "docSession.detailsPlaceholder": "Oturum notları...",
   "docSession.durationLabel": "Süre (isteğe bağlı)",
   "docSession.durationHint": "Oturum süresi dakika cinsinden",

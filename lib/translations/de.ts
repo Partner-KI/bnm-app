@@ -485,7 +485,7 @@ const de = {
   "docSession.execution": "Durchführung",
   "docSession.inPerson": "Vor Ort",
   "docSession.online": "Online",
-  "docSession.detailsLabel": "Details (optional)",
+  "docSession.detailsLabel": "Details",
   "docSession.detailsPlaceholder": "Notizen zur Session...",
   "docSession.durationLabel": "Dauer (optional)",
   "docSession.durationHint": "Dauer der Session in Minuten",

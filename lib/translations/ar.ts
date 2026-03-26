@@ -487,7 +487,7 @@ const ar: Record<TranslationKeys, string> = {
   "docSession.execution": "التنفيذ",
   "docSession.inPerson": "حضوري",
   "docSession.online": "عبر الإنترنت",
-  "docSession.detailsLabel": "التفاصيل (اختياري)",
+  "docSession.detailsLabel": "التفاصيل",
   "docSession.detailsPlaceholder": "ملاحظات الجلسة...",
   "docSession.durationLabel": "المدة (اختياري)",
   "docSession.durationHint": "مدة الجلسة بالدقائق",

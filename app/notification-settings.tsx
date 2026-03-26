@@ -89,7 +89,6 @@ function getTogglesForRole(role: string): ToggleDef[] {
     return [
       { key: "chatMessages", labelKey: "notifSettings.chatMessages", subtitleKey: "notifSettings.chatMessagesSub" },
       { key: "assignments", labelKey: "notifSettings.mentorNewMentee", subtitleKey: "notifSettings.mentorNewMenteeSub" },
-      { key: "feedback", labelKey: "notifSettings.mentorFeedback", subtitleKey: "notifSettings.mentorFeedbackSub" },
       { key: "reminders", labelKey: "notifSettings.mentorReminders", subtitleKey: "notifSettings.mentorRemindersSub" },
     ];
   }

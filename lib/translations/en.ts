@@ -487,7 +487,7 @@ const en: Record<TranslationKeys, string> = {
   "docSession.execution": "Execution",
   "docSession.inPerson": "In Person",
   "docSession.online": "Online",
-  "docSession.detailsLabel": "Details (optional)",
+  "docSession.detailsLabel": "Details",
   "docSession.detailsPlaceholder": "Session notes...",
   "docSession.durationLabel": "Duration (optional)",
   "docSession.durationHint": "Session duration in minutes",
