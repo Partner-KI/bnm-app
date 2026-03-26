@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -348,13 +349,20 @@ export default function ProfileScreen() {
         {/* App-Footer */}
         <View style={styles.footerBox}>
           <Text style={[styles.footerVersion, { color: themeColors.textTertiary }]}>{t("footer.version")}</Text>
+          <Text style={[styles.footerPartner, { color: themeColors.textTertiary }]}>
+            Ein iERA Projekt in Kooperation mit IMAN
+          </Text>
           <View style={styles.footerLinks}>
-            <TouchableOpacity onPress={() => setShowPrivacy(true)}>
+            <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/datenschutzerklaerung/")}>
               <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.privacy")}</Text>
             </TouchableOpacity>
             <Text style={[styles.footerSep, { color: themeColors.textTertiary }]}>·</Text>
-            <TouchableOpacity onPress={() => setShowImprint(true)}>
+            <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/impressum/")}>
               <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.imprint")}</Text>
+            </TouchableOpacity>
+            <Text style={[styles.footerSep, { color: themeColors.textTertiary }]}>·</Text>
+            <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/agb/")}>
+              <Text style={[styles.footerLink, { color: themeColors.link }]}>AGB</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -538,7 +546,8 @@ const styles = StyleSheet.create({
   },
   partnerMessageBtnText: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   footerBox: { alignItems: "center", marginBottom: 16 },
-  footerVersion: { color: COLORS.tertiary, fontSize: 12, marginBottom: 6 },
+  footerVersion: { color: COLORS.tertiary, fontSize: 12, marginBottom: 4 },
+  footerPartner: { fontSize: 11, marginBottom: 8, textAlign: "center" },
   footerLinks: { flexDirection: "row", alignItems: "center", gap: 6 },
   footerLink: { color: COLORS.link, fontSize: 12 },
   footerSep: { color: COLORS.tertiary, fontSize: 12 },

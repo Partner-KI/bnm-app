@@ -9,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Linking,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -163,7 +164,25 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Schnellzugang entfernt */}
+          {/* Footer */}
+          <View style={styles.loginFooter}>
+            <Text style={[styles.loginFooterPartner, { color: themeColors.textTertiary }]}>
+              Ein iERA Projekt in Kooperation mit IMAN
+            </Text>
+            <View style={styles.loginFooterLinks}>
+              <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/datenschutzerklaerung/")}>
+                <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>Datenschutz</Text>
+              </TouchableOpacity>
+              <Text style={[styles.loginFooterSep, { color: themeColors.textTertiary }]}>·</Text>
+              <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/impressum/")}>
+                <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>Impressum</Text>
+              </TouchableOpacity>
+              <Text style={[styles.loginFooterSep, { color: themeColors.textTertiary }]}>·</Text>
+              <TouchableOpacity onPress={() => Linking.openURL("https://iman.ngo/agb/")}>
+                <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>AGB</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -337,4 +356,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
+  loginFooter: {
+    alignItems: "center",
+    marginTop: 24,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0,0,0,0.08)",
+  },
+  loginFooterPartner: { fontSize: 11, marginBottom: 8, textAlign: "center" },
+  loginFooterLinks: { flexDirection: "row", alignItems: "center", gap: 6 },
+  loginFooterLink: { fontSize: 11 },
+  loginFooterSep: { fontSize: 11 },
 });
