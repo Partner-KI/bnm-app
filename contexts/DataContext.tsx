@@ -1912,7 +1912,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         target_user_id: userId,
       });
 
-      if (error || data === false) {
+      if (error) {
+        console.warn("deleteUser RPC error:", error.message);
+        showError(`Löschen fehlgeschlagen: ${error.message}`);
+        return false;
+      }
+      if (data === false) {
+        showError("Löschen fehlgeschlagen: Nur Admins dürfen User löschen.");
         return false;
       }
 
@@ -1924,7 +1930,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setMentorships((prev) => prev.filter((m) => !userMentorshipIds.includes(m.id)));
 
       return true;
-    } catch {
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+      console.warn("deleteUser error:", msg);
+      showError(`Löschen fehlgeschlagen: ${msg}`);
       return false;
     }
   }, [mentorships]);
