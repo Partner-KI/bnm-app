@@ -209,34 +209,6 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
-          {/* ── Eigene Position — prominent ganz oben ───────────────────── */}
-          {user?.role === "mentor" && myEntry && (
-            <View style={[styles.myPositionCard, { backgroundColor: isDark ? "#1A1A2E" : "#FFF8E1", borderColor: COLORS.gold }]}>
-              <View style={styles.myPositionLeft}>
-                <Text style={[styles.myPositionRank, { color: COLORS.gold }]}>
-                  {t("leaderboard.place").replace("{0}", String(myRankIndex + 1))}
-                </Text>
-                <Text style={[styles.myPositionLabel, { color: themeColors.textSecondary }]}>
-                  {t("leaderboard.yourPosition")}
-                </Text>
-              </View>
-              <View style={styles.myPositionStats}>
-                <View style={styles.myPositionStat}>
-                  <Text style={[styles.myPositionStatVal, { color: themeColors.text }]}>{myEntry.score}</Text>
-                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.points_short")}</Text>
-                </View>
-                <View style={styles.myPositionStat}>
-                  <Text style={[styles.myPositionStatVal, { color: COLORS.cta }]}>{myEntry.completedCount}</Text>
-                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
-                </View>
-                <View style={styles.myPositionStat}>
-                  <Text style={[styles.myPositionStatVal, { color: themeColors.text }]}>{myEntry.sessionCount}</Text>
-                  <Text style={[styles.myPositionStatLbl, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
-                </View>
-              </View>
-            </View>
-          )}
-
           {/* Monats-Picker */}
           <View style={[styles.monthPickerRow, { backgroundColor: themeColors.card }]}>
             <TouchableOpacity onPress={goToPrevMonth} style={styles.monthPickerBtn}>
@@ -302,28 +274,9 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
-          {/* Mentor des Monats */}
-          {mentorOfMonthVisible && mentorOfMonthForUser && (
+          {/* Mentor des Monats — entfernt, da redundant zum Podium Platz 1 */}
+          {false && mentorOfMonthVisible && mentorOfMonthForUser && (
             <View style={styles.momBanner}>
-              <View style={styles.momHeader}>
-                <Text style={styles.momStar}>★</Text>
-                <Text style={[styles.momTitle, { color: themeColors.text }]}>{t("leaderboard.mentorOfMonth")}</Text>
-              </View>
-              <Text style={[styles.momName, { color: themeColors.text }]}>{mentorOfMonthForUser.name}</Text>
-              <View style={styles.momStatsRow}>
-                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
-                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.score}</Text>
-                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.points")}</Text>
-                </View>
-                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
-                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.completedCount}</Text>
-                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
-                </View>
-                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
-                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.sessionCount}</Text>
-                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
-                </View>
-              </View>
             </View>
           )}
 
