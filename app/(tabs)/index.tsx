@@ -421,8 +421,9 @@ function MentorDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, sessions, users, refreshData, getUnreadMessagesCount } = useData();
+  const { getMentorshipsByMentorId, getCompletedStepIds, sessionTypes, sessions, users, hadithe, refreshData, getUnreadMessagesCount } = useData();
   const [refreshing, setRefreshing] = useState(false);
+  const [hadithOffset, setHadithOffset] = useState(0);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -439,7 +440,7 @@ function MentorDashboard() {
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
 
-  // Mentor-Statistiken (wie im Profil-Tab)
+  // Mentor-Statistiken
   const mentorStats = useMemo(() => {
     if (!user) return null;
     const totalSessions = sessions.filter((s) =>
@@ -456,20 +457,23 @@ function MentorDashboard() {
     });
     scores.sort((a, b) => b.score - a.score);
     const myRank = scores.findIndex((s) => s.mentorId === user.id) + 1;
+    const myScore = scores.find((s) => s.mentorId === user.id)?.score ?? 0;
+    const maxScore = scores[0]?.score ?? 1;
     return {
       active: activeMentorships.length,
       completed: completedMentorships.length,
       totalSessions,
       rank: myRank,
       totalMentors: allMentors.length,
+      myScore,
+      maxScore,
     };
   }, [user, myMentorships, activeMentorships.length, completedMentorships.length, sessions, users, getMentorshipsByMentorId]);
 
   // Auto-Show Onboarding für neue Mentoren ohne Mentees (einmalig)
-  // Hook muss VOR dem early return stehen (React Hooks Rules)
   useEffect(() => {
     if (!user) return;
-    if (activeMentorships.length > 0) return; // Hat schon Mentees → kein Onboarding nötig
+    if (activeMentorships.length > 0) return;
     const key = "bnm_onboarding_seen";
     async function checkOnboarding() {
       try {
@@ -493,37 +497,78 @@ function MentorDashboard() {
 
   if (!user) return null;
 
+  // Hadith für heute
+  const todayHadith = useMemo(() => {
+    if (hadithe.length === 0) return null;
+    const today = new Date();
+    const dayOfYear = Math.floor(
+      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+    );
+    const baseIdx = dayOfYear % hadithe.length;
+    const idx = (baseIdx + hadithOffset) % hadithe.length;
+    return hadithe[idx];
+  }, [hadithe, hadithOffset]);
+
+  const levelProgress = mentorStats
+    ? Math.min(100, Math.round((mentorStats.myScore / Math.max(mentorStats.maxScore, 1)) * 100))
+    : 0;
+
   return (
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        {/* Begrüssung – Hero mit dunklem Blau */}
-        <View style={styles.greetingCard}>
-          <Text style={styles.greetingSmall}>{t("dashboard.salam")}</Text>
-          <Text style={styles.greetingName}>{user.name}</Text>
-          <Text style={styles.greetingMeta}>
-            {user.city} · {user.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
-          </Text>
+        {/* ── Greeting ────────────────────────────────────────────────── */}
+        <View style={styles.mentorGreetingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.mentorGreetingLabel, { color: isDark ? COLORS.gold : COLORS.gradientStart }]}>
+              WILLKOMMEN
+            </Text>
+            <Text style={[styles.mentorGreetingName, { color: themeColors.text }]}>{user.name}</Text>
+            <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
+              {user.city} · {user.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
+            </Text>
+          </View>
+          <View style={[styles.mentorLogoBadge, { backgroundColor: isDark ? "#1A1A2E" : "#EBF0FF", borderColor: isDark ? "#3A3520" : "#C5CEE0" }]}>
+            <Text style={styles.mentorLogoText}>BNM</Text>
+          </View>
         </View>
 
-        {/* Stats – 4 Karten wie im Profil, aber hier prominent */}
+        {/* ── 4 KPI-Cards ─────────────────────────────────────────────── */}
         {mentorStats && (
           <>
-            <KpiGrid style={{ marginBottom: 8 }}>
+            <KpiGrid style={{ marginBottom: 12 }}>
               <StatCard label={t("dashboard.statsActive")} value={mentorStats.active} color={COLORS.gradientStart} iconName="people-outline" />
               <StatCard label={t("dashboard.statsCompleted")} value={mentorStats.completed} color={COLORS.cta} iconName="checkmark-circle-outline" />
-              <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="calendar-outline" />
+              <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="document-text-outline" />
               <StatCard label={t("dashboard.statsRank")} value={mentorStats.rank} color="#6366f1" iconName="trophy-outline" sublabel={`/ ${mentorStats.totalMentors}`} />
             </KpiGrid>
-            <Text style={[styles.rankHintText, { color: themeColors.textTertiary, marginBottom: 16 }]}>
-              {t("dashboard.statsRankHint").replace("{0}", String(mentorStats.totalMentors))}
-            </Text>
+
+            {/* ── Mentor-Level Fortschrittsbalken ─────────────────────── */}
+            <View style={[styles.levelCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+              <View style={styles.levelHeaderRow}>
+                <View>
+                  <Text style={[styles.levelTitle, { color: themeColors.text }]}>Mentor-Level</Text>
+                  <Text style={[styles.levelSubtitle, { color: themeColors.textSecondary }]}>
+                    {t("dashboard.statsRankHint").replace("{0}", String(mentorStats.totalMentors))}
+                  </Text>
+                </View>
+                <View style={[styles.levelScoreBadge, { backgroundColor: isDark ? "#2A2518" : "#FFF8E1" }]}>
+                  <Text style={[styles.levelScoreText, { color: COLORS.gold }]}>{mentorStats.myScore} Pkt.</Text>
+                </View>
+              </View>
+              <View style={[styles.levelTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
+                <View style={[styles.levelFill, { width: `${levelProgress}%` as any }]} />
+              </View>
+              <Text style={[styles.levelHint, { color: themeColors.textTertiary }]}>
+                Rang {mentorStats.rank} von {mentorStats.totalMentors} Mentoren
+              </Text>
+            </View>
           </>
         )}
 
-        {/* Aktive Betreuungen */}
+        {/* ── Aktive Betreuungen ───────────────────────────────────────── */}
         <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t("dashboard.myActiveMentorships")}</Text>
         {activeMentorships.length === 0 ? (
           <View style={[styles.card, { backgroundColor: themeColors.card, padding: 24, alignItems: "center", marginBottom: 16 }]}>
@@ -533,94 +578,114 @@ function MentorDashboard() {
           activeMentorships.map((m) => {
             const completedSteps = getCompletedStepIds(m.id);
             const nextStepIdx = completedSteps.length;
-            const nextStep =
-              nextStepIdx < sessionTypes.length
-                ? [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order)[nextStepIdx]
-                : null;
-            const progress = Math.round(
-              (completedSteps.length / sessionTypes.length) * 100
-            );
-
+            const sortedTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
+            const nextStep = nextStepIdx < sortedTypes.length ? sortedTypes[nextStepIdx] : null;
+            const progress = Math.round((completedSteps.length / Math.max(sessionTypes.length, 1)) * 100);
             const allDone = completedSteps.length === sessionTypes.length;
+            const unread = getUnreadMessagesCount(m.id);
 
             return (
               <TouchableOpacity
                 key={m.id}
-                style={[styles.menteeCard, { backgroundColor: themeColors.card }]}
-                onPress={() =>
-                  router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })
-                }
+                style={[
+                  styles.menteeCardNew,
+                  {
+                    backgroundColor: themeColors.card,
+                    borderColor: isDark ? "#3A3520" : themeColors.border,
+                  },
+                ]}
+                activeOpacity={0.75}
+                onPress={() => router.push({ pathname: "/mentorship/[id]", params: { id: m.id } })}
               >
-                <View style={styles.rowBetweenMb3}>
-                  <View>
-                    <Text style={[styles.boldPrimary, { color: themeColors.text }]}>{m.mentee?.name}</Text>
-                    <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>
-                      {m.mentee?.city} · {t("dashboard.since")}{" "}
-                      {new Date(m.assigned_at).toLocaleDateString("de-DE")}
+                {/* Header: Name + Schritt-Badge */}
+                <View style={styles.menteeCardHeader}>
+                  <View style={{ flex: 1 }}>
+                    <View style={styles.menteeCardNameRow}>
+                      <Text style={[styles.menteeCardName, { color: themeColors.text }]}>{m.mentee?.name}</Text>
+                      {unread > 0 && (
+                        <View style={styles.unreadBadge}>
+                          <Text style={styles.unreadBadgeText}>{unread}</Text>
+                        </View>
+                      )}
+                    </View>
+                    <Text style={[styles.menteeCardCity, { color: themeColors.textTertiary }]}>
+                      {m.mentee?.city}
                     </Text>
                   </View>
-                  <View style={[styles.stepsBadge, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
-                    <Text style={[styles.stepsBadgeText, { color: themeColors.text }]}>
+                  <View style={[styles.stepsBadgeNew, { backgroundColor: isDark ? "#2A2518" : "#FFF8E1", borderColor: isDark ? "#6B4E1A" : "#FDE68A" }]}>
+                    <Text style={[styles.stepsBadgeNewText, { color: COLORS.gold }]}>
                       {completedSteps.length}/{sessionTypes.length}
                     </Text>
                   </View>
                 </View>
-                <ProgressBar progress={progress} />
+
+                {/* Fortschrittsbalken */}
+                <View style={[styles.menteeProgressTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
+                  <View
+                    style={[
+                      styles.menteeProgressFill,
+                      {
+                        width: `${progress}%` as any,
+                        backgroundColor: allDone ? COLORS.cta : COLORS.gold,
+                      },
+                    ]}
+                  />
+                </View>
+
+                {/* Nächster Schritt oder Abschluss */}
                 {allDone ? (
-                  <View style={styles.allDoneRow}>
-                    <Text style={styles.allDoneLabel}>{t("dashboard.allStepsDone")}</Text>
-                    <TouchableOpacity
-                      style={styles.completeNowButton}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        router.push({ pathname: "/mentorship/[id]", params: { id: m.id } });
-                      }}
-                    >
-                      <Text style={styles.completeNowButtonText}>{t("dashboard.completeNow")}</Text>
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <>
-                    {nextStep && (
-                      <View style={styles.nextStepRow}>
-                        <View style={styles.goldDot} />
-                        <Text style={[styles.nextStepText, { color: themeColors.textSecondary }]}>
-                          {t("dashboard.nextStep")} {nextStep.name}
-                        </Text>
-                      </View>
-                    )}
-                    <View style={styles.actionRow}>
-                      <TouchableOpacity
-                        style={styles.docButton}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          router.push({ pathname: "/document-session", params: { mentorshipId: m.id } });
-                        }}
-                      >
-                        <Text style={styles.docButtonText}>{t("dashboard.documentSession")}</Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity
-                        style={[styles.chatButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
-                        onPress={(e) => {
-                          e.stopPropagation();
-                          navigateToChat(router, m.id);
-                        }}
-                      >
-                        <Text style={[styles.chatButtonText, { color: themeColors.textSecondary }]}>{t("dashboard.openChat")}</Text>
-                        {getUnreadMessagesCount(m.id) > 0 && (
-                          <View style={styles.unreadBadge}>
-                            <Text style={styles.unreadBadgeText}>
-                              {getUnreadMessagesCount(m.id)}
-                            </Text>
-                          </View>
-                        )}
-                      </TouchableOpacity>
-                    </View>
-                  </>
-                )}
+                  <Text style={[styles.menteeNextStep, { color: COLORS.cta }]}>
+                    ✓ {t("dashboard.allStepsDone")}
+                  </Text>
+                ) : nextStep ? (
+                  <Text style={[styles.menteeNextStep, { color: themeColors.textSecondary }]} numberOfLines={1}>
+                    → {t("dashboard.nextStep")} {nextStep.name}
+                  </Text>
+                ) : null}
+
+                {/* Tap-Hinweis */}
+                <Text style={[styles.menteeCardTap, { color: themeColors.textTertiary }]}>
+                  Tippen für Details ›
+                </Text>
               </TouchableOpacity>
             );
           })
+        )}
+
+        {/* ── Motivations-Hadith ───────────────────────────────────────── */}
+        {todayHadith && (
+          <View style={[styles.mentorHadithCard, { borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
+            <View style={styles.hadithCardHeader}>
+              <Text style={styles.hadithStar}>★</Text>
+              <Text style={[styles.hadithCardLabel, { color: themeColors.text }]}>{t("motivation.title")}</Text>
+            </View>
+            {todayHadith.text_ar ? (
+              <Text style={[styles.mentorHadithArabic, { color: themeColors.text }]}>{todayHadith.text_ar}</Text>
+            ) : null}
+            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary }]}>"{todayHadith.text_de}"</Text>
+            {todayHadith.source ? (
+              <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
+            ) : null}
+            <View style={styles.motivationActionsRow}>
+              <TouchableOpacity
+                style={styles.motivationNextBtn}
+                onPress={() => setHadithOffset((prev) => prev + 1)}
+              >
+                <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.motivationShareBtn}
+                onPress={() => {
+                  const shareText = todayHadith.text_ar
+                    ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}`
+                    : todayHadith.text_de;
+                  shareHadith(shareText, t("share.suffix"));
+                }}
+              >
+                <Ionicons name="share-outline" size={18} color={COLORS.gold} />
+              </TouchableOpacity>
+            </View>
+          </View>
         )}
 
       </View>
@@ -642,7 +707,7 @@ function MenteeDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, getUnreadMessagesCount } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
   const onRefresh = useCallback(async () => {
@@ -662,7 +727,22 @@ function MenteeDashboard() {
   const mentorship = getMentorshipByMenteeId(user.id);
   const completedStepIds = mentorship ? getCompletedStepIds(mentorship.id) : [];
   const sortedSessionTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
+  const allDone = sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length;
+  const progressPercent = sessionTypes.length > 0
+    ? Math.round((completedStepIds.length / sessionTypes.length) * 100)
+    : 0;
 
+  // Hadith für heute
+  const todayHadith = useMemo(() => {
+    if (hadithe.length === 0) return null;
+    const today = new Date();
+    const dayOfYear = Math.floor(
+      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
+    );
+    const baseIdx = dayOfYear % hadithe.length;
+    const idx = (baseIdx + hadithOffset) % hadithe.length;
+    return hadithe[idx];
+  }, [hadithe, hadithOffset]);
 
   return (
     <ScrollView
@@ -670,81 +750,40 @@ function MenteeDashboard() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        {/* Motivation des Tages */}
-        {(() => {
-          const source = hadithe.length > 0 ? hadithe : null;
-          if (!source) return null;
-          const today = new Date();
-          const dayOfYear = Math.floor(
-            (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) / 86400000
-          );
-          const baseIdx = dayOfYear % source.length;
-          const idx = (baseIdx + hadithOffset) % source.length;
-          const hadith = source[idx];
-          return (
-            <View style={styles.motivationCard}>
-              <View style={styles.motivationHeader}>
-                <Text style={styles.motivationStar}>★</Text>
-                <Text style={styles.motivationTitle}>{t("motivation.title")}</Text>
-              </View>
-              {hadith.text_ar ? (
-                <Text style={styles.motivationArabic}>{hadith.text_ar}</Text>
-              ) : null}
-              <Text style={styles.motivationText}>"{hadith.text_de}"</Text>
-              {hadith.source ? (
-                <Text style={styles.motivationSource}>{t("motivation.source")}: {hadith.source}</Text>
-              ) : null}
-              <View style={styles.motivationActionsRow}>
-                <TouchableOpacity
-                  style={styles.motivationNextBtn}
-                  onPress={() => setHadithOffset((prev) => prev + 1)}
-                >
-                  <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.motivationShareBtn}
-                  onPress={() => {
-                    const shareText = hadith.text_ar
-                      ? `${hadith.text_ar}\n\n${hadith.text_de}`
-                      : hadith.text_de;
-                    shareHadith(shareText, t("share.suffix"));
-                  }}
-                >
-                  <Ionicons name="share-outline" size={18} color={COLORS.gold} />
-                </TouchableOpacity>
-              </View>
-            </View>
-          );
-        })()}
 
-        {/* Begrüssung – Hero */}
-        <View style={styles.greetingCard}>
-          <Text style={styles.greetingSmall}>{t("dashboard.salam")}</Text>
-          <Text style={styles.greetingName}>{user.name}</Text>
-          {mentorship ? (
-            <Text style={styles.greetingMeta}>{t("dashboard.mentor")} {mentorship.mentor?.name}</Text>
-          ) : (
-            <Text style={styles.greetingMeta}>{t("dashboard.noMentorYet")}</Text>
-          )}
+        {/* ── Greeting ──────────────────────────────────────────────── */}
+        <View style={styles.mentorGreetingRow}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.mentorGreetingLabel, { color: isDark ? COLORS.gold : COLORS.gradientStart }]}>
+              SALAM ALEIKUM
+            </Text>
+            <Text style={[styles.mentorGreetingName, { color: themeColors.text }]}>{user.name}</Text>
+            {mentorship ? (
+              <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
+                {t("dashboard.mentor")} {mentorship.mentor?.name}
+              </Text>
+            ) : (
+              <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
+                {t("dashboard.noMentorYet")}
+              </Text>
+            )}
+          </View>
         </View>
 
-        {/* Glückwunsch-Banner wenn alle Steps erledigt und Betreuung noch aktiv */}
-        {mentorship && (mentorship.status === "active" || mentorship.status === "completed") && sessionTypes.length > 0 && completedStepIds.length === sessionTypes.length && (
+        {/* ── Glückwunsch-Banner ────────────────────────────────────── */}
+        {mentorship && (mentorship.status === "active" || mentorship.status === "completed") && allDone && (
           <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-            <Ionicons name="ribbon-outline" size={32} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 6 }} />
+            <Ionicons name="ribbon-outline" size={28} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 4 }} />
             <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
             <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
           </View>
         )}
 
-
-        {/* Fortschritts-Übersicht */}
         {mentorship ? (
           <>
-            {/* Mein Mentor Karte */}
+            {/* ── Mentor-Info Karte ──────────────────────────────────── */}
             {mentorship.mentor && (
-              <View style={[styles.card, { marginBottom: 16 }]}>
-                <Text style={styles.cardTitle}>{t("dashboard.myMentor")}</Text>
+              <View style={[styles.menteeInfoCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
                 <View style={styles.mentorInfoRow}>
                   <View style={styles.mentorAvatar}>
                     <Text style={styles.mentorAvatarText}>
@@ -752,127 +791,131 @@ function MenteeDashboard() {
                     </Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.boldPrimary}>{mentorship.mentor.name}</Text>
-                    <Text style={styles.tertiaryXs}>{mentorship.mentor.city}</Text>
+                    <Text style={[styles.menteeInfoCardTitle, { color: themeColors.textSecondary }]}>{t("dashboard.myMentor")}</Text>
+                    <Text style={[styles.menteeInfoCardName, { color: themeColors.text }]}>{mentorship.mentor.name}</Text>
+                    <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary }]}>{mentorship.mentor.city}</Text>
                   </View>
+                  <Ionicons name="chevron-forward-outline" size={16} color={themeColors.textTertiary} />
                 </View>
-                <View style={styles.mentorDetailRows}>
-                  <View style={styles.mentorDetailRow}>
-                    <Text style={styles.mentorDetailLabel}>{t("dashboard.mentorContact")}</Text>
-                    <Text style={styles.mentorDetailValue}>{mentorship.mentor.contact_preference}</Text>
-                  </View>
-                  {mentorship.mentor.phone && (
-                    <View style={styles.mentorDetailRow}>
-                      <Text style={styles.mentorDetailLabel}>{t("dashboard.mentorPhone")}</Text>
-                      <Text style={styles.mentorDetailValue}>{mentorship.mentor.phone}</Text>
-                    </View>
-                  )}
-                </View>
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: COLORS.gradientStart, marginTop: 10 }]}
-                  onPress={() =>
-                    navigateToChat(router, mentorship.id)
-                  }
-                >
-                  <Text style={styles.actionButtonText}>{t("dashboard.sendMessage")}</Text>
-                </TouchableOpacity>
               </View>
             )}
 
-            <View style={[styles.card, { marginBottom: 16 }]}>
-              <View style={styles.rowBetweenMb3}>
-                <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.yourProgress")}</Text>
-                <Text style={styles.goldBold}>
-                  {completedStepIds.length}/{sessionTypes.length}
-                </Text>
+            {/* ── Fortschritt groß ──────────────────────────────────── */}
+            <View style={[styles.menteeProgressCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+              <View style={styles.menteeProgressHeader}>
+                <View>
+                  <Text style={[styles.menteeProgressTitle, { color: themeColors.text }]}>{t("dashboard.yourProgress")}</Text>
+                  <Text style={[styles.menteeProgressSub, { color: themeColors.textSecondary }]}>
+                    {completedStepIds.length === sessionTypes.length
+                      ? t("menteeProgress.allDone")
+                      : t("menteeProgress.progress")
+                          .replace("{0}", String(completedStepIds.length))
+                          .replace("{1}", String(sessionTypes.length))}
+                  </Text>
+                </View>
+                <View style={styles.menteeProgressBig}>
+                  <Text style={[styles.menteeProgressBigNum, { color: COLORS.gold }]}>{progressPercent}%</Text>
+                  <Text style={[styles.menteeProgressBigSteps, { color: themeColors.textSecondary }]}>
+                    {completedStepIds.length}/{sessionTypes.length}
+                  </Text>
+                </View>
               </View>
-              <ProgressBar
-                progress={Math.round(
-                  (completedStepIds.length / sessionTypes.length) * 100
-                )}
-              />
+              <View style={[styles.levelTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border, marginTop: 12 }]}>
+                <View
+                  style={[
+                    styles.levelFill,
+                    {
+                      width: `${progressPercent}%` as any,
+                      backgroundColor: allDone ? COLORS.cta : COLORS.gold,
+                    },
+                  ]}
+                />
+              </View>
             </View>
 
-            {/* Schritte-Übersicht (read-only) */}
-            <Text style={styles.sectionTitle}>{t("menteeProgress.title")}</Text>
-            <Text style={styles.progressMotivation}>
-              {completedStepIds.length === sessionTypes.length
-                ? t("menteeProgress.allDone")
-                : t("menteeProgress.progress")
-                    .replace("{0}", String(completedStepIds.length))
-                    .replace("{1}", String(sessionTypes.length))}
-            </Text>
-            <View style={[styles.card, { padding: 0, overflow: "hidden", marginBottom: 16 }]}>
+            {/* ── Steps als Chips ────────────────────────────────────── */}
+            <Text style={[styles.sectionTitle, { color: themeColors.text }]}>{t("menteeProgress.title")}</Text>
+            <View style={styles.stepsChipGrid}>
               {sortedSessionTypes.map((step, idx) => {
                 const isDone = completedStepIds.includes(step.id);
                 const isCurrent = !isDone && idx === completedStepIds.length;
+                const chipBg = isDone
+                  ? (isDark ? "#1a3a2a" : "#dcfce7")
+                  : isCurrent
+                  ? (isDark ? "#3a2e1a" : "#fef3c7")
+                  : (isDark ? "#1E1E28" : themeColors.border);
+                const chipBorder = isDone
+                  ? (isDark ? "#2d6a4a" : "#86efac")
+                  : isCurrent
+                  ? (isDark ? "#6b4e1a" : "#fde68a")
+                  : (isDark ? "#2A2A3A" : themeColors.border);
+                const chipText = isDone
+                  ? (isDark ? "#4ade80" : "#15803d")
+                  : isCurrent
+                  ? (isDark ? "#fbbf24" : "#92400e")
+                  : themeColors.textTertiary;
 
                 return (
                   <View
                     key={step.id}
-                    style={[
-                      styles.stepRow,
-                      idx < sessionTypes.length - 1 ? styles.stepRowBorder : {},
-                      isDone ? { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4" } : isCurrent ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
-                    ]}
+                    style={[styles.stepChip, { backgroundColor: chipBg, borderColor: chipBorder }]}
                   >
-                    {/* Schritt-Indikator */}
-                    <View
-                      style={[
-                        styles.stepIndicator,
-                        isDone
-                          ? { backgroundColor: COLORS.cta }
-                          : isCurrent
-                          ? { backgroundColor: COLORS.gold }
-                          : { backgroundColor: COLORS.bg, borderWidth: 1, borderColor: COLORS.border },
-                      ]}
-                    >
-                      {isDone ? (
-                        <Text style={styles.stepIndicatorTextWhite}>✓</Text>
-                      ) : (
-                        <Text style={isCurrent ? styles.stepIndicatorTextWhite : styles.stepIndicatorTextTertiary}>{idx + 1}</Text>
-                      )}
-                    </View>
-
-                    <View style={{ flex: 1 }}>
-                      <Text
-                        style={[
-                          styles.stepName,
-                          isDone
-                            ? { color: COLORS.cta }
-                            : isCurrent
-                            ? { color: themeColors.text }
-                            : { color: COLORS.tertiary },
-                        ]}
-                      >
-                        {step.name}
-                      </Text>
-                    </View>
-
-                    {/* Status-Chip rechts */}
-                    {isDone ? (
-                      <View style={[styles.doneChip, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
-                        <Text style={[styles.doneChipText, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("menteeProgress.completed")}</Text>
-                      </View>
-                    ) : isCurrent ? (
-                      <View style={[styles.waitingChip, { backgroundColor: isDark ? "#3a2e1a" : "#fef3c7", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
-                        <Text style={[styles.waitingChipText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("mentorship.nextStep")}</Text>
-                      </View>
-                    ) : null}
+                    <Text style={[styles.stepChipNum, { color: chipText }]}>
+                      {isDone ? "✓" : String(idx + 1)}
+                    </Text>
+                    <Text style={[styles.stepChipName, { color: chipText }]} numberOfLines={2}>
+                      {step.name}
+                    </Text>
                   </View>
                 );
               })}
             </View>
-
           </>
         ) : (
-          <View style={[styles.card, { padding: 32, alignItems: "center" }]}>
-            <Text style={styles.boldPrimary}>{t("dashboard.pendingAssignment")}</Text>
-            <Text style={[styles.emptyText, { marginTop: 8 }]}>
+          <View style={[styles.card, { backgroundColor: themeColors.card, padding: 32, alignItems: "center", marginBottom: 16 }]}>
+            <Text style={[styles.boldPrimary, { color: themeColors.text }]}>{t("dashboard.pendingAssignment")}</Text>
+            <Text style={[styles.emptyText, { color: themeColors.textTertiary, marginTop: 8 }]}>
               {t("dashboard.pendingAssignmentText")}
             </Text>
           </View>
         )}
+
+        {/* ── Motivations-Hadith ─────────────────────────────────────── */}
+        {todayHadith && (
+          <View style={[styles.mentorHadithCard, { borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)", marginTop: 8 }]}>
+            <View style={styles.hadithCardHeader}>
+              <Text style={styles.hadithStar}>★</Text>
+              <Text style={[styles.hadithCardLabel, { color: themeColors.text }]}>{t("motivation.title")}</Text>
+            </View>
+            {todayHadith.text_ar ? (
+              <Text style={[styles.mentorHadithArabic, { color: themeColors.text }]}>{todayHadith.text_ar}</Text>
+            ) : null}
+            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary }]}>"{todayHadith.text_de}"</Text>
+            {todayHadith.source ? (
+              <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
+            ) : null}
+            <View style={styles.motivationActionsRow}>
+              <TouchableOpacity
+                style={styles.motivationNextBtn}
+                onPress={() => setHadithOffset((prev) => prev + 1)}
+              >
+                <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.motivationShareBtn}
+                onPress={() => {
+                  const shareText = todayHadith.text_ar
+                    ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}`
+                    : todayHadith.text_de;
+                  shareHadith(shareText, t("share.suffix"));
+                }}
+              >
+                <Ionicons name="share-outline" size={18} color={COLORS.gold} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
       </View>
     </ScrollView>
   );
@@ -1743,5 +1786,230 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center",
     lineHeight: 14,
+  },
+
+  // ── Mentor Dashboard Redesign ──────────────────────────────────────────
+  mentorGreetingRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 20,
+  },
+  mentorGreetingLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 1.5,
+    marginBottom: 2,
+  },
+  mentorGreetingName: {
+    fontSize: 26,
+    fontWeight: "800",
+    lineHeight: 30,
+    marginBottom: 2,
+  },
+  mentorGreetingMeta: {
+    fontSize: 13,
+  },
+  mentorLogoBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 12,
+    marginTop: 4,
+  },
+  mentorLogoText: {
+    fontSize: 12,
+    fontWeight: "900",
+    color: COLORS.gold,
+    letterSpacing: 1,
+  },
+  levelCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 20,
+  },
+  levelHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  levelTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 2,
+  },
+  levelSubtitle: {
+    fontSize: 12,
+  },
+  levelScoreBadge: {
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  levelScoreText: {
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  levelTrack: {
+    height: 8,
+    borderRadius: 4,
+    overflow: "hidden",
+  },
+  levelFill: {
+    height: "100%",
+    backgroundColor: COLORS.gold,
+    borderRadius: 4,
+  },
+  levelHint: {
+    fontSize: 11,
+    marginTop: 6,
+  },
+  menteeCardNew: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 12,
+  },
+  menteeCardHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+  },
+  menteeCardNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  menteeCardName: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  menteeCardCity: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  stepsBadgeNew: {
+    borderRadius: 8,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  stepsBadgeNewText: {
+    fontSize: 13,
+    fontWeight: "700",
+  },
+  menteeProgressTrack: {
+    height: 6,
+    borderRadius: 3,
+    overflow: "hidden",
+    marginBottom: 8,
+  },
+  menteeProgressFill: {
+    height: "100%",
+    borderRadius: 3,
+  },
+  menteeNextStep: {
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  menteeCardTap: {
+    fontSize: 11,
+    marginTop: 6,
+    textAlign: "right",
+  },
+  mentorHadithCard: {
+    backgroundColor: "rgba(238,167,27,0.06)",
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 8,
+  },
+  mentorHadithArabic: {
+    fontSize: 16,
+    textAlign: "right",
+    lineHeight: 26,
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+
+  // ── Mentee Dashboard Redesign ──────────────────────────────────────────
+  menteeInfoCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 14,
+    marginBottom: 14,
+  },
+  menteeInfoCardTitle: {
+    fontSize: 10,
+    fontWeight: "700",
+    letterSpacing: 1,
+    marginBottom: 2,
+  },
+  menteeInfoCardName: {
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  menteeProgressCard: {
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 20,
+  },
+  menteeProgressHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+  },
+  menteeProgressTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    marginBottom: 4,
+  },
+  menteeProgressSub: {
+    fontSize: 12,
+    maxWidth: 180,
+  },
+  menteeProgressBig: {
+    alignItems: "flex-end",
+  },
+  menteeProgressBigNum: {
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 32,
+  },
+  menteeProgressBigSteps: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  stepsChipGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 16,
+  },
+  stepChip: {
+    borderRadius: 10,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    alignItems: "center",
+    width: "30%",
+    flexGrow: 1,
+  },
+  stepChipNum: {
+    fontSize: 14,
+    fontWeight: "800",
+    marginBottom: 2,
+  },
+  stepChipName: {
+    fontSize: 10,
+    fontWeight: "500",
+    textAlign: "center",
+    lineHeight: 13,
   },
 });

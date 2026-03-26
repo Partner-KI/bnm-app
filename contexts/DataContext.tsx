@@ -324,11 +324,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         // Safety-Timer nicht mehr nötig, da Cache geladen
         clearTimeout(safetyTimer);
 
-        // Cache frisch genug (< 5 Min)? → kein Background-Refresh
-        if (Date.now() - cached.timestamp < CACHE_FRESH_MS) {
-          return;
-        }
-        // Sonst: Im Hintergrund frisch laden (isLoading bleibt false → UI sichtbar)
+        // IMMER im Hintergrund frisch laden — Messages, Notifications,
+        // Applications werden nicht gecacht und müssen immer geholt werden
         loadAllData(/* background */ true);
       } else {
         // Kein Cache oder Cache leer/veraltet: normal laden mit Loading-Indikator
@@ -700,9 +697,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
           }
         }
       }
-    } catch {
+    } catch (err) {
       if (!background) {
         showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
+        // Retry nach 5 Sekunden
+        setTimeout(() => loadAllData(false), 5000);
       }
     } finally {
       if (!background) setIsLoading(false);

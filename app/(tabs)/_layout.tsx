@@ -212,7 +212,7 @@ function AdminSidebar() {
     >
       {/* Logo */}
       <View style={sidebarStyles.logoArea}>
-        <BNMLogo size={52} showSubtitle={false} />
+        <BNMLogo size={72} showSubtitle />
       </View>
 
       {/* Haupt-Navigation */}
