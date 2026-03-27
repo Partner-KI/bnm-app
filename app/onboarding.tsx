@@ -60,21 +60,42 @@ export default function OnboardingScreen() {
   const { isDark } = useTheme();
   const { user } = useAuth();
 
+  const role = user?.role ?? "mentee";
+  const isAdmin = role === "admin" || role === "office";
+  const isMentee = role === "mentee";
+  const totalPages = isAdmin ? 2 : 3;
+
   const SESSION_STEPS = [
     "Registrierung", "Zuweisung", "Erstkontakt", "Ersttreffen", "BNM-Box",
     "Wudu", "Salah", "Koran (5 Suren)", "Community", "Nachbetreuung",
   ];
 
-  const CONTACT_TIPS = [
-    t("onboarding.tip1"),
-    t("onboarding.tip2"),
-    t("onboarding.tip3"),
-    t("onboarding.tip4"),
-    t("onboarding.tip5"),
+  // Tips: Mentor nutzt die bestehenden Keys, Mentee bekommt eigene Keys
+  const CONTACT_TIPS = isMentee
+    ? [
+        t("onboarding.mentee.tip1"),
+        t("onboarding.mentee.tip2"),
+        t("onboarding.mentee.tip3"),
+        t("onboarding.mentee.tip4"),
+        t("onboarding.mentee.tip5"),
+      ]
+    : [
+        t("onboarding.tip1"),
+        t("onboarding.tip2"),
+        t("onboarding.tip3"),
+        t("onboarding.tip4"),
+        t("onboarding.tip5"),
+      ];
+
+  const ADMIN_TOOLS = [
+    t("onboarding.admin.tool1"),
+    t("onboarding.admin.tool2"),
+    t("onboarding.admin.tool3"),
+    t("onboarding.admin.tool4"),
   ];
+
   const scrollRef = useRef<ScrollView>(null);
   const [currentPage, setCurrentPage] = useState(0);
-  const totalPages = 3;
 
   function handleScroll(e: NativeSyntheticEvent<NativeScrollEvent>) {
     const page = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
@@ -100,6 +121,376 @@ export default function OnboardingScreen() {
     router.replace("/(tabs)");
   }
 
+  // ─────────────────────────────────────────────
+  // Slide-Render-Helfer
+  // ─────────────────────────────────────────────
+
+  function renderMentorSlide1() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.iconContainer}>
+            <BNMLogo size={80} showSubtitle={false} />
+          </View>
+
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{t("onboarding.slide1Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.slide1Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.slide1Body")}
+          </Text>
+
+          <View style={[styles.highlightBox, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.highlightTitle, { color: themeColors.text }]}>{t("onboarding.slide1HighlightTitle")}</Text>
+            <Text style={[styles.highlightText, { color: themeColors.textSecondary }]}>
+              {t("onboarding.slide1HighlightText")}
+            </Text>
+          </View>
+
+          <View style={styles.statsRow}>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>10</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Steps")}</Text>
+            </View>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>1:1</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1OneOnOne")}</Text>
+            </View>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>✓</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Documented")}</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderMentorSlide2() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{t("onboarding.slide2Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.slide2Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.slide2Body")}
+          </Text>
+
+          <View style={styles.stepsGrid}>
+            {SESSION_STEPS.map((step, idx) => (
+              <View key={idx} style={[styles.stepItem, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{idx + 1}</Text>
+                </View>
+                <Text style={[styles.stepLabel, { color: themeColors.text }]}>{step}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.noteBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+            <Text style={[styles.noteText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
+              {t("onboarding.slide2Note")}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderMentorSlide3() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.iconContainer}>
+            <BNMLogo size={80} showSubtitle={false} />
+          </View>
+
+          <View style={[styles.headerBadge, { backgroundColor: "rgba(238,167,27,0.15)", borderColor: "rgba(238,167,27,0.4)" }]}>
+            <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>{t("onboarding.slide3Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>{t("onboarding.slide3Title")}</Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.slide3Body")}
+          </Text>
+
+          <View style={[styles.tipsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            {CONTACT_TIPS.map((tip, idx) => (
+              <View key={idx} style={[styles.tipRow, idx < CONTACT_TIPS.length - 1 && [styles.tipRowBorder, { borderBottomColor: themeColors.border }]]}>
+                <View style={styles.tipDot} />
+                <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>{tip}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.reminderBox}>
+            <Text style={styles.reminderTitle}>{t("onboarding.reminderTitle")}</Text>
+            <Text style={styles.reminderText}>
+              {t("onboarding.reminderText")}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderMenteeSlide1() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.iconContainer}>
+            <BNMLogo size={80} showSubtitle={false} />
+          </View>
+
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{t("onboarding.mentee.slide1Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.mentee.slide1Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.mentee.slide1Body")}
+          </Text>
+
+          <View style={[styles.highlightBox, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.highlightTitle, { color: themeColors.text }]}>{t("onboarding.mentee.slide1HighlightTitle")}</Text>
+            <Text style={[styles.highlightText, { color: themeColors.textSecondary }]}>
+              {t("onboarding.mentee.slide1HighlightText")}
+            </Text>
+          </View>
+
+          <View style={styles.statsRow}>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>10</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Steps")}</Text>
+            </View>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>1:1</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1OneOnOne")}</Text>
+            </View>
+            <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.statPillNumber, { color: themeColors.text }]}>✓</Text>
+              <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Documented")}</Text>
+            </View>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderMenteeSlide2() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{t("onboarding.mentee.slide2Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.mentee.slide2Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.mentee.slide2Body")}
+          </Text>
+
+          <View style={styles.stepsGrid}>
+            {SESSION_STEPS.map((step, idx) => (
+              <View key={idx} style={[styles.stepItem, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                <View style={styles.stepNumber}>
+                  <Text style={styles.stepNumberText}>{idx + 1}</Text>
+                </View>
+                <Text style={[styles.stepLabel, { color: themeColors.text }]}>{step}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={[styles.noteBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+            <Text style={[styles.noteText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
+              {t("onboarding.mentee.slide2Note")}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderMenteeSlide3() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.iconContainer}>
+            <BNMLogo size={80} showSubtitle={false} />
+          </View>
+
+          <View style={[styles.headerBadge, { backgroundColor: "rgba(238,167,27,0.15)", borderColor: "rgba(238,167,27,0.4)" }]}>
+            <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>{t("onboarding.mentee.slide3Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>{t("onboarding.mentee.slide3Title")}</Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.mentee.slide3Body")}
+          </Text>
+
+          <View style={[styles.tipsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            {CONTACT_TIPS.map((tip, idx) => (
+              <View key={idx} style={[styles.tipRow, idx < CONTACT_TIPS.length - 1 && [styles.tipRowBorder, { borderBottomColor: themeColors.border }]]}>
+                <View style={styles.tipDot} />
+                <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>{tip}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderAdminSlide1() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={styles.iconContainer}>
+            <BNMLogo size={80} showSubtitle={false} />
+          </View>
+
+          <View style={styles.headerBadge}>
+            <Text style={styles.headerBadgeText}>{t("onboarding.admin.slide1Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.admin.slide1Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.admin.slide1Body")}
+          </Text>
+
+          <View style={[styles.highlightBox, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.highlightTitle, { color: themeColors.text }]}>{t("onboarding.admin.slide1HighlightTitle")}</Text>
+            <Text style={[styles.highlightText, { color: themeColors.textSecondary }]}>
+              {t("onboarding.admin.slide1HighlightText")}
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  function renderAdminSlide2() {
+    return (
+      <ScrollView
+        style={[styles.slide, { width: SCREEN_WIDTH }]}
+        contentContainerStyle={styles.slideScrollContent}
+        showsVerticalScrollIndicator={false}
+        scrollEnabled={true}
+      >
+        <View style={styles.slideInner}>
+          <View style={[styles.headerBadge, { backgroundColor: "rgba(238,167,27,0.15)", borderColor: "rgba(238,167,27,0.4)" }]}>
+            <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>{t("onboarding.admin.slide2Badge")}</Text>
+          </View>
+
+          <Text style={[styles.slideTitle, { color: themeColors.text }]}>
+            {t("onboarding.admin.slide2Title")}
+          </Text>
+
+          <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
+            {t("onboarding.admin.slide2Body")}
+          </Text>
+
+          <View style={[styles.tipsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            {ADMIN_TOOLS.map((tool, idx) => (
+              <View key={idx} style={[styles.tipRow, idx < ADMIN_TOOLS.length - 1 && [styles.tipRowBorder, { borderBottomColor: themeColors.border }]]}>
+                <View style={styles.tipDot} />
+                <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>{tool}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
+  // ─────────────────────────────────────────────
+  // Slides zusammenstellen je nach Rolle
+  // ─────────────────────────────────────────────
+  function renderSlides() {
+    if (isAdmin) {
+      return (
+        <>
+          {renderAdminSlide1()}
+          {renderAdminSlide2()}
+        </>
+      );
+    }
+    if (isMentee) {
+      return (
+        <>
+          {renderMenteeSlide1()}
+          {renderMenteeSlide2()}
+          {renderMenteeSlide3()}
+        </>
+      );
+    }
+    // Mentor (default)
+    return (
+      <>
+        {renderMentorSlide1()}
+        {renderMentorSlide2()}
+        {renderMentorSlide3()}
+      </>
+    );
+  }
+
   return (
     <Container fullWidth={Platform.OS === "web"}>
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
@@ -119,132 +510,7 @@ export default function OnboardingScreen() {
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
         >
-          {/* Slide 1: Willkommen */}
-          <ScrollView
-            style={[styles.slide, { width: SCREEN_WIDTH }]}
-            contentContainerStyle={styles.slideScrollContent}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={true}
-          >
-            <View style={styles.slideInner}>
-              <View style={styles.iconContainer}>
-                <BNMLogo size={80} showSubtitle={false} />
-              </View>
-
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{t("onboarding.slide1Badge")}</Text>
-              </View>
-
-              <Text style={[styles.slideTitle, { color: themeColors.text }]}>
-                {t("onboarding.slide1Title")}
-              </Text>
-
-              <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
-                {t("onboarding.slide1Body")}
-              </Text>
-
-              <View style={[styles.highlightBox, { backgroundColor: themeColors.card }]}>
-                <Text style={[styles.highlightTitle, { color: themeColors.text }]}>{t("onboarding.slide1HighlightTitle")}</Text>
-                <Text style={[styles.highlightText, { color: themeColors.textSecondary }]}>
-                  {t("onboarding.slide1HighlightText")}
-                </Text>
-              </View>
-
-              <View style={styles.statsRow}>
-                <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                  <Text style={[styles.statPillNumber, { color: themeColors.text }]}>10</Text>
-                  <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Steps")}</Text>
-                </View>
-                <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                  <Text style={[styles.statPillNumber, { color: themeColors.text }]}>1:1</Text>
-                  <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1OneOnOne")}</Text>
-                </View>
-                <View style={[styles.statPill, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                  <Text style={[styles.statPillNumber, { color: themeColors.text }]}>✓</Text>
-                  <Text style={[styles.statPillLabel, { color: themeColors.textTertiary }]}>{t("onboarding.slide1Documented")}</Text>
-                </View>
-              </View>
-            </View>
-          </ScrollView>
-
-          {/* Slide 2: So funktioniert's */}
-          <ScrollView
-            style={[styles.slide, { width: SCREEN_WIDTH }]}
-            contentContainerStyle={styles.slideScrollContent}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={true}
-          >
-            <View style={styles.slideInner}>
-              <View style={styles.headerBadge}>
-                <Text style={styles.headerBadgeText}>{t("onboarding.slide2Badge")}</Text>
-              </View>
-
-              <Text style={[styles.slideTitle, { color: themeColors.text }]}>
-                {t("onboarding.slide2Title")}
-              </Text>
-
-              <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
-                {t("onboarding.slide2Body")}
-              </Text>
-
-              <View style={styles.stepsGrid}>
-                {SESSION_STEPS.map((step, idx) => (
-                  <View key={idx} style={[styles.stepItem, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                    <View style={styles.stepNumber}>
-                      <Text style={styles.stepNumberText}>{idx + 1}</Text>
-                    </View>
-                    <Text style={[styles.stepLabel, { color: themeColors.text }]}>{step}</Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={[styles.noteBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
-                <Text style={[styles.noteText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
-                  {t("onboarding.slide2Note")}
-                </Text>
-              </View>
-            </View>
-          </ScrollView>
-
-          {/* Slide 3: Los geht's */}
-          <ScrollView
-            style={[styles.slide, { width: SCREEN_WIDTH }]}
-            contentContainerStyle={styles.slideScrollContent}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={true}
-          >
-            <View style={styles.slideInner}>
-              <View style={styles.iconContainer}>
-                <BNMLogo size={80} showSubtitle={false} />
-              </View>
-
-              <View style={[styles.headerBadge, { backgroundColor: "rgba(238,167,27,0.15)", borderColor: "rgba(238,167,27,0.4)" }]}>
-                <Text style={[styles.headerBadgeText, { color: "#92600a" }]}>{t("onboarding.slide3Badge")}</Text>
-              </View>
-
-              <Text style={[styles.slideTitle, { color: themeColors.text }]}>{t("onboarding.slide3Title")}</Text>
-
-              <Text style={[styles.slideBody, { color: themeColors.textSecondary }]}>
-                {t("onboarding.slide3Body")}
-              </Text>
-
-              <View style={[styles.tipsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-                {CONTACT_TIPS.map((tip, idx) => (
-                  <View key={idx} style={[styles.tipRow, idx < CONTACT_TIPS.length - 1 && [styles.tipRowBorder, { borderBottomColor: themeColors.border }]]}>
-                    <View style={styles.tipDot} />
-                    <Text style={[styles.tipText, { color: themeColors.textSecondary }]}>{tip}</Text>
-                  </View>
-                ))}
-              </View>
-
-              <View style={styles.reminderBox}>
-                <Text style={styles.reminderTitle}>{t("onboarding.reminderTitle")}</Text>
-                <Text style={styles.reminderText}>
-                  {t("onboarding.reminderText")}
-                </Text>
-              </View>
-            </View>
-          </ScrollView>
+          {renderSlides()}
         </ScrollView>
 
         {/* Dots-Indikator */}

@@ -619,11 +619,17 @@ export default function AdminDonorReportScreen() {
     <Container fullWidth={Platform.OS === "web"}>
     <View style={[styles.flex1, { backgroundColor: themeColors.background }]}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]} showsVerticalScrollIndicator={false}>
-        {/* ── Header ── */}
-        <View style={[styles.header, { paddingTop: insets.top + 24 }]}>
+        {/* Back-Button (nicht im Druck) */}
+        <View style={{ paddingTop: insets.top + 24, paddingHorizontal: 24 }}>
           <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backBtnText}>{t("donorDashboard.backToReports")}</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* ── Druckbarer Bereich ── */}
+        <View nativeID="donor-report-print">
+        {/* ── Header ── */}
+        <View style={[styles.header]}>
           <View style={styles.logoBadge}>
             <Text style={styles.logoText}>BNM</Text>
           </View>
@@ -940,7 +946,9 @@ export default function AdminDonorReportScreen() {
             <Text style={[styles.summaryText, { color: themeColors.text }]}>{summaryText}</Text>
           </View>
 
-          {/* ── Export-Buttons ── */}
+          </View>{/* Ende druckbarer Bereich */}
+
+          {/* ── Export-Buttons (nicht im Druck) ── */}
           <TouchableOpacity style={styles.exportBtnPrimary} onPress={handleExportCSV}>
             <Text style={styles.exportBtnText}>
               {Platform.OS === "web" ? t("donorDashboard.exportCSV") : t("donorDashboard.export")}
@@ -956,7 +964,22 @@ export default function AdminDonorReportScreen() {
               style={[styles.printBtn, { borderColor: themeColors.textSecondary }]}
               onPress={() => {
                 if (typeof window !== "undefined") {
-                  (window as Window).print();
+                  // Print-Styles injizieren damit nur #donor-report-print sichtbar ist
+                  const style = document.createElement("style");
+                  style.id = "donor-print-style";
+                  style.textContent = `
+                    @media print {
+                      body * { visibility: hidden !important; }
+                      #donor-report-print, #donor-report-print * { visibility: visible !important; }
+                      #donor-report-print { position: absolute !important; left: 0; top: 0; width: 100%; }
+                    }
+                  `;
+                  document.head.appendChild(style);
+                  window.print();
+                  // Style nach dem Drucken entfernen
+                  setTimeout(() => {
+                    document.getElementById("donor-print-style")?.remove();
+                  }, 500);
                 }
               }}
             >
