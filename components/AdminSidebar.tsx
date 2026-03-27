@@ -102,15 +102,23 @@ export function AdminSidebar() {
   const isOffice = user?.role === "office";
 
   // Aktiver Pfad ermitteln
-  const activeSegment = pathname.includes("/reports")
+  // /admin/* Screens (session-types, donor-report, qa-management, hadithe-management)
+  // gehören zum "tools" Bereich und sollen dort highlighted bleiben
+  const isAdminToolScreen =
+    pathname.includes("/admin/session-types") ||
+    pathname.includes("/admin/donor-report") ||
+    pathname.includes("/admin/qa-management") ||
+    pathname.includes("/admin/hadithe-management");
+
+  const activeSegment = pathname.includes("/reports") && !pathname.includes("/admin/donor-report")
     ? "reports"
     : pathname.includes("/mentees")
     ? "mentees"
-    : pathname.includes("/mentors")
+    : pathname.includes("/mentors") && !pathname.includes("/admin/mentor")
     ? "mentors"
     : pathname.includes("/applications") || pathname.includes("/admin/pending")
     ? "applications"
-    : pathname.includes("/tools")
+    : pathname.includes("/tools") || isAdminToolScreen
     ? "tools"
     : pathname.includes("/feedback")
     ? "feedback"
