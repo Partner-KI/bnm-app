@@ -1278,6 +1278,16 @@ const de = {
   "chats.total": "Gesamt",
   "chats.unread": "Ungelesen",
   "chats.selectChat": "Wähle einen Chat aus",
+  "chats.adminChats": "Admin-Chats",
+  "chats.mentorshipChats": "Betreuungs-Chats",
+  "chats.adminDM": "Direktnachricht",
+  "chats.newAdminChat": "Neuer Chat",
+  "chats.selectUser": "User auswählen",
+  "chats.noResults": "Keine Ergebnisse",
+  "chats.noAdminChats": "Keine Direktnachrichten",
+  "chats.noAdminChatsAdmin": "Starte einen neuen Chat mit einem Mentor oder Mentee.",
+  "chats.noAdminChatsUser": "Noch keine Nachrichten vom Admin.",
+  "chats.back": "Zurück",
 
   // Reports – months
   "reports.months.jan": "Januar",

@@ -191,13 +191,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       </ScrollView>
 
       {/* Input-Bereich */}
-      {user?.role === "admin" || user?.role === "office" ? (
-        <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
-          <Text style={[panelStyles.inactiveHint, { color: themeColors.textTertiary }]}>
-            {t("chat.adminReadOnly")}
-          </Text>
-        </View>
-      ) : mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
+      {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
           <TextInput
             style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
@@ -284,6 +278,155 @@ const panelStyles = StyleSheet.create({
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
 });
 
+// ─── Admin-DM Chat Panel ──────────────────────────────────────────────────────
+
+function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string }) {
+  const { user } = useAuth();
+  const { t } = useLanguage();
+  const themeColors = useThemeColors();
+  const {
+    getAdminMessagesByUserId,
+    sendAdminMessage,
+    replyToAdmin,
+    users: allUsers,
+  } = useData();
+
+  const [inputText, setInputText] = useState("");
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const messages = getAdminMessagesByUserId(userId);
+  const chatPartner = allUsers.find((u) => u.id === userId);
+
+  const isAdmin = user?.role === "admin" || user?.role === "office";
+
+  async function handleSend() {
+    if (!inputText.trim() || !user) return;
+    const content = inputText.trim();
+    setInputText("");
+    try {
+      if (isAdmin) {
+        await sendAdminMessage(userId, content);
+      } else if (adminId) {
+        await replyToAdmin(adminId, content);
+      }
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch {
+      setInputText(content);
+      showError(t("chat.sendError"));
+    }
+  }
+
+  if (!user) return null;
+
+  return (
+    <View style={panelStyles.container}>
+      {/* Header */}
+      <View style={[panelStyles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
+        <Text style={[panelStyles.headerName, { color: themeColors.text }]}>
+          {isAdmin ? (chatPartner?.name ?? "?") : "Admin"}
+        </Text>
+        <Text style={[panelStyles.headerSub, { color: themeColors.textTertiary }]}>
+          {t("chats.adminDM") ?? "Direktnachricht"}
+        </Text>
+      </View>
+
+      {/* Nachrichten */}
+      <ScrollView
+        ref={scrollViewRef}
+        style={panelStyles.messagesScroll}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+        onContentSizeChange={() =>
+          scrollViewRef.current?.scrollToEnd({ animated: false })
+        }
+      >
+        {messages.length === 0 ? (
+          <View style={panelStyles.emptyMessages}>
+            <Text style={[panelStyles.emptyText, { color: themeColors.textTertiary }]}>
+              {t("chat.noMessages")}
+            </Text>
+          </View>
+        ) : (
+          messages.map((msg) => {
+            const isOwn = msg.sender_id === user.id;
+            const senderName = msg.sender?.name ?? (isOwn ? user.name : "?");
+
+            const timeStr = new Date(msg.created_at).toLocaleTimeString("de-DE", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+
+            return (
+              <View
+                key={msg.id}
+                style={[
+                  panelStyles.bubbleWrapper,
+                  isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+                ]}
+              >
+                {!isOwn && (
+                  <Text style={[panelStyles.senderName, { color: themeColors.textTertiary }]}>{senderName}</Text>
+                )}
+                <View
+                  style={[
+                    panelStyles.bubble,
+                    isOwn
+                      ? panelStyles.ownBubble
+                      : [panelStyles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                  ]}
+                >
+                  <Text
+                    style={[
+                      panelStyles.messageText,
+                      isOwn ? { color: COLORS.white } : { color: themeColors.text },
+                    ]}
+                  >
+                    {msg.content}
+                  </Text>
+                </View>
+                <Text
+                  style={[
+                    panelStyles.timeText,
+                    { color: themeColors.textTertiary },
+                    isOwn ? { textAlign: "right", marginRight: 4 } : { marginLeft: 4 },
+                  ]}
+                >
+                  {timeStr}
+                </Text>
+              </View>
+            );
+          })
+        )}
+        <View style={{ height: 16 }} />
+      </ScrollView>
+
+      {/* Input */}
+      <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+        <TextInput
+          style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
+          value={inputText}
+          onChangeText={setInputText}
+          placeholder={t("chat.placeholder")}
+          placeholderTextColor={themeColors.textTertiary}
+          multiline
+          returnKeyType="default"
+        />
+        <TouchableOpacity
+          style={[
+            panelStyles.sendButton,
+            { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
+          ]}
+          onPress={handleSend}
+          disabled={!inputText.trim()}
+        >
+          <Ionicons name="send" size={18} color={COLORS.white} />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
 // ─── Chats Screen ─────────────────────────────────────────────────────────────
 
 export default function ChatsScreen() {
@@ -294,10 +437,23 @@ export default function ChatsScreen() {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
   const { width } = useWindowDimensions();
-  const { mentorships, getMessagesByMentorshipId, getUnreadMessagesCount, refreshData } = useData();
+  const {
+    mentorships,
+    getMessagesByMentorshipId,
+    getUnreadMessagesCount,
+    refreshData,
+    adminMessages,
+    getAdminMessagesByUserId,
+    getAdminChatPartners,
+    users: allUsers,
+  } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [chatTab, setChatTab] = useState<"admin" | "mentorship">("admin");
+  const [selectedAdminUserId, setSelectedAdminUserId] = useState<string | null>(null);
+  const [showNewChatModal, setShowNewChatModal] = useState(false);
+  const [newChatSearch, setNewChatSearch] = useState("");
 
   // Wenn von einem anderen Screen mit openChat-Parameter navigiert wird
   useEffect(() => {
@@ -386,6 +542,168 @@ export default function ChatsScreen() {
       : m.status === "pending_approval"
       ? t("mentees.pendingApproval")
       : t("chats.statusCancelled");
+  }
+
+  // ── Admin-DM Chat-Liste ──────────────────────────────────────────────────────
+
+  const adminChatList = useMemo(() => {
+    if (!user) return [];
+    if (isAdmin) {
+      // Admin sieht alle User mit denen er Nachrichten hat
+      const partnerIds = getAdminChatPartners();
+      return partnerIds.map((uid) => {
+        const msgs = getAdminMessagesByUserId(uid);
+        const lastMsg = msgs.length > 0 ? msgs[msgs.length - 1] : null;
+        const partner = allUsers.find((u) => u.id === uid);
+        return { userId: uid, adminId: undefined as string | undefined, name: partner?.name ?? "?", lastMsg };
+      }).sort((a, b) => {
+        if (!a.lastMsg && !b.lastMsg) return 0;
+        if (!a.lastMsg) return 1;
+        if (!b.lastMsg) return -1;
+        return new Date(b.lastMsg.created_at).getTime() - new Date(a.lastMsg.created_at).getTime();
+      });
+    } else {
+      // Mentor/Mentee sieht eigene Admin-DMs
+      const msgs = getAdminMessagesByUserId(user.id);
+      if (msgs.length === 0) return [];
+      const lastMsg = msgs[msgs.length - 1];
+      const adminId = msgs[0]?.admin_id;
+      const admin = allUsers.find((u) => u.id === adminId);
+      return [{ userId: user.id, adminId, name: admin?.name ?? "Admin", lastMsg }];
+    }
+  }, [user, isAdmin, adminMessages, getAdminChatPartners, getAdminMessagesByUserId, allUsers]);
+
+  // Neue-Chat User-Liste (Admin kann mit jedem Mentor/Mentee chatten)
+  const newChatUserList = useMemo(() => {
+    if (!isAdmin) return [];
+    const existingPartners = new Set(getAdminChatPartners());
+    const q = newChatSearch.trim().toLowerCase();
+    return allUsers
+      .filter((u) => (u.role === "mentor" || u.role === "mentee") && !existingPartners.has(u.id))
+      .filter((u) => !q || u.name.toLowerCase().includes(q) || (u.email ?? "").toLowerCase().includes(q))
+      .slice(0, 20);
+  }, [isAdmin, allUsers, getAdminChatPartners, newChatSearch]);
+
+  // ── Admin-DM Chat-Liste rendern ──────────────────────────────────────────────
+
+  function renderAdminChatList() {
+    return (
+      <>
+        {/* Neuer Chat Button (nur Admin) */}
+        {isAdmin && (
+          <TouchableOpacity
+            style={[styles.newChatButton, { backgroundColor: themeColors.primary }]}
+            onPress={() => setShowNewChatModal(true)}
+          >
+            <Ionicons name="add" size={18} color={COLORS.white} />
+            <Text style={styles.newChatButtonText}>{t("chats.newAdminChat") ?? "Neuer Chat"}</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Neue-Chat Modal */}
+        {showNewChatModal && (
+          <View style={[styles.newChatModal, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <View style={styles.newChatModalHeader}>
+              <Text style={[styles.newChatModalTitle, { color: themeColors.text }]}>
+                {t("chats.selectUser") ?? "User auswaehlen"}
+              </Text>
+              <TouchableOpacity onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
+                <Ionicons name="close" size={20} color={themeColors.textTertiary} />
+              </TouchableOpacity>
+            </View>
+            <TextInput
+              style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
+              value={newChatSearch}
+              onChangeText={setNewChatSearch}
+              placeholder={t("chats.search") ?? "Suchen..."}
+              placeholderTextColor={themeColors.textTertiary}
+            />
+            <ScrollView style={{ maxHeight: 200 }}>
+              {newChatUserList.map((u) => (
+                <TouchableOpacity
+                  key={u.id}
+                  style={[styles.chatRow, { borderBottomWidth: 1, borderBottomColor: themeColors.border }]}
+                  onPress={() => {
+                    setSelectedAdminUserId(u.id);
+                    setShowNewChatModal(false);
+                    setNewChatSearch("");
+                  }}
+                >
+                  <View style={[styles.avatar, { backgroundColor: themeColors.primary }]}>
+                    <Text style={styles.avatarText}>{u.name.charAt(0).toUpperCase()}</Text>
+                  </View>
+                  <View style={styles.chatInfo}>
+                    <Text style={[styles.chatName, { color: themeColors.text }]}>{u.name}</Text>
+                    <Text style={[styles.chatSub, { color: themeColors.textSecondary }]}>{u.role}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+              {newChatUserList.length === 0 && (
+                <Text style={[{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 12, fontSize: 13 }]}>
+                  {t("chats.noResults") ?? "Keine Ergebnisse"}
+                </Text>
+              )}
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Admin-DM Chat-Eintraege */}
+        {adminChatList.length === 0 ? (
+          <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <Ionicons name="mail-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
+            <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noAdminChats") ?? "Keine Direktnachrichten"}</Text>
+            <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
+              {isAdmin
+                ? (t("chats.noAdminChatsAdmin") ?? "Starte einen neuen Chat mit einem Mentor oder Mentee.")
+                : (t("chats.noAdminChatsUser") ?? "Noch keine Nachrichten vom Admin.")}
+            </Text>
+          </View>
+        ) : (
+          <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#2A2A35" : themeColors.border }]}>
+            {adminChatList.map((item, idx) => {
+              const isSelected = isWideWeb && selectedAdminUserId === item.userId;
+              return (
+                <TouchableOpacity
+                  key={item.userId}
+                  style={[
+                    styles.chatRow,
+                    idx < adminChatList.length - 1 ? { borderBottomWidth: 1, borderBottomColor: isDark ? "#2A2A35" : themeColors.border } : {},
+                    isSelected ? { backgroundColor: isDark ? "#1E1E2C" : "#F0F4FF" } : {},
+                  ]}
+                  onPress={() => {
+                    if (isWideWeb) {
+                      setSelectedAdminUserId(item.userId);
+                    } else {
+                      // Mobile: Inline-Chat oeffnen (kein separater Screen noetig)
+                      setSelectedAdminUserId(item.userId);
+                    }
+                  }}
+                >
+                  <View style={[styles.avatar, { backgroundColor: COLORS.gold }]}>
+                    <Ionicons name="shield-checkmark" size={20} color={COLORS.white} />
+                  </View>
+                  <View style={styles.chatInfo}>
+                    <View style={styles.chatTopRow}>
+                      <Text style={[styles.chatName, { color: themeColors.text }]} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {item.lastMsg && (
+                        <Text style={[styles.chatTime, { color: themeColors.textTertiary }]}>
+                          {formatTime(item.lastMsg.created_at, t("chats.yesterday"))}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={[styles.chatSub, { color: themeColors.textSecondary }]} numberOfLines={1}>
+                      {item.lastMsg?.content ?? (t("chats.adminDM") ?? "Direktnachricht")}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+      </>
+    );
   }
 
   // ── Chat-Liste-Inhalt (geteilt zwischen Mobile und linker Spalte) ──────────
@@ -504,6 +822,32 @@ export default function ChatsScreen() {
     );
   }
 
+  // ── Tab-Leiste fuer Admin ─────────────────────────────────────────────────
+
+  function renderTabs() {
+    if (!isAdmin && adminChatList.length === 0) return null;
+    return (
+      <View style={[styles.tabBar, { borderBottomColor: themeColors.border }]}>
+        <TouchableOpacity
+          style={[styles.tab, chatTab === "admin" && styles.tabActive, chatTab === "admin" && { borderBottomColor: themeColors.primary }]}
+          onPress={() => { setChatTab("admin"); setSelectedChatId(null); }}
+        >
+          <Text style={[styles.tabText, { color: chatTab === "admin" ? themeColors.primary : themeColors.textSecondary }]}>
+            {isAdmin ? (t("chats.adminChats") ?? "Admin-Chats") : "Admin"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, chatTab === "mentorship" && styles.tabActive, chatTab === "mentorship" && { borderBottomColor: themeColors.primary }]}
+          onPress={() => { setChatTab("mentorship"); setSelectedAdminUserId(null); }}
+        >
+          <Text style={[styles.tabText, { color: chatTab === "mentorship" ? themeColors.primary : themeColors.textSecondary }]}>
+            {t("chats.mentorshipChats") ?? "Betreuungs-Chats"}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   // ── Zwei-Spalten-Layout (Web, breit) ─────────────────────────────────────
 
   if (isWideWeb) {
@@ -523,14 +867,20 @@ export default function ChatsScreen() {
           >
             <View style={styles.leftContent}>
               <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("chats.title")}</Text>
-              {renderChatList()}
+              {renderTabs()}
+              {chatTab === "admin" ? renderAdminChatList() : renderChatList()}
             </View>
           </ScrollView>
         </View>
 
         {/* Rechte Spalte: Chat-Inhalt */}
         <View style={[styles.rightPanel, { backgroundColor: themeColors.background }]}>
-          {selectedChatId ? (
+          {chatTab === "admin" && selectedAdminUserId ? (
+            <AdminChatPanel
+              userId={selectedAdminUserId}
+              adminId={isAdmin ? undefined : adminChatList[0]?.adminId}
+            />
+          ) : chatTab === "mentorship" && selectedChatId ? (
             <ChatPanel mentorshipId={selectedChatId} />
           ) : (
             <View style={styles.noChatSelected}>
@@ -546,6 +896,29 @@ export default function ChatsScreen() {
   }
 
   // ── Mobile / schmales Layout ──────────────────────────────────────────────
+
+  // Mobile: Wenn Admin-DM User ausgewaehlt, zeige AdminChatPanel
+  if (selectedAdminUserId && !isWideWeb) {
+    return (
+      <Container fullWidth={Platform.OS === "web"}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity
+            style={[styles.backButton, { backgroundColor: themeColors.card }]}
+            onPress={() => setSelectedAdminUserId(null)}
+          >
+            <Ionicons name="arrow-back" size={20} color={themeColors.text} />
+            <Text style={[{ color: themeColors.text, marginLeft: 8, fontSize: 15, fontWeight: "600" }]}>
+              {t("chats.back") ?? "Zurueck"}
+            </Text>
+          </TouchableOpacity>
+          <AdminChatPanel
+            userId={selectedAdminUserId}
+            adminId={isAdmin ? undefined : adminChatList[0]?.adminId}
+          />
+        </View>
+      </Container>
+    );
+  }
 
   return (
     <Container fullWidth={Platform.OS === "web"}>
@@ -566,7 +939,8 @@ export default function ChatsScreen() {
               {t("chats.unreadHint").replace("{0}", String(totalUnread))}
             </Text>
           )}
-          {renderChatList()}
+          {renderTabs()}
+          {chatTab === "admin" ? renderAdminChatList() : renderChatList()}
         </View>
       </ScrollView>
     </Container>
@@ -737,5 +1111,69 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 11,
     fontWeight: "700",
+  },
+
+  // Tab-Leiste
+  tabBar: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    marginBottom: 12,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: "center",
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  tabActive: {
+    borderBottomWidth: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  // Neuer Chat Button
+  newChatButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    gap: 6,
+  },
+  newChatButtonText: {
+    color: COLORS.white,
+    fontWeight: "600",
+    fontSize: 14,
+  },
+
+  // Neue-Chat Modal
+  newChatModal: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 12,
+  },
+  newChatModalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  newChatModalTitle: {
+    fontWeight: "600",
+    fontSize: 15,
+  },
+
+  // Zurueck-Button (Mobile)
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
 });

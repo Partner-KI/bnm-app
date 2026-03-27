@@ -42,6 +42,17 @@ export interface Hadith {
   sort_order?: number;
 }
 
+export interface AdminMessage {
+  id: string;
+  admin_id: string;
+  user_id: string;
+  sender_id: string;
+  content: string;
+  read_at?: string;
+  created_at: string;
+  sender?: User;
+}
+
 export interface QAEntry {
   id: string;
   question: string;
@@ -109,6 +120,13 @@ export interface DataContextValue {
   getUnreadCount: () => number;
   sendAdminDirectMessage: (recipientId: string, message: string) => Promise<void>;
 
+  // Admin-DM actions
+  adminMessages: AdminMessage[];
+  sendAdminMessage: (userId: string, content: string) => Promise<void>;
+  replyToAdmin: (adminId: string, content: string) => Promise<void>;
+  getAdminMessagesByUserId: (userId: string) => AdminMessage[];
+  getAdminChatPartners: () => string[];
+
   // Application actions
   approveApplication: (applicationId: string) => Promise<void>;
   rejectApplication: (applicationId: string) => Promise<void>;
@@ -116,7 +134,6 @@ export interface DataContextValue {
 
   // User actions
   updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>) => Promise<void>;
-  updateSelfRating: (userId: string, rating: number) => Promise<void>;
   setUserActive: (userId: string, isActive: boolean) => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
   bulkDeleteUsers: (userIds: string[]) => Promise<{ success: number; failed: number }>;
@@ -180,7 +197,6 @@ function mapProfile(row: Record<string, unknown>): User {
     avatar_url: (row.avatar_url as string) ?? undefined,
     created_at: row.created_at as string,
     is_active: (row.is_active as boolean) ?? true,
-    self_rating: (row.self_rating as number) ?? 0,
   };
 }
 
@@ -275,6 +291,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [hadithe, setHadithe] = useState<Hadith[]>([]);
   const [qaEntries, setQAEntries] = useState<QAEntry[]>([]);
   const [appSettings, setAppSettings] = useState<Record<string, string>>({});
+  const [adminMessages, setAdminMessages] = useState<AdminMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -291,6 +308,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setSessions([]);
       setFeedback([]);
       setMessages([]);
+      setAdminMessages([]);
       setApplications([]);
       setNotifications([]);
       setIsLoading(false);
@@ -339,11 +357,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const cleanupMessages = subscribeToMessages();
     const cleanupProfiles = subscribeToProfiles();
     const cleanupMentorships = subscribeToMentorships();
+    const cleanupAdminMessages = subscribeToAdminMessages();
     return () => {
       clearTimeout(safetyTimer);
       cleanupMessages();
       cleanupProfiles();
       cleanupMentorships();
+      cleanupAdminMessages();
     };
   }, [authUser?.id]);
 
@@ -351,6 +371,43 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     mentorshipsRef.current = mentorships;
   }, [mentorships]);
+
+  // ─── Visibility Change: Auto-Reload wenn Tab wieder aktiv wird ───────────
+  // Löst das Problem: Supabase Realtime kann bei längerem Inaktiv-Tab die WebSocket-
+  // Verbindung verlieren → Daten werden erst nach Hard-Refresh (Strg+F5) aktualisiert.
+  useEffect(() => {
+    if (Platform.OS !== "web" || !authUser) return;
+
+    let lastVisible = Date.now();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        const elapsed = Date.now() - lastVisible;
+        // Nur neu laden wenn Tab >30 Sekunden inaktiv war
+        if (elapsed > 30_000) {
+          loadAllData(true);
+        }
+      } else {
+        lastVisible = Date.now();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // Auch bei window focus (z.B. Alt+Tab zurück)
+    const handleFocus = () => {
+      const elapsed = Date.now() - lastVisible;
+      if (elapsed > 30_000) {
+        loadAllData(true);
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [authUser?.id]);
 
   async function loadAllData(background = false) {
     if (!background) setIsLoading(true);
@@ -569,6 +626,53 @@ export function DataProvider({ children }: { children: ReactNode }) {
           updated_at: row.updated_at as string,
         }));
         setQAEntries(entries);
+      }
+
+      // ─── Admin-Messages laden ──────────────────────────────────────────────
+      {
+        const profileMap2: Record<string, User> = {};
+        if (profilesRes.data) {
+          profilesRes.data.map(mapProfile).forEach((u) => (profileMap2[u.id] = u));
+        }
+        const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
+        if (isAdminOrOffice) {
+          const { data: adminMsgsData } = await supabase
+            .from("admin_messages")
+            .select("*")
+            .order("created_at", { ascending: true });
+          if (adminMsgsData) {
+            const mapped: AdminMessage[] = adminMsgsData.map((row: any) => ({
+              id: row.id,
+              admin_id: row.admin_id,
+              user_id: row.user_id,
+              sender_id: row.sender_id,
+              content: row.content,
+              read_at: row.read_at ?? undefined,
+              created_at: row.created_at,
+              sender: profileMap2[row.sender_id],
+            }));
+            setAdminMessages(mapped);
+          }
+        } else {
+          const { data: myAdminMsgs } = await supabase
+            .from("admin_messages")
+            .select("*")
+            .eq("user_id", authUser!.id)
+            .order("created_at", { ascending: true });
+          if (myAdminMsgs) {
+            const mapped: AdminMessage[] = myAdminMsgs.map((row: any) => ({
+              id: row.id,
+              admin_id: row.admin_id,
+              user_id: row.user_id,
+              sender_id: row.sender_id,
+              content: row.content,
+              read_at: row.read_at ?? undefined,
+              created_at: row.created_at,
+              sender: profileMap2[row.sender_id],
+            }));
+            setAdminMessages(mapped);
+          }
+        }
       }
 
       // ─── Cache schreiben (messages werden NICHT gecacht — Realtime) ─────────
@@ -910,6 +1014,44 @@ export function DataProvider({ children }: { children: ReactNode }) {
                   : m
               )
             );
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }
+
+  // ─── Realtime: Admin-Messages ──────────────────────────────────────────────
+
+  function subscribeToAdminMessages(): () => void {
+    const channel = supabase
+      .channel("admin-messages-realtime")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "admin_messages" },
+        (payload) => {
+          if (payload.eventType === "INSERT") {
+            const row = payload.new as any;
+            const sender = users.find((u) => u.id === row.sender_id);
+            const newMsg: AdminMessage = {
+              id: row.id,
+              admin_id: row.admin_id,
+              user_id: row.user_id,
+              sender_id: row.sender_id,
+              content: row.content,
+              read_at: row.read_at ?? undefined,
+              created_at: row.created_at,
+              sender,
+            };
+            setAdminMessages((prev) => {
+              if (prev.some((m) => m.id === newMsg.id)) return prev;
+              return [...prev, newMsg];
+            });
+          } else if (payload.eventType === "DELETE") {
+            setAdminMessages((prev) => prev.filter((m) => m.id !== (payload.old as any).id));
           }
         }
       )
@@ -1920,22 +2062,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  // Mentor kann seine eigene Selbstbewertung setzen (1-5 Sterne)
-  const updateSelfRating = useCallback(async (userId: string, rating: number) => {
-    const clampedRating = Math.max(0, Math.min(5, rating));
-    const { error } = await supabase
-      .from("profiles")
-      .update({ self_rating: clampedRating })
-      .eq("id", userId);
-    if (error) {
-      showError("Bewertung konnte nicht gespeichert werden.");
-      return;
-    }
-    setUsers((prev) =>
-      prev.map((u) => (u.id === userId ? { ...u, self_rating: clampedRating } : u))
-    );
-  }, []);
-
   const setUserActive = useCallback(async (userId: string, isActive: boolean) => {
     const { error } = await supabase
       .from("profiles")
@@ -2077,14 +2203,95 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ─── Admin-Direktnachricht (als Notification) ────────────────────────────────
 
   const sendAdminDirectMessage = useCallback(async (recipientId: string, message: string) => {
-    const senderName = authUser?.name ?? "Admin";
-    await createNotification(
-      recipientId,
-      "system",
-      `Nachricht von ${senderName}`,
-      message
-    );
-  }, [authUser, createNotification]);
+    if (!authUser) return;
+    // Admin-DM als echte Nachricht in admin_messages speichern
+    const { data, error } = await supabase
+      .from("admin_messages")
+      .insert({
+        admin_id: authUser.id,
+        user_id: recipientId,
+        sender_id: authUser.id,
+        content: message,
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      // Fallback: Notification erstellen falls admin_messages Tabelle noch nicht existiert
+      const senderName = authUser?.name ?? "Admin";
+      await createNotification(
+        recipientId,
+        "system",
+        `Nachricht von ${senderName}`,
+        message
+      );
+      return;
+    }
+    const sender = users.find((u) => u.id === authUser.id);
+    const newMsg: AdminMessage = {
+      id: data.id, admin_id: data.admin_id, user_id: data.user_id,
+      sender_id: data.sender_id, content: data.content,
+      read_at: data.read_at ?? undefined, created_at: data.created_at,
+      sender,
+    };
+    setAdminMessages((prev) => [...prev, newMsg]);
+  }, [authUser, users, createNotification]);
+
+  // ─── Admin-DM Funktionen ───────────────────────────────────────────────────────
+
+  const sendAdminMessage = useCallback(async (userId: string, content: string) => {
+    if (!authUser) return;
+    const { data, error } = await supabase
+      .from("admin_messages")
+      .insert({
+        admin_id: authUser.id,
+        user_id: userId,
+        sender_id: authUser.id,
+        content,
+      })
+      .select()
+      .single();
+    if (error || !data) throw new Error(error?.message ?? "Fehler beim Senden");
+    const sender = users.find((u) => u.id === authUser.id);
+    const newMsg: AdminMessage = {
+      id: data.id, admin_id: data.admin_id, user_id: data.user_id,
+      sender_id: data.sender_id, content: data.content,
+      read_at: data.read_at ?? undefined, created_at: data.created_at,
+      sender,
+    };
+    setAdminMessages((prev) => [...prev, newMsg]);
+  }, [authUser, users]);
+
+  const replyToAdmin = useCallback(async (adminId: string, content: string) => {
+    if (!authUser) return;
+    const { data, error } = await supabase
+      .from("admin_messages")
+      .insert({
+        admin_id: adminId,
+        user_id: authUser.id,
+        sender_id: authUser.id,
+        content,
+      })
+      .select()
+      .single();
+    if (error || !data) throw new Error(error?.message ?? "Fehler beim Senden");
+    const sender = users.find((u) => u.id === authUser.id);
+    const newMsg: AdminMessage = {
+      id: data.id, admin_id: data.admin_id, user_id: data.user_id,
+      sender_id: data.sender_id, content: data.content,
+      read_at: data.read_at ?? undefined, created_at: data.created_at,
+      sender,
+    };
+    setAdminMessages((prev) => [...prev, newMsg]);
+  }, [authUser, users]);
+
+  const getAdminMessagesByUserId = useCallback((userId: string) => {
+    return adminMessages.filter((m) => m.user_id === userId);
+  }, [adminMessages]);
+
+  const getAdminChatPartners = useCallback(() => {
+    const userIds = new Set(adminMessages.map((m) => m.user_id));
+    return Array.from(userIds);
+  }, [adminMessages]);
 
   // ─── Hadith Actions ───────────────────────────────────────────────────────────
 
@@ -2437,11 +2644,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
         markAllAsRead,
         getUnreadCount,
         sendAdminDirectMessage,
+        adminMessages,
+        sendAdminMessage,
+        replyToAdmin,
+        getAdminMessagesByUserId,
+        getAdminChatPartners,
         approveApplication,
         rejectApplication,
         submitApplication,
         updateUser,
-        updateSelfRating,
         setUserActive,
         deleteUser,
         bulkDeleteUsers,

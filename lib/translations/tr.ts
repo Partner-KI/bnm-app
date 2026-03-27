@@ -1332,6 +1332,16 @@ const tr: Record<TranslationKeys, string> = {
   "chats.total": "Toplam",
   "chats.unread": "Okunmamış",
   "chats.selectChat": "Bir sohbet seçin",
+  "chats.adminChats": "Admin Sohbetleri",
+  "chats.mentorshipChats": "Mentorluk Sohbetleri",
+  "chats.adminDM": "Doğrudan mesaj",
+  "chats.newAdminChat": "Yeni Sohbet",
+  "chats.selectUser": "Kullanıcı seç",
+  "chats.noResults": "Sonuç yok",
+  "chats.noAdminChats": "Doğrudan mesaj yok",
+  "chats.noAdminChatsAdmin": "Bir mentor veya danışanla yeni bir sohbet başlatın.",
+  "chats.noAdminChatsUser": "Henüz yöneticiden mesaj yok.",
+  "chats.back": "Geri",
 
   // Reports – months
   "reports.months.jan": "Ocak",

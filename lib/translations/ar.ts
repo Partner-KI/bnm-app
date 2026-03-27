@@ -1332,6 +1332,16 @@ const ar: Record<TranslationKeys, string> = {
   "chats.total": "الإجمالي",
   "chats.unread": "غير مقروء",
   "chats.selectChat": "اختر محادثة",
+  "chats.adminChats": "محادثات المشرف",
+  "chats.mentorshipChats": "محادثات الإرشاد",
+  "chats.adminDM": "رسالة مباشرة",
+  "chats.newAdminChat": "محادثة جديدة",
+  "chats.selectUser": "اختر مستخدم",
+  "chats.noResults": "لا توجد نتائج",
+  "chats.noAdminChats": "لا توجد رسائل مباشرة",
+  "chats.noAdminChatsAdmin": "ابدأ محادثة جديدة مع مرشد أو متدرب.",
+  "chats.noAdminChatsUser": "لا توجد رسائل من المشرف بعد.",
+  "chats.back": "رجوع",
 
   // Reports – months
   "reports.months.jan": "يناير",

@@ -18,8 +18,6 @@ export interface User {
   avatar_url?: string;
   created_at: string;
   is_active?: boolean;
-  /** Mentor-Selbstbewertung (1-5 Sterne, 0 = noch nicht bewertet) */
-  self_rating?: number;
 }
 
 export interface Mentorship {

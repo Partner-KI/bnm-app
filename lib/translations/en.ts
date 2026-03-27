@@ -1278,6 +1278,16 @@ const en: Record<TranslationKeys, string> = {
   "chats.total": "Total",
   "chats.unread": "Unread",
   "chats.selectChat": "Select a chat",
+  "chats.adminChats": "Admin Chats",
+  "chats.mentorshipChats": "Mentorship Chats",
+  "chats.adminDM": "Direct message",
+  "chats.newAdminChat": "New Chat",
+  "chats.selectUser": "Select user",
+  "chats.noResults": "No results",
+  "chats.noAdminChats": "No direct messages",
+  "chats.noAdminChatsAdmin": "Start a new chat with a mentor or mentee.",
+  "chats.noAdminChatsUser": "No messages from admin yet.",
+  "chats.back": "Back",
 
   // Reports – months
   "reports.months.jan": "January",
