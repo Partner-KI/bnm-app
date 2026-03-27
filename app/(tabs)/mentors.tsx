@@ -29,7 +29,7 @@ export default function MentorsTabScreen() {
   const { user } = useAuth();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { users, mentorships, sessions, feedback, sendAdminDirectMessage, refreshData, isLoading, bulkDeleteUsers } = useData();
+  const { users, mentorships, sessions, feedback, refreshData, isLoading, bulkDeleteUsers } = useData();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
@@ -41,27 +41,6 @@ export default function MentorsTabScreen() {
   const [confirmModal2, setConfirmModal2] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // Admin-Direktnachricht State
-  const [msgModalUserId, setMsgModalUserId] = useState<string | null>(null);
-  const [msgModalName, setMsgModalName] = useState("");
-  const [msgText, setMsgText] = useState("");
-  const [isSendingMsg, setIsSendingMsg] = useState(false);
-
-  async function handleSendAdminMessage() {
-    if (!msgModalUserId || !msgText.trim()) return;
-    setIsSendingMsg(true);
-    try {
-      await sendAdminDirectMessage(msgModalUserId, msgText.trim());
-      showSuccess(t("adminMsg.sent"));
-      setMsgModalUserId(null);
-      setMsgText("");
-    } catch {
-      showError(t("adminMsg.error"));
-    } finally {
-      setIsSendingMsg(false);
-    }
-  }
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -166,45 +145,6 @@ export default function MentorsTabScreen() {
 
   return (
     <Container fullWidth={Platform.OS === "web"}>
-    {/* Admin-Direktnachricht Modal */}
-    <Modal visible={!!msgModalUserId} transparent animationType="fade" onRequestClose={() => { setMsgModalUserId(null); setMsgText(""); }}>
-      <KeyboardAvoidingView style={styles.modalOverlay} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-        <View style={[styles.modalBox, { backgroundColor: themeColors.card }]}>
-          <Text style={[styles.modalTitle, { color: themeColors.text }]}>{t("adminMsg.title")}</Text>
-          <Text style={[styles.modalMsg, { color: themeColors.textSecondary }]}>
-            {t("adminMsg.recipient")}: {msgModalName}
-          </Text>
-          <TextInput
-            style={[styles.deleteInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text, letterSpacing: 0, textAlign: "left", minHeight: 80 }]}
-            placeholder={t("adminMsg.placeholder")}
-            placeholderTextColor={themeColors.textTertiary}
-            value={msgText}
-            onChangeText={setMsgText}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
-          />
-          <View style={styles.modalButtons}>
-            <TouchableOpacity
-              style={[styles.modalBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
-              onPress={() => { setMsgModalUserId(null); setMsgText(""); }}
-            >
-              <Text style={[styles.modalBtnText, { color: themeColors.text }]}>{t("common.cancel")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.modalBtn, msgText.trim() ? styles.modalBtnPrimary : styles.modalBtnDisabled]}
-              onPress={handleSendAdminMessage}
-              disabled={!msgText.trim() || isSendingMsg}
-            >
-              <Text style={[styles.modalBtnText, { color: COLORS.white }]}>
-                {isSendingMsg ? "..." : t("adminMsg.send")}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </KeyboardAvoidingView>
-    </Modal>
-
     {/* Erstes Bestätigungs-Modal */}
     <Modal visible={confirmModal1} transparent animationType="fade" onRequestClose={() => setConfirmModal1(false)}>
       <View style={styles.modalOverlay}>
@@ -616,14 +556,6 @@ const styles = StyleSheet.create({
   modalBtnDanger: { backgroundColor: COLORS.error, borderColor: COLORS.error },
   modalBtnPrimary: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   modalBtnDisabled: { backgroundColor: "#666", borderColor: "#666", opacity: 0.5 },
-  msgButton: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingVertical: 6,
-    alignItems: "center",
-  },
-  msgButtonText: { fontSize: 12, fontWeight: "500" },
   deleteInput: {
     borderWidth: 1,
     borderRadius: 6,

@@ -1095,26 +1095,7 @@ const styles = StyleSheet.create({
   page: { padding: 20 },
   titleRow: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 16 },
 
-  // Split-Layout (Web >768px)
-  splitContainer: { flex: 1, flexDirection: "row" },
-  splitLeft: { width: "40%", borderRightWidth: 1 },
-  splitLeftInner: { padding: 20 },
-  splitRight: { flex: 1 },
-  splitEmptyRight: { flex: 1, alignItems: "center", justifyContent: "center" },
-  splitEmptyText: { fontSize: 15 },
-  splitOpenBtn: { borderRadius: 6, paddingHorizontal: 12, paddingVertical: 7 },
-  splitOpenBtnText: { color: COLORS.white, fontSize: 13, fontWeight: "600" },
-
   // Kompakte Mentor-Karten für linke Spalte (Web)
-  mentorSplitCard: {
-    borderRadius: 8,
-    borderWidth: 1,
-    padding: 12,
-    marginBottom: 8,
-  },
-  mentorSplitCardSelected: {
-    borderWidth: 2,
-  },
   mentorSplitName: { fontSize: 14, fontWeight: "600", flex: 1, marginRight: 8 },
   mentorSplitCity: { fontSize: 12, marginBottom: 8 },
   mentorSplitStatus: { borderRadius: 4, paddingHorizontal: 8, paddingVertical: 2 },
@@ -1234,13 +1215,6 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     fontSize: 14,
   },
-  filterGroupLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    letterSpacing: 0.5,
-    marginBottom: 4,
-  },
-  filterRow: { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 10 },
   filterBarRow: { flexDirection: "row", alignItems: "center", gap: 8 },
   filterChipsGroup: { flex: 1, flexDirection: "row", flexWrap: "wrap", gap: 6 },
   filterIconBtn: {
@@ -1307,16 +1281,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   assignButtonText: { color: COLORS.white, fontSize: 14, fontWeight: "600" },
-  viewChatButton: {
-    marginTop: 8,
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingVertical: 7,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    alignSelf: "flex-start",
-  },
-  viewChatButtonText: { fontSize: 13, fontWeight: "500" },
   stepSectionLabel: {
     fontSize: 11,
     fontWeight: "600",
