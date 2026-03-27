@@ -245,13 +245,15 @@ interface CachePayload {
 }
 
 async function readCache(): Promise<CachePayload | null> {
-  // Auf Web kein Cache: immer frisch laden, um Stale-Data-Probleme zu vermeiden
-  if (Platform.OS === "web") return null;
   try {
     let raw: string | null = null;
-    // @ts-ignore — optionale Abhängigkeit
-    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-    raw = await AsyncStorage.getItem(CACHE_KEY);
+    if (Platform.OS === "web") {
+      raw = localStorage.getItem(CACHE_KEY);
+    } else {
+      // @ts-ignore — optionale Abhängigkeit
+      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+      raw = await AsyncStorage.getItem(CACHE_KEY);
+    }
     if (!raw) return null;
     const parsed: CachePayload = JSON.parse(raw);
     if (Date.now() - parsed.timestamp > CACHE_MAX_AGE_MS) return null;

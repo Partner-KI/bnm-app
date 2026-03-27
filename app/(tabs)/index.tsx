@@ -597,23 +597,17 @@ function MentorDashboard() {
     };
   }, [user, myMentorships, activeMentorships.length, completedMentorships.length, sessions, users, getMentorshipsByMentorId]);
 
-  // Auto-Show Onboarding für neue Mentoren ohne Mentees (einmalig)
+  // Auto-Show Onboarding — NUR auf Mobile (Native), NICHT auf Web
   useEffect(() => {
     if (!user) return;
+    if (Platform.OS === "web") return; // Kein Onboarding auf Web
     if (activeMentorships.length > 0) return;
-    const key = "bnm_onboarding_seen";
+    const key = `bnm_onboarding_seen_${user.id}`;
     async function checkOnboarding() {
       try {
-        let seen = false;
-        if (Platform.OS === "web") {
-          seen = localStorage.getItem(key) === "1";
-        } else {
-          try {
-            // @ts-ignore
-            const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-            seen = (await AsyncStorage.getItem(key)) === "1";
-          } catch { seen = false; }
-        }
+        // @ts-ignore
+        const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+        const seen = (await AsyncStorage.getItem(key)) === "1";
         if (!seen) {
           router.push("/onboarding");
         }

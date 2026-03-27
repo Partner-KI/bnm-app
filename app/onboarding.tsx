@@ -17,6 +17,7 @@ import { Container } from "../components/Container";
 import { BNMLogo } from "../components/BNMLogo";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
@@ -57,6 +58,7 @@ export default function OnboardingScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
+  const { user } = useAuth();
 
   const SESSION_STEPS = [
     "Registrierung", "Zuweisung", "Erstkontakt", "Ersttreffen", "BNM-Box",
@@ -79,41 +81,22 @@ export default function OnboardingScreen() {
     setCurrentPage(page);
   }
 
+  async function markSeen() {
+    if (!user) return;
+    await markOnboardingAsSeen(user.id);
+  }
+
   async function goToNext() {
     if (currentPage < totalPages - 1) {
       scrollRef.current?.scrollTo({ x: (currentPage + 1) * SCREEN_WIDTH, animated: true });
     } else {
-      // Beim letzten Schritt: als gesehen markieren
-      const key = `bnm_onboarding_seen`;
-      try {
-        if (Platform.OS === "web") {
-          localStorage.setItem(key, "1");
-        } else {
-          try {
-            // @ts-ignore
-            const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-            await AsyncStorage.setItem(key, "1");
-          } catch { /* ignorieren */ }
-        }
-      } catch { /* ignorieren */ }
+      await markSeen();
       router.replace("/(tabs)");
     }
   }
 
   async function handleSkip() {
-    // Als gesehen markieren auch beim Überspringen
-    const key = `bnm_onboarding_seen`;
-    try {
-      if (Platform.OS === "web") {
-        localStorage.setItem(key, "1");
-      } else {
-        try {
-          // @ts-ignore
-          const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-          await AsyncStorage.setItem(key, "1");
-        } catch { /* ignorieren */ }
-      }
-    } catch { /* ignorieren */ }
+    await markSeen();
     router.replace("/(tabs)");
   }
 
