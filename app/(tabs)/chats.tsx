@@ -749,6 +749,55 @@ export default function ChatsScreen() {
   function renderChatList() {
     return (
       <>
+        {/* Admin-DM Einträge oben (nur für Mentor/Mentee, wenn vorhanden) */}
+        {!isAdmin && adminChatList.length > 0 && (
+          <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#2A2A35" : themeColors.border, marginBottom: 12 }]}>
+            {adminChatList.map((item, idx) => {
+              const isSelected = isWideWeb && selectedAdminUserId === item.userId;
+              return (
+                <TouchableOpacity
+                  key={item.userId}
+                  style={[
+                    styles.chatRow,
+                    idx < adminChatList.length - 1 ? { borderBottomWidth: 1, borderBottomColor: isDark ? "#2A2A35" : themeColors.border } : {},
+                    isSelected ? { backgroundColor: isDark ? "#1E1E2C" : "#F0F4FF" } : {},
+                  ]}
+                  onPress={() => {
+                    if (isWideWeb) {
+                      setSelectedAdminUserId(item.userId);
+                      setSelectedChatId(null);
+                    } else {
+                      setSelectedAdminUserId(item.userId);
+                    }
+                  }}
+                >
+                  <View style={[styles.avatar, { backgroundColor: COLORS.gold }]}>
+                    <Ionicons name="shield-checkmark" size={20} color={COLORS.white} />
+                  </View>
+                  <View style={styles.chatInfo}>
+                    <View style={styles.chatTopRow}>
+                      <Text style={[styles.chatName, { color: themeColors.text }]} numberOfLines={1}>
+                        {item.name}
+                      </Text>
+                      {item.lastMsg && (
+                        <Text style={[styles.chatTime, { color: themeColors.textTertiary }]}>
+                          {formatTime(item.lastMsg.created_at, t("chats.yesterday"))}
+                        </Text>
+                      )}
+                    </View>
+                    <Text style={[styles.chatSub, { color: themeColors.textSecondary }]} numberOfLines={1}>
+                      {item.lastMsg?.content ?? (t("chats.adminDM") ?? "Direktnachricht")}
+                    </Text>
+                  </View>
+                  <View style={[styles.adminBadge, { backgroundColor: COLORS.gold }]}>
+                    <Text style={styles.adminBadgeText}>Admin</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
         {/* Suchfeld */}
         <View style={[styles.searchWrapper, { backgroundColor: themeColors.card, borderColor: isDark ? "#2A2A35" : themeColors.border }]}>
           <Ionicons name="search-outline" size={16} color={themeColors.textTertiary} />
@@ -863,7 +912,8 @@ export default function ChatsScreen() {
   // ── Tab-Leiste fuer Admin ─────────────────────────────────────────────────
 
   function renderTabs() {
-    if (!isAdmin && adminChatList.length === 0) return null;
+    // Tabs nur für Admin/Office anzeigen
+    if (!isAdmin) return null;
     return (
       <View style={[styles.tabBar, { borderBottomColor: themeColors.border }]}>
         <TouchableOpacity
@@ -871,7 +921,7 @@ export default function ChatsScreen() {
           onPress={() => { setChatTab("admin"); setSelectedChatId(null); }}
         >
           <Text style={[styles.tabText, { color: chatTab === "admin" ? themeColors.primary : themeColors.textSecondary }]}>
-            {isAdmin ? (t("chats.adminChats") ?? "Admin-Chats") : "Admin"}
+            {t("chats.adminChats") ?? "Admin-Chats"}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -906,19 +956,19 @@ export default function ChatsScreen() {
             <View style={styles.leftContent}>
               <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("chats.title")}</Text>
               {renderTabs()}
-              {chatTab === "admin" ? renderAdminChatList() : renderChatList()}
+              {isAdmin && chatTab === "admin" ? renderAdminChatList() : renderChatList()}
             </View>
           </ScrollView>
         </View>
 
         {/* Rechte Spalte: Chat-Inhalt */}
         <View style={[styles.rightPanel, { backgroundColor: themeColors.background }]}>
-          {chatTab === "admin" && selectedAdminUserId ? (
+          {selectedAdminUserId ? (
             <AdminChatPanel
               userId={selectedAdminUserId}
               adminId={isAdmin ? undefined : adminChatList[0]?.adminId}
             />
-          ) : chatTab === "mentorship" && selectedChatId ? (
+          ) : selectedChatId ? (
             <ChatPanel mentorshipId={selectedChatId} />
           ) : (
             <View style={styles.noChatSelected}>
@@ -978,7 +1028,7 @@ export default function ChatsScreen() {
             </Text>
           )}
           {renderTabs()}
-          {chatTab === "admin" ? renderAdminChatList() : renderChatList()}
+          {isAdmin && chatTab === "admin" ? renderAdminChatList() : renderChatList()}
         </View>
       </ScrollView>
     </Container>
@@ -1152,6 +1202,20 @@ const styles = StyleSheet.create({
   unreadText: {
     color: COLORS.white,
     fontSize: 11,
+    fontWeight: "700",
+  },
+  adminBadge: {
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    marginLeft: 8,
+  },
+  adminBadgeText: {
+    color: COLORS.white,
+    fontSize: 10,
     fontWeight: "700",
   },
 

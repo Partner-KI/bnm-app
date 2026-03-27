@@ -524,15 +524,6 @@ function AdminMenteesView() {
                         {completedSteps.length}/{sessionTypes.length}
                       </Text>
                     </View>
-                    <TouchableOpacity
-                      style={[styles.viewChatButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
-                      onPress={(e) => {
-                        e.stopPropagation();
-                        navigateToChat(router, mentorship.id);
-                      }}
-                    >
-                      <Text style={[styles.viewChatButtonText, { color: themeColors.textSecondary }]}>{t("admin.viewChat")}</Text>
-                    </TouchableOpacity>
                   </>
                 ) : !selectMode ? (
                   <TouchableOpacity

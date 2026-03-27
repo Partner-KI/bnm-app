@@ -173,7 +173,7 @@ export function AdminSidebar() {
     >
       {/* Logo */}
       <View style={sidebarStyles.logoArea}>
-        <BNMLogo size={isNarrow ? 48 : 72} showSubtitle={!isNarrow} />
+        <BNMLogo size={isNarrow ? 48 : 72} showSubtitle={false} />
       </View>
 
       {/* Haupt-Navigation */}
