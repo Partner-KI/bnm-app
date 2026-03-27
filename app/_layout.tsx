@@ -4,7 +4,7 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Platform } from "react-native";
+import { Platform, View, useWindowDimensions } from "react-native";
 import "react-native-reanimated";
 
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
@@ -14,6 +14,7 @@ import { LanguageProvider } from "../contexts/LanguageContext";
 import { ThemeProvider, useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { LoadingScreen } from "../components/LoadingScreen";
 import { registerForPushNotifications } from "../lib/notificationService";
+import { AdminSidebar } from "../components/AdminSidebar";
 
 // Expo Notifications nur auf Native importieren
 let Notifications: typeof import("expo-notifications") | null = null;
@@ -94,10 +95,11 @@ function NavigationGuard() {
 }
 
 function RootLayoutInner() {
-  const { isLoading: authLoading } = useAuth();
+  const { isLoading: authLoading, user } = useAuth();
   const { isDark } = useTheme();
   const themeColors = useThemeColors();
   const router = useRouter();
+  const { width } = useWindowDimensions();
   const [loaded, error] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -163,6 +165,59 @@ function RootLayoutInner() {
   }
 
   const navigationTheme = isDark ? BNMDarkTheme : BNMLightTheme;
+
+  // Auf Web für Admin/Office: Sidebar permanent neben dem Stack anzeigen,
+  // damit sie auch auf Detail-Screens (assign, mentorship/[id], admin/...) sichtbar bleibt.
+  const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
+  const showPermanentSidebar = Platform.OS === "web" && isAdminOrOffice && width >= 768;
+
+  if (showPermanentSidebar) {
+    return (
+      <NavigationThemeProvider value={navigationTheme}>
+        <StatusBar style={isDark ? "light" : "dark"} />
+        <NavigationGuard />
+        <View style={{ flexDirection: "row", flex: 1, backgroundColor: themeColors.background }}>
+          <AdminSidebar />
+          <View style={{ flex: 1, overflow: "hidden" }}>
+            <Stack>
+              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+              <Stack.Screen name="+not-found" />
+              <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+              <Stack.Screen name="notifications" options={{ headerShown: false }} />
+              <Stack.Screen name="settings" options={{ headerShown: false }} />
+              <Stack.Screen name="notification-settings" options={{ headerShown: false }} />
+              <Stack.Screen name="edit-profile" options={{ headerShown: false }} />
+              <Stack.Screen name="change-password" options={{ headerShown: false }} />
+              <Stack.Screen name="mentee/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="mentor/[id]" options={{ headerShown: false }} />
+              <Stack.Screen name="assign" options={{ headerShown: false }} />
+              <Stack.Screen name="document-session" options={{ headerShown: false }} />
+              <Stack.Screen name="feedback" options={{ headerShown: false }} />
+              <Stack.Screen name="mentorship/[id]" options={{ title: "Betreuung", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="chat/[mentorshipId]" options={{ title: "Chat", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="admin/applications" options={{ title: "Anmeldungen & Bewerbungen", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="admin/session-types" options={{ title: "Session-Typen", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="admin/feedback-overview" options={{ title: "Feedback-Übersicht", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="admin/mentors" options={{ headerShown: false }} />
+              <Stack.Screen name="reset-password" options={{ title: "Passwort zurücksetzen", headerStyle: { backgroundColor: themeColors.headerBackground }, headerTintColor: themeColors.headerText }} />
+              <Stack.Screen name="hadithe" options={{ headerShown: false }} />
+              <Stack.Screen name="donor-report" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/edit-user" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/statistics" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/csv-import" options={{ headerShown: false }} />
+              <Stack.Screen name="qa" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/qa-management" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/hadithe-management" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/donor-report" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/pending-approvals" options={{ headerShown: false }} />
+              <Stack.Screen name="admin/mentor-award" options={{ headerShown: false }} />
+            </Stack>
+          </View>
+        </View>
+      </NavigationThemeProvider>
+    );
+  }
 
   return (
     <NavigationThemeProvider value={navigationTheme}>
@@ -341,6 +396,12 @@ function RootLayoutInner() {
         />
         <Stack.Screen
           name="admin/pending-approvals"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="admin/mentor-award"
           options={{
             headerShown: false,
           }}

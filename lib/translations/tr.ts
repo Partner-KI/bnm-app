@@ -1600,6 +1600,34 @@ const tr: Record<TranslationKeys, string> = {
   "dashboard.statsSessions": "Toplam Oturumlar",
   "dashboard.statsRank": "Sıralama",
   "dashboard.statsRankHint": "{0} mentor arasında · Puan = Tamamlama × 10 + Oturum × 3",
+
+  // Tüm Aktiviteler
+  "dashboard.showAllActivities": "Tümünü göster ({0})",
+  "dashboard.showLessActivities": "Daha az göster",
+  "dashboard.createAward": "Sertifika oluştur",
+
+  // Ödül
+  "mentorAward.title": "Ayın Mentoru",
+  "mentorAward.subtitle": "Sertifika oluştur ve kaydet",
+  "mentorAward.selectPeriod": "DÖNEM SEÇ",
+  "mentorAward.month": "Ay",
+  "mentorAward.year": "Yıl",
+  "mentorAward.awardTitle": "AYININ MENTORU",
+  "mentorAward.awardSub": "BNM Mentorluk Programı",
+  "mentorAward.awardFooter": "BNM EKİBİ TARAFINDAN ÖDÜLLENDIRILDI",
+  "mentorAward.download": "PDF olarak indir",
+  "mentorAward.save": "Sisteme kaydet",
+  "mentorAward.saveSuccess": "Sertifika kaydedildi!",
+  "mentorAward.saveError": "Kaydetme hatası.",
+  "mentorAward.noMentorError": "Mentor seçilmedi.",
+  "mentorAward.pastAwards": "Geçmiş Ödüller",
+
+  // Değerlendirme
+  "mentorDetail.selfRating": "Öz Değerlendirme:",
+  "mentorDetail.menteeRating": "Danışan Değerlendirmesi:",
+  "profile.selfRatingTitle": "Öz Değerlendirmem",
+  "profile.selfRatingHint": "Mentor olarak kendi performansını nasıl değerlendiriyorsun?",
+  "profile.selfRatingSelected": "5 üzerinden {0} yıldız",
 };
 
 export default tr;

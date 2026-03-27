@@ -1600,6 +1600,34 @@ const en: Record<TranslationKeys, string> = {
   "dashboard.statsSessions": "Total Sessions",
   "dashboard.statsRank": "Rank",
   "dashboard.statsRankHint": "of {0} mentors · Score = completions × 10 + sessions × 3",
+
+  // All Activities
+  "dashboard.showAllActivities": "Show all ({0})",
+  "dashboard.showLessActivities": "Show less",
+  "dashboard.createAward": "Create certificate",
+
+  // Award
+  "mentorAward.title": "Mentor of the Month",
+  "mentorAward.subtitle": "Create and save certificate",
+  "mentorAward.selectPeriod": "SELECT PERIOD",
+  "mentorAward.month": "Month",
+  "mentorAward.year": "Year",
+  "mentorAward.awardTitle": "MENTOR OF THE MONTH",
+  "mentorAward.awardSub": "BNM Mentorship Program",
+  "mentorAward.awardFooter": "AWARDED BY THE BNM TEAM",
+  "mentorAward.download": "Download as PDF",
+  "mentorAward.save": "Save to system",
+  "mentorAward.saveSuccess": "Certificate saved!",
+  "mentorAward.saveError": "Error saving.",
+  "mentorAward.noMentorError": "No mentor selected.",
+  "mentorAward.pastAwards": "Past Awards",
+
+  // Ratings
+  "mentorDetail.selfRating": "Self-rating:",
+  "mentorDetail.menteeRating": "Mentee rating:",
+  "profile.selfRatingTitle": "My Self-Assessment",
+  "profile.selfRatingHint": "How do you rate your own performance as a mentor?",
+  "profile.selfRatingSelected": "{0} out of 5 stars",
 };
 
 export default en;

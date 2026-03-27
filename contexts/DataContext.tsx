@@ -115,6 +115,7 @@ export interface DataContextValue {
 
   // User actions
   updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>) => Promise<void>;
+  updateSelfRating: (userId: string, rating: number) => Promise<void>;
   setUserActive: (userId: string, isActive: boolean) => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
   bulkDeleteUsers: (userIds: string[]) => Promise<{ success: number; failed: number }>;
@@ -178,6 +179,7 @@ function mapProfile(row: Record<string, unknown>): User {
     avatar_url: (row.avatar_url as string) ?? undefined,
     created_at: row.created_at as string,
     is_active: (row.is_active as boolean) ?? true,
+    self_rating: (row.self_rating as number) ?? 0,
   };
 }
 
@@ -226,15 +228,13 @@ interface CachePayload {
 }
 
 async function readCache(): Promise<CachePayload | null> {
+  // Auf Web kein Cache: immer frisch laden, um Stale-Data-Probleme zu vermeiden
+  if (Platform.OS === "web") return null;
   try {
     let raw: string | null = null;
-    if (Platform.OS === "web") {
-      raw = localStorage.getItem(CACHE_KEY);
-    } else {
-      // @ts-ignore — optionale Abhängigkeit
-      const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
-      raw = await AsyncStorage.getItem(CACHE_KEY);
-    }
+    // @ts-ignore — optionale Abhängigkeit
+    const AsyncStorage = (await import("@react-native-async-storage/async-storage")).default;
+    raw = await AsyncStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed: CachePayload = JSON.parse(raw);
     if (Date.now() - parsed.timestamp > CACHE_MAX_AGE_MS) return null;
@@ -354,6 +354,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   async function loadAllData(background = false) {
     if (!background) setIsLoading(true);
     try {
+      // Session-Check: Nur laden wenn gültige Supabase-Session vorhanden
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!sessionData?.session) {
+        // Keine Session → Auth redirectet automatisch zum Login, nicht weiter laden
+        if (!background) setIsLoading(false);
+        return;
+      }
+
       const [
         profilesRes,
         mentorshipsRes,
@@ -379,6 +387,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from("hadithe").select("*").order("sort_order", { ascending: true }),
         supabase.from("qa_entries").select("*").order("created_at", { ascending: true }),
       ]);
+
+      // Error-Logging: Supabase-Fehler sichtbar machen
+      if (profilesRes.error) console.warn("[DataContext] profiles error:", profilesRes.error.message);
+      if (mentorshipsRes.error) console.warn("[DataContext] mentorships error:", mentorshipsRes.error.message);
+      if (sessionsRes.error) console.warn("[DataContext] sessions error:", sessionsRes.error.message);
+      if (sessionTypesRes.error) console.warn("[DataContext] session_types error:", sessionTypesRes.error.message);
+      if (feedbackRes.error) console.warn("[DataContext] feedback error:", feedbackRes.error.message);
+      if (notificationsRes.error) console.warn("[DataContext] notifications error:", notificationsRes.error.message);
+      if (applicationsRes.error) console.warn("[DataContext] applications error:", applicationsRes.error.message);
+      if (settingsRes.error) console.warn("[DataContext] app_settings error:", settingsRes.error.message);
+      if (messagesRes.error) console.warn("[DataContext] messages error:", messagesRes.error.message);
+      if (haditheRes.error) console.warn("[DataContext] hadithe error:", haditheRes.error.message);
+      if (qaEntriesRes.error) console.warn("[DataContext] qa_entries error:", qaEntriesRes.error.message);
 
       // Profiles
       if (profilesRes.data) {
@@ -698,13 +719,26 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
     } catch (err) {
+      console.warn("[DataContext] loadAllData error:", err);
       if (!background) {
         showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
         // Retry nach 5 Sekunden
         setTimeout(() => loadAllData(false), 5000);
       }
     } finally {
-      if (!background) setIsLoading(false);
+      if (!background) {
+        setIsLoading(false);
+        // Force-Refresh: Wenn nach dem Laden keine User vorhanden, nochmal nach 2s laden
+        // (kann passieren wenn Session gerade erneuert wurde oder RLS kurz blockiert hat)
+        setTimeout(() => {
+          setUsers((prev) => {
+            if (prev.length === 0) {
+              loadAllData(true);
+            }
+            return prev;
+          });
+        }, 2000);
+      }
     }
   }
 
@@ -1885,6 +1919,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
     []
   );
 
+  // Mentor kann seine eigene Selbstbewertung setzen (1-5 Sterne)
+  const updateSelfRating = useCallback(async (userId: string, rating: number) => {
+    const clampedRating = Math.max(0, Math.min(5, rating));
+    const { error } = await supabase
+      .from("profiles")
+      .update({ self_rating: clampedRating })
+      .eq("id", userId);
+    if (error) {
+      showError("Bewertung konnte nicht gespeichert werden.");
+      return;
+    }
+    setUsers((prev) =>
+      prev.map((u) => (u.id === userId ? { ...u, self_rating: clampedRating } : u))
+    );
+  }, []);
+
   const setUserActive = useCallback(async (userId: string, isActive: boolean) => {
     const { error } = await supabase
       .from("profiles")
@@ -2383,6 +2433,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         rejectApplication,
         submitApplication,
         updateUser,
+        updateSelfRating,
         setUserActive,
         deleteUser,
         bulkDeleteUsers,

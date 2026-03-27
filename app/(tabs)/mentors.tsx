@@ -320,11 +320,22 @@ export default function MentorsTabScreen() {
                     <Text style={styles.avatarText}>{initials}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                       <Text style={[styles.mentorName, { color: themeColors.text }]}>{mentor.name}</Text>
                       {mentor.is_active === false && (
                         <View style={[styles.blockedBadge, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
                           <Text style={[styles.blockedBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("editUser.blocked")}</Text>
+                        </View>
+                      )}
+                      {/* Selbstbewertung: Sterne neben dem Namen */}
+                      {mentor.self_rating != null && mentor.self_rating > 0 && (
+                        <View style={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                          {[1,2,3,4,5].map((i) => (
+                            <Text key={i} style={{ fontSize: 12, color: (mentor.self_rating ?? 0) >= i ? COLORS.gold : (isDark ? "#3A3A3A" : "#D1D5DB") }}>★</Text>
+                          ))}
+                          <Text style={{ fontSize: 11, color: themeColors.textTertiary, marginLeft: 2 }}>
+                            ({mentor.self_rating?.toFixed(1)})
+                          </Text>
                         </View>
                       )}
                     </View>

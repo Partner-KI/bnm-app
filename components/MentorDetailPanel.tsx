@@ -5,6 +5,23 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from "react-native";
+
+// Hilfsfunktion: Sterne-Anzeige (1-5, mit halben Sternen)
+function StarDisplay({ rating }: { rating: number }) {
+  return (
+    <View style={{ flexDirection: "row", gap: 2 }}>
+      {[1, 2, 3, 4, 5].map((i) => {
+        const filled = rating >= i;
+        const half = !filled && rating >= i - 0.5;
+        return (
+          <Text key={i} style={{ fontSize: 14, color: filled || half ? "#FFCA28" : "#D1D5DB" }}>
+            {filled ? "★" : half ? "⯨" : "☆"}
+          </Text>
+        );
+      })}
+    </View>
+  );
+}
 import { useRouter } from "expo-router";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -29,12 +46,21 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
     sessionTypes,
     sessions,
     users,
+    feedback,
   } = useData();
 
   if (!id) return null;
 
   const mentor = getUserById(id);
   const myMentorships = getMentorshipsByMentorId(id);
+
+  // Mentee-Feedback-Durchschnitt berechnen
+  const mentorFeedback = feedback.filter((f) =>
+    myMentorships.some((m) => m.id === f.mentorship_id)
+  );
+  const avgFeedbackRating = mentorFeedback.length > 0
+    ? mentorFeedback.reduce((sum, f) => sum + f.rating, 0) / mentorFeedback.length
+    : null;
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
   const completedMentorships = myMentorships.filter((m) => m.status === "completed");
   const totalSessions = sessions.filter((s) =>
@@ -87,6 +113,28 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
             <Text style={styles.rankBadgeText}>{t("mentorDetail.rankingLabel").replace("{0}", String(rank))}</Text>
           </View>
         )}
+
+        {/* Bewertungen */}
+        <View style={styles.ratingsBlock}>
+          {/* Selbstbewertung */}
+          {mentor.self_rating != null && mentor.self_rating > 0 && (
+            <View style={styles.ratingRow}>
+              <Text style={[styles.ratingLabel, { color: themeColors.textSecondary }]}>{t("mentorDetail.selfRating")}</Text>
+              <StarDisplay rating={mentor.self_rating} />
+              <Text style={[styles.ratingValue, { color: themeColors.textTertiary }]}>({mentor.self_rating.toFixed(1)})</Text>
+            </View>
+          )}
+          {/* Mentee-Feedback-Durchschnitt */}
+          {avgFeedbackRating !== null && (
+            <View style={styles.ratingRow}>
+              <Text style={[styles.ratingLabel, { color: themeColors.textSecondary }]}>{t("mentorDetail.menteeRating")}</Text>
+              <StarDisplay rating={avgFeedbackRating} />
+              <Text style={[styles.ratingValue, { color: themeColors.textTertiary }]}>
+                ({avgFeedbackRating.toFixed(1)} · {mentorFeedback.length}x)
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Statistiken */}
@@ -268,6 +316,10 @@ const styles = StyleSheet.create({
     borderRadius: 9999,
   },
   rankBadgeText: { color: "#92600a", fontSize: 13, fontWeight: "700" },
+  ratingsBlock: { marginTop: 12, gap: 6, alignSelf: "stretch", paddingHorizontal: 8 },
+  ratingRow: { flexDirection: "row", alignItems: "center", gap: 8, justifyContent: "center", flexWrap: "wrap" },
+  ratingLabel: { fontSize: 12, fontWeight: "500" },
+  ratingValue: { fontSize: 11 },
   sectionLabel: {
     fontSize: 12,
     fontWeight: "600",

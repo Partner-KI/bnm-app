@@ -46,6 +46,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const [activePeriod, setActivePeriod] = useState<"thisMonth" | "lastMonth" | "thisQuarter" | "thisYear">("thisMonth");
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
+  const [showAllActivities, setShowAllActivities] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -94,12 +95,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const unassignedMentees = getUnassignedMentees();
   const pendingApprovalsCount = getPendingApprovalsCount();
 
-  // Letzte 5 Aktivitäten: Sessions sortiert nach Datum absteigend
-  const recentSessions = useMemo(() => {
-    return [...sessions]
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-      .slice(0, 5);
+  // Aktivitäten: Sessions sortiert nach Datum absteigend (5 oder alle)
+  const allSortedSessions = useMemo(() => {
+    return [...sessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [sessions]);
+  const recentSessions = useMemo(() => {
+    return showAllActivities ? allSortedSessions : allSortedSessions.slice(0, 5);
+  }, [allSortedSessions, showAllActivities]);
 
   // Frühwarnungen berechnen
   const earlyWarnings = useMemo(() => {
@@ -317,6 +319,16 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   </View>
                 </View>
                 <Text style={styles.momAdminArrow}>{t("dashboard.viewProfile")} ›</Text>
+                <TouchableOpacity
+                  style={[styles.momAwardButton, { marginTop: 10 }]}
+                  onPress={(e) => {
+                    e.stopPropagation && e.stopPropagation();
+                    router.push({ pathname: "/admin/mentor-award" as any, params: { mentorId: topMentor.mentor.id } });
+                  }}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.momAwardButtonText}>{t("dashboard.createAward")} ›</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
             )}
 
@@ -387,7 +399,16 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* Letzte Aktivitäten */}
             <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-              <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
+              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
+                <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
+                {allSortedSessions.length > 5 && (
+                  <TouchableOpacity onPress={() => setShowAllActivities((v) => !v)} activeOpacity={0.7}>
+                    <Text style={{ color: isDark ? "#FFCA28" : COLORS.gold, fontSize: 13, fontWeight: "600" }}>
+                      {showAllActivities ? t("dashboard.showLessActivities") : t("dashboard.showAllActivities").replace("{0}", String(allSortedSessions.length))}
+                    </Text>
+                  </TouchableOpacity>
+                )}
+              </View>
               <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
               {recentSessions.length === 0 ? (
                 <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noRecentActivity")}</Text>
@@ -1565,6 +1586,17 @@ const styles = StyleSheet.create({
   momAdminStatValue: { fontSize: 18, fontWeight: "700", color: COLORS.gold },
   momAdminStatLabel: { color: COLORS.secondary, fontSize: 10, marginTop: 2 },
   momAdminArrow: { color: COLORS.link, fontSize: 13, fontWeight: "600" },
+  momAwardButton: {
+    backgroundColor: "rgba(238,167,27,0.15)",
+    borderWidth: 1,
+    borderColor: "rgba(238,167,27,0.4)",
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    alignItems: "center" as const,
+    alignSelf: "stretch" as const,
+  },
+  momAwardButtonText: { color: "#92600a", fontSize: 13, fontWeight: "700" as const },
 
   // Offene Zuweisungen
   openAssignmentsCard: {

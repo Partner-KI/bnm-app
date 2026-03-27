@@ -1600,6 +1600,34 @@ const ar: Record<TranslationKeys, string> = {
   "dashboard.statsSessions": "إجمالي الجلسات",
   "dashboard.statsRank": "الترتيب",
   "dashboard.statsRankHint": "من أصل {0} مرشد · النقاط = الإكمالات × 10 + الجلسات × 3",
+
+  // جميع الأنشطة
+  "dashboard.showAllActivities": "عرض الكل ({0})",
+  "dashboard.showLessActivities": "عرض أقل",
+  "dashboard.createAward": "إنشاء شهادة",
+
+  // جائزة
+  "mentorAward.title": "مرشد الشهر",
+  "mentorAward.subtitle": "إنشاء وحفظ الشهادة",
+  "mentorAward.selectPeriod": "اختر الفترة",
+  "mentorAward.month": "الشهر",
+  "mentorAward.year": "السنة",
+  "mentorAward.awardTitle": "مرشد الشهر",
+  "mentorAward.awardSub": "برنامج إرشاد BNM",
+  "mentorAward.awardFooter": "مُكرَّم من قِبل فريق BNM",
+  "mentorAward.download": "تنزيل كـ PDF",
+  "mentorAward.save": "حفظ في النظام",
+  "mentorAward.saveSuccess": "تم حفظ الشهادة!",
+  "mentorAward.saveError": "خطأ في الحفظ.",
+  "mentorAward.noMentorError": "لم يتم اختيار مرشد.",
+  "mentorAward.pastAwards": "الجوائز السابقة",
+
+  // التقييمات
+  "mentorDetail.selfRating": "التقييم الذاتي:",
+  "mentorDetail.menteeRating": "تقييم المتعلم:",
+  "profile.selfRatingTitle": "تقييمي الذاتي",
+  "profile.selfRatingHint": "كيف تقيّم أداءك كمرشد؟",
+  "profile.selfRatingSelected": "{0} من 5 نجوم",
 };
 
 export default ar;

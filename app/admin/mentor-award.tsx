@@ -1,0 +1,503 @@
+/**
+ * Mentor des Monats — Urkunde/Award-Screen
+ * - Zeigt schöne Award-Card mit Mentor-Details
+ * - "Herunterladen" → window.print() mit @media print Styles
+ * - "Speichern" → INSERT in mentor_awards Tabelle
+ * - Dropdown für vergangene Awards
+ */
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useLanguage } from "../../contexts/LanguageContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { COLORS } from "../../constants/Colors";
+import { supabase } from "../../lib/supabase";
+import { showError, showSuccess } from "../../lib/errorHandler";
+import { Container } from "../../components/Container";
+import { BNMLogo } from "../../components/BNMLogo";
+
+interface MentorAward {
+  id: string;
+  mentor_id: string;
+  month: number;
+  year: number;
+  score: number;
+  completions: number;
+  sessions_count: number;
+  created_at: string;
+  mentor_name?: string;
+}
+
+const MONTH_NAMES_DE = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+const MONTH_NAMES_TR = ["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+const MONTH_NAMES_AR = ["يناير","فبراير","مارس","أبريل","مايو","يونيو","يوليو","أغسطس","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+const MONTH_NAMES_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function getMonthName(month: number, lang: string): string {
+  const idx = month - 1;
+  if (lang === "tr") return MONTH_NAMES_TR[idx] ?? "";
+  if (lang === "ar") return MONTH_NAMES_AR[idx] ?? "";
+  if (lang === "en") return MONTH_NAMES_EN[idx] ?? "";
+  return MONTH_NAMES_DE[idx] ?? "";
+}
+
+export default function MentorAwardScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ mentorId?: string }>();
+  const { t } = useLanguage();
+  const { user: authUser } = useAuth();
+  const themeColors = useThemeColors();
+  const { isDark } = useTheme();
+  const { users, mentorships, sessions, getUserById } = useData();
+
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
+  const [isSaving, setIsSaving] = useState(false);
+  const [pastAwards, setPastAwards] = useState<MentorAward[]>([]);
+  const [loadingPast, setLoadingPast] = useState(true);
+  const [viewingPastAward, setViewingPastAward] = useState<MentorAward | null>(null);
+
+  // Zugriff nur für Admin
+  if (!authUser || (authUser.role !== "admin" && authUser.role !== "office")) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: themeColors.background }}>
+        <Text style={{ color: themeColors.error }}>{t("applications.accessDenied")}</Text>
+      </View>
+    );
+  }
+
+  // Mentor des Monats berechnen (höchster Score)
+  const topMentor = useMemo(() => {
+    const mentors = users.filter((u) => u.role === "mentor");
+    if (mentors.length === 0) return null;
+    const scored = mentors.map((mentor) => {
+      const myMs = mentorships.filter((m) => m.mentor_id === mentor.id);
+      const completedCount = myMs.filter((m) => m.status === "completed").length;
+      const sessionCount = sessions.filter((s) => myMs.some((m) => m.id === s.mentorship_id)).length;
+      const score = completedCount * 10 + sessionCount * 3;
+      return { mentor, score, completedCount, sessionCount };
+    }).sort((a, b) => b.score - a.score);
+    return scored[0].score > 0 ? scored[0] : null;
+  }, [users, mentorships, sessions]);
+
+  // Wenn mentorId per params übergeben, diesen Mentor verwenden
+  const paramMentor = params.mentorId ? getUserById(params.mentorId) : null;
+  const displayMentor = viewingPastAward
+    ? null // wird aus pastAward gerendert
+    : (paramMentor ?? topMentor?.mentor ?? null);
+  const displayScore = viewingPastAward?.score ?? topMentor?.score ?? 0;
+  const displayCompletions = viewingPastAward?.completions ?? topMentor?.completedCount ?? 0;
+  const displaySessions = viewingPastAward?.sessions_count ?? topMentor?.sessionCount ?? 0;
+  const displayMentorName = viewingPastAward?.mentor_name ?? displayMentor?.name ?? "–";
+  const displayMonth = viewingPastAward?.month ?? selectedMonth;
+  const displayYear = viewingPastAward?.year ?? selectedYear;
+
+  // Vergangene Awards laden
+  useEffect(() => {
+    loadPastAwards();
+  }, []);
+
+  async function loadPastAwards() {
+    setLoadingPast(true);
+    try {
+      const { data, error } = await supabase
+        .from("mentor_awards")
+        .select("*")
+        .order("year", { ascending: false })
+        .order("month", { ascending: false })
+        .limit(24);
+      if (error) {
+        console.warn("[MentorAward] load error:", error.message);
+      } else if (data) {
+        // Mentor-Namen auflösen
+        const withNames: MentorAward[] = await Promise.all(
+          data.map(async (row: any) => {
+            const mentor = getUserById(row.mentor_id);
+            return {
+              id: row.id,
+              mentor_id: row.mentor_id,
+              month: row.month,
+              year: row.year,
+              score: row.score,
+              completions: row.completions,
+              sessions_count: row.sessions_count,
+              created_at: row.created_at,
+              mentor_name: mentor?.name ?? "–",
+            };
+          })
+        );
+        setPastAwards(withNames);
+      }
+    } finally {
+      setLoadingPast(false);
+    }
+  }
+
+  async function handleSave() {
+    if (!displayMentor && !viewingPastAward) {
+      showError(t("mentorAward.noMentorError"));
+      return;
+    }
+    setIsSaving(true);
+    try {
+      const mentorId = viewingPastAward?.mentor_id ?? displayMentor?.id;
+      const { error } = await supabase.from("mentor_awards").upsert(
+        {
+          mentor_id: mentorId,
+          month: selectedMonth,
+          year: selectedYear,
+          score: displayScore,
+          completions: displayCompletions,
+          sessions_count: displaySessions,
+        },
+        { onConflict: "month,year" }
+      );
+      if (error) {
+        showError(t("mentorAward.saveError"));
+        console.warn("[MentorAward] save error:", error.message);
+      } else {
+        showSuccess(t("mentorAward.saveSuccess"));
+        await loadPastAwards();
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handlePrint() {
+    if (Platform.OS === "web") {
+      window.print();
+    }
+  }
+
+  return (
+    <Container fullWidth={Platform.OS === "web"}>
+      {/* Print-Styles nur auf Web */}
+      {Platform.OS === "web" && (
+        <style dangerouslySetInnerHTML={{ __html: `
+          @media print {
+            body * { visibility: hidden !important; }
+            #mentor-award-print, #mentor-award-print * { visibility: visible !important; }
+            #mentor-award-print {
+              position: fixed !important;
+              left: 0; top: 0; right: 0; bottom: 0;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
+              background: white !important;
+            }
+          }
+        ` }} />
+      )}
+
+      <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
+        <View style={styles.page}>
+
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={22} color={themeColors.text} />
+            </TouchableOpacity>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("mentorAward.title")}</Text>
+              <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("mentorAward.subtitle")}</Text>
+            </View>
+          </View>
+
+          {/* Monat/Jahr Auswahl */}
+          <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <Text style={[styles.cardLabel, { color: themeColors.textSecondary }]}>{t("mentorAward.selectPeriod")}</Text>
+            <View style={styles.periodRow}>
+              {/* Monat */}
+              <View style={styles.periodGroup}>
+                <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.month")}</Text>
+                <View style={styles.monthGrid}>
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                    <TouchableOpacity
+                      key={m}
+                      style={[
+                        styles.monthBtn,
+                        selectedMonth === m
+                          ? { backgroundColor: COLORS.gold }
+                          : { backgroundColor: themeColors.background, borderColor: themeColors.border },
+                      ]}
+                      onPress={() => { setSelectedMonth(m); setViewingPastAward(null); }}
+                    >
+                      <Text style={[styles.monthBtnText, { color: selectedMonth === m ? "#0E0E14" : themeColors.textSecondary }]}>
+                        {String(m).padStart(2, "0")}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+              {/* Jahr */}
+              <View style={styles.periodGroup}>
+                <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.year")}</Text>
+                <View style={styles.yearRow}>
+                  {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
+                    <TouchableOpacity
+                      key={y}
+                      style={[
+                        styles.yearBtn,
+                        selectedYear === y
+                          ? { backgroundColor: COLORS.gold }
+                          : { backgroundColor: themeColors.background, borderColor: themeColors.border },
+                      ]}
+                      onPress={() => { setSelectedYear(y); setViewingPastAward(null); }}
+                    >
+                      <Text style={[styles.yearBtnText, { color: selectedYear === y ? "#0E0E14" : themeColors.textSecondary }]}>{y}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+            </View>
+          </View>
+
+          {/* Award-Card (druckbar) */}
+          {/* @ts-ignore — id-Prop für window.print */}
+          <View
+            id="mentor-award-print"
+            style={[styles.awardCard, { borderColor: COLORS.gold }]}
+          >
+            {/* Goldener Header-Streifen */}
+            <View style={styles.awardHeader}>
+              <BNMLogo size={64} showSubtitle={false} />
+              <Text style={styles.awardHeaderTitle}>{t("mentorAward.awardTitle")}</Text>
+              <Text style={styles.awardHeaderSub}>{t("mentorAward.awardSub")}</Text>
+            </View>
+
+            {/* Sterne */}
+            <View style={styles.starsRow}>
+              {["★","★","★","★","★"].map((s, i) => (
+                <Text key={i} style={styles.starChar}>{s}</Text>
+              ))}
+            </View>
+
+            {/* Mentor-Name */}
+            <Text style={styles.awardMentorName}>{displayMentorName}</Text>
+
+            {/* Monat / Jahr */}
+            <Text style={styles.awardPeriod}>
+              {getMonthName(displayMonth, "de")} {displayYear}
+            </Text>
+
+            {/* Trennlinie */}
+            <View style={styles.awardDivider} />
+
+            {/* Stats */}
+            <View style={styles.awardStatsRow}>
+              <View style={styles.awardStatItem}>
+                <Text style={styles.awardStatValue}>{displayScore}</Text>
+                <Text style={styles.awardStatLabel}>{t("leaderboard.points")}</Text>
+              </View>
+              <View style={styles.awardStatDivider} />
+              <View style={styles.awardStatItem}>
+                <Text style={styles.awardStatValue}>{displayCompletions}</Text>
+                <Text style={styles.awardStatLabel}>{t("leaderboard.completions")}</Text>
+              </View>
+              <View style={styles.awardStatDivider} />
+              <View style={styles.awardStatItem}>
+                <Text style={styles.awardStatValue}>{displaySessions}</Text>
+                <Text style={styles.awardStatLabel}>{t("leaderboard.sessions")}</Text>
+              </View>
+            </View>
+
+            {/* Footer */}
+            <Text style={styles.awardFooter}>{t("mentorAward.awardFooter")}</Text>
+          </View>
+
+          {/* Aktions-Buttons */}
+          <View style={styles.actionsRow}>
+            {Platform.OS === "web" && (
+              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrint]} onPress={handlePrint} activeOpacity={0.8}>
+                <Ionicons name="print-outline" size={18} color="#0E0E14" />
+                <Text style={styles.actionBtnPrintText}>{t("mentorAward.download")}</Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[styles.actionBtn, styles.actionBtnSave, isSaving && { opacity: 0.6 }]}
+              onPress={handleSave}
+              disabled={isSaving}
+              activeOpacity={0.8}
+            >
+              {isSaving ? (
+                <ActivityIndicator size="small" color={COLORS.white} />
+              ) : (
+                <>
+                  <Ionicons name="save-outline" size={18} color={COLORS.white} />
+                  <Text style={styles.actionBtnSaveText}>{t("mentorAward.save")}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Vergangene Awards */}
+          {!loadingPast && pastAwards.length > 0 && (
+            <View style={[styles.pastCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+              <Text style={[styles.pastTitle, { color: themeColors.text }]}>{t("mentorAward.pastAwards")}</Text>
+              {pastAwards.map((award, idx) => (
+                <TouchableOpacity
+                  key={award.id}
+                  style={[
+                    styles.pastRow,
+                    idx < pastAwards.length - 1 && [styles.pastRowBorder, { borderBottomColor: themeColors.border }],
+                    viewingPastAward?.id === award.id && { backgroundColor: isDark ? "#2A2A18" : "#fffbeb" },
+                  ]}
+                  onPress={() => setViewingPastAward(viewingPastAward?.id === award.id ? null : award)}
+                >
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.pastRowName, { color: themeColors.text }]}>{award.mentor_name}</Text>
+                    <Text style={[styles.pastRowPeriod, { color: themeColors.textSecondary }]}>
+                      {getMonthName(award.month, "de")} {award.year}
+                    </Text>
+                  </View>
+                  <Text style={[styles.pastRowScore, { color: COLORS.gold }]}>{award.score} {t("leaderboard.points")}</Text>
+                  <Ionicons
+                    name={viewingPastAward?.id === award.id ? "eye" : "eye-outline"}
+                    size={18}
+                    color={themeColors.textSecondary}
+                    style={{ marginLeft: 8 }}
+                  />
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+        </View>
+      </ScrollView>
+    </Container>
+  );
+}
+
+const styles = StyleSheet.create({
+  scrollView: { flex: 1 },
+  page: { padding: 20, maxWidth: 720, alignSelf: "center", width: "100%" },
+  header: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 20 },
+  backButton: { padding: 6 },
+  pageTitle: { fontSize: 22, fontWeight: "800" },
+  pageSubtitle: { fontSize: 13, marginTop: 2 },
+
+  // Periode Auswahl
+  card: { borderRadius: 12, borderWidth: 1, padding: 16, marginBottom: 20 },
+  cardLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
+  periodRow: { gap: 16 },
+  periodGroup: { gap: 8 },
+  periodLabel: { fontSize: 12, fontWeight: "500" },
+  monthGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
+  monthBtn: { width: 42, height: 36, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  monthBtnText: { fontSize: 13, fontWeight: "600" },
+  yearRow: { flexDirection: "row", gap: 8 },
+  yearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, borderWidth: 1 },
+  yearBtnText: { fontSize: 14, fontWeight: "600" },
+
+  // Award Card
+  awardCard: {
+    borderWidth: 3,
+    borderRadius: 16,
+    overflow: "hidden",
+    marginBottom: 20,
+    backgroundColor: "#FFFDF5",
+  },
+  awardHeader: {
+    backgroundColor: "#101828",
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+    gap: 8,
+  },
+  awardHeaderTitle: {
+    color: COLORS.gold,
+    fontSize: 22,
+    fontWeight: "800",
+    letterSpacing: 2,
+    textAlign: "center",
+  },
+  awardHeaderSub: {
+    color: "#8E8E9A",
+    fontSize: 13,
+    textAlign: "center",
+    letterSpacing: 1,
+  },
+  starsRow: { flexDirection: "row", justifyContent: "center", paddingTop: 20, gap: 6 },
+  starChar: { fontSize: 28, color: COLORS.gold },
+  awardMentorName: {
+    textAlign: "center",
+    fontSize: 30,
+    fontWeight: "900",
+    color: "#101828",
+    marginTop: 12,
+    marginHorizontal: 24,
+    letterSpacing: 1,
+  },
+  awardPeriod: {
+    textAlign: "center",
+    fontSize: 16,
+    color: "#6B7280",
+    marginTop: 6,
+    letterSpacing: 2,
+    marginBottom: 16,
+  },
+  awardDivider: { height: 2, backgroundColor: COLORS.gold, marginHorizontal: 48, opacity: 0.5 },
+  awardStatsRow: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    alignItems: "center",
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+  },
+  awardStatItem: { alignItems: "center", flex: 1 },
+  awardStatValue: { fontSize: 28, fontWeight: "800", color: "#101828" },
+  awardStatLabel: { fontSize: 11, color: "#6B7280", marginTop: 2, textAlign: "center" },
+  awardStatDivider: { width: 1, height: 40, backgroundColor: "#E5E7EB" },
+  awardFooter: {
+    textAlign: "center",
+    fontSize: 12,
+    color: "#9CA3AF",
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: "#E5E7EB",
+    letterSpacing: 1,
+  },
+
+  // Aktionen
+  actionsRow: { flexDirection: "row", gap: 12, marginBottom: 24 },
+  actionBtn: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 13,
+    borderRadius: 10,
+    gap: 8,
+  },
+  actionBtnPrint: { backgroundColor: COLORS.gold },
+  actionBtnPrintText: { color: "#0E0E14", fontWeight: "700", fontSize: 14 },
+  actionBtnSave: { backgroundColor: COLORS.primary },
+  actionBtnSaveText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
+
+  // Vergangene Awards
+  pastCard: { borderRadius: 12, borderWidth: 1, marginBottom: 20, overflow: "hidden" },
+  pastTitle: { fontSize: 14, fontWeight: "700", padding: 14, paddingBottom: 10 },
+  pastRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 14,
+    gap: 8,
+  },
+  pastRowBorder: { borderBottomWidth: 1 },
+  pastRowName: { fontWeight: "600", fontSize: 14 },
+  pastRowPeriod: { fontSize: 12, marginTop: 2 },
+  pastRowScore: { fontSize: 13, fontWeight: "700" },
+});

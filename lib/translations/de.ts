@@ -1600,6 +1600,36 @@ const de = {
   "dashboard.statsSessions": "Sessions gesamt",
   "dashboard.statsRank": "Rang",
   "dashboard.statsRankHint": "von {0} Mentoren · Score = Abschlüsse × 10 + Sessions × 3",
+
+  // Dashboard: Alle Aktivitäten
+  "dashboard.showAllActivities": "Alle anzeigen ({0})",
+  "dashboard.showLessActivities": "Weniger anzeigen",
+
+  // Dashboard: Urkunde erstellen
+  "dashboard.createAward": "Urkunde erstellen",
+
+  // Mentor-Urkunde
+  "mentorAward.title": "Mentor des Monats",
+  "mentorAward.subtitle": "Urkunde erstellen und speichern",
+  "mentorAward.selectPeriod": "ZEITRAUM AUSWÄHLEN",
+  "mentorAward.month": "Monat",
+  "mentorAward.year": "Jahr",
+  "mentorAward.awardTitle": "MENTOR DES MONATS",
+  "mentorAward.awardSub": "BNM-Betreuungsprogramm",
+  "mentorAward.awardFooter": "AUSGEZEICHNET DURCH DAS BNM-TEAM",
+  "mentorAward.download": "Als PDF herunterladen",
+  "mentorAward.save": "In System speichern",
+  "mentorAward.saveSuccess": "Urkunde gespeichert!",
+  "mentorAward.saveError": "Fehler beim Speichern.",
+  "mentorAward.noMentorError": "Kein Mentor ausgewählt.",
+  "mentorAward.pastAwards": "Vergangene Auszeichnungen",
+
+  // Mentor-Bewertungen
+  "mentorDetail.selfRating": "Selbstbewertung:",
+  "mentorDetail.menteeRating": "Mentee-Bewertung:",
+  "profile.selfRatingTitle": "Meine Selbstbewertung",
+  "profile.selfRatingHint": "Wie bewertest du deine eigene Leistung als Mentor?",
+  "profile.selfRatingSelected": "{0} von 5 Sternen",
 } as const;
 
 export default de;
