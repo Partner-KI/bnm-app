@@ -309,6 +309,33 @@ export default function ReportsScreen() {
     }
   }
 
+  async function handleDownloadDonorPDF() {
+    if (Platform.OS !== "web") return;
+    try {
+      const { downloadDonorReportPDF } = await import("../../lib/pdfGenerator");
+      const ok = await downloadDonorReportPDF({
+        periodLabel,
+        kpis: {
+          activeMentorships: mentorships.filter((m) => m.status === "active").length,
+          newRegistrations: kpis.totalAssigned,
+          completedInPeriod: kpis.completions,
+          bnmBoxes: kpis.bnmBoxes,
+          activeMentors: users.filter((u) => u.role === "mentor").length,
+          wuduSessions: kpis.wuduSessions,
+          salahSessions: kpis.salahSessions,
+          koranSessions: kpis.koranSessions,
+          nachbetreuungSessions: kpis.nachbetreuungSessions,
+        },
+        regionalData: [],
+        sessionDistribution: { items: [] },
+        summaryText: `Im ${periodLabel} wurden ${kpis.totalSessions} Sessions durchgeführt, ${kpis.completions} Betreuungen abgeschlossen und ${kpis.totalAssigned} neue Betreuungen gestartet. ${kpis.bnmBoxes} BNM-Boxen wurden verteilt.`,
+      });
+      if (!ok) showError("PDF konnte nicht erstellt werden");
+    } catch {
+      showError("PDF-Generator konnte nicht geladen werden");
+    }
+  }
+
   async function handleExport() {
     const header = t("reports.csvKpiHeader");
     const row = [
@@ -401,28 +428,29 @@ export default function ReportsScreen() {
           </View>
           <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("reports.subtitle")}</Text>
 
-          {/* Bericht öffnen + Spenderbericht – oben direkt nach dem Header */}
-          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
-            {Platform.OS === "web" && (
+          {/* PDF-Buttons – direkt oben, nebeneinander */}
+          {Platform.OS === "web" && (
+            <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
               <TouchableOpacity
-                style={[styles.printButton, { borderColor: COLORS.gold, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 0, flex: 1 }]}
+                style={{ flex: 1, backgroundColor: dynamicPrimaryBg, borderRadius: 8, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
                 onPress={handleDownloadPDF}
+                activeOpacity={0.8}
               >
-                <Ionicons name="document-outline" size={16} color={COLORS.gold} />
-                <Text style={[styles.printButtonText, { color: COLORS.gold }]}>Bericht öffnen</Text>
+                <Ionicons name="download-outline" size={16} color={dynamicPrimaryText} />
+                <Text style={{ color: dynamicPrimaryText, fontWeight: "600", fontSize: 14 }}>Bericht PDF</Text>
               </TouchableOpacity>
-            )}
-            {user?.role === "admin" && (
-              <TouchableOpacity
-                style={[styles.donorDashboardButton, { backgroundColor: dynamicPrimaryBg, marginBottom: 0, flex: 1 }]}
-                onPress={() => router.push("/admin/donor-report" as never)}
-              >
-                <Text style={[styles.donorDashboardButtonText, { color: isDark ? COLORS.primary : COLORS.gold }]}>
-                  Spenderbericht
-                </Text>
-              </TouchableOpacity>
-            )}
-          </View>
+              {user?.role === "admin" && (
+                <TouchableOpacity
+                  style={{ flex: 1, backgroundColor: COLORS.gold, borderRadius: 8, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+                  onPress={handleDownloadDonorPDF}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="download-outline" size={16} color="#0E0E14" />
+                  <Text style={{ color: "#0E0E14", fontWeight: "600", fontSize: 14 }}>Spenderbericht PDF</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
           {/* Zeitraum-Auswahl */}
           <View style={[styles.card, { backgroundColor: themeColors.card }]}>
