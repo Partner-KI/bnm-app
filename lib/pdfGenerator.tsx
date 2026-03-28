@@ -212,3 +212,137 @@ export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> 
   const html = generateAwardHTML(data);
   return openReportWindow(html, `BNM Mentor des Monats - ${data.period}`);
 }
+
+// ─── Interface: Spenderbericht ────────────────────────────────────────────────
+
+export interface DonorReportKPIs {
+  activeMentorships: number;
+  newRegistrations: number;
+  completedInPeriod: number;
+  bnmBoxes: number;
+  activeMentors: number;
+  wuduSessions: number;
+  salahSessions: number;
+  koranSessions: number;
+  nachbetreuungSessions: number;
+}
+
+export interface DonorReportData {
+  periodLabel: string;
+  kpis: DonorReportKPIs;
+  regionalData: { label: string; value: number }[];
+  sessionDistribution: { items: { label: string; value: number }[] };
+  summaryText: string;
+}
+
+// ─── HTML-Generator: Spenderbericht ──────────────────────────────────────────
+
+function generateDonorReportHTML(data: DonorReportData): string {
+  const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+  const totalRegional = data.regionalData.reduce((s, d) => s + d.value, 0);
+  const maxRegional = Math.max(...data.regionalData.map((d) => d.value), 1);
+
+  const regionalRows = data.regionalData
+    .map((d) => {
+      const pct = totalRegional > 0 ? Math.round((d.value / totalRegional) * 100) : 0;
+      const barWidth = Math.round((d.value / maxRegional) * 100);
+      return `<tr>
+        <td>${d.label}</td>
+        <td><div style="background:#e5e7eb;border-radius:4px;height:8px;width:100%;"><div style="background:#EEA71B;border-radius:4px;height:8px;width:${barWidth}%;"></div></div></td>
+        <td style="text-align:right;font-weight:bold">${d.value}</td>
+        <td style="text-align:right;color:#475467">${pct}%</td>
+      </tr>`;
+    })
+    .join("");
+
+  const sessionRows = data.sessionDistribution.items
+    .map((d) => `<tr><td>${d.label}</td><td style="text-align:right;font-weight:bold">${d.value}</td></tr>`)
+    .join("");
+
+  return `<!DOCTYPE html>
+<html><head>
+  <meta charset="utf-8">
+  <title>BNM Spenderbericht - ${data.periodLabel}</title>
+  <style>
+    @page { size: A4; margin: 20mm; }
+    body { font-family: Helvetica, Arial, sans-serif; color: #101828; margin: 0; padding: 40px; }
+    .logo { font-size: 36px; font-weight: bold; color: #EEA71B; text-align: center; }
+    .logo-sub { font-size: 10px; color: #475467; letter-spacing: 3px; text-align: center; }
+    .gold-line { width: 60px; height: 3px; background: #EEA71B; margin: 20px auto; }
+    .title { font-size: 28px; font-weight: bold; color: #0A3A5A; text-align: center; }
+    .subtitle { font-size: 14px; color: #475467; text-align: center; margin-bottom: 8px; }
+    .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
+    .kpi-card { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .kpi-value { font-size: 24px; font-weight: bold; color: #0A3A5A; }
+    .kpi-label { font-size: 9px; color: #475467; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .section-title { font-size: 16px; font-weight: bold; color: #0A3A5A; margin-top: 24px; margin-bottom: 8px; }
+    .section-line { width: 40px; height: 2px; background: #EEA71B; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    th { background: #F9FAFB; text-align: left; font-size: 8px; color: #475467; text-transform: uppercase; padding: 6px 8px; border-bottom: 1px solid #e5e7eb; }
+    td { font-size: 9px; padding: 5px 8px; border-bottom: 1px solid #f3f4f6; vertical-align: middle; }
+    tr:nth-child(even) { background: #FAFAFA; }
+    .summary { background: #F9FAFB; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; margin: 16px 0; font-size: 10px; line-height: 1.6; }
+    .footer { border-top: 1px solid #e5e7eb; padding-top: 8px; margin-top: 30px; display: flex; justify-content: space-between; font-size: 7px; color: #98A2B3; }
+    .page-break { page-break-before: always; }
+    .info { font-size: 10px; color: #98A2B3; text-align: center; }
+    @media print { body { padding: 0; } }
+  </style>
+</head><body>
+  <!-- Seite 1: Deckblatt -->
+  <div style="text-align:center; padding-top:200px;">
+    <div class="logo">BNM</div>
+    <div class="logo-sub">BETREUUNG NEUER MUSLIME</div>
+    <div class="gold-line"></div>
+    <div class="title">Spenderbericht</div>
+    <div class="subtitle">${data.periodLabel}</div>
+    <div class="gold-line"></div>
+    <div class="info">Erstellt am: ${today}</div>
+    <div class="info">BNM – Ein iERA Projekt in Kooperation mit IMAN</div>
+  </div>
+  <div class="footer"><span>BNM · Vertraulich</span><span>iman.ngo</span><span>Seite 1</span></div>
+
+  <!-- Seite 2: KPIs -->
+  <div class="page-break"></div>
+  <div class="section-title">Kennzahlen-Übersicht</div>
+  <div class="section-line"></div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-value">${data.kpis.activeMentorships}</div><div class="kpi-label">Aktive Betreuungen</div></div>
+    <div class="kpi-card"><div class="kpi-value">${data.kpis.newRegistrations}</div><div class="kpi-label">Neue Registrierungen</div></div>
+    <div class="kpi-card"><div class="kpi-value" style="color:#15803d">${data.kpis.completedInPeriod}</div><div class="kpi-label">Abgeschlossen</div></div>
+    <div class="kpi-card"><div class="kpi-value">${data.kpis.bnmBoxes}</div><div class="kpi-label">BNM-Boxen</div></div>
+    <div class="kpi-card"><div class="kpi-value">${data.kpis.activeMentors}</div><div class="kpi-label">Aktive Mentoren</div></div>
+    <div class="kpi-card"><div class="kpi-value">${data.kpis.wuduSessions + data.kpis.salahSessions + data.kpis.koranSessions}</div><div class="kpi-label">Religiöse Sessions</div></div>
+  </div>
+  <div class="footer"><span>BNM · Vertraulich</span><span>iman.ngo</span><span>Seite 2</span></div>
+
+  <!-- Seite 3: Regionale Verteilung -->
+  <div class="page-break"></div>
+  <div class="section-title">Regionale Verteilung</div>
+  <div class="section-line"></div>
+  <table>
+    <tr><th>Stadt</th><th style="width:40%">Anteil</th><th>Anzahl</th><th>%</th></tr>
+    ${regionalRows || "<tr><td colspan='4' style='color:#98A2B3;text-align:center'>Keine Daten</td></tr>"}
+  </table>
+  <div class="footer"><span>BNM · Vertraulich</span><span>iman.ngo</span><span>Seite 3</span></div>
+
+  <!-- Seite 4: Session-Verteilung & Zusammenfassung -->
+  <div class="page-break"></div>
+  <div class="section-title">Session-Typen</div>
+  <div class="section-line"></div>
+  <table>
+    <tr><th>Typ</th><th style="text-align:right">Anzahl</th></tr>
+    ${sessionRows || "<tr><td colspan='2' style='color:#98A2B3;text-align:center'>Keine Daten</td></tr>"}
+  </table>
+  <div class="section-title" style="margin-top:24px">Zusammenfassung</div>
+  <div class="section-line"></div>
+  <div class="summary"><p>${data.summaryText}</p></div>
+  <div class="summary" style="margin-top:16px"><p style="color:#98A2B3;font-size:9px">Dieser Bericht wurde automatisch generiert. BNM – Ein iERA Projekt in Kooperation mit IMAN (iman.ngo).</p></div>
+  <div class="footer"><span>BNM · Vertraulich</span><span>iman.ngo</span><span>Seite 4</span></div>
+</body></html>`;
+}
+
+export async function downloadDonorReportPDF(data: DonorReportData): Promise<boolean> {
+  if (Platform.OS !== "web") return false;
+  const html = generateDonorReportHTML(data);
+  return openReportWindow(html, `BNM Spenderbericht - ${data.periodLabel}`);
+}

@@ -42,6 +42,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     getUnassignedMentees,
     getPendingApprovalsCount,
     sendAdminDirectMessage,
+    adminMessages,
     refreshData,
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
@@ -50,16 +51,16 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
   const [showAllActivities, setShowAllActivities] = useState(false);
   const [sendingReminderFor, setSendingReminderFor] = useState<string | null>(null);
-  const REMINDER_KEY = "bnm_sent_reminders";
-  const [sentReminderIds, setSentReminderIds] = useState<Set<string>>(new Set());
 
-  // Beim Init: gesendete Reminder-IDs aus localStorage laden
-  useEffect(() => {
-    if (Platform.OS === "web") {
-      const stored = localStorage.getItem(REMINDER_KEY);
-      if (stored) setSentReminderIds(new Set(JSON.parse(stored)));
-    }
-  }, []);
+  // Prüft ob für eine Mentorship bereits ein Reminder gesendet wurde (via adminMessages in DB)
+  const hasSentReminder = useCallback((mentorshipId: string) => {
+    const mentorship = mentorships.find((m) => m.id === mentorshipId);
+    if (!mentorship) return false;
+    const menteeName = mentorship.mentee?.name ?? "";
+    return adminMessages.some(
+      (msg) => msg.user_id === mentorship.mentor_id && msg.content.includes(menteeName)
+    );
+  }, [mentorships, adminMessages]);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -204,13 +205,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
       const msg = t("adminReminder.reminderBody").replace("{0}", menteeName);
       await sendAdminDirectMessage(mentorId, msg);
       showSuccess(t("adminReminder.sent").replace("{0}", mentorName));
-      setSentReminderIds((prev) => {
-        const next = new Set(prev).add(mentorshipId);
-        if (Platform.OS === "web") {
-          localStorage.setItem(REMINDER_KEY, JSON.stringify([...next]));
-        }
-        return next;
-      });
+      await refreshData();
     } catch {
       showError(t("common.error"));
     } finally {
@@ -505,7 +500,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   const mentorName = item.mentorship.mentor?.name ?? "?";
                   const menteeName = item.mentorship.mentee?.name ?? "?";
                   const isSending = sendingReminderFor === item.mentorship.id;
-                  const isSent = sentReminderIds.has(item.mentorship.id);
+                  const isSent = hasSentReminder(item.mentorship.id);
                   const isLast = idx === stagnantMentorships.length - 1;
                   return (
                     <View

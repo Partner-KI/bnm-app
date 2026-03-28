@@ -17,6 +17,7 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { showSuccess } from "../../lib/errorHandler";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { Container } from "../../components/Container";
+import { downloadDonorReportPDF } from "../../lib/pdfGenerator";
 
 // ─── Konstanten ──────────────────────────────────────────────────────────────
 
@@ -544,64 +545,18 @@ export default function AdminDonorReportScreen() {
       .replace("{5}", String(kpis.activeMentors));
   }, [kpis, periodMode, selectedYear, selectedMonth, selectedQuarter, t]);
 
-  // ── Export: CSV ──
-  function handleExportCSV() {
+  // ── Export: Bericht als HTML in neuem Tab öffnen ──
+  async function handleOpenReport() {
     const pLabel = formatPeriodLabel(periodMode, selectedYear, selectedMonth, selectedQuarter);
-    const header = t("donorReport.csvKpisHeader");
-    const row = [
-      `"${pLabel}"`,
-      kpis.activeMentorships,
-      kpis.newRegistrations,
-      kpis.completedInPeriod,
-      kpis.bnmBoxes,
-      kpis.activeMentors,
-    ].join(",");
-
-    const regionalRows = regionalData.map((d) => `"${d.label}",${d.value}`).join("\n");
-    const sessionRows = sessionDistribution.items.map((d) => `"${d.label}",${d.value}`).join("\n");
-
-    const csvContent = [
-      t("donorReport.csvTitle"),
-      `"${pLabel}"`,
-      "",
-      t("donorReport.csvKpisSection"),
-      header,
-      row,
-      "",
-      t("donorReport.csvRegionalSection"),
-      t("donorReport.csvRegionalHeader"),
-      regionalRows,
-      "",
-      t("donorReport.csvSessionsSection"),
-      t("donorReport.csvSessionsHeader"),
-      sessionRows,
-    ].join("\n");
-
-    if (Platform.OS === "web") {
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `BNM-Spenderbericht-${pLabel.replace(/[\s/]/g, "-")}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-      showSuccess(t("donorDashboard.exportCSV") + " ✓");
-    } else {
-      showSuccess(t("donorReport.csvMobileSuccess").replace("{0}", pLabel));
-    }
-  }
-
-  // ── Export: Text kopieren ──
-  function handleCopyText() {
-    if (Platform.OS === "web" && typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(summaryText).then(() => {
-        showSuccess(t("donorDashboard.copied"));
-      });
-    } else {
-      // Native: Text als Info anzeigen (expo-clipboard nicht installiert)
-      showSuccess(`${t("donorDashboard.summary")}:\n\n${summaryText}`);
+    const opened = await downloadDonorReportPDF({
+      periodLabel: pLabel,
+      kpis,
+      regionalData,
+      sessionDistribution,
+      summaryText,
+    });
+    if (opened) {
+      showSuccess(t("donorDashboard.printPdf") + " ✓");
     }
   }
 
@@ -949,41 +904,9 @@ export default function AdminDonorReportScreen() {
           </View>{/* Ende druckbarer Bereich */}
 
           {/* ── Export-Buttons (nicht im Druck) ── */}
-          <TouchableOpacity style={styles.exportBtnPrimary} onPress={handleExportCSV}>
-            <Text style={styles.exportBtnText}>
-              {Platform.OS === "web" ? t("donorDashboard.exportCSV") : t("donorDashboard.export")}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.exportBtnSecondary} onPress={handleCopyText}>
-            <Text style={styles.exportBtnSecText}>{t("donorDashboard.copyText")}</Text>
-          </TouchableOpacity>
-
           {Platform.OS === "web" && (
-            <TouchableOpacity
-              style={[styles.printBtn, { borderColor: themeColors.textSecondary }]}
-              onPress={() => {
-                if (typeof window !== "undefined") {
-                  // Print-Styles injizieren damit nur #donor-report-print sichtbar ist
-                  const style = document.createElement("style");
-                  style.id = "donor-print-style";
-                  style.textContent = `
-                    @media print {
-                      body * { visibility: hidden !important; }
-                      #donor-report-print, #donor-report-print * { visibility: visible !important; }
-                      #donor-report-print { position: absolute !important; left: 0; top: 0; width: 100%; }
-                    }
-                  `;
-                  document.head.appendChild(style);
-                  window.print();
-                  // Style nach dem Drucken entfernen
-                  setTimeout(() => {
-                    document.getElementById("donor-print-style")?.remove();
-                  }, 500);
-                }
-              }}
-            >
-              <Text style={[styles.printBtnText, { color: themeColors.textSecondary }]}>🖨 {t("donorDashboard.printPdf")}</Text>
+            <TouchableOpacity style={styles.exportBtnPrimary} onPress={handleOpenReport}>
+              <Text style={styles.exportBtnText}>{t("donorDashboard.printPdf")}</Text>
             </TouchableOpacity>
           )}
 

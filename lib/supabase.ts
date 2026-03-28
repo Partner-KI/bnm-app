@@ -12,7 +12,8 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    // Kein Debug-Logging in Production
     debug: false,
+    lock: undefined, // Deaktiviert den Navigator.locks Lock — verhindert AbortError auf Web
+    flowType: "implicit",
   },
 });
