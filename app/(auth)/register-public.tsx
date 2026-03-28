@@ -230,7 +230,7 @@ export default function RegisterPublicScreen() {
 
   if (step === "success") {
     return (
-      <Container>
+      <Container fullWidth={Platform.OS === "web"}>
         <View style={[styles.successContainer, { backgroundColor: themeColors.background }]}>
           <View style={styles.successIconBox}>
             <Text style={styles.successIconText}>✓</Text>
@@ -344,7 +344,7 @@ export default function RegisterPublicScreen() {
   }
 
   return (
-    <Container>
+    <Container fullWidth={Platform.OS === "web"}>
       <KeyboardAvoidingView
         style={[styles.flex1, { backgroundColor: themeColors.background }]}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
