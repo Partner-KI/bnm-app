@@ -108,7 +108,76 @@ const C = {
   white: [1, 1, 1] as [number, number, number],
   border: [0.9, 0.91, 0.92] as [number, number, number],
   bg: [0.98, 0.98, 0.98] as [number, number, number],
+  summaryBg: [0.98, 0.97, 0.94] as [number, number, number],
 };
+
+// ─── Hilfsfunktionen ─────────────────────────────────────────────────────────
+
+function drawSectionHeader(
+  page: any, rgb: any, bold: any, font: any,
+  text: string, x: number, y: number, letter: string, circleColor: [number, number, number]
+) {
+  // Farbiger Kreis mit Buchstabe
+  page.drawCircle({ x: x + 7, y: y + 4, size: 7, color: rgb(...circleColor) });
+  page.drawText(letter, { x: x + 4, y: y + 1, size: 7, font: bold, color: rgb(1, 1, 1) });
+  // Überschrift
+  page.drawText(text, { x: x + 20, y, size: 13, font: bold, color: rgb(...C.navy) });
+  // Gold-Unterstrich
+  const textWidth = bold.widthOfTextAtSize(text, 13);
+  page.drawRectangle({ x: x + 20, y: y - 6, width: textWidth * 0.6, height: 2, color: rgb(...C.gold) });
+}
+
+function drawKpiCard(
+  page: any, rgb: any, bold: any, font: any,
+  value: string, label: string, bx: number, by: number, w: number, h: number, dotColor: [number, number, number]
+) {
+  // Hintergrund mit hellgrauem Fill
+  page.drawRectangle({ x: bx, y: by - h, width: w, height: h, color: rgb(0.985, 0.985, 0.99) });
+  // Goldener dünner Rand (1px)
+  page.drawRectangle({ x: bx, y: by - h, width: w, height: h, borderColor: rgb(...C.gold), borderWidth: 1 });
+  // Kleiner farbiger Punkt links oben
+  page.drawCircle({ x: bx + 6, y: by - 6, size: 3, color: rgb(...dotColor) });
+  // Wert
+  page.drawText(value, { x: bx + 8, y: by - 22, size: 18, font: bold, color: rgb(...C.navy) });
+  // Label
+  page.drawText(label, { x: bx + 8, y: by - 34, size: 7, font, color: rgb(...C.gray) });
+}
+
+function drawThreeColFooter(
+  page: any, rgb: any, font: any,
+  W: number, currentPage: number, totalPages: number
+) {
+  const leftText = "BNM · Vertraulich";
+  const midText = "iman.ngo";
+  const rightText = `Seite ${currentPage} von ${totalPages}`;
+  page.drawLine({ start: { x: 40, y: 42 }, end: { x: W - 40, y: 42 }, thickness: 0.5, color: rgb(...C.border) });
+  page.drawText(leftText, { x: 40, y: 30, size: 7, font, color: rgb(...C.lgray) });
+  page.drawText(midText, { x: W / 2 - font.widthOfTextAtSize(midText, 7) / 2, y: 30, size: 7, font, color: rgb(...C.lgray) });
+  page.drawText(rightText, { x: W - 40 - font.widthOfTextAtSize(rightText, 7), y: 30, size: 7, font, color: rgb(...C.lgray) });
+}
+
+function drawSummaryBox(
+  page: any, rgb: any, bold: any, font: any,
+  summaryText: string, startY: number, W: number
+): number {
+  const words = summaryText.split(" ");
+  let line = ""; const lines: string[] = [];
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (font.widthOfTextAtSize(test, 9) > W - 120) { lines.push(line); line = w; }
+    else { line = test; }
+  }
+  if (line) lines.push(line);
+
+  const boxH = lines.length * 13 + 20;
+  const boxY = startY - 8;
+  page.drawRectangle({ x: 40, y: boxY - boxH, width: W - 80, height: boxH, color: rgb(...C.summaryBg), borderColor: rgb(...C.border), borderWidth: 1 });
+  let sy = boxY - 14;
+  for (const l of lines) {
+    if (sy > 50) { page.drawText(l, { x: 50, y: sy, size: 9, font, color: rgb(...C.navy) }); sy -= 13; }
+  }
+  return sy;
+}
 
 // ─── Monatsbericht ───────────────────────────────────────────────────────────
 
@@ -126,22 +195,23 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
     // ── Seite 1: Deckblatt + KPIs ──────────────────────────────────────────
     const p1 = doc.addPage([W, H]);
 
-    // Navy-Header
+    // Navy-Header mit Schatten-Effekt (zweite Rechteck-Schicht leicht versetzt)
+    p1.drawRectangle({ x: 0, y: H - 72, width: W, height: 72, color: rgb(0.04, 0.2, 0.32) });
     p1.drawRectangle({ x: 0, y: H - 70, width: W, height: 70, color: rgb(...C.navy) });
-    p1.drawText("BNM", { x: 40, y: H - 42, size: 26, font: bold, color: rgb(...C.gold) });
-    p1.drawText("BETREUUNG NEUER MUSLIME", { x: 40, y: H - 58, size: 7, font, color: rgb(...C.white) });
-    p1.drawText("Monatsbericht", { x: W / 2 - bold.widthOfTextAtSize("Monatsbericht", 16) / 2, y: H - 38, size: 16, font: bold, color: rgb(...C.white) });
-    p1.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 38, size: 10, font, color: rgb(...C.gold) });
-    p1.drawText("Erstellt am: " + today, { x: W - 40 - font.widthOfTextAtSize("Erstellt am: " + today, 7), y: H - 56, size: 7, font, color: rgb(200 / 255, 210 / 255, 220 / 255) });
+    p1.drawText("BNM", { x: 40, y: H - 36, size: 28, font: bold, color: rgb(...C.gold) });
+    p1.drawText("Betreuung neuer Muslime", { x: 40, y: H - 52, size: 7, font, color: rgb(0.78, 0.85, 0.9) });
+    const titleText = "Monatsbericht";
+    p1.drawText(titleText, { x: W / 2 - bold.widthOfTextAtSize(titleText, 16) / 2, y: H - 34, size: 16, font: bold, color: rgb(...C.white) });
+    p1.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 34, size: 10, font, color: rgb(...C.gold) });
+    p1.drawText("Erstellt am: " + today, { x: W - 40 - font.widthOfTextAtSize("Erstellt am: " + today, 7), y: H - 52, size: 7, font, color: rgb(200 / 255, 210 / 255, 220 / 255) });
 
-    // Goldene Linie
-    p1.drawRectangle({ x: 40, y: H - 80, width: W - 80, height: 2, color: rgb(...C.gold) });
+    // Goldene Akzent-Linie als Section-Divider
+    p1.drawRectangle({ x: 0, y: H - 72, width: W, height: 2, color: rgb(...C.gold) });
 
-    // KPI-Titel
-    p1.drawText("Kennzahlen", { x: 40, y: H - 100, size: 13, font: bold, color: rgb(...C.navy) });
-    p1.drawRectangle({ x: 40, y: H - 107, width: 35, height: 2, color: rgb(...C.gold) });
+    // KPI-Sektion
+    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.navy);
 
-    // 3x3 KPI-Grid (9 KPIs, je 140px breit, 40px hoch)
+    // 3x3 KPI-Grid
     const kpis = [
       [String(data.kpis.activeBetreuungen + data.kpis.abgeschlossen + data.kpis.neueBetreuungen), "Betreuungen gesamt"],
       [String(data.kpis.activeBetreuungen), "Aktive Betreuungen"],
@@ -153,97 +223,93 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
       [String(data.kpis.salahSessions), "Salah Sessions"],
       [String(data.kpis.koranSessions), "Koran Sessions"],
     ];
-    const KPI_W = 165; const KPI_H = 40; const KPI_GAP = 5;
+    const KPI_W = 165; const KPI_H = 42; const KPI_GAP = 5;
+    const kpiDotColors: [number, number, number][] = [C.navy, C.navy, C.green, C.navy, C.navy, C.gold, C.gold, C.gold, C.gold];
     kpis.forEach(([v, l], i) => {
       const col = i % 3; const row = Math.floor(i / 3);
       const bx = 40 + col * (KPI_W + KPI_GAP);
-      const by = H - 120 - row * (KPI_H + KPI_GAP);
-      p1.drawRectangle({ x: bx, y: by - KPI_H, width: KPI_W, height: KPI_H, borderColor: rgb(...C.border), borderWidth: 1 });
-      p1.drawText(v, { x: bx + 8, y: by - 22, size: 18, font: bold, color: rgb(...C.navy) });
-      p1.drawText(l, { x: bx + 8, y: by - 34, size: 7, font, color: rgb(...C.gray) });
+      const by = H - 112 - row * (KPI_H + KPI_GAP);
+      drawKpiCard(p1, rgb, bold, font, v, l, bx, by, KPI_W, KPI_H, kpiDotColors[i]);
     });
 
-    // Abbrüche als eigene Zeile
-    const abbY = H - 120 - 3 * (KPI_H + KPI_GAP) - 8;
-    p1.drawRectangle({ x: 40, y: abbY - 20, width: W - 80, height: 20, color: rgb(0.97, 0.97, 0.98), borderColor: rgb(...C.border), borderWidth: 1 });
-    p1.drawText("Abbrüche / Nachbetreuung:", { x: 48, y: abbY - 14, size: 7, font: bold, color: rgb(...C.gray) });
-    p1.drawText(String(data.kpis.nachbetreuung), { x: 200, y: abbY - 14, size: 7, font: bold, color: rgb(...C.navy) });
+    // Goldener Divider nach KPIs
+    const divY1 = H - 112 - 3 * (KPI_H + KPI_GAP) - 4;
+    p1.drawRectangle({ x: 40, y: divY1, width: W - 80, height: 1, color: rgb(...C.gold) });
 
-    // Mentor des Monats Box
-    const momY = abbY - 32;
+    // Abbrüche / Nachbetreuung
+    const abbY = divY1 - 14;
+    p1.drawRectangle({ x: 40, y: abbY - 22, width: W - 80, height: 22, color: rgb(0.97, 0.97, 0.98), borderColor: rgb(...C.border), borderWidth: 1 });
+    p1.drawText("Abbrüche / Nachbetreuung:", { x: 48, y: abbY - 15, size: 7, font: bold, color: rgb(...C.gray) });
+    p1.drawText(String(data.kpis.nachbetreuung), { x: 200, y: abbY - 15, size: 7, font: bold, color: rgb(...C.navy) });
+
+    // Mentor des Monats Box – goldener Rahmen rundum
+    const momY = abbY - 36;
     if (data.mentorOfMonth) {
-      p1.drawRectangle({ x: 40, y: momY - 44, width: W - 80, height: 44, color: rgb(254 / 255, 243 / 255, 199 / 255), borderColor: rgb(...C.gold), borderWidth: 1 });
-      p1.drawText("MENTOR DES MONATS", { x: 52, y: momY - 14, size: 7, font: bold, color: rgb(146 / 255, 64 / 255, 14 / 255) });
-      p1.drawText(data.mentorOfMonth.name, { x: 52, y: momY - 27, size: 13, font: bold, color: rgb(...C.navy) });
+      // Goldener Hintergrund + rundumlaufender Rahmen
+      p1.drawRectangle({ x: 40, y: momY - 50, width: W - 80, height: 50, color: rgb(254 / 255, 243 / 255, 199 / 255) });
+      p1.drawRectangle({ x: 40, y: momY - 50, width: W - 80, height: 50, borderColor: rgb(...C.gold), borderWidth: 2 });
+      // Goldene linke Akzent-Linie (extra sichtbar)
+      p1.drawRectangle({ x: 40, y: momY - 50, width: 4, height: 50, color: rgb(...C.gold) });
+      p1.drawText("MENTOR DES MONATS", { x: 54, y: momY - 14, size: 7, font: bold, color: rgb(146 / 255, 64 / 255, 14 / 255) });
+      p1.drawText(data.mentorOfMonth.name, { x: 54, y: momY - 28, size: 14, font: bold, color: rgb(...C.navy) });
       p1.drawText(
         data.mentorOfMonth.score + " Pkt — " + data.mentorOfMonth.completed + " Abschl. — " + data.mentorOfMonth.sessions + " Sessions",
-        { x: 52, y: momY - 39, size: 7, font, color: rgb(...C.gray) }
+        { x: 54, y: momY - 42, size: 7, font, color: rgb(...C.gray) }
       );
     }
 
     // Footer Seite 1
-    p1.drawText("BNM - Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(...C.lgray) });
-    p1.drawText("Seite 1 / 2", { x: W - 70, y: 30, size: 7, font, color: rgb(...C.lgray) });
+    drawThreeColFooter(p1, rgb, font, W, 1, 2);
 
     // ── Seite 2: Rangliste + Zusammenfassung ───────────────────────────────
     const p2 = doc.addPage([W, H]);
 
-    // Navy-Header
-    p2.drawRectangle({ x: 0, y: H - 50, width: W, height: 50, color: rgb(...C.navy) });
+    // Navy-Header Seite 2
+    p2.drawRectangle({ x: 0, y: H - 52, width: W, height: 52, color: rgb(...C.navy) });
+    p2.drawRectangle({ x: 0, y: H - 52, width: W, height: 2, color: rgb(...C.gold) });
     p2.drawText("Monatsbericht", { x: 40, y: H - 32, size: 13, font: bold, color: rgb(...C.white) });
     p2.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 32, size: 10, font, color: rgb(...C.gold) });
 
-    // Rangliste-Titel
-    p2.drawText("Rangliste", { x: 40, y: H - 68, size: 13, font: bold, color: rgb(...C.navy) });
-    p2.drawRectangle({ x: 40, y: H - 74, width: 32, height: 2, color: rgb(...C.gold) });
+    // Rangliste
+    drawSectionHeader(p2, rgb, bold, font, "Rangliste", 40, H - 72, "R", C.gold);
 
-    // Tabellenkopf
+    // Tabellenkopf – grau hinterlegt
     let ty = H - 88;
-    p2.drawRectangle({ x: 40, y: ty - 12, width: W - 80, height: 12, color: rgb(...C.bg) });
+    p2.drawRectangle({ x: 40, y: ty - 14, width: W - 80, height: 14, color: rgb(0.22, 0.28, 0.36) });
     const rankCols = [45, 70, 250, 320, 395, 465];
     ["#", "Name", "Score", "Sessions", "Abschl.", "Bewertung"].forEach((h, i) => {
-      p2.drawText(h, { x: rankCols[i], y: ty - 9, size: 7, font: bold, color: rgb(...C.gray) });
+      p2.drawText(h, { x: rankCols[i], y: ty - 10, size: 7, font: bold, color: rgb(...C.white) });
     });
-    ty -= 12;
+    ty -= 14;
 
-    // Zeilen (max 15, fontSize 7, Zeilenhöhe 12)
+    // Tabellenzeilen mit abwechselnden Farben
     data.rankings.slice(0, 15).forEach((m, i) => {
-      if (i % 2 === 1) p2.drawRectangle({ x: 40, y: ty - 12, width: W - 80, height: 12, color: rgb(...C.bg) });
+      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(...C.bg);
+      p2.drawRectangle({ x: 40, y: ty - 13, width: W - 80, height: 13, color: rowBg });
+      // Trennlinie
+      p2.drawLine({ start: { x: 40, y: ty - 13 }, end: { x: W - 40, y: ty - 13 }, thickness: 0.5, color: rgb(...C.border) });
       const isTop = m.rank <= 3;
       const f = isTop ? bold : font;
       const c = isTop ? rgb(...C.gold) : rgb(...C.navy);
-      p2.drawText(String(m.rank), { x: rankCols[0], y: ty - 9, size: 7, font: f, color: c });
-      p2.drawText(m.name, { x: rankCols[1], y: ty - 9, size: 7, font: f, color: c });
-      p2.drawText(String(m.score), { x: rankCols[2], y: ty - 9, size: 7, font, color: rgb(...C.navy) });
-      p2.drawText(String(m.sessions), { x: rankCols[3], y: ty - 9, size: 7, font, color: rgb(...C.navy) });
-      p2.drawText(String(m.completed), { x: rankCols[4], y: ty - 9, size: 7, font, color: rgb(...C.navy) });
-      p2.drawText(m.rating !== null ? m.rating.toFixed(1) + " *" : "-", { x: rankCols[5], y: ty - 9, size: 7, font, color: rgb(...C.navy) });
-      ty -= 12;
+      p2.drawText(String(m.rank), { x: rankCols[0], y: ty - 10, size: 7, font: f, color: c });
+      p2.drawText(m.name, { x: rankCols[1], y: ty - 10, size: 7, font: f, color: c });
+      p2.drawText(String(m.score), { x: rankCols[2], y: ty - 10, size: 7, font, color: rgb(...C.navy) });
+      p2.drawText(String(m.sessions), { x: rankCols[3], y: ty - 10, size: 7, font, color: rgb(...C.navy) });
+      p2.drawText(String(m.completed), { x: rankCols[4], y: ty - 10, size: 7, font, color: rgb(...C.navy) });
+      p2.drawText(m.rating !== null ? m.rating.toFixed(1) + " *" : "-", { x: rankCols[5], y: ty - 10, size: 7, font, color: rgb(...C.navy) });
+      ty -= 13;
     });
 
-    // Zusammenfassung
-    const sumTitleY = ty - 14;
-    p2.drawText("Zusammenfassung", { x: 40, y: sumTitleY, size: 13, font: bold, color: rgb(...C.navy) });
-    p2.drawRectangle({ x: 40, y: sumTitleY - 6, width: 50, height: 2, color: rgb(...C.gold) });
+    // Goldener Divider
+    p2.drawRectangle({ x: 40, y: ty - 10, width: W - 80, height: 1, color: rgb(...C.gold) });
 
-    const words = data.summaryText.split(" ");
-    let line = ""; let sy = sumTitleY - 20;
-    for (const w of words) {
-      const test = line ? line + " " + w : w;
-      if (font.widthOfTextAtSize(test, 9) > W - 100) {
-        if (sy > 50) {
-          p2.drawText(line, { x: 50, y: sy, size: 9, font, color: rgb(...C.navy) });
-          sy -= 14;
-        }
-        line = w;
-      } else { line = test; }
-    }
-    if (line && sy > 50) p2.drawText(line, { x: 50, y: sy, size: 9, font, color: rgb(...C.navy) });
+    // Zusammenfassung
+    const sumTitleY = ty - 24;
+    drawSectionHeader(p2, rgb, bold, font, "Zusammenfassung", 40, sumTitleY, "Z", C.green);
+    drawSummaryBox(p2, rgb, bold, font, data.summaryText, sumTitleY - 12, W);
 
     // Footer Seite 2
-    p2.drawText("Automatisch generiert. BNM - iman.ngo", { x: 40, y: 44, size: 7, font, color: rgb(...C.lgray) });
-    p2.drawText("BNM - Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(...C.lgray) });
-    p2.drawText("Seite 2 / 2", { x: W - 70, y: 30, size: 7, font, color: rgb(...C.lgray) });
+    drawThreeColFooter(p2, rgb, font, W, 2, 2);
 
     const bytes = await doc.save();
     triggerDownload(bytes, "BNM-Monatsbericht-" + data.period + ".pdf");
@@ -312,22 +378,21 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
     // ── Seite 1: Alles auf einer Seite ────────────────────────────────────
     const p1 = doc.addPage([W, H]);
 
-    // Navy-Header
+    // Navy-Header mit goldener Akzent-Linie
+    p1.drawRectangle({ x: 0, y: H - 72, width: W, height: 72, color: rgb(0.04, 0.2, 0.32) });
     p1.drawRectangle({ x: 0, y: H - 70, width: W, height: 70, color: rgb(...C.navy) });
-    p1.drawText("BNM", { x: 40, y: H - 42, size: 26, font: bold, color: rgb(...C.gold) });
-    p1.drawText("BETREUUNG NEUER MUSLIME", { x: 40, y: H - 58, size: 7, font, color: rgb(...C.white) });
-    p1.drawText("Spenderbericht", { x: W / 2 - bold.widthOfTextAtSize("Spenderbericht", 16) / 2, y: H - 38, size: 16, font: bold, color: rgb(...C.white) });
-    p1.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 38, size: 10, font, color: rgb(...C.gold) });
-    p1.drawText("Erstellt am: " + today, { x: W - 40 - font.widthOfTextAtSize("Erstellt am: " + today, 7), y: H - 56, size: 7, font, color: rgb(200 / 255, 210 / 255, 220 / 255) });
+    p1.drawText("BNM", { x: 40, y: H - 36, size: 28, font: bold, color: rgb(...C.gold) });
+    p1.drawText("Betreuung neuer Muslime", { x: 40, y: H - 52, size: 7, font, color: rgb(0.78, 0.85, 0.9) });
+    const titleDonor = "Spenderbericht";
+    p1.drawText(titleDonor, { x: W / 2 - bold.widthOfTextAtSize(titleDonor, 16) / 2, y: H - 34, size: 16, font: bold, color: rgb(...C.white) });
+    p1.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 34, size: 10, font, color: rgb(...C.gold) });
+    p1.drawText("Erstellt am: " + today, { x: W - 40 - font.widthOfTextAtSize("Erstellt am: " + today, 7), y: H - 52, size: 7, font, color: rgb(200 / 255, 210 / 255, 220 / 255) });
+    p1.drawRectangle({ x: 0, y: H - 72, width: W, height: 2, color: rgb(...C.gold) });
 
-    // Goldene Linie
-    p1.drawRectangle({ x: 40, y: H - 80, width: W - 80, height: 2, color: rgb(...C.gold) });
+    // KPI-Sektion
+    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.navy);
 
-    // KPI-Titel
-    p1.drawText("Kennzahlen", { x: 40, y: H - 100, size: 13, font: bold, color: rgb(...C.navy) });
-    p1.drawRectangle({ x: 40, y: H - 107, width: 35, height: 2, color: rgb(...C.gold) });
-
-    // 2x3 KPI-Grid (6 KPIs, je 165px breit, 40px hoch)
+    // 2x3 KPI-Grid
     const dk = [
       [String(data.kpis.activeMentorships), "Aktive Betreuungen"],
       [String(data.kpis.newRegistrations), "Neue Registrierungen"],
@@ -336,66 +401,58 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
       [String(data.kpis.activeMentors), "Aktive Mentoren"],
       [String(data.kpis.wuduSessions + data.kpis.salahSessions + data.kpis.koranSessions), "Religioese Sessions"],
     ];
-    const DK_W = 165; const DK_H = 40; const DK_GAP = 5;
+    const DK_W = 165; const DK_H = 42; const DK_GAP = 5;
+    const dkDotColors: [number, number, number][] = [C.navy, C.gold, C.green, C.gold, C.navy, C.gold];
     dk.forEach(([v, l], i) => {
       const col = i % 3; const row = Math.floor(i / 3);
       const bx = 40 + col * (DK_W + DK_GAP);
-      const by = H - 120 - row * (DK_H + DK_GAP);
-      p1.drawRectangle({ x: bx, y: by - DK_H, width: DK_W, height: DK_H, borderColor: rgb(...C.border), borderWidth: 1 });
-      p1.drawText(v, { x: bx + 8, y: by - 22, size: 18, font: bold, color: rgb(...C.navy) });
-      p1.drawText(l, { x: bx + 8, y: by - 34, size: 7, font, color: rgb(...C.gray) });
+      const by = H - 112 - row * (DK_H + DK_GAP);
+      drawKpiCard(p1, rgb, bold, font, v, l, bx, by, DK_W, DK_H, dkDotColors[i]);
     });
 
-    // Session-Verteilung als kompakte Tabelle
-    const sessTitleY = H - 120 - 2 * (DK_H + DK_GAP) - 18;
-    p1.drawText("Session-Verteilung", { x: 40, y: sessTitleY, size: 11, font: bold, color: rgb(...C.navy) });
-    p1.drawRectangle({ x: 40, y: sessTitleY - 5, width: 42, height: 2, color: rgb(...C.gold) });
+    // Goldener Divider
+    const divY2 = H - 112 - 2 * (DK_H + DK_GAP) - 4;
+    p1.drawRectangle({ x: 40, y: divY2, width: W - 80, height: 1, color: rgb(...C.gold) });
 
-    // Tabellenkopf
-    let sessY = sessTitleY - 18;
-    p1.drawRectangle({ x: 40, y: sessY - 12, width: W - 80, height: 12, color: rgb(...C.bg) });
-    p1.drawText("Typ", { x: 48, y: sessY - 9, size: 7, font: bold, color: rgb(...C.gray) });
-    p1.drawText("Anzahl", { x: 220, y: sessY - 9, size: 7, font: bold, color: rgb(...C.gray) });
-    sessY -= 12;
+    // Session-Verteilung
+    const sessTitleY = divY2 - 18;
+    drawSectionHeader(p1, rgb, bold, font, "Session-Verteilung", 40, sessTitleY, "S", C.gold);
 
-    // Session-Einträge
+    // Tabellenkopf – dunkel hinterlegt
+    let sessY = sessTitleY - 16;
+    p1.drawRectangle({ x: 40, y: sessY - 14, width: W - 80, height: 14, color: rgb(0.22, 0.28, 0.36) });
+    p1.drawText("Typ", { x: 48, y: sessY - 10, size: 7, font: bold, color: rgb(...C.white) });
+    p1.drawText("Anzahl", { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.white) });
+    sessY -= 14;
+
+    // Session-Einträge mit abwechselnden Zeilenfarben
     const sessItems = data.sessionDistribution?.items ?? [];
-    // Immer Wudu/Salah/Koran als Fallback anzeigen wenn keine items
     const displayItems = sessItems.length > 0 ? sessItems : [
       { label: "Wudu Sessions", value: data.kpis.wuduSessions },
       { label: "Salah Sessions", value: data.kpis.salahSessions },
       { label: "Koran Sessions", value: data.kpis.koranSessions },
     ];
     displayItems.forEach((item: { label: string; value: number }, i: number) => {
-      if (i % 2 === 1) p1.drawRectangle({ x: 40, y: sessY - 12, width: W - 80, height: 12, color: rgb(...C.bg) });
-      p1.drawText(item.label, { x: 48, y: sessY - 9, size: 7, font, color: rgb(...C.navy) });
-      p1.drawText(String(item.value), { x: 220, y: sessY - 9, size: 7, font: bold, color: rgb(...C.navy) });
-      sessY -= 12;
+      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(...C.bg);
+      p1.drawRectangle({ x: 40, y: sessY - 13, width: W - 80, height: 13, color: rowBg });
+      p1.drawLine({ start: { x: 40, y: sessY - 13 }, end: { x: W - 40, y: sessY - 13 }, thickness: 0.5, color: rgb(...C.border) });
+      // Farbiger Punkt vor dem Label
+      p1.drawCircle({ x: 52, y: sessY - 7, size: 3, color: rgb(...C.gold) });
+      p1.drawText(item.label, { x: 60, y: sessY - 10, size: 7, font, color: rgb(...C.navy) });
+      p1.drawText(String(item.value), { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.navy) });
+      sessY -= 13;
     });
 
-    // Zusammenfassung
-    const sumTitleY = sessY - 16;
-    p1.drawText("Zusammenfassung", { x: 40, y: sumTitleY, size: 11, font: bold, color: rgb(...C.navy) });
-    p1.drawRectangle({ x: 40, y: sumTitleY - 5, width: 50, height: 2, color: rgb(...C.gold) });
+    // Goldener Divider vor Zusammenfassung
+    p1.drawRectangle({ x: 40, y: sessY - 10, width: W - 80, height: 1, color: rgb(...C.gold) });
 
-    const w2 = data.summaryText.split(" ");
-    let l2 = ""; let sy2 = sumTitleY - 18;
-    for (const w of w2) {
-      const test = l2 ? l2 + " " + w : w;
-      if (font.widthOfTextAtSize(test, 9) > W - 100) {
-        if (sy2 > 50) {
-          p1.drawText(l2, { x: 50, y: sy2, size: 9, font, color: rgb(...C.navy) });
-          sy2 -= 13;
-        }
-        l2 = w;
-      } else { l2 = test; }
-    }
-    if (l2 && sy2 > 50) p1.drawText(l2, { x: 50, y: sy2, size: 9, font, color: rgb(...C.navy) });
+    // Zusammenfassung in Box
+    const sumTitleY = sessY - 24;
+    drawSectionHeader(p1, rgb, bold, font, "Zusammenfassung", 40, sumTitleY, "Z", C.green);
+    drawSummaryBox(p1, rgb, bold, font, data.summaryText, sumTitleY - 12, W);
 
     // Footer
-    p1.drawText("Automatisch generiert. BNM - iman.ngo", { x: 40, y: 44, size: 7, font, color: rgb(...C.lgray) });
-    p1.drawText("BNM - Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(...C.lgray) });
-    p1.drawText("Seite 1", { x: W - 70, y: 30, size: 7, font, color: rgb(...C.lgray) });
+    drawThreeColFooter(p1, rgb, font, W, 1, 1);
 
     const bytes = await doc.save();
     triggerDownload(bytes, "BNM-Spenderbericht-" + data.periodLabel + ".pdf");

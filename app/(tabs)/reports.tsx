@@ -395,6 +395,23 @@ export default function ReportsScreen() {
     }
   }
 
+  const [reportTab, setReportTab] = useState<"monthly" | "donor">("monthly");
+
+  // Spenderbericht KPIs (teilt dieselbe Zeitraumauswahl)
+  const donorKpis = useMemo(() => {
+    const activeMentorships = mentorships.filter((m) => m.status === "active").length;
+    const newRegistrations = kpis.totalAssigned;
+    const completedInPeriod = kpis.completions;
+    const bnmBoxes = kpis.bnmBoxes;
+    const activeMentors = users.filter((u) => u.role === "mentor").length;
+    const religiousSessions = kpis.wuduSessions + kpis.salahSessions + kpis.koranSessions;
+    return { activeMentorships, newRegistrations, completedInPeriod, bnmBoxes, activeMentors, religiousSessions };
+  }, [kpis, mentorships, users]);
+
+  const donorSummaryText = useMemo(() => {
+    return `Im ${periodLabel} wurden ${kpis.totalSessions} Sessions durchgeführt, davon ${kpis.wuduSessions} Wudu-, ${kpis.salahSessions} Salah- und ${kpis.koranSessions} Koran-Sessions. ${donorKpis.newRegistrations} neue Betreuungen wurden gestartet, ${donorKpis.completedInPeriod} abgeschlossen. ${donorKpis.bnmBoxes} BNM-Boxen wurden verteilt. Aktuell betreuen ${donorKpis.activeMentors} aktive Mentoren insgesamt ${donorKpis.activeMentorships} Muslime.`;
+  }, [periodLabel, kpis, donorKpis]);
+
   const isOffice = user?.role === "office";
   const isAdminOrOffice = user?.role === "admin" || isOffice;
 
@@ -451,6 +468,28 @@ export default function ReportsScreen() {
               )}
             </View>
           )}
+
+          {/* Tab-Switcher: Monatsbericht | Spenderbericht */}
+          <View style={[styles.tabSwitcherRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <TouchableOpacity
+              style={[styles.tabSwitcherBtn, reportTab === "monthly" && { backgroundColor: dynamicPrimaryBg }]}
+              onPress={() => setReportTab("monthly")}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabSwitcherText, { color: reportTab === "monthly" ? dynamicPrimaryText : themeColors.textSecondary }]}>
+                Monatsbericht
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.tabSwitcherBtn, reportTab === "donor" && { backgroundColor: COLORS.gold }]}
+              onPress={() => setReportTab("donor")}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.tabSwitcherText, { color: reportTab === "donor" ? "#0E0E14" : themeColors.textSecondary }]}>
+                Spenderbericht
+              </Text>
+            </TouchableOpacity>
+          </View>
 
           {/* Zeitraum-Auswahl */}
           <View style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -608,74 +647,120 @@ export default function ReportsScreen() {
           {/* Druckbarer Inhalt-Bereich */}
           <View nativeID="print-content">
 
-          {/* Empty State: Noch keine Daten in diesem Zeitraum */}
-          {kpis.totalSessions === 0 && kpis.totalAssigned === 0 && mentorships.length === 0 && (
-            <View style={[styles.emptyDataBox, {
-              backgroundColor: isDark ? "#3a2e1a" : "#fffbeb",
-              borderColor: isDark ? "#6b4e1a" : "#fde68a",
-            }]}>
-              <Text style={[styles.emptyDataText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("reports.noData")}</Text>
-            </View>
-          )}
+          {reportTab === "monthly" ? (
+            <>
+              {/* Empty State: Noch keine Daten in diesem Zeitraum */}
+              {kpis.totalSessions === 0 && kpis.totalAssigned === 0 && mentorships.length === 0 && (
+                <View style={[styles.emptyDataBox, {
+                  backgroundColor: isDark ? "#3a2e1a" : "#fffbeb",
+                  borderColor: isDark ? "#6b4e1a" : "#fde68a",
+                }]}>
+                  <Text style={[styles.emptyDataText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("reports.noData")}</Text>
+                </View>
+              )}
 
-          {/* KPI-Karten mit Gold-Border links */}
-          <View style={styles.kpiRow}>
-            <KpiCard label={t("reports.newMentorships")} value={kpis.totalAssigned} color={COLORS.gradientStart} />
-            <KpiCard label={t("reports.totalSessions")} value={kpis.totalSessions} color={COLORS.gradientStart} />
-          </View>
-          <View style={styles.kpiRow}>
-            <KpiCard label={t("reports.firstContacts")} value={kpis.firstContacts} color={COLORS.gold} />
-            <KpiCard label={t("reports.firstMeetings")} value={kpis.firstMeetings} color={COLORS.gold} />
-          </View>
-          <View style={styles.kpiRow}>
-            <KpiCard label={t("reports.bnmBoxes")} value={kpis.bnmBoxes} color={COLORS.secondary} />
-            <KpiCard label={t("reports.completions")} value={kpis.completions} color={COLORS.cta} />
-          </View>
-          <View style={styles.kpiRow}>
-            <KpiCard label={t("reports.wuduSessions")} value={kpis.wuduSessions} color={COLORS.gradientStart} />
-            <KpiCard label={t("reports.salahSessions")} value={kpis.salahSessions} color={COLORS.gradientStart} />
-          </View>
-          <View style={[styles.kpiRow, { marginBottom: 16 }]}>
-            <KpiCard label={t("reports.koranSessions")} value={kpis.koranSessions} color={COLORS.gold} />
-            <KpiCard label={t("reports.nachbetreuungSessions")} value={kpis.nachbetreuungSessions} color={COLORS.gold} />
-          </View>
+              {/* KPI-Karten mit Gold-Border links */}
+              <View style={styles.kpiRow}>
+                <KpiCard label={t("reports.newMentorships")} value={kpis.totalAssigned} color={COLORS.gradientStart} />
+                <KpiCard label={t("reports.totalSessions")} value={kpis.totalSessions} color={COLORS.gradientStart} />
+              </View>
+              <View style={styles.kpiRow}>
+                <KpiCard label={t("reports.firstContacts")} value={kpis.firstContacts} color={COLORS.gold} />
+                <KpiCard label={t("reports.firstMeetings")} value={kpis.firstMeetings} color={COLORS.gold} />
+              </View>
+              <View style={styles.kpiRow}>
+                <KpiCard label={t("reports.bnmBoxes")} value={kpis.bnmBoxes} color={COLORS.secondary} />
+                <KpiCard label={t("reports.completions")} value={kpis.completions} color={COLORS.cta} />
+              </View>
+              <View style={styles.kpiRow}>
+                <KpiCard label={t("reports.wuduSessions")} value={kpis.wuduSessions} color={COLORS.gradientStart} />
+                <KpiCard label={t("reports.salahSessions")} value={kpis.salahSessions} color={COLORS.gradientStart} />
+              </View>
+              <View style={[styles.kpiRow, { marginBottom: 16 }]}>
+                <KpiCard label={t("reports.koranSessions")} value={kpis.koranSessions} color={COLORS.gold} />
+                <KpiCard label={t("reports.nachbetreuungSessions")} value={kpis.nachbetreuungSessions} color={COLORS.gold} />
+              </View>
 
-          {/* Abbrüche */}
-          {kpis.cancellations > 0 && (
-            <View style={[styles.cancellationBox, {
-              backgroundColor: isDark ? "#3a1a1a" : "#fef2f2",
-              borderColor: isDark ? "#7a2a2a" : "#fecaca",
-            }]}>
-              <Text style={[styles.cancellationLabel, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("reports.cancellations")}</Text>
-              <Text style={[styles.cancellationValue, { color: isDark ? "#f87171" : "#b91c1c" }]}>{kpis.cancellations}</Text>
-            </View>
-          )}
+              {/* Abbrüche */}
+              {kpis.cancellations > 0 && (
+                <View style={[styles.cancellationBox, {
+                  backgroundColor: isDark ? "#3a1a1a" : "#fef2f2",
+                  borderColor: isDark ? "#7a2a2a" : "#fecaca",
+                }]}>
+                  <Text style={[styles.cancellationLabel, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("reports.cancellations")}</Text>
+                  <Text style={[styles.cancellationValue, { color: isDark ? "#f87171" : "#b91c1c" }]}>{kpis.cancellations}</Text>
+                </View>
+              )}
 
-          {/* Balkendiagramm – dunkler Hintergrund */}
-          <View style={styles.chartCard}>
-            <Text style={styles.chartTitle}>
-              {periodMode === "month" ? t("reports.sessionsPerWeek") : periodMode === "quarter" ? t("reports.sessionsPerMonth") : t("reports.sessionsPerYear")}
-            </Text>
-            <View style={styles.barChartContainer}>
-              {barChartData.map((bar) => {
-                const heightPercent = maxBarValue > 0 ? (bar.count / maxBarValue) * 100 : 0;
-                return (
-                  <View key={bar.label} style={styles.barColumn}>
-                    <Text style={styles.barValueText}>{bar.count}</Text>
-                    <View style={styles.barTrack}>
-                      <View
-                        style={[
-                          styles.barFill,
-                          { height: (Math.max(heightPercent, 4) + "%") as any },
-                        ]}
-                      />
-                    </View>
-                    <Text style={styles.barLabel}>{bar.label}</Text>
+              {/* Balkendiagramm – dunkler Hintergrund */}
+              <View style={styles.chartCard}>
+                <Text style={styles.chartTitle}>
+                  {periodMode === "month" ? t("reports.sessionsPerWeek") : periodMode === "quarter" ? t("reports.sessionsPerMonth") : t("reports.sessionsPerYear")}
+                </Text>
+                <View style={styles.barChartContainer}>
+                  {barChartData.map((bar) => {
+                    const heightPercent = maxBarValue > 0 ? (bar.count / maxBarValue) * 100 : 0;
+                    return (
+                      <View key={bar.label} style={styles.barColumn}>
+                        <Text style={styles.barValueText}>{bar.count}</Text>
+                        <View style={styles.barTrack}>
+                          <View
+                            style={[
+                              styles.barFill,
+                              { height: (Math.max(heightPercent, 4) + "%") as any },
+                            ]}
+                          />
+                        </View>
+                        <Text style={styles.barLabel}>{bar.label}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </>
+          ) : (
+            <>
+              {/* Spenderbericht KPI-Karten */}
+              <View style={styles.kpiRow}>
+                <KpiCard label="Aktive Betreuungen" value={donorKpis.activeMentorships} color={COLORS.gradientStart} />
+                <KpiCard label="Neue Registrierungen" value={donorKpis.newRegistrations} color={COLORS.gradientStart} />
+              </View>
+              <View style={styles.kpiRow}>
+                <KpiCard label="Abgeschlossen" value={donorKpis.completedInPeriod} color={COLORS.cta} />
+                <KpiCard label="BNM-Boxen verteilt" value={donorKpis.bnmBoxes} color={COLORS.secondary} />
+              </View>
+              <View style={[styles.kpiRow, { marginBottom: 16 }]}>
+                <KpiCard label="Aktive Mentoren" value={donorKpis.activeMentors} color={COLORS.gold} />
+                <KpiCard label="Religiöse Sessions" value={donorKpis.religiousSessions} color={COLORS.gold} />
+              </View>
+
+              {/* Session-Verteilung */}
+              <View style={[styles.card, { backgroundColor: themeColors.card }]}>
+                <Text style={[styles.cardSectionLabel, { color: themeColors.textTertiary }]}>SESSION-VERTEILUNG</Text>
+                {[
+                  { label: "Wudu", value: kpis.wuduSessions },
+                  { label: "Salah", value: kpis.salahSessions },
+                  { label: "Koran", value: kpis.koranSessions },
+                  { label: "Nachbetreuung", value: kpis.nachbetreuungSessions },
+                ].map((item) => (
+                  <View key={item.label} style={[styles.sessionDistRow, { borderBottomColor: themeColors.border }]}>
+                    <View style={[styles.sessionDot, { backgroundColor: COLORS.gold }]} />
+                    <Text style={[styles.sessionDistLabel, { color: themeColors.text }]}>{item.label}</Text>
+                    <Text style={[styles.sessionDistValue, { color: COLORS.gold }]}>{item.value}</Text>
                   </View>
-                );
-              })}
-            </View>
-          </View>
+                ))}
+              </View>
+
+              {/* Zusammenfassung */}
+              <View style={[styles.summaryBox, {
+                backgroundColor: isDark ? "rgba(238,167,27,0.07)" : "#fffbeb",
+                borderColor: isDark ? "rgba(238,167,27,0.3)" : "#fde68a",
+              }]}>
+                <Text style={[styles.summaryTitle, { color: themeColors.text }]}>Zusammenfassung</Text>
+                <Text style={[styles.summaryText, { color: themeColors.textSecondary }]}>{donorSummaryText}</Text>
+              </View>
+            </>
+          )}
 
           </View>{/* Ende print-content */}
 
@@ -877,6 +962,38 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   spendenButtonText: { color: COLORS.gold, fontWeight: "700" },
+  tabSwitcherRow: {
+    flexDirection: "row",
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
+  tabSwitcherBtn: {
+    flex: 1,
+    paddingVertical: 11,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  tabSwitcherText: { fontWeight: "600", fontSize: 14 },
+  sessionDistRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    gap: 10,
+  },
+  sessionDot: { width: 8, height: 8, borderRadius: 4 },
+  sessionDistLabel: { flex: 1, fontSize: 14 },
+  sessionDistValue: { fontSize: 16, fontWeight: "700" },
+  summaryBox: {
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+  },
+  summaryTitle: { fontWeight: "700", fontSize: 15, marginBottom: 8 },
+  summaryText: { fontSize: 13, lineHeight: 20 },
   donorReportButton: {
     backgroundColor: COLORS.gold,
     borderRadius: 5,
