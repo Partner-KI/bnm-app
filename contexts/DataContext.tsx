@@ -214,6 +214,8 @@ function mapProfile(row: Record<string, unknown>): User {
     is_active: (row.is_active as boolean) ?? true,
     total_xp: (row.total_xp as number) ?? 0,
     mentor_level: (row.mentor_level as string) ?? "bronze",
+    lat: (row.lat as number) ?? undefined,
+    lng: (row.lng as number) ?? undefined,
   };
 }
 

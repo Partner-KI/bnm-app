@@ -19,6 +19,7 @@ import { Container } from "../../components/Container";
 import { supabase } from "../../lib/supabase";
 import { sendNewMenteeRegistrationNotification } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { geocodePLZ } from "../../lib/geocoding";
 
 type Step = "form" | "success";
 
@@ -202,12 +203,14 @@ export default function RegisterPublicScreen() {
       // Profil mit zusätzlichen Daten updaten
       const newUserId = signUpData?.user?.id;
       if (newUserId) {
+        const coords = await geocodePLZ(plz.trim(), country || undefined);
         await supabase
           .from("profiles")
           .update({
             phone: phone.trim() || "",
             contact_preference: contactPref || "whatsapp",
             plz: plz.trim(),
+            ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
           })
           .eq("id", newUserId);
       }

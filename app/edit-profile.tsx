@@ -21,6 +21,7 @@ import { Container } from "../components/Container";
 import { uploadAvatar } from "../lib/storage";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
+import { geocodePLZ } from "../lib/geocoding";
 
 export default function EditProfileScreen() {
   const router = useRouter();
@@ -99,6 +100,8 @@ export default function EditProfileScreen() {
     }
 
     setIsSaving(true);
+    const plzChanged = plz.trim() !== (safeUser.plz ?? "");
+    const coords = plzChanged ? await geocodePLZ(plz.trim()) : null;
     await updateUser(safeUser.id, {
       name: name.trim(),
       city: city.trim(),
@@ -106,6 +109,7 @@ export default function EditProfileScreen() {
       age: parseInt(age, 10),
       phone: phone.trim() || undefined,
       contact_preference: contactPref,
+      ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
     });
     // AuthContext-User aktualisieren damit Profil-Seite die neuen Werte zeigt
     await refreshUser();

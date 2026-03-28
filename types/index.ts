@@ -20,6 +20,8 @@ export interface User {
   is_active?: boolean;
   total_xp?: number;
   mentor_level?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface Mentorship {

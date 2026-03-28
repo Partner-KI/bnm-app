@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,12 +16,14 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useThemeColors } from "../../contexts/ThemeContext";
+import { geocodeAllUsers } from "../../lib/geocoding";
 
 export default function ToolsTabScreen() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
   const themeColors = useThemeColors();
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   if (!user || (user.role !== "admin" && user.role !== "office")) {
     return (
@@ -30,6 +34,29 @@ export default function ToolsTabScreen() {
   }
 
   const showSystemSettings = user.role === "admin";
+
+  async function handleGeocodeAllUsers() {
+    const confirmed = await new Promise<boolean>((resolve) => {
+      Alert.alert(
+        "Koordinaten nachträglich setzen",
+        "Für alle User ohne Koordinaten wird die PLZ per Nominatim API geocodiert (1 Request/Sekunde). Dies kann je nach Anzahl der User einige Minuten dauern.",
+        [
+          { text: "Abbrechen", onPress: () => resolve(false), style: "cancel" },
+          { text: "Starten", onPress: () => resolve(true) },
+        ]
+      );
+    });
+    if (!confirmed) return;
+
+    setIsGeocoding(true);
+    const result = await geocodeAllUsers();
+    setIsGeocoding(false);
+
+    Alert.alert(
+      "Geocoding abgeschlossen",
+      `Gesamt: ${result.total}\nErfolgreich: ${result.success}\nFehlgeschlagen: ${result.failed}`
+    );
+  }
 
   return (
     <Container fullWidth={Platform.OS === "web"}>
@@ -67,6 +94,26 @@ export default function ToolsTabScreen() {
               >
                 <Ionicons name="book-outline" size={28} color={COLORS.cta} />
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
+              </TouchableOpacity>
+            )}
+
+            {showSystemSettings && (
+              <TouchableOpacity
+                style={[styles.toolItem, { backgroundColor: themeColors.card, opacity: isGeocoding ? 0.6 : 1 }]}
+                onPress={handleGeocodeAllUsers}
+                disabled={isGeocoding}
+              >
+                {isGeocoding ? (
+                  <ActivityIndicator size="small" color={COLORS.gradientStart} />
+                ) : (
+                  <Ionicons name="location-outline" size={28} color={COLORS.gradientStart} />
+                )}
+                <Text style={[styles.toolLabel, { color: themeColors.text }]}>
+                  {isGeocoding ? "Geocoding..." : "PLZ → Koordinaten"}
+                </Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>
+                  Fehlende lat/lng für alle User setzen
+                </Text>
               </TouchableOpacity>
             )}
           </View>

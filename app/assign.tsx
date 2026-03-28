@@ -38,17 +38,23 @@ function calculateMatchScore(mentee: User, mentor: User): MatchScore {
   // Geschlecht passt immer (vorher gefiltert) — kein Score, nur Anzeige
   reasonKeys.push("assign.reasonGenderMatch");
 
-  // PLZ-basiertes Distanz-Matching
-  const mentorCoords = getCoordinatesForPLZ(mentor.plz);
-  const menteeCoords = getCoordinatesForPLZ(mentee.plz);
+  // Distanz-Matching: Priorität 1 = gespeicherte DB-Koordinaten, Priorität 2 = PLZ-Lookup
+  let distance: number | null = null;
 
-  if (mentorCoords && menteeCoords) {
-    const distance = haversineDistance(
-      mentorCoords.lat, mentorCoords.lng,
-      menteeCoords.lat, menteeCoords.lng
-    );
+  if (mentor.lat && mentor.lng && mentee.lat && mentee.lng) {
+    // Priorität 1: Koordinaten aus DB
+    distance = haversineDistance(mentee.lat, mentee.lng, mentor.lat, mentor.lng);
+  } else {
+    // Priorität 2: PLZ-Lookup-Tabelle als Fallback
+    const mentorCoords = getCoordinatesForPLZ(mentor.plz);
+    const menteeCoords = getCoordinatesForPLZ(mentee.plz);
+    if (mentorCoords && menteeCoords) {
+      distance = haversineDistance(mentorCoords.lat, mentorCoords.lng, menteeCoords.lat, menteeCoords.lng);
+    }
+  }
+
+  if (distance !== null) {
     distanceKm = Math.round(distance);
-
     if (distance <= 5) {
       score += 40;
       reasonKeys.push("assign.veryClose");
