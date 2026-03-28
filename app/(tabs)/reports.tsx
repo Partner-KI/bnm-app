@@ -211,7 +211,19 @@ export default function ReportsScreen() {
 
   async function handleDownloadPDF() {
     if (Platform.OS !== "web") return;
-    // Mentoren-Rangliste berechnen (für Vormonat/aktuellen Zeitraum)
+
+    // Vormonat berechnen (gleiche Logik wie Dashboard)
+    const prevMonthDate = new Date();
+    prevMonthDate.setDate(1);
+    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+    const prevMonth = prevMonthDate.getMonth();
+    const prevMonthYear = prevMonthDate.getFullYear();
+    const inPrevMonth = (dateStr: string): boolean => {
+      const d = new Date(dateStr);
+      return d.getFullYear() === prevMonthYear && d.getMonth() === prevMonth;
+    };
+
+    // Mentoren-Rangliste berechnen (für den gewählten Zeitraum)
     const rankedMentors = users
       .filter((u) => u.role === "mentor")
       .map((mentor) => {
@@ -233,7 +245,25 @@ export default function ReportsScreen() {
       })
       .sort((a, b) => b.score - a.score);
 
-    const topMentorForPdf = rankedMentors.length > 0 && rankedMentors[0].score > 0
+    // Mentor des Monats aus dem VORMONAT berechnen
+    const prevMonthMentors = users
+      .filter((u) => u.role === "mentor")
+      .map((mentor) => {
+        const myMs = mentorships.filter((m) => m.mentor_id === mentor.id);
+        const completed = myMs.filter(
+          (m) => m.status === "completed" && m.completed_at && inPrevMonth(m.completed_at)
+        ).length;
+        const sessionCount = sessions.filter(
+          (s) => myMs.some((m) => m.id === s.mentorship_id) && inPrevMonth(s.date)
+        ).length;
+        const score = completed * 10 + sessionCount * 3;
+        return { mentor, score, completed, sessionCount };
+      })
+      .sort((a, b) => b.score - a.score);
+
+    const topMentorForPdf = prevMonthMentors.length > 0 && prevMonthMentors[0].score > 0
+      ? prevMonthMentors[0]
+      : rankedMentors.length > 0 && rankedMentors[0].score > 0
       ? rankedMentors[0]
       : null;
 
@@ -370,6 +400,29 @@ export default function ReportsScreen() {
             </View>
           </View>
           <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("reports.subtitle")}</Text>
+
+          {/* Bericht öffnen + Spenderbericht – oben direkt nach dem Header */}
+          <View style={{ flexDirection: "row", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+            {Platform.OS === "web" && (
+              <TouchableOpacity
+                style={[styles.printButton, { borderColor: COLORS.gold, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 0, flex: 1 }]}
+                onPress={handleDownloadPDF}
+              >
+                <Ionicons name="document-outline" size={16} color={COLORS.gold} />
+                <Text style={[styles.printButtonText, { color: COLORS.gold }]}>Bericht öffnen</Text>
+              </TouchableOpacity>
+            )}
+            {user?.role === "admin" && (
+              <TouchableOpacity
+                style={[styles.donorDashboardButton, { backgroundColor: dynamicPrimaryBg, marginBottom: 0, flex: 1 }]}
+                onPress={() => router.push("/admin/donor-report" as never)}
+              >
+                <Text style={[styles.donorDashboardButtonText, { color: isDark ? COLORS.primary : COLORS.gold }]}>
+                  Spenderbericht
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
 
           {/* Zeitraum-Auswahl */}
           <View style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -598,28 +651,6 @@ export default function ReportsScreen() {
 
           </View>{/* Ende print-content */}
 
-          {/* Bericht öffnen – PDF im neuen Tab (nur Web) */}
-          {Platform.OS === "web" && (
-            <TouchableOpacity
-              style={[styles.printButton, { borderColor: COLORS.gold, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }]}
-              onPress={handleDownloadPDF}
-            >
-              <Ionicons name="document-outline" size={16} color={COLORS.gold} />
-              <Text style={[styles.printButtonText, { color: COLORS.gold }]}>Bericht öffnen</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Spenderbericht */}
-          {user?.role === "admin" && (
-            <TouchableOpacity
-              style={[styles.donorDashboardButton, { backgroundColor: dynamicPrimaryBg }]}
-              onPress={() => router.push("/admin/donor-report" as never)}
-            >
-              <Text style={[styles.donorDashboardButtonText, { color: isDark ? COLORS.primary : COLORS.gold }]}>
-                Spenderbericht
-              </Text>
-            </TouchableOpacity>
-          )}
         </View>
       </ScrollView>
     </Container>

@@ -48,7 +48,7 @@ function AdminMenteesView() {
   const { isDark } = useTheme();
   const [search, setSearch] = useState("");
   const [assignFilter, setAssignFilter] = useState<AssignmentFilter>("all");
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("active");
   const [genderFilter, setGenderFilter] = useState<GenderFilter>("all");
   const [sortKey, setSortKey] = useState<SortKey>("name");
   const [refreshing, setRefreshing] = useState(false);
