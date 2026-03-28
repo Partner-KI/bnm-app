@@ -2,8 +2,9 @@ import { Platform } from "react-native";
 
 // ============================================================
 // PDF-Generator für BNM-Berichte
-// jsPDF-basierte Lösung – echter PDF-Download, kein Browser-Dialog.
-// NUR auf Web verfügbar.
+// Nutzt pdf-lib — reines JS, keine nativen Dependencies,
+// kompatibel mit Metro Bundler + Expo Web.
+// Erzeugt echte .pdf Dateien als direkten Download.
 // ============================================================
 
 // ─── Interfaces ──────────────────────────────────────────────────────────────
@@ -67,635 +68,296 @@ export interface DonorReportData {
   summaryText: string;
 }
 
-// ─── Farben & Konstanten ──────────────────────────────────────────────────────
+// ─── Farben ──────────────────────────────────────────────────────────────────
 
-const GOLD = "#EEA71B";
-const NAVY = "#0A3A5A";
-const GREY = "#475467";
-const LIGHT_GREY = "#98A2B3";
-const BORDER = "#e5e7eb";
-const BG_LIGHT = "#F9FAFB";
-const GREEN = "#15803d";
+const NAVY = { r: 10 / 255, g: 58 / 255, b: 90 / 255 };
+const GOLD = { r: 238 / 255, g: 167 / 255, b: 27 / 255 };
+const GREEN = { r: 21 / 255, g: 128 / 255, b: 61 / 255 };
+const GRAY = { r: 71 / 255, g: 84 / 255, b: 103 / 255 };
+const LGRAY = { r: 152 / 255, g: 162 / 255, b: 179 / 255 };
+const WHITE = { r: 1, g: 1, b: 1 };
+const BG = { r: 249 / 255, g: 250 / 255, b: 251 / 255 };
 
-// ─── jsPDF-Hilfsfunktionen ────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-type JsPDF = import("jspdf").jsPDF;
-
-function setNavyTitle(doc: JsPDF, text: string, x: number, y: number, align: "left" | "center" | "right" = "left") {
-  doc.setFontSize(16);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(NAVY);
-  doc.text(text, x, y, { align });
+function triggerDownload(bytes: Uint8Array, filename: string) {
+  const blob = new Blob([bytes as any], { type: "application/pdf" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
-function setBodyText(doc: JsPDF, text: string, x: number, y: number, maxWidth?: number) {
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor("#101828");
-  if (maxWidth) {
-    doc.text(text, x, y, { maxWidth });
-  } else {
-    doc.text(text, x, y);
-  }
-}
-
-function drawGoldLine(doc: JsPDF, x1: number, y: number, x2: number) {
-  doc.setDrawColor(GOLD);
-  doc.setLineWidth(0.8);
-  doc.line(x1, y, x2, y);
-}
-
-function drawSectionDivider(doc: JsPDF, y: number) {
-  drawGoldLine(doc, 20, y, 50);
-}
-
-function addPageFooter(doc: JsPDF, pageNum: number) {
-  const totalPages = doc.getNumberOfPages();
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(LIGHT_GREY);
-  doc.text("BNM · Vertraulich", 20, 287);
-  doc.text("iman.ngo", 105, 287, { align: "center" });
-  doc.text(`Seite ${pageNum}`, 190, 287, { align: "right" });
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(20, 283, 190, 283);
-}
-
-function drawKpiBox(
-  doc: JsPDF,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  value: string,
-  label: string,
-  valueColor: string = NAVY
-) {
-  // Box zeichnen
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(x, y, w, h, 2, 2, "FD");
-  // Wert
-  doc.setFontSize(20);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(valueColor);
-  doc.text(value, x + w / 2, y + h / 2 - 1, { align: "center" });
-  // Label
-  doc.setFontSize(7);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(GREY);
-  doc.text(label.toUpperCase(), x + w / 2, y + h / 2 + 6, { align: "center" });
-}
-
-// ─── Monatsbericht aufbauen ───────────────────────────────────────────────────
-
-function buildMonthlyReport(doc: JsPDF, data: ReportData) {
-  const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
-
-  // ── Seite 1: Deckblatt ──
-  // Hintergrund-Akzent oben
-  doc.setFillColor(NAVY);
-  doc.rect(0, 0, 210, 60, "F");
-
-  doc.setFontSize(36);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GOLD);
-  doc.text("BNM", 105, 35, { align: "center" });
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(255, 255, 255);
-  doc.text("BETREUUNG NEUER MUSLIME", 105, 46, { align: "center" });
-
-  drawGoldLine(doc, 80, 75, 130);
-
-  doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(NAVY);
-  doc.text("Monatsbericht", 105, 110, { align: "center" });
-
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(GREY);
-  doc.text(data.periodLabel, 105, 122, { align: "center" });
-
-  drawGoldLine(doc, 80, 132, 130);
-
-  doc.setFontSize(10);
-  doc.setTextColor(LIGHT_GREY);
-  doc.text(`Erstellt am: ${today}`, 105, 148, { align: "center" });
-  doc.text("BNM – Ein iERA Projekt in Kooperation mit IMAN", 105, 157, { align: "center" });
-
-  addPageFooter(doc, 1);
-
-  // ── Seite 2: KPIs ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Kennzahlen-Übersicht", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  const kpiBoxW = 52;
-  const kpiBoxH = 22;
-  const kpiGapX = 5;
-  const kpiStartX = 20;
-  let kpiY = 38;
-
-  const kpiRow1 = [
-    { value: String(data.kpis.activeBetreuungen), label: "Aktive Betreuungen", color: NAVY },
-    { value: String(data.kpis.abgeschlossen), label: "Abgeschlossen", color: GREEN },
-    { value: String(data.kpis.mentoren), label: "Mentoren", color: NAVY },
-  ];
-  kpiRow1.forEach((kpi, i) => {
-    drawKpiBox(doc, kpiStartX + i * (kpiBoxW + kpiGapX), kpiY, kpiBoxW, kpiBoxH, kpi.value, kpi.label, kpi.color);
-  });
-  kpiY += kpiBoxH + 5;
-
-  const kpiRow2 = [
-    { value: String(data.kpis.mentees), label: "Mentees gesamt", color: GOLD },
-    { value: String(data.kpis.sessions), label: "Sessions gesamt", color: NAVY },
-    { value: String(data.kpis.neueBetreuungen), label: "Neue Betreuungen", color: NAVY },
-  ];
-  kpiRow2.forEach((kpi, i) => {
-    drawKpiBox(doc, kpiStartX + i * (kpiBoxW + kpiGapX), kpiY, kpiBoxW, kpiBoxH, kpi.value, kpi.label, kpi.color);
-  });
-  kpiY += kpiBoxH + 5;
-
-  const kpiRow3 = [
-    { value: String(data.kpis.wuduSessions), label: "Wudu-Sessions", color: NAVY },
-    { value: String(data.kpis.salahSessions), label: "Salah-Sessions", color: NAVY },
-    { value: String(data.kpis.koranSessions), label: "Koran-Sessions", color: NAVY },
-  ];
-  kpiRow3.forEach((kpi, i) => {
-    drawKpiBox(doc, kpiStartX + i * (kpiBoxW + kpiGapX), kpiY, kpiBoxW, kpiBoxH, kpi.value, kpi.label, kpi.color);
-  });
-  kpiY += kpiBoxH + 10;
-
-  // Mentor des Monats
-  if (data.mentorOfMonth) {
-    const m = data.mentorOfMonth;
-    doc.setFillColor("#FEF3C7");
-    doc.setDrawColor(GOLD);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(20, kpiY, 170, 22, 3, 3, "FD");
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor("#92400E");
-    doc.text("★  MENTOR DES MONATS", 28, kpiY + 7);
-
-    doc.setFontSize(13);
-    doc.setTextColor("#101828");
-    doc.text(m.name, 28, kpiY + 15);
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(GREY);
-    doc.text(`${m.score} Punkte · ${m.completed} Abschlüsse · ${m.sessions} Sessions`, 110, kpiY + 15);
-  }
-
-  addPageFooter(doc, 2);
-
-  // ── Seite 3: Rangliste ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Mentor-Rangliste", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  // Tabellen-Header
-  let tableY = 40;
-  doc.setFillColor(BG_LIGHT);
-  doc.rect(20, tableY, 170, 8, "F");
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GREY);
-  doc.text("#", 23, tableY + 5.5);
-  doc.text("Name", 35, tableY + 5.5);
-  doc.text("Score", 105, tableY + 5.5);
-  doc.text("Sessions", 125, tableY + 5.5);
-  doc.text("Abschlüsse", 148, tableY + 5.5);
-  doc.text("Bewertung", 173, tableY + 5.5);
-
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(20, tableY + 8, 190, tableY + 8);
-
-  tableY += 8;
-
-  const rankings = data.rankings.slice(0, 20);
-  for (let i = 0; i < rankings.length; i++) {
-    const row = rankings[i];
-    const rowY = tableY + i * 8;
-    if (rowY > 270) break;
-
-    // Zebra-Streifen
-    if (i % 2 === 1) {
-      doc.setFillColor("#FAFAFA");
-      doc.rect(20, rowY, 170, 8, "F");
-    }
-
-    const isTop3 = row.rank <= 3;
-    doc.setFontSize(9);
-    doc.setFont("helvetica", isTop3 ? "bold" : "normal");
-    doc.setTextColor(isTop3 ? GOLD : "#101828");
-    doc.text(String(row.rank), 23, rowY + 5.5);
-
-    doc.setTextColor(isTop3 ? "#101828" : "#101828");
-    doc.setFont("helvetica", isTop3 ? "bold" : "normal");
-    // Name ggf. kürzen
-    const nameTrunc = row.name.length > 28 ? row.name.slice(0, 27) + "…" : row.name;
-    doc.text(nameTrunc, 35, rowY + 5.5);
-
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor("#101828");
-    doc.text(String(row.score), 105, rowY + 5.5);
-    doc.text(String(row.sessions), 125, rowY + 5.5);
-    doc.text(String(row.completed), 148, rowY + 5.5);
-    doc.text(row.rating !== null ? row.rating.toFixed(1) + " ★" : "–", 173, rowY + 5.5);
-
-    doc.setDrawColor("#f3f4f6");
-    doc.setLineWidth(0.2);
-    doc.line(20, rowY + 8, 190, rowY + 8);
-  }
-
-  addPageFooter(doc, 3);
-
-  // ── Seite 4: Zusammenfassung ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Zusammenfassung", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  // Zusammenfassungsbox
-  doc.setFillColor(BG_LIGHT);
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(20, 38, 170, 40, 3, 3, "FD");
-
-  setBodyText(doc, data.summaryText, 26, 48, 158);
-
-  // Footer-Hinweis
-  doc.setFillColor(BG_LIGHT);
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(20, 90, 170, 18, 3, 3, "FD");
-
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(LIGHT_GREY);
-  doc.text("Dieser Bericht wurde automatisch generiert.", 26, 99);
-  doc.text("BNM – Ein iERA Projekt in Kooperation mit IMAN (iman.ngo).", 26, 105);
-
-  addPageFooter(doc, 4);
-}
-
-// ─── Spenderbericht aufbauen ──────────────────────────────────────────────────
-
-function buildDonorReport(doc: JsPDF, data: DonorReportData) {
-  const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
-
-  // ── Seite 1: Deckblatt ──
-  doc.setFillColor(NAVY);
-  doc.rect(0, 0, 210, 60, "F");
-
-  doc.setFontSize(36);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GOLD);
-  doc.text("BNM", 105, 35, { align: "center" });
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(255, 255, 255);
-  doc.text("BETREUUNG NEUER MUSLIME", 105, 46, { align: "center" });
-
-  drawGoldLine(doc, 80, 75, 130);
-
-  doc.setFontSize(28);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(NAVY);
-  doc.text("Spenderbericht", 105, 110, { align: "center" });
-
-  doc.setFontSize(14);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(GREY);
-  doc.text(data.periodLabel, 105, 122, { align: "center" });
-
-  drawGoldLine(doc, 80, 132, 130);
-
-  doc.setFontSize(10);
-  doc.setTextColor(LIGHT_GREY);
-  doc.text(`Erstellt am: ${today}`, 105, 148, { align: "center" });
-  doc.text("BNM – Ein iERA Projekt in Kooperation mit IMAN", 105, 157, { align: "center" });
-
-  addPageFooter(doc, 1);
-
-  // ── Seite 2: KPIs ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Kennzahlen-Übersicht", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  const kpiBoxW = 52;
-  const kpiBoxH = 22;
-  const kpiGapX = 5;
-  const kpiStartX = 20;
-  let kpiY = 38;
-
-  const religSessions = data.kpis.wuduSessions + data.kpis.salahSessions + data.kpis.koranSessions;
-
-  const kpiRow1 = [
-    { value: String(data.kpis.activeMentorships), label: "Aktive Betreuungen", color: NAVY },
-    { value: String(data.kpis.newRegistrations), label: "Neue Registrierungen", color: NAVY },
-    { value: String(data.kpis.completedInPeriod), label: "Abgeschlossen", color: GREEN },
-  ];
-  kpiRow1.forEach((kpi, i) => {
-    drawKpiBox(doc, kpiStartX + i * (kpiBoxW + kpiGapX), kpiY, kpiBoxW, kpiBoxH, kpi.value, kpi.label, kpi.color);
-  });
-  kpiY += kpiBoxH + 5;
-
-  const kpiRow2 = [
-    { value: String(data.kpis.bnmBoxes), label: "BNM-Boxen", color: NAVY },
-    { value: String(data.kpis.activeMentors), label: "Aktive Mentoren", color: NAVY },
-    { value: String(religSessions), label: "Religiöse Sessions", color: NAVY },
-  ];
-  kpiRow2.forEach((kpi, i) => {
-    drawKpiBox(doc, kpiStartX + i * (kpiBoxW + kpiGapX), kpiY, kpiBoxW, kpiBoxH, kpi.value, kpi.label, kpi.color);
-  });
-
-  addPageFooter(doc, 2);
-
-  // ── Seite 3: Regionale Verteilung ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Regionale Verteilung", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  const totalRegional = data.regionalData.reduce((s, d) => s + d.value, 0);
-  const maxRegional = Math.max(...data.regionalData.map((d) => d.value), 1);
-
-  // Tabellen-Header
-  let tableY = 40;
-  doc.setFillColor(BG_LIGHT);
-  doc.rect(20, tableY, 170, 8, "F");
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GREY);
-  doc.text("Stadt", 23, tableY + 5.5);
-  doc.text("Anteil", 90, tableY + 5.5);
-  doc.text("Anzahl", 155, tableY + 5.5);
-  doc.text("%", 175, tableY + 5.5);
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(20, tableY + 8, 190, tableY + 8);
-
-  tableY += 8;
-
-  if (data.regionalData.length === 0) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(LIGHT_GREY);
-    doc.text("Keine Daten", 105, tableY + 8, { align: "center" });
-  } else {
-    data.regionalData.forEach((d, i) => {
-      const rowY = tableY + i * 10;
-      if (rowY > 270) return;
-      const pct = totalRegional > 0 ? Math.round((d.value / totalRegional) * 100) : 0;
-      const barWidth = Math.round((d.value / maxRegional) * 50); // max 50mm
-
-      if (i % 2 === 1) {
-        doc.setFillColor("#FAFAFA");
-        doc.rect(20, rowY, 170, 10, "F");
-      }
-
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor("#101828");
-      doc.text(d.label, 23, rowY + 6.5);
-
-      // Balken
-      doc.setFillColor("#e5e7eb");
-      doc.roundedRect(85, rowY + 3, 50, 4, 1, 1, "F");
-      if (barWidth > 0) {
-        doc.setFillColor(GOLD);
-        doc.roundedRect(85, rowY + 3, barWidth, 4, 1, 1, "F");
-      }
-
-      doc.text(String(d.value), 155, rowY + 6.5);
-      doc.text(`${pct}%`, 175, rowY + 6.5);
-
-      doc.setDrawColor("#f3f4f6");
-      doc.setLineWidth(0.2);
-      doc.line(20, rowY + 10, 190, rowY + 10);
-    });
-  }
-
-  addPageFooter(doc, 3);
-
-  // ── Seite 4: Session-Typen & Zusammenfassung ──
-  doc.addPage();
-
-  setNavyTitle(doc, "Session-Typen", 20, 25);
-  drawSectionDivider(doc, 30);
-
-  // Tabellen-Header
-  tableY = 40;
-  doc.setFillColor(BG_LIGHT);
-  doc.rect(20, tableY, 170, 8, "F");
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GREY);
-  doc.text("Typ", 23, tableY + 5.5);
-  doc.text("Anzahl", 175, tableY + 5.5, { align: "right" });
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.line(20, tableY + 8, 190, tableY + 8);
-
-  tableY += 8;
-
-  if (data.sessionDistribution.items.length === 0) {
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(LIGHT_GREY);
-    doc.text("Keine Daten", 105, tableY + 8, { align: "center" });
-  } else {
-    data.sessionDistribution.items.forEach((item, i) => {
-      const rowY = tableY + i * 8;
-      if (rowY > 150) return;
-      if (i % 2 === 1) {
-        doc.setFillColor("#FAFAFA");
-        doc.rect(20, rowY, 170, 8, "F");
-      }
-      doc.setFontSize(9);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor("#101828");
-      doc.text(item.label, 23, rowY + 5.5);
-      doc.setFont("helvetica", "bold");
-      doc.text(String(item.value), 185, rowY + 5.5, { align: "right" });
-      doc.setDrawColor("#f3f4f6");
-      doc.setLineWidth(0.2);
-      doc.line(20, rowY + 8, 190, rowY + 8);
-    });
-  }
-
-  const summaryStartY = Math.min(tableY + data.sessionDistribution.items.length * 8 + 12, 160);
-
-  setNavyTitle(doc, "Zusammenfassung", 20, summaryStartY);
-  drawSectionDivider(doc, summaryStartY + 5);
-
-  doc.setFillColor(BG_LIGHT);
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(20, summaryStartY + 9, 170, 35, 3, 3, "FD");
-  setBodyText(doc, data.summaryText, 26, summaryStartY + 18, 158);
-
-  doc.setFillColor(BG_LIGHT);
-  doc.setDrawColor(BORDER);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(20, summaryStartY + 50, 170, 18, 3, 3, "FD");
-  doc.setFontSize(8);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(LIGHT_GREY);
-  doc.text("Dieser Bericht wurde automatisch generiert.", 26, summaryStartY + 59);
-  doc.text("BNM – Ein iERA Projekt in Kooperation mit IMAN (iman.ngo).", 26, summaryStartY + 65);
-
-  addPageFooter(doc, 4);
-}
-
-// ─── Award-Seite aufbauen ─────────────────────────────────────────────────────
-
-function buildAwardPage(doc: JsPDF, data: AwardData) {
-  const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
-
-  // Rahmen
-  doc.setDrawColor(GOLD);
-  doc.setLineWidth(1.5);
-  doc.roundedRect(15, 15, 180, 267, 5, 5, "D");
-
-  // Innerer Rahmen
-  doc.setLineWidth(0.3);
-  doc.roundedRect(18, 18, 174, 261, 4, 4, "D");
-
-  // BNM-Logo
-  doc.setFontSize(36);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GOLD);
-  doc.text("BNM", 105, 55, { align: "center" });
-
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(GREY);
-  doc.text("BETREUUNG NEUER MUSLIME", 105, 64, { align: "center" });
-
-  drawGoldLine(doc, 80, 72, 130);
-
-  // Label
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(GREY);
-  doc.text("AUSZEICHNUNG", 105, 85, { align: "center" });
-
-  // Titel
-  doc.setFontSize(24);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(NAVY);
-  doc.text("Mentor des Monats", 105, 98, { align: "center" });
-
-  // Zeitraum
-  doc.setFontSize(13);
-  doc.setFont("helvetica", "italic");
-  doc.setTextColor(GREY);
-  doc.text(data.period, 105, 109, { align: "center" });
-
-  drawGoldLine(doc, 80, 118, 130);
-
-  // Name
-  doc.setFontSize(30);
-  doc.setFont("helvetica", "bold");
-  doc.setTextColor(GOLD);
-  doc.text(data.mentorName, 105, 140, { align: "center" });
-
-  // Stats-Boxes
-  const statBoxW = 40;
-  const statBoxH = 25;
-  const statY = 155;
-  const statStartX = 105 - 3 * statBoxW / 2 - 10;
-
-  const stats = [
-    { value: String(data.score), label: "Punkte" },
-    { value: String(data.completed), label: "Abschlüsse" },
-    { value: String(data.sessions), label: "Sessions" },
-  ];
-
-  stats.forEach((stat, i) => {
-    const sx = statStartX + i * (statBoxW + 10);
-    doc.setDrawColor(BORDER);
-    doc.setLineWidth(0.3);
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(sx, statY, statBoxW, statBoxH, 3, 3, "FD");
-
-    doc.setFontSize(20);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(NAVY);
-    doc.text(stat.value, sx + statBoxW / 2, statY + 13, { align: "center" });
-
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(GREY);
-    doc.text(stat.label, sx + statBoxW / 2, statY + 20, { align: "center" });
-  });
-
-  drawGoldLine(doc, 80, 192, 130);
-
-  // Footer
-  doc.setFontSize(9);
-  doc.setFont("helvetica", "normal");
-  doc.setTextColor(LIGHT_GREY);
-  doc.text("BNM – Betreuung neuer Muslime · iman.ngo", 105, 205, { align: "center" });
-  doc.text("Ein iERA Projekt in Kooperation mit IMAN", 105, 212, { align: "center" });
-
-  doc.setFontSize(8);
-  doc.text(`Erstellt am: ${today}`, 105, 222, { align: "center" });
-}
-
-// ─── Öffentliche Download-Funktionen ─────────────────────────────────────────
+// ─── Monatsbericht PDF ───────────────────────────────────────────────────────
 
 export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    buildMonthlyReport(doc, data);
-    const filename = `BNM-Monatsbericht-${data.periodLabel.replace(/\s/g, "-")}.pdf`;
-    doc.save(filename);
+    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const W = 595; // A4
+    const H = 842;
+    const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+
+    // ── Seite 1: Deckblatt ──
+    const p1 = doc.addPage([W, H]);
+    p1.drawRectangle({ x: 0, y: H - 120, width: W, height: 120, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p1.drawText("BNM", { x: W / 2 - fontBold.widthOfTextAtSize("BNM", 42) / 2, y: H - 70, size: 42, font: fontBold, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText("BETREUUNG NEUER MUSLIME", { x: W / 2 - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 90, size: 8, font, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+    // Goldene Linie
+    p1.drawRectangle({ x: W / 2 - 30, y: H / 2 + 40, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText("Monatsbericht", { x: W / 2 - fontBold.widthOfTextAtSize("Monatsbericht", 28) / 2, y: H / 2, size: 28, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p1.drawText(data.periodLabel, { x: W / 2 - font.widthOfTextAtSize(data.periodLabel, 14) / 2, y: H / 2 - 24, size: 14, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p1.drawRectangle({ x: W / 2 - 30, y: H / 2 - 50, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText(`Erstellt am: ${today}`, { x: W / 2 - font.widthOfTextAtSize(`Erstellt am: ${today}`, 9) / 2, y: H / 2 - 80, size: 9, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p1.drawText("BNM – Ein iERA Projekt in Kooperation mit IMAN", { x: W / 2 - font.widthOfTextAtSize("BNM – Ein iERA Projekt in Kooperation mit IMAN", 8) / 2, y: H / 2 - 100, size: 8, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    // Footer
+    p1.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p1.drawText("iman.ngo", { x: W / 2 - font.widthOfTextAtSize("iman.ngo", 7) / 2, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p1.drawText("Seite 1", { x: W - 40 - font.widthOfTextAtSize("Seite 1", 7), y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    // ── Seite 2: KPIs ──
+    const p2 = doc.addPage([W, H]);
+    p2.drawRectangle({ x: 0, y: H - 50, width: W, height: 50, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p2.drawText("Monatsbericht", { x: 40, y: H - 35, size: 14, font: fontBold, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+    p2.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 35, size: 10, font, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    p2.drawText("Kennzahlen-Uebersicht", { x: 40, y: H - 80, size: 16, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p2.drawRectangle({ x: 40, y: H - 88, width: 40, height: 2, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    const kpis = [
+      { v: String(data.kpis.activeBetreuungen), l: "Aktive Betreuungen" },
+      { v: String(data.kpis.abgeschlossen), l: "Abgeschlossen" },
+      { v: String(data.kpis.mentoren), l: "Mentoren" },
+      { v: String(data.kpis.mentees), l: "Mentees gesamt" },
+      { v: String(data.kpis.sessions), l: "Sessions gesamt" },
+      { v: String(data.kpis.neueBetreuungen), l: "Neue Betreuungen" },
+    ];
+    const bw = 160; const bh = 50; const gap = 10;
+    kpis.forEach((k, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const bx = 40 + col * (bw + gap);
+      const by = H - 110 - row * (bh + gap);
+      p2.drawRectangle({ x: bx, y: by - bh, width: bw, height: bh, borderColor: rgb(0.9, 0.91, 0.92), borderWidth: 1, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+      p2.drawText(k.v, { x: bx + 10, y: by - 25, size: 22, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p2.drawText(k.l, { x: bx + 10, y: by - 42, size: 8, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    });
+
+    // Mentor des Monats
+    if (data.mentorOfMonth) {
+      const my = H - 250;
+      p2.drawRectangle({ x: 40, y: my - 60, width: W - 80, height: 60, color: rgb(254 / 255, 243 / 255, 199 / 255), borderColor: rgb(GOLD.r, GOLD.g, GOLD.b), borderWidth: 1 });
+      p2.drawText("MENTOR DES MONATS", { x: 55, y: my - 18, size: 8, font: fontBold, color: rgb(146 / 255, 64 / 255, 14 / 255) });
+      p2.drawText(data.mentorOfMonth.name, { x: 55, y: my - 35, size: 16, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p2.drawText(`${data.mentorOfMonth.score} Punkte · ${data.mentorOfMonth.completed} Abschluesse · ${data.mentorOfMonth.sessions} Sessions`, { x: 55, y: my - 50, size: 8, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    }
+
+    p2.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p2.drawText("Seite 2", { x: W - 40 - font.widthOfTextAtSize("Seite 2", 7), y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    // ── Seite 3: Rangliste ──
+    const p3 = doc.addPage([W, H]);
+    p3.drawRectangle({ x: 0, y: H - 50, width: W, height: 50, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p3.drawText("Monatsbericht", { x: 40, y: H - 35, size: 14, font: fontBold, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+    p3.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 35, size: 10, font, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    p3.drawText("Mentor-Rangliste", { x: 40, y: H - 80, size: 16, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p3.drawRectangle({ x: 40, y: H - 88, width: 40, height: 2, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    // Tabelle Header
+    let ty = H - 105;
+    p3.drawRectangle({ x: 40, y: ty - 16, width: W - 80, height: 16, color: rgb(BG.r, BG.g, BG.b) });
+    p3.drawText("#", { x: 45, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p3.drawText("NAME", { x: 70, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p3.drawText("SCORE", { x: 250, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p3.drawText("SESSIONS", { x: 330, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p3.drawText("ABSCHL.", { x: 410, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p3.drawText("BEWERTUNG", { x: 480, y: ty - 12, size: 7, font: fontBold, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    ty -= 18;
+
+    data.rankings.slice(0, 20).forEach((m, i) => {
+      if (i % 2 === 1) p3.drawRectangle({ x: 40, y: ty - 14, width: W - 80, height: 14, color: rgb(0.98, 0.98, 0.98) });
+      const isTop3 = m.rank <= 3;
+      const c = isTop3 ? rgb(GOLD.r, GOLD.g, GOLD.b) : rgb(NAVY.r, NAVY.g, NAVY.b);
+      const f = isTop3 ? fontBold : font;
+      p3.drawText(String(m.rank), { x: 45, y: ty - 10, size: 8, font: f, color: c });
+      p3.drawText(m.name, { x: 70, y: ty - 10, size: 8, font: f, color: c });
+      p3.drawText(String(m.score), { x: 250, y: ty - 10, size: 8, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p3.drawText(String(m.sessions), { x: 330, y: ty - 10, size: 8, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p3.drawText(String(m.completed), { x: 410, y: ty - 10, size: 8, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p3.drawText(m.rating !== null ? `${m.rating.toFixed(1)} ★` : "–", { x: 480, y: ty - 10, size: 8, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      ty -= 16;
+    });
+
+    p3.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p3.drawText("Seite 3", { x: W - 40 - font.widthOfTextAtSize("Seite 3", 7), y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    // ── Seite 4: Zusammenfassung ──
+    const p4 = doc.addPage([W, H]);
+    p4.drawRectangle({ x: 0, y: H - 50, width: W, height: 50, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p4.drawText("Monatsbericht", { x: 40, y: H - 35, size: 14, font: fontBold, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+
+    p4.drawText("Zusammenfassung", { x: 40, y: H - 80, size: 16, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p4.drawRectangle({ x: 40, y: H - 88, width: 40, height: 2, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    // Text umbrechen
+    const maxLineW = W - 100;
+    const words = data.summaryText.split(" ");
+    let line = "";
+    let sy = H - 110;
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (font.widthOfTextAtSize(test, 10) > maxLineW) {
+        p4.drawText(line, { x: 50, y: sy, size: 10, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+        sy -= 16;
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) p4.drawText(line, { x: 50, y: sy, size: 10, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+
+    p4.drawText("Automatisch generiert. BNM – Ein iERA Projekt in Kooperation mit IMAN (iman.ngo).", { x: 40, y: 60, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p4.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p4.drawText("Seite 4", { x: W - 40 - font.widthOfTextAtSize("Seite 4", 7), y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    const bytes = await doc.save();
+    triggerDownload(bytes, `BNM-Monatsbericht-${data.period}.pdf`);
     return true;
   } catch {
     return false;
   }
 }
+
+// ─── Mentor Award PDF ────────────────────────────────────────────────────────
 
 export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    buildAwardPage(doc, data);
-    const filename = `BNM-Mentor-des-Monats-${data.period.replace(/\s/g, "-")}.pdf`;
-    doc.save(filename);
+    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const W = 595; const H = 842;
+
+    const p = doc.addPage([W, H]);
+
+    // Goldener Rahmen
+    p.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(GOLD.r, GOLD.g, GOLD.b), borderWidth: 3, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+
+    const cx = W / 2;
+    p.drawText("BNM", { x: cx - fontBold.widthOfTextAtSize("BNM", 36) / 2, y: H - 120, size: 36, font: fontBold, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p.drawText("BETREUUNG NEUER MUSLIME", { x: cx - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 140, size: 8, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p.drawRectangle({ x: cx - 30, y: H - 170, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p.drawText("AUSZEICHNUNG", { x: cx - font.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: H - 200, size: 10, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p.drawText("Mentor des Monats", { x: cx - fontBold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: H - 240, size: 24, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p.drawText(data.period, { x: cx - font.widthOfTextAtSize(data.period, 12) / 2, y: H - 265, size: 12, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p.drawRectangle({ x: cx - 30, y: H - 290, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p.drawText(data.mentorName, { x: cx - fontBold.widthOfTextAtSize(data.mentorName, 28) / 2, y: H - 340, size: 28, font: fontBold, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    // Stats
+    const stats = [
+      { v: String(data.score), l: "Punkte" },
+      { v: String(data.completed), l: "Abschluesse" },
+      { v: String(data.sessions), l: "Sessions" },
+    ];
+    stats.forEach((s, i) => {
+      const sx = 120 + i * 140;
+      p.drawRectangle({ x: sx, y: H - 430, width: 110, height: 50, borderColor: rgb(0.9, 0.91, 0.92), borderWidth: 1, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+      p.drawText(s.v, { x: sx + 55 - fontBold.widthOfTextAtSize(s.v, 20) / 2, y: H - 410, size: 20, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p.drawText(s.l, { x: sx + 55 - font.widthOfTextAtSize(s.l, 8) / 2, y: H - 425, size: 8, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    });
+
+    p.drawRectangle({ x: cx - 30, y: H - 470, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p.drawText("BNM – Betreuung neuer Muslime · iman.ngo", { x: cx - font.widthOfTextAtSize("BNM – Betreuung neuer Muslime · iman.ngo", 8) / 2, y: H - 500, size: 8, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    const bytes = await doc.save();
+    triggerDownload(bytes, `BNM-Mentor-des-Monats-${data.period}.pdf`);
     return true;
   } catch {
     return false;
   }
 }
 
+// ─── Spenderbericht PDF ──────────────────────────────────────────────────────
+
 export async function downloadDonorReportPDF(data: DonorReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { jsPDF } = await import("jspdf");
-    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
-    buildDonorReport(doc, data);
-    const filename = `BNM-Spenderbericht-${data.periodLabel.replace(/\s/g, "-")}.pdf`;
-    doc.save(filename);
+    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const W = 595; const H = 842;
+    const today = new Date().toLocaleDateString("de-DE", { day: "2-digit", month: "long", year: "numeric" });
+
+    // Seite 1: Deckblatt
+    const p1 = doc.addPage([W, H]);
+    p1.drawRectangle({ x: 0, y: H - 120, width: W, height: 120, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p1.drawText("BNM", { x: W / 2 - fontBold.widthOfTextAtSize("BNM", 42) / 2, y: H - 70, size: 42, font: fontBold, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText("BETREUUNG NEUER MUSLIME", { x: W / 2 - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 90, size: 8, font, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+    p1.drawRectangle({ x: W / 2 - 30, y: H / 2 + 40, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText("Spenderbericht", { x: W / 2 - fontBold.widthOfTextAtSize("Spenderbericht", 28) / 2, y: H / 2, size: 28, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p1.drawText(data.periodLabel, { x: W / 2 - font.widthOfTextAtSize(data.periodLabel, 14) / 2, y: H / 2 - 24, size: 14, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    p1.drawRectangle({ x: W / 2 - 30, y: H / 2 - 50, width: 60, height: 3, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+    p1.drawText(`Erstellt am: ${today}`, { x: W / 2 - font.widthOfTextAtSize(`Erstellt am: ${today}`, 9) / 2, y: H / 2 - 80, size: 9, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p1.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    // Seite 2: KPIs
+    const p2 = doc.addPage([W, H]);
+    p2.drawRectangle({ x: 0, y: H - 50, width: W, height: 50, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p2.drawText("Spenderbericht", { x: 40, y: H - 35, size: 14, font: fontBold, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+    p2.drawText(data.periodLabel, { x: W - 40 - font.widthOfTextAtSize(data.periodLabel, 10), y: H - 35, size: 10, font, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    p2.drawText("Kennzahlen-Uebersicht", { x: 40, y: H - 80, size: 16, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    p2.drawRectangle({ x: 40, y: H - 88, width: 40, height: 2, color: rgb(GOLD.r, GOLD.g, GOLD.b) });
+
+    const dkpis = [
+      { v: String(data.kpis.activeMentorships), l: "Aktive Betreuungen" },
+      { v: String(data.kpis.newRegistrations), l: "Neue Registrierungen" },
+      { v: String(data.kpis.completedInPeriod), l: "Abgeschlossen" },
+      { v: String(data.kpis.bnmBoxes), l: "BNM-Boxen" },
+      { v: String(data.kpis.activeMentors), l: "Aktive Mentoren" },
+      { v: String(data.kpis.wuduSessions + data.kpis.salahSessions + data.kpis.koranSessions), l: "Religioese Sessions" },
+    ];
+    dkpis.forEach((k, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const bx = 40 + col * 170;
+      const by = H - 110 - row * 55;
+      p2.drawRectangle({ x: bx, y: by - 50, width: 160, height: 50, borderColor: rgb(0.9, 0.91, 0.92), borderWidth: 1, color: rgb(WHITE.r, WHITE.g, WHITE.b) });
+      p2.drawText(k.v, { x: bx + 10, y: by - 25, size: 22, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+      p2.drawText(k.l, { x: bx + 10, y: by - 42, size: 8, font, color: rgb(GRAY.r, GRAY.g, GRAY.b) });
+    });
+
+    p2.drawText("Zusammenfassung", { x: 40, y: H - 260, size: 14, font: fontBold, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+    // Text umbrechen
+    const maxW2 = W - 100;
+    const w2 = data.summaryText.split(" ");
+    let l2 = ""; let sy2 = H - 285;
+    for (const word of w2) {
+      const test = l2 ? `${l2} ${word}` : word;
+      if (font.widthOfTextAtSize(test, 9) > maxW2) {
+        p2.drawText(l2, { x: 50, y: sy2, size: 9, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+        sy2 -= 14;
+        l2 = word;
+      } else { l2 = test; }
+    }
+    if (l2) p2.drawText(l2, { x: 50, y: sy2, size: 9, font, color: rgb(NAVY.r, NAVY.g, NAVY.b) });
+
+    p2.drawText("BNM · Vertraulich", { x: 40, y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+    p2.drawText("Seite 2", { x: W - 40 - font.widthOfTextAtSize("Seite 2", 7), y: 30, size: 7, font, color: rgb(LGRAY.r, LGRAY.g, LGRAY.b) });
+
+    const bytes = await doc.save();
+    triggerDownload(bytes, `BNM-Spenderbericht-${data.periodLabel}.pdf`);
     return true;
   } catch {
     return false;
