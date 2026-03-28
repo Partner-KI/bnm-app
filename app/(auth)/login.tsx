@@ -225,6 +225,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 24,
+    paddingBottom: 32,
+    // Auf Web: Formular auf max. 480px begrenzen und zentrieren
+    ...(Platform.OS === "web" ? {
+      maxWidth: 480,
+      width: "100%",
+      alignSelf: "center" as const,
+    } : {}),
   },
   welcomeTitle: {
     fontSize: 24,
@@ -247,6 +254,7 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "web" ? 8 : 10,
     marginBottom: 10,
     fontSize: 14,
+    minHeight: 44,
   },
   passwordRow: {
     flexDirection: "row",
@@ -255,6 +263,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 10,
     overflow: "hidden",
+    minHeight: 44,
   },
   passwordInput: {
     flex: 1,
@@ -290,6 +299,8 @@ const styles = StyleSheet.create({
     paddingVertical: Platform.OS === "web" ? 9 : 10,
     alignItems: "center",
     marginBottom: 12,
+    minHeight: 44,
+    justifyContent: "center",
   },
   loginButtonText: {
     color: COLORS.white,
@@ -311,6 +322,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     alignItems: "center",
     marginBottom: 20,
+    minHeight: 44,
+    justifyContent: "center",
   },
   publicRegisterText: {
     color: COLORS.primary,

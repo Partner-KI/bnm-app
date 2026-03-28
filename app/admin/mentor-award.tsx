@@ -273,10 +273,13 @@ export default function MentorAwardScreen() {
           >
             {/* Goldener Header-Streifen */}
             <View style={styles.awardHeader}>
-              <BNMLogo size={64} showSubtitle={false} />
+              <BNMLogo size={72} showSubtitle={false} />
               <Text style={styles.awardHeaderTitle}>{t("mentorAward.awardTitle")}</Text>
               <Text style={styles.awardHeaderSub}>{t("mentorAward.awardSub")}</Text>
             </View>
+
+            {/* Dekorativer Goldstreifen */}
+            <View style={styles.awardTopAccent} />
 
             {/* Sterne */}
             <View style={styles.starsRow}>
@@ -285,16 +288,26 @@ export default function MentorAwardScreen() {
               ))}
             </View>
 
-            {/* Mentor-Name */}
-            <Text style={styles.awardMentorName}>{displayMentorName}</Text>
+            {/* Auszeichnungs-Label */}
+            <Text style={styles.awardCertLabel}>AUSZEICHNUNG</Text>
+
+            {/* Mentor-Name mit Deko-Linien */}
+            <View style={styles.awardNameRow}>
+              <View style={styles.awardNameLine} />
+              <Text style={styles.awardMentorName}>{displayMentorName}</Text>
+              <View style={styles.awardNameLine} />
+            </View>
 
             {/* Monat / Jahr */}
             <Text style={styles.awardPeriod}>
               {getMonthName(displayMonth, "de")} {displayYear}
             </Text>
 
-            {/* Trennlinie */}
-            <View style={styles.awardDivider} />
+            {/* Doppel-Trennlinie */}
+            <View style={styles.awardDividerWrapper}>
+              <View style={styles.awardDivider} />
+              <View style={styles.awardDividerThin} />
+            </View>
 
             {/* Stats */}
             <View style={styles.awardStatsRow}>
@@ -314,8 +327,12 @@ export default function MentorAwardScreen() {
               </View>
             </View>
 
-            {/* Footer */}
-            <Text style={styles.awardFooter}>{t("mentorAward.awardFooter")}</Text>
+            {/* Footer mit Unterschrift-Deko */}
+            <View style={styles.awardFooterWrapper}>
+              <View style={styles.awardFooterLine} />
+              <Text style={styles.awardFooter}>{t("mentorAward.awardFooter")}</Text>
+              <Text style={styles.awardFooterOrg}>Become a New Muslim (BNM)</Text>
+            </View>
           </View>
 
           {/* Aktions-Buttons */}
@@ -409,66 +426,123 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 20,
     backgroundColor: "#FFFDF5",
+    // Dezenter Schatten
+    shadowColor: COLORS.gold,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.18,
+    shadowRadius: 12,
+    elevation: 6,
   },
   awardHeader: {
     backgroundColor: "#101828",
     alignItems: "center",
-    paddingVertical: 28,
+    paddingVertical: 32,
     paddingHorizontal: 24,
-    gap: 8,
+    gap: 10,
   },
   awardHeaderTitle: {
     color: COLORS.gold,
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "800",
-    letterSpacing: 2,
+    letterSpacing: 3,
     textAlign: "center",
+    textTransform: "uppercase" as const,
   },
   awardHeaderSub: {
-    color: "#8E8E9A",
-    fontSize: 13,
+    color: "rgba(255,255,255,0.45)",
+    fontSize: 12,
     textAlign: "center",
-    letterSpacing: 1,
+    letterSpacing: 1.5,
   },
-  starsRow: { flexDirection: "row", justifyContent: "center", paddingTop: 20, gap: 6 },
-  starChar: { fontSize: 28, color: COLORS.gold },
+  awardTopAccent: {
+    height: 4,
+    backgroundColor: COLORS.gold,
+    opacity: 0.85,
+  },
+  starsRow: { flexDirection: "row", justifyContent: "center", paddingTop: 24, gap: 8 },
+  starChar: { fontSize: 22, color: COLORS.gold },
+  awardCertLabel: {
+    textAlign: "center",
+    fontSize: 10,
+    fontWeight: "700",
+    color: "#9CA3AF",
+    letterSpacing: 4,
+    marginTop: 10,
+    marginBottom: 16,
+  },
+  awardNameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 24,
+    gap: 12,
+  },
+  awardNameLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: COLORS.gold,
+    opacity: 0.4,
+  },
   awardMentorName: {
     textAlign: "center",
-    fontSize: 30,
+    fontSize: 28,
     fontWeight: "900",
     color: "#101828",
-    marginTop: 12,
-    marginHorizontal: 24,
-    letterSpacing: 1,
+    letterSpacing: 0.5,
+    flexShrink: 1,
   },
   awardPeriod: {
     textAlign: "center",
-    fontSize: 16,
+    fontSize: 14,
     color: "#6B7280",
-    marginTop: 6,
-    letterSpacing: 2,
-    marginBottom: 16,
+    marginTop: 8,
+    letterSpacing: 2.5,
+    marginBottom: 20,
+    fontStyle: "italic" as const,
   },
-  awardDivider: { height: 2, backgroundColor: COLORS.gold, marginHorizontal: 48, opacity: 0.5 },
+  awardDividerWrapper: {
+    marginHorizontal: 40,
+    gap: 3,
+    marginBottom: 4,
+  },
+  awardDivider: { height: 2, backgroundColor: COLORS.gold, opacity: 0.6 },
+  awardDividerThin: { height: 1, backgroundColor: COLORS.gold, opacity: 0.25 },
   awardStatsRow: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    paddingVertical: 20,
+    paddingVertical: 24,
     paddingHorizontal: 16,
   },
   awardStatItem: { alignItems: "center", flex: 1 },
-  awardStatValue: { fontSize: 28, fontWeight: "800", color: "#101828" },
-  awardStatLabel: { fontSize: 11, color: "#6B7280", marginTop: 2, textAlign: "center" },
-  awardStatDivider: { width: 1, height: 40, backgroundColor: "#E5E7EB" },
+  awardStatValue: { fontSize: 30, fontWeight: "800", color: "#101828" },
+  awardStatLabel: { fontSize: 10, color: "#9CA3AF", marginTop: 4, textAlign: "center", letterSpacing: 0.5, fontWeight: "600" as const },
+  awardStatDivider: { width: 1, height: 44, backgroundColor: "#E5E7EB" },
+  awardFooterWrapper: {
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingBottom: 20,
+    gap: 6,
+  },
+  awardFooterLine: {
+    width: 64,
+    height: 2,
+    backgroundColor: COLORS.gold,
+    opacity: 0.35,
+    marginBottom: 6,
+  },
   awardFooter: {
     textAlign: "center",
-    fontSize: 12,
+    fontSize: 11,
     color: "#9CA3AF",
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: "#E5E7EB",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
+    fontStyle: "italic" as const,
+  },
+  awardFooterOrg: {
+    textAlign: "center",
+    fontSize: 10,
+    color: "#D1D5DB",
+    letterSpacing: 0.8,
+    fontWeight: "600" as const,
   },
 
   // Aktionen
