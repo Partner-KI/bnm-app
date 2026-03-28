@@ -35,7 +35,7 @@ function calculateMatchScore(mentee: User, mentor: User): MatchScore {
   if (mentor.gender !== mentee.gender) {
     return { mentor, score: -1, reasonKeys: ["assign.reasonGenderMismatch"], distanceKm: null };
   }
-  score += 40;
+  // Geschlecht passt immer (vorher gefiltert) — kein Score, nur Anzeige
   reasonKeys.push("assign.reasonGenderMatch");
 
   // PLZ-basiertes Distanz-Matching
@@ -140,7 +140,7 @@ export default function AssignScreen() {
       .sort((a, b) => b.score - a.score);
   }, [selectedMentee, users, isMentor]);
 
-  const maxPossibleScore = 105;
+  const maxPossibleScore = 65;
 
   async function handleAssign() {
     if (!user) return;
