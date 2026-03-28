@@ -744,8 +744,9 @@ function MentorDashboard() {
     return hadithe[idx];
   }, [hadithe, hadithOffset]);
 
-  // XP-basiertes Level-System
-  const myXP = (user?.total_xp ?? 0) as number;
+  // XP-basiertes Level-System — frische Daten aus DataContext (nicht Auth-Cache)
+  const freshUser = users.find((u) => u.id === user?.id);
+  const myXP = (freshUser?.total_xp ?? user?.total_xp ?? 0) as number;
   const currentLevel = getLevelForXP(myXP);
   const nextLevel = getNextLevel(myXP);
   const xpProgress = getLevelProgress(myXP);
