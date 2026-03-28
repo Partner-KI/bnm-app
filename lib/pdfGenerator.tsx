@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
 
 // ============================================================
 // PDF-Generator für BNM-Berichte
@@ -97,7 +98,7 @@ function triggerDownload(bytes: Uint8Array, filename: string) {
 export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+    // pdf-lib ist statisch importiert (oben)
 
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
@@ -232,7 +233,10 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
     const bytes = await doc.save();
     triggerDownload(bytes, `BNM-Monatsbericht-${data.period}.pdf`);
     return true;
-  } catch {
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      window.alert("PDF-Fehler: " + (err instanceof Error ? err.message : String(err)));
+    }
     return false;
   }
 }
@@ -242,7 +246,7 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+    // pdf-lib ist statisch importiert (oben)
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -282,7 +286,10 @@ export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> 
     const bytes = await doc.save();
     triggerDownload(bytes, `BNM-Mentor-des-Monats-${data.period}.pdf`);
     return true;
-  } catch {
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      window.alert("PDF-Fehler: " + (err instanceof Error ? err.message : String(err)));
+    }
     return false;
   }
 }
@@ -292,7 +299,7 @@ export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> 
 export async function downloadDonorReportPDF(data: DonorReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const { PDFDocument, rgb, StandardFonts } = await import("pdf-lib");
+    // pdf-lib ist statisch importiert (oben)
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -359,7 +366,10 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
     const bytes = await doc.save();
     triggerDownload(bytes, `BNM-Spenderbericht-${data.periodLabel}.pdf`);
     return true;
-  } catch {
+  } catch (err) {
+    if (typeof window !== "undefined") {
+      window.alert("PDF-Fehler: " + (err instanceof Error ? err.message : String(err)));
+    }
     return false;
   }
 }
