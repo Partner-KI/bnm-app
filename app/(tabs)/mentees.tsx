@@ -1196,8 +1196,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 2,
   },
-  pageTitle: { fontSize: 24, fontWeight: "700", marginBottom: 2 },
-  pageSubtitle: { fontSize: 13 },
+  pageTitle: { fontSize: 24, fontWeight: "700", marginBottom: 2, textAlign: "center" as const },
+  pageSubtitle: { fontSize: 13, textAlign: "center" as const },
   csvButton: {
     borderWidth: 1,
     borderRadius: 6,

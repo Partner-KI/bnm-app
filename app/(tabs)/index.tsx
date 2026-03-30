@@ -2127,11 +2127,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 8,
   },
-  hadithCardHeader: { flexDirection: "row", alignItems: "center", marginBottom: 10, gap: 8 },
+  hadithCardHeader: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 10, gap: 8 },
   hadithStar: { color: COLORS.gold, fontSize: 18 },
   hadithCardLabel: { fontWeight: "700", color: COLORS.primary, fontSize: 14 },
-  hadithCardText: { color: COLORS.secondary, fontSize: 13, lineHeight: 21, fontStyle: "italic", marginBottom: 8 },
-  hadithCardQuelle: { color: COLORS.tertiary, fontSize: 11, marginBottom: 8, fontWeight: "500" },
+  hadithCardText: { color: COLORS.secondary, fontSize: 13, lineHeight: 21, fontStyle: "italic", marginBottom: 8, textAlign: "center" },
+  hadithCardQuelle: { color: COLORS.tertiary, fontSize: 11, marginBottom: 8, fontWeight: "500", textAlign: "center" },
   hadithCardLink: { color: COLORS.link, fontSize: 13, fontWeight: "600" },
   pendingApprovalsButton: {
     flexDirection: "row",
@@ -2298,6 +2298,7 @@ const styles = StyleSheet.create({
   motivationActionsRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "center",
     gap: 12,
     marginTop: 8,
   },

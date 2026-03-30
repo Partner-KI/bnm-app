@@ -467,8 +467,8 @@ export default function LeaderboardScreen() {
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
   page: { padding: 24 },
-  pageTitle: { fontSize: 28, fontWeight: "800", marginBottom: 4, letterSpacing: -0.3 },
-  pageSubtitle: { marginBottom: 24, fontSize: 13 },
+  pageTitle: { fontSize: 28, fontWeight: "800", marginBottom: 4, letterSpacing: -0.3, textAlign: "center" as const },
+  pageSubtitle: { marginBottom: 24, fontSize: 13, textAlign: "center" as const },
 
   // Eigene Position (prominente Card ganz oben)
   myPositionCard: {
