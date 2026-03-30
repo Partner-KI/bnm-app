@@ -94,11 +94,6 @@ function calculateMatchScore(mentee: User, mentor: User): MatchScore {
   else if (ageDiff <= 7) { score += 10; reasonKeys.push("assign.reasonAgeClose"); }
   else if (ageDiff <= 12) { score += 5; reasonKeys.push("assign.reasonAgeGroup"); }
 
-  if (mentor.contact_preference === mentee.contact_preference) {
-    score += 10;
-    reasonKeys.push("assign.reasonSameContact");
-  }
-
   return { mentor, score, reasonKeys, distanceKm };
 }
 
@@ -145,7 +140,7 @@ export default function AssignScreen() {
       .sort((a, b) => b.score - a.score);
   }, [selectedMentee, users, isMentor]);
 
-  const maxPossibleScore = 65;
+  const maxPossibleScore = 55; // Entfernung (max 40) + Alter (max 15)
 
   // Automatisch den besten Mentor vorauswählen wenn noch keiner gewählt
   React.useEffect(() => {

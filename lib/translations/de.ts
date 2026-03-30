@@ -1706,6 +1706,15 @@ const de = {
   "xpOverview.streak": "Tägliche Aktivität (Streak)",
   "xpOverview.thanks": "Danke erhalten",
 
+  // Matching-Übersicht (Admin)
+  "matchingOverview.title": "Matching-System",
+  "matchingOverview.subtitle": "So wird die Kompatibilität berechnet",
+  "matchingOverview.distance": "Entfernung (PLZ)",
+  "matchingOverview.age": "Alter",
+  "matchingOverview.gender": "Geschlecht",
+  "matchingOverview.genderMust": "Muss übereinstimmen (Pflicht)",
+  "matchingOverview.formula": "Berechnung des Match-Prozents:",
+
   // Mentor Dashboard – Bewertungen & Vernachlässigungs-Warnungen
   "mentor.myRatings": "Meine Bewertungen",
   "mentor.avgRating": "Durchschnittsbewertung",

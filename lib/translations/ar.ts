@@ -1704,6 +1704,15 @@ const ar: Record<TranslationKeys, string> = {
   "xpOverview.streak": "نشاط يومي (سلسلة)",
   "xpOverview.thanks": "تم تلقي شكر",
 
+  // نظرة عامة على نظام المطابقة (المشرف)
+  "matchingOverview.title": "نظام المطابقة",
+  "matchingOverview.subtitle": "كيف يتم حساب التوافق",
+  "matchingOverview.distance": "المسافة (الرمز البريدي)",
+  "matchingOverview.age": "العمر",
+  "matchingOverview.gender": "الجنس",
+  "matchingOverview.genderMust": "يجب أن يتطابق (إلزامي)",
+  "matchingOverview.formula": "حساب نسبة المطابقة:",
+
   // لوحة تحكم المرشد – التقييمات وتحذيرات الإهمال
   "mentor.myRatings": "تقييماتي",
   "mentor.avgRating": "متوسط التقييم",

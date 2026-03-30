@@ -1704,6 +1704,15 @@ const tr: Record<TranslationKeys, string> = {
   "xpOverview.streak": "Günlük aktivite (seri)",
   "xpOverview.thanks": "Teşekkür alındı",
 
+  // Eşleşme Genel Bakış (Admin)
+  "matchingOverview.title": "Eşleşme Sistemi",
+  "matchingOverview.subtitle": "Uyumluluk nasıl hesaplanır",
+  "matchingOverview.distance": "Mesafe (PKZ)",
+  "matchingOverview.age": "Yaş",
+  "matchingOverview.gender": "Cinsiyet",
+  "matchingOverview.genderMust": "Eşleşmeli (zorunlu)",
+  "matchingOverview.formula": "Eşleşme yüzdesi hesaplama:",
+
   // Mentor Dashboard – Değerlendirmeler & İhmal Uyarıları
   "mentor.myRatings": "Değerlendirmelerim",
   "mentor.avgRating": "Ortalama Değerlendirme",

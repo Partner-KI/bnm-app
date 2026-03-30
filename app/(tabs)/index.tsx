@@ -587,8 +587,56 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             </View>
             </DashboardRow>
 
-            {/* Balkendiagramm: Neue Betreuungen pro Monat (volle Breite) */}
-            <MonthlyChart mentorships={mentorships} />
+            {/* Balkendiagramm + Matching-Info (Row) */}
+            <DashboardRow>
+            <View style={styles.dashCol}>
+              <MonthlyChart mentorships={mentorships} />
+            </View>
+            <View style={[styles.card, styles.dashCol, { backgroundColor: themeColors.card }]}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 }}>
+                <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: COLORS.gradientStart + "18", alignItems: "center", justifyContent: "center" }}>
+                  <Ionicons name="git-compare-outline" size={18} color={COLORS.gradientStart} />
+                </View>
+                <View>
+                  <Text style={[styles.cardTitle, { color: themeColors.text, marginBottom: 0 }]}>{t("matchingOverview.title")}</Text>
+                  <Text style={{ color: themeColors.textTertiary, fontSize: 11, marginTop: 1 }}>{t("matchingOverview.subtitle")}</Text>
+                </View>
+              </View>
+
+              {/* Scoring-Tabelle */}
+              {[
+                { label: t("matchingOverview.distance"), max: "40", icon: "location-outline" as const, desc: "≤5km=40 · ≤15km=30 · ≤25km=20 · ≤50km=10" },
+                { label: t("matchingOverview.age"), max: "15", icon: "people-outline" as const, desc: "±3J=15 · ±7J=10 · ±12J=5" },
+                { label: t("matchingOverview.gender"), max: "—", icon: "male-female-outline" as const, desc: t("matchingOverview.genderMust") },
+              ].map((item, i) => (
+                <View key={i} style={{
+                  flexDirection: "row", alignItems: "center", paddingVertical: 10,
+                  borderBottomWidth: i < 2 ? 1 : 0, borderBottomColor: themeColors.border, gap: 12,
+                }}>
+                  <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: isDark ? "#1E1E2A" : "#f5f5f7", alignItems: "center", justifyContent: "center" }}>
+                    <Ionicons name={item.icon} size={15} color={themeColors.textSecondary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ color: themeColors.text, fontSize: 13, fontWeight: "600" }}>{item.label}</Text>
+                    <Text style={{ color: themeColors.textTertiary, fontSize: 10, marginTop: 2 }}>{item.desc}</Text>
+                  </View>
+                  <View style={{ backgroundColor: COLORS.gradientStart + "15", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+                    <Text style={{ color: isDark ? "#42A5F5" : COLORS.gradientStart, fontSize: 12, fontWeight: "800" }}>max {item.max}</Text>
+                  </View>
+                </View>
+              ))}
+
+              {/* Formel */}
+              <View style={{ marginTop: 12, backgroundColor: isDark ? "#1E1E2A" : "#f5f5f7", borderRadius: 10, padding: 12 }}>
+                <Text style={{ color: themeColors.textSecondary, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
+                  {t("matchingOverview.formula")}
+                </Text>
+                <Text style={{ color: isDark ? "#FFCA28" : COLORS.gold, fontSize: 13, fontWeight: "800", textAlign: "center", marginTop: 4 }}>
+                  Match% = Punkte / 55 × 100
+                </Text>
+              </View>
+            </View>
+            </DashboardRow>
 
         </>
 

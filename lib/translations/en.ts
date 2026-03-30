@@ -1704,6 +1704,15 @@ const en: Record<TranslationKeys, string> = {
   "xpOverview.streak": "Daily activity (streak)",
   "xpOverview.thanks": "Thanks received",
 
+  // Matching Overview (Admin)
+  "matchingOverview.title": "Matching System",
+  "matchingOverview.subtitle": "How compatibility is calculated",
+  "matchingOverview.distance": "Distance (ZIP)",
+  "matchingOverview.age": "Age",
+  "matchingOverview.gender": "Gender",
+  "matchingOverview.genderMust": "Must match (required)",
+  "matchingOverview.formula": "Match percentage calculation:",
+
   // Mentor Dashboard – Ratings & Neglect Warnings
   "mentor.myRatings": "My Ratings",
   "mentor.avgRating": "Average Rating",
