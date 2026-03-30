@@ -863,7 +863,7 @@ function MentorDashboard() {
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
-      <View style={styles.page}>
+      <View style={[styles.page, styles.centeredPage]}>
         {/* ── Greeting (zentriert wie Mentee) ────────────────────────── */}
         <View style={[styles.mentorGreetingRow, { justifyContent: "center", alignItems: "center" }]}>
           <View style={{ alignItems: "center" }}>
@@ -1276,7 +1276,7 @@ function MenteeDashboard() {
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
-      <View style={styles.page}>
+      <View style={[styles.page, styles.centeredPage]}>
 
         {/* ── Greeting ──────────────────────────────────────────────── */}
         <View style={[styles.mentorGreetingRow, { justifyContent: "center", alignItems: "center" }]}>
@@ -1576,6 +1576,7 @@ function MonthlyChart({ mentorships }: { mentorships: Mentorship[] }) {
 const styles = StyleSheet.create({
   scrollView: { flex: 1, backgroundColor: COLORS.bg },
   page: { padding: 24 },
+  centeredPage: { maxWidth: 700, width: "100%", alignSelf: "center" as const },
   headerRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 16 },
 
   // Admin Header

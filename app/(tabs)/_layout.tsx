@@ -137,6 +137,11 @@ function TabsLayout() {
         tabBarStyle: {
           backgroundColor: themeColors.tabBar,
           borderTopColor: themeColors.tabBarBorder,
+          minHeight: 56,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "600",
         },
         headerStyle: {
           backgroundColor: themeColors.headerBackground,
