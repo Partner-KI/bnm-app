@@ -864,14 +864,14 @@ function MentorDashboard() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
-        {/* ── Greeting ────────────────────────────────────────────────── */}
-        <View style={styles.mentorGreetingRow}>
-          <View style={{ flex: 1 }}>
-            <Text style={[styles.mentorGreetingLabel, { color: isDark ? COLORS.gold : COLORS.gradientStart }]}>
+        {/* ── Greeting (zentriert wie Mentee) ────────────────────────── */}
+        <View style={[styles.mentorGreetingRow, { justifyContent: "center", alignItems: "center" }]}>
+          <View style={{ alignItems: "center" }}>
+            <Text style={[styles.mentorGreetingLabel, { color: isDark ? COLORS.gold : COLORS.gradientStart, textAlign: "center" }]}>
               WILLKOMMEN
             </Text>
-            <Text style={[styles.mentorGreetingName, { color: themeColors.text }]}>{user.name}</Text>
-            <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary }]}>
+            <Text style={[styles.mentorGreetingName, { color: themeColors.text, textAlign: "center" }]}>{user.name}</Text>
+            <Text style={[styles.mentorGreetingMeta, { color: themeColors.textSecondary, textAlign: "center" }]}>
               {user.city} · {user.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
             </Text>
           </View>
@@ -880,7 +880,7 @@ function MentorDashboard() {
         {/* ── 4 KPI-Cards ─────────────────────────────────────────────── */}
         {mentorStats && (
           <>
-            <KpiGrid style={{ marginBottom: 12 }}>
+            <KpiGrid style={{ marginBottom: 16, justifyContent: "center" }}>
               <StatCard label={t("dashboard.statsActive")} value={mentorStats.active} color={COLORS.gradientStart} iconName="people-outline" />
               <StatCard label={t("dashboard.statsCompleted")} value={mentorStats.completed} color={COLORS.cta} iconName="checkmark-circle-outline" />
               <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="document-text-outline" />
@@ -2091,23 +2091,23 @@ const styles = StyleSheet.create({
   completeNowButtonText: { color: COLORS.primary, fontWeight: "700", fontSize: 13 },
   congratsBanner: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 16,
     alignItems: "center",
   },
-  congratsEmoji: { fontSize: 32, marginBottom: 6 },
-  congratsTitle: { fontWeight: "700", fontSize: 18, marginBottom: 4 },
-  congratsText: { fontSize: 14, textAlign: "center" },
+  congratsEmoji: { fontSize: 32, marginBottom: 8 },
+  congratsTitle: { fontWeight: "800", fontSize: 18, marginBottom: 6 },
+  congratsText: { fontSize: 14, textAlign: "center", fontWeight: "400" },
   feedbackBanner: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 10,
+    gap: 12,
   },
   feedbackBannerText: { fontWeight: "600", fontSize: 13, flex: 1 },
   feedbackBannerButton: {
@@ -2760,26 +2760,31 @@ const styles = StyleSheet.create({
 
   // ── Mentee Dashboard Redesign ──────────────────────────────────────────
   menteeInfoCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
-    marginBottom: 14,
+    padding: 16,
+    marginBottom: 16,
   },
   menteeInfoCardTitle: {
     fontSize: 10,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 2,
+    fontWeight: "800",
+    letterSpacing: 1.2,
+    marginBottom: 3,
   },
   menteeInfoCardName: {
     fontSize: 15,
     fontWeight: "700",
   },
   menteeProgressCard: {
-    borderRadius: 12,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 16,
+    padding: 20,
     marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
   menteeProgressHeader: {
     flexDirection: "row",
