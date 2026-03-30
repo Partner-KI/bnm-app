@@ -1229,8 +1229,8 @@ function MenteeDashboard() {
 
         {mentorship ? (
           <>
-            {/* ── KPI-Cards ──────────────────────────────────────────── */}
-            <KpiGrid style={{ marginBottom: 16 }}>
+            {/* ── KPI-Cards (zentriert) ──────────────────────────────── */}
+            <KpiGrid style={{ marginBottom: 16, justifyContent: "center" }}>
               <StatCard
                 label={t("dashboard.yourProgress")}
                 value={progressPercent}
@@ -1255,16 +1255,66 @@ function MenteeDashboard() {
               )}
             </KpiGrid>
 
-            {/* ── Danke sagen Button (volle Breite, zentriert) ── */}
-            {mentorship.status === "active" && mentorship.mentor_id && (
-              <TouchableOpacity
-                style={[styles.thankButton, { backgroundColor: isDark ? "#1A2A1A" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}
-                onPress={() => setShowThanksModal(true)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
-              </TouchableOpacity>
-            )}
+            {/* ── Mentor-Info + Schritte ── */}
+            <DashboardRow>
+              {/* Mein Mentor */}
+              {mentorship.mentor && (
+                <View style={[styles.levelCard, styles.dashCol, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                    <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: isDark ? COLORS.gold + "20" : COLORS.gradientStart + "15", alignItems: "center", justifyContent: "center" }}>
+                      <Ionicons name="person" size={22} color={isDark ? COLORS.gold : COLORS.gradientStart} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase" }}>{t("mentees.mentor")}</Text>
+                      <Text style={{ fontSize: 16, fontWeight: "800", color: themeColors.text, marginTop: 2 }}>{mentorship.mentor.name}</Text>
+                    </View>
+                  </View>
+                  {mentorship.mentor.city && (
+                    <Text style={{ fontSize: 13, color: themeColors.textSecondary, marginBottom: 8 }}>
+                      <Ionicons name="location-outline" size={13} color={themeColors.textSecondary} /> {mentorship.mentor.city}
+                    </Text>
+                  )}
+                  {mentorship.status === "active" && mentorship.mentor_id && (
+                    <TouchableOpacity
+                      style={[styles.thankButton, { backgroundColor: isDark ? "#1A2A1A" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac", marginTop: 4 }]}
+                      onPress={() => setShowThanksModal(true)}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+
+              {/* Schritte-Fortschritt */}
+              <View style={[styles.levelCard, styles.dashCol, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+                <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>
+                  {t("menteeProgress.title")}
+                </Text>
+                {/* Progress Bar */}
+                <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? "#1E1E2A" : themeColors.border, overflow: "hidden", marginBottom: 12 }}>
+                  <View style={{ height: "100%", width: `${progressPercent}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold, borderRadius: 4 }} />
+                </View>
+                {/* Step Chips */}
+                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                  {sortedSessionTypes.map((st, i) => {
+                    const done = completedStepIds.includes(st.id);
+                    return (
+                      <View key={st.id} style={{
+                        paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
+                        backgroundColor: done ? (isDark ? COLORS.cta + "20" : "#dcfce7") : (isDark ? "#1A1A24" : "#f5f5f7"),
+                        borderWidth: 1,
+                        borderColor: done ? (isDark ? COLORS.cta + "40" : "#86efac") : (isDark ? "#2A2A35" : themeColors.border),
+                      }}>
+                        <Text style={{ fontSize: 11, fontWeight: "600", color: done ? (isDark ? "#4ade80" : "#15803d") : themeColors.textTertiary }}>
+                          {done ? "✓ " : ""}{st.name}
+                        </Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            </DashboardRow>
 
             {/* ── Hadith (volle Breite) ── */}
             {todayHadith && (
