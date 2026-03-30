@@ -148,7 +148,7 @@ export interface DataContextValue {
   submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => Promise<void>;
 
   // User actions
-  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>) => Promise<void>;
+  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng">>) => Promise<void>;
   setUserActive: (userId: string, isActive: boolean) => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
   bulkDeleteUsers: (userIds: string[]) => Promise<{ success: number; failed: number }>;
@@ -1257,7 +1257,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       };
       setThanks((prev) => [newThank, ...prev]);
 
-      awardXP(mentorId, XP_VALUES.THANK_RECEIVED, "thank_received", mentorshipId);
+      await awardXP(mentorId, XP_VALUES.THANK_RECEIVED, "thank_received", mentorshipId);
     },
     [authUser, awardXP]
   );
@@ -2382,7 +2382,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(
     async (
       userId: string,
-      data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender">>
+      data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng">>
     ) => {
       const { error } = await supabase
         .from("profiles")

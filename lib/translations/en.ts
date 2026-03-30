@@ -604,6 +604,7 @@ const en: Record<TranslationKeys, string> = {
   "editProfile.contactPref": "Contact Preference",
   "editProfile.unchangeable": "Cannot be changed",
   "editProfile.unchangeableText": "Email address and role cannot be changed by yourself. Please contact the BNM team.",
+  "editProfile.yourEmail": "Your email:",
   "editProfile.save": "Save Changes",
   "editProfile.saving": "Saving...",
   "editProfile.cancel": "Cancel",

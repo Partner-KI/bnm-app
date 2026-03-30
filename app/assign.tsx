@@ -108,7 +108,7 @@ export default function AssignScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { users, mentorships, assignMentorship, getUnassignedMentees } = useData();
+  const { users, mentorships, assignMentorship, getUnassignedMentees, refreshData } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
 
   const isMentor = user?.role === "mentor";
@@ -177,6 +177,7 @@ export default function AssignScreen() {
       if (isMentor) {
         // Mentor-Selbst-Zuweisung: Status "pending_approval" → Admin muss bestätigen
         await assignMentorship(selectedMenteeId, mentorId, user.id, "pending_approval");
+        await refreshData();
         showSuccess(t("assign.pendingSuccessText"));
         router.back();
       } else {
@@ -192,6 +193,7 @@ export default function AssignScreen() {
           );
         }
 
+        await refreshData();
         showSuccess(t("assign.successText"));
         router.back();
       }

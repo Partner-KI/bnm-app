@@ -604,6 +604,7 @@ const ar: Record<TranslationKeys, string> = {
   "editProfile.contactPref": "طريقة التواصل المفضلة",
   "editProfile.unchangeable": "لا يمكن تغييره",
   "editProfile.unchangeableText": "لا يمكن تغيير البريد الإلكتروني والدور بنفسك. يرجى التواصل مع فريق BNM.",
+  "editProfile.yourEmail": "بريدك الإلكتروني:",
   "editProfile.save": "حفظ التغييرات",
   "editProfile.saving": "جار الحفظ...",
   "editProfile.cancel": "إلغاء",

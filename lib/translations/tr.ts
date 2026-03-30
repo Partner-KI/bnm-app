@@ -604,6 +604,7 @@ const tr: Record<TranslationKeys, string> = {
   "editProfile.contactPref": "İletişim Tercihi",
   "editProfile.unchangeable": "Değiştirilemez",
   "editProfile.unchangeableText": "E-posta adresi ve rol kendi başına değiştirilemez. Lütfen BNM ekibiyle iletişime geç.",
+  "editProfile.yourEmail": "E-postan:",
   "editProfile.save": "Değişiklikleri Kaydet",
   "editProfile.saving": "Kaydediliyor...",
   "editProfile.cancel": "İptal",

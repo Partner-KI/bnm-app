@@ -602,6 +602,7 @@ const de = {
   "editProfile.contactPref": "Kontaktpräferenz",
   "editProfile.unchangeable": "Nicht änderbar",
   "editProfile.unchangeableText": "E-Mail-Adresse und Rolle können nicht selbst geändert werden. Bitte wende dich an das BNM-Team.",
+  "editProfile.yourEmail": "Deine E-Mail:",
   "editProfile.save": "Änderungen speichern",
   "editProfile.saving": "Speichern...",
   "editProfile.cancel": "Abbrechen",

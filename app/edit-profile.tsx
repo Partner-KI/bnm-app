@@ -30,7 +30,7 @@ export default function EditProfileScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { updateUser } = useData();
+  const { updateUser, refreshData } = useData();
 
   const CONTACT_OPTIONS: { key: ContactPreference; label: string }[] = [
     { key: "whatsapp", label: t("contactPref.whatsapp") },
@@ -111,8 +111,8 @@ export default function EditProfileScreen() {
       contact_preference: contactPref,
       ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
     });
-    // AuthContext-User aktualisieren damit Profil-Seite die neuen Werte zeigt
-    await refreshUser();
+    // AuthContext + DataContext aktualisieren
+    await Promise.all([refreshUser(), refreshData()]);
     setIsSaving(false);
     showSuccess(t("editProfile.successMsg"), () => router.back());
   }
@@ -270,6 +270,7 @@ export default function EditProfileScreen() {
             <Text style={[styles.infoBoxText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
               {t("editProfile.unchangeableText")}
             </Text>
+            <Text style={{ color: isDark ? "#60a5fa" : "#3b82f6", marginTop: 8, fontSize: 11, fontWeight: "600" }}>{t("editProfile.yourEmail")}</Text>
             <Text style={[styles.infoBoxValue, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{safeUser.email}</Text>
           </View>
 

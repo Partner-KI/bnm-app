@@ -341,48 +341,44 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               />
             </KpiGrid>
 
-            {/* ── Neue Mentees + Pending (Row) ── */}
-            <DashboardRow>
-              <View style={styles.dashCol}>
-                {unassignedMentees.length > 0 && (
-                  <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
-                    <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
-                      {t("dashboard.newMenteesWaiting").replace("{0}", String(unassignedMentees.length))}
-                    </Text>
-                    {unassignedMentees.map((mentee) => (
-                      <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
-                        <View>
-                          <Text style={[styles.menteeNameText, { color: themeColors.text }]}>{mentee.name}</Text>
-                          <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
-                            {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
-                          </Text>
-                        </View>
-                        <TouchableOpacity style={styles.assignButton} onPress={() => router.push({ pathname: "/assign", params: { menteeId: mentee.id } })}>
-                          <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
-                        </TouchableOpacity>
-                      </View>
-                    ))}
-                  </View>
-                )}
-              </View>
-              <View style={styles.dashCol}>
-                {pendingApprovalsCount > 0 && (
-                  <TouchableOpacity
-                    style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}
-                    onPress={() => router.push("/admin/pending-approvals")}
-                  >
-                    <View style={styles.applicationsButtonContent}>
-                      <Text style={[styles.pendingApprovalsText, { color: isDark ? "#fbbf24" : "#78350f" }]}>{t("dashboard.pendingApprovals")}</Text>
-                      <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#fbbf24" : "#92400e" }]}>
-                        {t("dashboard.pendingApprovalsCount").replace("{0}", String(pendingApprovalsCount)).replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
+            {/* ── Neue Mentees (volle Breite) ── */}
+            {unassignedMentees.length > 0 && (
+              <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
+                <Text style={[styles.amberTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>
+                  {t("dashboard.newMenteesWaiting").replace("{0}", String(unassignedMentees.length))}
+                </Text>
+                {unassignedMentees.map((mentee) => (
+                  <View key={mentee.id} style={[styles.amberRow, { borderBottomColor: isDark ? "#6b4e1a" : "#fef3c7" }]}>
+                    <View>
+                      <Text style={[styles.menteeNameText, { color: themeColors.text }]}>{mentee.name}</Text>
+                      <Text style={[styles.menteeSubText, { color: themeColors.textTertiary }]}>
+                        {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
                       </Text>
                     </View>
-                    <View style={styles.applicationsBadge}><Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text></View>
-                    <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
-                  </TouchableOpacity>
-                )}
+                    <TouchableOpacity style={styles.assignButton} onPress={() => router.push({ pathname: "/assign", params: { menteeId: mentee.id } })}>
+                      <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
-            </DashboardRow>
+            )}
+
+            {/* ── Pending Approvals (volle Breite) ── */}
+            {pendingApprovalsCount > 0 && (
+              <TouchableOpacity
+                style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}
+                onPress={() => router.push("/admin/pending-approvals")}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.pendingApprovalsText, { color: isDark ? "#fbbf24" : "#78350f" }]}>{t("dashboard.pendingApprovals")}</Text>
+                  <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#fbbf24" : "#92400e" }]}>
+                    {t("dashboard.pendingApprovalsCount").replace("{0}", String(pendingApprovalsCount)).replace("{1}", pendingApprovalsCount === 1 ? "" : "en")}
+                  </Text>
+                </View>
+                <View style={styles.applicationsBadge}><Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text></View>
+                <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
+              </TouchableOpacity>
+            )}
 
             {/* ── Mentor des Monats (volle Breite) ── */}
             {mentorOfMonthVisible && !topMentor && (
@@ -1243,15 +1239,6 @@ function MenteeDashboard() {
           </View>
         )}
 
-        {/* ── Glückwunsch-Banner ── */}
-        {mentorship && (mentorship.status === "active" || mentorship.status === "completed") && allDone && (
-          <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-            <Ionicons name="ribbon-outline" size={28} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 4 }} />
-            <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
-            <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
-          </View>
-        )}
-
         {mentorship ? (
           <>
             {/* ── KPI-Cards (zentriert) ── */}
@@ -1316,6 +1303,15 @@ function MenteeDashboard() {
               >
                 <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
               </TouchableOpacity>
+            )}
+
+            {/* ── Glückwunsch-Banner (ganz unten) ── */}
+            {(mentorship.status === "active" || mentorship.status === "completed") && allDone && (
+              <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
+                <Ionicons name="ribbon-outline" size={28} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 4 }} />
+                <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
+                <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
+              </View>
             )}
 
             {/* Danke-Modal (Overlay) */}
