@@ -182,10 +182,10 @@ const styles = StyleSheet.create({
   },
   backButton: { flex: 1 },
   backText: { fontSize: 16, fontWeight: "500" },
-  headerTitle: { fontWeight: "bold", fontSize: 16 },
+  headerTitle: { fontWeight: "800", fontSize: 16 },
   headerRight: { flex: 1 },
   scrollView: { flex: 1 },
-  content: { padding: 16, paddingBottom: 40 },
+  content: { padding: 24, paddingBottom: 40 },
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 14,
@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 14,
+    padding: 18,
   },
   toggleInfo: { flex: 1, marginRight: 12 },
   toggleTitle: { fontWeight: "600", fontSize: 14 },
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  checkMarkText: { color: COLORS.white, fontWeight: "bold", fontSize: 13 },
+  checkMarkText: { color: COLORS.white, fontWeight: "800", fontSize: 13 },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 20,

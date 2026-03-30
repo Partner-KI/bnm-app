@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
   logoTitle: {
     color: COLORS.white,
     fontSize: 28,
-    fontWeight: "700",
+    fontWeight: "800",
     marginTop: 10,
     marginBottom: 4,
     letterSpacing: 3,
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
   },
   welcomeTitle: {
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 4,
   },
   welcomeSubtitle: {
@@ -249,7 +249,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: Platform.OS === "web" ? 8 : 10,
     marginBottom: 10,
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 12,
     marginBottom: 10,
     overflow: "hidden",
     minHeight: 44,
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   eyeText: { fontSize: 18 },
   errorBox: {
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
@@ -295,7 +295,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: Platform.OS === "web" ? 9 : 10,
     alignItems: "center",
     marginBottom: 12,
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.10)",
     borderWidth: 1,
     borderColor: COLORS.gold,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -360,7 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 8,
     alignItems: "center",
   },

@@ -593,7 +593,7 @@ const styles = StyleSheet.create({
   },
   slideTitle: {
     fontSize: 26,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 12,
     lineHeight: 32,
   },
@@ -605,12 +605,12 @@ const styles = StyleSheet.create({
   highlightBox: {
     borderLeftWidth: 3,
     borderLeftColor: COLORS.primary,
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 20,
   },
   highlightTitle: {
-    fontWeight: "700",
+    fontWeight: "800",
     fontSize: 14,
     marginBottom: 6,
   },
@@ -625,13 +625,13 @@ const styles = StyleSheet.create({
   statPill: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     paddingVertical: 9,
     alignItems: "center",
   },
   statPillNumber: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
   },
   statPillLabel: {
     fontSize: 11,
@@ -645,7 +645,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingVertical: 9,
     paddingHorizontal: 14,
     gap: 12,
@@ -661,7 +661,7 @@ const styles = StyleSheet.create({
   },
   stepNumberText: {
     color: COLORS.white,
-    fontWeight: "bold",
+    fontWeight: "800",
     fontSize: 13,
   },
   stepLabel: {
@@ -670,8 +670,8 @@ const styles = StyleSheet.create({
   },
   noteBox: {
     borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
+    borderRadius: 12,
+    padding: 18,
   },
   noteText: {
     fontSize: 13,
@@ -679,8 +679,8 @@ const styles = StyleSheet.create({
   },
   tipsCard: {
     borderWidth: 1,
-    borderRadius: 12,
-    padding: 16,
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 16,
   },
   tipRow: {
@@ -709,11 +709,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff7ed",
     borderWidth: 1,
     borderColor: "#fed7aa",
-    borderRadius: 10,
-    padding: 14,
+    borderRadius: 12,
+    padding: 18,
   },
   reminderTitle: {
-    fontWeight: "700",
+    fontWeight: "800",
     color: "#9a3412",
     fontSize: 13,
     marginBottom: 4,
@@ -746,13 +746,13 @@ const styles = StyleSheet.create({
   },
   ctaButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 9,
     alignItems: "center",
   },
   ctaText: {
     color: COLORS.white,
-    fontWeight: "bold",
+    fontWeight: "800",
     fontSize: 16,
   },
 });

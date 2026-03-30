@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
   iconText: { fontSize: 48 },
   title: {
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: "800",
     color: COLORS.primary,
     textAlign: "center",
     marginBottom: 8,
@@ -179,7 +179,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fef2f2",
     borderWidth: 1,
     borderColor: "#fecaca",
-    borderRadius: 5,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
@@ -198,7 +198,7 @@ const styles = StyleSheet.create({
   errorText: { color: "#dc2626", fontSize: 13 },
   submitButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 10,
@@ -206,26 +206,26 @@ const styles = StyleSheet.create({
   submitButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
   },
   cancelButtonText: { fontWeight: "500", fontSize: 14 },
   successBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 24,
     alignItems: "center",
   },
   successIcon: {
     fontSize: 36,
     color: COLORS.cta,
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 12,
   },
   successTitle: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: "800",
     marginBottom: 8,
   },
   successText: {
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 24,
     alignItems: "center",

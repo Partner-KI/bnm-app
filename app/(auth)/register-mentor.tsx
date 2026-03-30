@@ -629,7 +629,7 @@ const sectionStyles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "800",
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   },
   pageTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 8,
   },
   pageDesc: {
@@ -653,8 +653,8 @@ const styles = StyleSheet.create({
   },
   requirementsBox: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 8,
   },
   requirementsTitle: {
@@ -679,7 +679,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 12,
@@ -726,7 +726,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 12,
     alignItems: "center",
   },
@@ -752,7 +752,7 @@ const styles = StyleSheet.create({
   },
   successTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 10,
     textAlign: "center",
   },
@@ -764,7 +764,7 @@ const styles = StyleSheet.create({
   },
   successButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingHorizontal: 28,
     paddingVertical: 10,
   },

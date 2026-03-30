@@ -783,7 +783,7 @@ const sectionStyles = StyleSheet.create({
   },
   label: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "800",
     letterSpacing: 0.8,
     textTransform: "uppercase",
   },
@@ -813,13 +813,13 @@ const styles = StyleSheet.create({
   page: { padding: 20, paddingBottom: 40 },
 
   titleSection: { marginBottom: 12 },
-  pageTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 6 },
+  pageTitle: { fontSize: 20, fontWeight: "800", marginBottom: 6 },
   pageSubtitle: { fontSize: 13, lineHeight: 19 },
 
   benefitsBox: {
     borderWidth: 1,
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 8,
   },
   bulletRow: {
@@ -840,7 +840,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -904,7 +904,7 @@ const styles = StyleSheet.create({
 
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
@@ -949,10 +949,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
   },
-  successIconText: { color: COLORS.white, fontSize: 28, fontWeight: "bold" },
+  successIconText: { color: COLORS.white, fontSize: 28, fontWeight: "800" },
   successTitle: {
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: "800",
     marginBottom: 10,
     textAlign: "center",
   },
@@ -970,7 +970,7 @@ const styles = StyleSheet.create({
   },
   backToLoginButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 6,
+    borderRadius: 12,
     paddingHorizontal: 28,
     paddingVertical: 10,
     alignItems: "center",

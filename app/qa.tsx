@@ -271,14 +271,14 @@ export default function QAScreen() {
 
 const styles = StyleSheet.create({
   scrollView: { flex: 1 },
-  page: { padding: 20, paddingBottom: 40 },
+  page: { padding: 24, paddingBottom: 40 },
   backRow: { marginBottom: 8 },
   backText: { fontSize: 14 },
-  pageTitle: { fontSize: 24, fontWeight: "700", marginBottom: 4 },
+  pageTitle: { fontSize: 24, fontWeight: "800", marginBottom: 4 },
   pageSubtitle: { fontSize: 14, marginBottom: 16 },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: "500" },
   resultCount: { fontSize: 12, marginBottom: 8 },
   emptyBox: {
-    borderRadius: 8,
+    borderRadius: 16,
     padding: 24,
     alignItems: "center",
   },
@@ -302,14 +302,14 @@ const styles = StyleSheet.create({
   listContainer: { gap: 0 },
   accordionItem: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 16,
     overflow: "hidden",
   },
   accordionItemMargin: { marginBottom: 10 },
   accordionHeader: {
     flexDirection: "row",
     alignItems: "flex-start",
-    padding: 14,
+    padding: 18,
     gap: 10,
   },
   accordionHeaderLeft: { flex: 1, gap: 6 },
@@ -324,7 +324,7 @@ const styles = StyleSheet.create({
   chevron: { fontSize: 12, marginTop: 2 },
   accordionBody: {
     borderTopWidth: 1,
-    padding: 14,
+    padding: 18,
     gap: 10,
   },
   answerText: { fontSize: 14, lineHeight: 22 },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6,
+    borderRadius: 10,
   },
   shareBtnText: { fontSize: 12 },
 });

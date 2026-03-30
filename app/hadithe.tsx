@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   backRow: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   backArrow: { fontSize: 24, marginRight: 4 },
   backText: { fontWeight: "600", fontSize: 16 },
-  pageTitle: { fontSize: 24, fontWeight: "bold", marginBottom: 4 },
+  pageTitle: { fontSize: 24, fontWeight: "800", marginBottom: 4 },
   pageSubtitle: { fontSize: 14, marginBottom: 24 },
 
   loadingContainer: {
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
 
   emptyContainer: {
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
     padding: 24,
     alignItems: "center",
@@ -154,13 +154,18 @@ const styles = StyleSheet.create({
 
   todayCard: {
     backgroundColor: COLORS.primary,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: 16,
+    padding: 20,
     marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
   todayHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   todayStar: { color: COLORS.gold, fontSize: 20, marginRight: 8 },
-  todayLabel: { color: COLORS.white, fontWeight: "bold", fontSize: 14, opacity: 0.9 },
+  todayLabel: { color: COLORS.white, fontWeight: "800", fontSize: 14, opacity: 0.9 },
   todayText: {
     color: COLORS.white,
     fontSize: 17,
@@ -171,11 +176,11 @@ const styles = StyleSheet.create({
   todayQuelle: { color: COLORS.white, opacity: 0.7, fontSize: 13, marginBottom: 20 },
   shareButton: {
     backgroundColor: COLORS.gold,
-    borderRadius: 5,
+    borderRadius: 12,
     paddingVertical: 9,
     alignItems: "center",
   },
-  shareButtonText: { color: COLORS.white, fontWeight: "bold", fontSize: 15 },
+  shareButtonText: { color: COLORS.white, fontWeight: "800", fontSize: 15 },
 
   sectionLabel: {
     fontSize: 12,
@@ -185,10 +190,15 @@ const styles = StyleSheet.create({
   },
 
   hadithCard: {
-    borderRadius: 8,
+    borderRadius: 16,
     borderWidth: 1,
-    padding: 14,
+    padding: 18,
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 16,
+    elevation: 3,
   },
   hadithText: {
     fontSize: 14,
@@ -206,7 +216,7 @@ const styles = StyleSheet.create({
   hadithQuelle: { fontSize: 12, flex: 1 },
   hadithShareButton: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
