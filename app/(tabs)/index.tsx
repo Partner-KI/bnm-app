@@ -807,7 +807,32 @@ function MentorDashboard() {
           </View>
         </View>
 
-        {/* ── 4 KPI-Cards ─────────────────────────────────────────────── */}
+        {/* ── Motivation des Tages (direkt unter Namen) ── */}
+        {todayHadith && (
+          <View style={[styles.mentorHadithCard, { borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
+            <View style={styles.hadithCardHeader}>
+              <Text style={styles.hadithStar}>★</Text>
+              <Text style={[styles.hadithCardLabel, { color: themeColors.text }]}>{t("motivation.title")}</Text>
+            </View>
+            {todayHadith.text_ar ? (
+              <Text style={[styles.mentorHadithArabic, { color: themeColors.text }]}>{todayHadith.text_ar}</Text>
+            ) : null}
+            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary }]}>"{todayHadith.text_de}"</Text>
+            {todayHadith.source ? (
+              <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
+            ) : null}
+            <View style={styles.motivationActionsRow}>
+              <TouchableOpacity style={styles.motivationNextBtn} onPress={() => setHadithOffset((prev) => prev + 1)}>
+                <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
+                <Ionicons name="share-outline" size={18} color={COLORS.gold} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ── 4 KPI-Cards ── */}
         {mentorStats && (
           <>
             <KpiGrid style={{ marginBottom: 16 }}>
@@ -816,31 +841,6 @@ function MentorDashboard() {
               <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="document-text-outline" />
               <StatCard label={t("dashboard.statsRank")} value={mentorStats.rank} color="#6366f1" iconName="trophy-outline" sublabel={`/ ${mentorStats.totalMentors}`} />
             </KpiGrid>
-
-            {/* ── Motivations-Hadith (volle Breite, über Vernachlässigten) ── */}
-            {todayHadith && (
-              <View style={[styles.mentorHadithCard, { borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
-                <View style={styles.hadithCardHeader}>
-                  <Text style={styles.hadithStar}>★</Text>
-                  <Text style={[styles.hadithCardLabel, { color: themeColors.text }]}>{t("motivation.title")}</Text>
-                </View>
-                {todayHadith.text_ar ? (
-                  <Text style={[styles.mentorHadithArabic, { color: themeColors.text }]}>{todayHadith.text_ar}</Text>
-                ) : null}
-                <Text style={[styles.hadithCardText, { color: themeColors.textSecondary }]}>"{todayHadith.text_de}"</Text>
-                {todayHadith.source ? (
-                  <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
-                ) : null}
-                <View style={styles.motivationActionsRow}>
-                  <TouchableOpacity style={styles.motivationNextBtn} onPress={() => setHadithOffset((prev) => prev + 1)}>
-                    <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
-                    <Ionicons name="share-outline" size={18} color={COLORS.gold} />
-                  </TouchableOpacity>
-                </View>
-              </View>
-            )}
 
             {/* ── Vernachlässigte Mentees (volle Breite) ─────── */}
             {neglectedMentees.length > 0 && (
@@ -1218,7 +1218,32 @@ function MenteeDashboard() {
           </View>
         </View>
 
-        {/* ── Glückwunsch-Banner ────────────────────────────────────── */}
+        {/* ── Motivation des Tages (direkt unter Greeting) ── */}
+        {todayHadith && (
+          <View style={[styles.menteeHadithBigCard, { backgroundColor: isDark ? "#1A1A2E" : "#f0f4ff", borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
+            <View style={styles.hadithCardHeader}>
+              <Text style={styles.hadithStar}>★</Text>
+              <Text style={[styles.hadithCardLabel, { color: themeColors.text, fontSize: 16 }]}>{t("motivation.title")}</Text>
+            </View>
+            {todayHadith.text_ar ? (
+              <Text style={[styles.mentorHadithArabic, { color: themeColors.text, fontSize: 22, marginBottom: 12 }]}>{todayHadith.text_ar}</Text>
+            ) : null}
+            <Text style={[styles.hadithCardText, { color: themeColors.textSecondary, fontSize: 16, lineHeight: 26 }]}>"{todayHadith.text_de}"</Text>
+            {todayHadith.source ? (
+              <Text style={[styles.hadithCardQuelle, { color: COLORS.gold, marginTop: 10 }]}>{t("motivation.source")}: {todayHadith.source}</Text>
+            ) : null}
+            <View style={[styles.motivationActionsRow, { marginTop: 16 }]}>
+              <TouchableOpacity style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
+                <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
+                <Ionicons name="share-outline" size={20} color={COLORS.gold} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
+        {/* ── Glückwunsch-Banner ── */}
         {mentorship && (mentorship.status === "active" || mentorship.status === "completed") && allDone && (
           <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
             <Ionicons name="ribbon-outline" size={28} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 4 }} />
@@ -1229,7 +1254,7 @@ function MenteeDashboard() {
 
         {mentorship ? (
           <>
-            {/* ── KPI-Cards (zentriert) ──────────────────────────────── */}
+            {/* ── KPI-Cards (zentriert) ── */}
             <KpiGrid style={{ marginBottom: 16, justifyContent: "center" }}>
               <StatCard
                 label={t("dashboard.yourProgress")}
@@ -1255,93 +1280,45 @@ function MenteeDashboard() {
               )}
             </KpiGrid>
 
-            {/* ── Mentor-Info + Schritte ── */}
-            <DashboardRow>
-              {/* Mein Mentor */}
-              {mentorship.mentor && (
-                <View style={[styles.levelCard, styles.dashCol, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 12 }}>
-                    <View style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: isDark ? COLORS.gold + "20" : COLORS.gradientStart + "15", alignItems: "center", justifyContent: "center" }}>
-                      <Ionicons name="person" size={22} color={isDark ? COLORS.gold : COLORS.gradientStart} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase" }}>{t("mentees.mentor")}</Text>
-                      <Text style={{ fontSize: 16, fontWeight: "800", color: themeColors.text, marginTop: 2 }}>{mentorship.mentor.name}</Text>
-                    </View>
-                  </View>
-                  {mentorship.mentor.city && (
-                    <Text style={{ fontSize: 13, color: themeColors.textSecondary, marginBottom: 8 }}>
-                      <Ionicons name="location-outline" size={13} color={themeColors.textSecondary} /> {mentorship.mentor.city}
-                    </Text>
-                  )}
-                  {mentorship.status === "active" && mentorship.mentor_id && (
-                    <TouchableOpacity
-                      style={[styles.thankButton, { backgroundColor: isDark ? "#1A2A1A" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac", marginTop: 4 }]}
-                      onPress={() => setShowThanksModal(true)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-
-              {/* Schritte-Fortschritt */}
-              <View style={[styles.levelCard, styles.dashCol, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
-                <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>
-                  {t("menteeProgress.title")}
-                </Text>
-                {/* Progress Bar */}
-                <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? "#1E1E2A" : themeColors.border, overflow: "hidden", marginBottom: 12 }}>
-                  <View style={{ height: "100%", width: `${progressPercent}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold, borderRadius: 4 }} />
-                </View>
-                {/* Step Chips */}
-                <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
-                  {sortedSessionTypes.map((st, i) => {
-                    const done = completedStepIds.includes(st.id);
-                    return (
-                      <View key={st.id} style={{
-                        paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
-                        backgroundColor: done ? (isDark ? COLORS.cta + "20" : "#dcfce7") : (isDark ? "#1A1A24" : "#f5f5f7"),
-                        borderWidth: 1,
-                        borderColor: done ? (isDark ? COLORS.cta + "40" : "#86efac") : (isDark ? "#2A2A35" : themeColors.border),
-                      }}>
-                        <Text style={{ fontSize: 11, fontWeight: "600", color: done ? (isDark ? "#4ade80" : "#15803d") : themeColors.textTertiary }}>
-                          {done ? "✓ " : ""}{st.name}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
+            {/* ── Schritte-Fortschritt (volle Breite) ── */}
+            <View style={[styles.levelCard, { backgroundColor: themeColors.card, borderColor: isDark ? "#3A3520" : themeColors.border }]}>
+              <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>
+                {t("menteeProgress.title")}
+              </Text>
+              <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? "#1E1E2A" : themeColors.border, overflow: "hidden", marginBottom: 12 }}>
+                <View style={{ height: "100%", width: `${progressPercent}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold, borderRadius: 4 }} />
               </View>
-            </DashboardRow>
-
-            {/* ── Hadith (volle Breite) ── */}
-            {todayHadith && (
-              <View style={[styles.menteeHadithBigCard, { backgroundColor: isDark ? "#1A1A2E" : "#f0f4ff", borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.3)" }]}>
-                <View style={styles.hadithCardHeader}>
-                  <Text style={styles.hadithStar}>★</Text>
-                  <Text style={[styles.hadithCardLabel, { color: themeColors.text, fontSize: 16 }]}>{t("motivation.title")}</Text>
-                </View>
-                {todayHadith.text_ar ? (
-                  <Text style={[styles.mentorHadithArabic, { color: themeColors.text, fontSize: 22, marginBottom: 12 }]}>{todayHadith.text_ar}</Text>
-                ) : null}
-                <Text style={[styles.hadithCardText, { color: themeColors.textSecondary, fontSize: 16, lineHeight: 26 }]}>"{todayHadith.text_de}"</Text>
-                {todayHadith.source ? (
-                  <Text style={[styles.hadithCardQuelle, { color: COLORS.gold, marginTop: 10 }]}>{t("motivation.source")}: {todayHadith.source}</Text>
-                ) : null}
-                <View style={[styles.motivationActionsRow, { marginTop: 16 }]}>
-                  <TouchableOpacity style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
-                    <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
-                    <Ionicons name="share-outline" size={20} color={COLORS.gold} />
-                  </TouchableOpacity>
-                </View>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
+                {sortedSessionTypes.map((st) => {
+                  const done = completedStepIds.includes(st.id);
+                  return (
+                    <View key={st.id} style={{
+                      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
+                      backgroundColor: done ? (isDark ? COLORS.cta + "20" : "#dcfce7") : (isDark ? "#1A1A24" : "#f5f5f7"),
+                      borderWidth: 1,
+                      borderColor: done ? (isDark ? COLORS.cta + "40" : "#86efac") : (isDark ? "#2A2A35" : themeColors.border),
+                    }}>
+                      <Text style={{ fontSize: 11, fontWeight: "600", color: done ? (isDark ? "#4ade80" : "#15803d") : themeColors.textTertiary }}>
+                        {done ? "✓ " : ""}{st.name}
+                      </Text>
+                    </View>
+                  );
+                })}
               </View>
+            </View>
+
+            {/* ── Danke sagen ── */}
+            {mentorship.status === "active" && mentorship.mentor_id && (
+              <TouchableOpacity
+                style={[styles.thankButton, { backgroundColor: isDark ? "#1A2A1A" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}
+                onPress={() => setShowThanksModal(true)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
+              </TouchableOpacity>
             )}
 
-            {/* Danke-Modal (Overlay, außerhalb Grid) */}
+            {/* Danke-Modal (Overlay) */}
             <Modal visible={showThanksModal} transparent animationType="fade" onRequestClose={() => setShowThanksModal(false)}>
               <View style={styles.modalOverlay}>
                 <View style={[styles.modalCard, { backgroundColor: themeColors.card }]}>
