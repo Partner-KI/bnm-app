@@ -542,6 +542,7 @@ const ar: Record<TranslationKeys, string> = {
   "mentorship.cancel": "إلغاء",
   "mentorship.completeSuccess": "تم إتمام الإرشاد بنجاح! تم طلب التقييم من المتعلم.",
   "mentorship.completeError": "حدث خطأ أثناء إتمام الإرشاد.",
+  "mentorship.stepsIncomplete": "يرجى توثيق جميع الخطوات قبل إتمام الإرشاد.",
   "mentorship.cancelSuccess": "تم إلغاء الإرشاد. تم إبلاغ المتعلم.",
   "mentorship.cancelError": "حدث خطأ أثناء إلغاء الإرشاد.",
   "mentorship.feedbackRequestTitle": "يرجى تقديم تقييمك",
@@ -1014,6 +1015,9 @@ const ar: Record<TranslationKeys, string> = {
   "assign.pendingSuccessText": "تم إرسال طلب التعيين إلى المسؤول.",
 
   // لوحة الإدارة – الموافقات المعلقة
+  "dashboard.pendingMentorApps": "طلبات مرشدين جديدة",
+  "dashboard.pendingMentorAppsCount1": "طلب واحد في انتظار المراجعة",
+  "dashboard.pendingMentorAppsCountN": "{0} طلبات في انتظار المراجعة",
   "dashboard.pendingApprovals": "تعيينات في انتظار التأكيد",
   "dashboard.openAssignments": "التعيينات المفتوحة",
   "dashboard.menteesWithoutMentor": "طلاب بدون مرشد",

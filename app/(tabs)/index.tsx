@@ -44,6 +44,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     sessions,
     feedback,
     hadithe,
+    applications,
     mentorOfMonthVisible,
     getUnassignedMentees,
     getPendingApprovalsCount,
@@ -115,6 +116,10 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const newMentorshipsInPeriod = mentorships.filter((m) => inPeriod(m.assigned_at));
   const unassignedMentees = getUnassignedMentees();
   const pendingApprovalsCount = getPendingApprovalsCount();
+  // Offene Mentor-Bewerbungen (nicht Mentee-Anmeldungen)
+  const pendingMentorAppsCount = applications.filter(
+    (a) => a.motivation !== "Anmeldung als neuer Muslim (öffentliches Formular)" && a.status === "pending"
+  ).length;
 
   // Aktivitäten: Sessions sortiert nach Datum absteigend (5 oder alle)
   const allSortedSessions = useMemo(() => {
@@ -386,6 +391,27 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 </View>
                 <View style={styles.applicationsBadge}><Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text></View>
                 <Text style={[styles.applicationsArrow, { color: isDark ? "#fbbf24" : "#78350f" }]}>›</Text>
+              </TouchableOpacity>
+            )}
+
+            {/* ── Offene Mentor-Bewerbungen ── */}
+            {pendingMentorAppsCount > 0 && (
+              <TouchableOpacity
+                style={[styles.pendingApprovalsButton, { backgroundColor: isDark ? "#1a2a3a" : "#eff6ff", borderColor: isDark ? "#1e3a5a" : "#bfdbfe" }]}
+                onPress={() => router.push("/(tabs)/applications")}
+              >
+                <View style={styles.applicationsButtonContent}>
+                  <Text style={[styles.pendingApprovalsText, { color: isDark ? "#93c5fd" : "#1d4ed8" }]}>{t("dashboard.pendingMentorApps")}</Text>
+                  <Text style={[styles.pendingApprovalsSub, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
+                    {pendingMentorAppsCount === 1
+                      ? t("dashboard.pendingMentorAppsCount1")
+                      : t("dashboard.pendingMentorAppsCountN").replace("{0}", String(pendingMentorAppsCount))}
+                  </Text>
+                </View>
+                <View style={[styles.applicationsBadge, { backgroundColor: isDark ? "#1e3a6e" : "#3b82f6" }]}>
+                  <Text style={styles.applicationsBadgeText}>{pendingMentorAppsCount}</Text>
+                </View>
+                <Text style={[styles.applicationsArrow, { color: isDark ? "#93c5fd" : "#1d4ed8" }]}>›</Text>
               </TouchableOpacity>
             )}
 
@@ -882,7 +908,7 @@ function MentorDashboard() {
               <TouchableOpacity style={styles.motivationNextBtn} onPress={() => setHadithOffset((prev) => prev + 1)}>
                 <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
+              <TouchableOpacity style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
                 <Ionicons name="share-outline" size={18} color={COLORS.gold} />
               </TouchableOpacity>
             </View>
@@ -1297,7 +1323,7 @@ function MenteeDashboard() {
               <TouchableOpacity style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
                 <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; shareHadith(shareText, t("share.suffix")); }}>
+              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
                 <Ionicons name="share-outline" size={20} color={COLORS.gold} />
               </TouchableOpacity>
             </View>

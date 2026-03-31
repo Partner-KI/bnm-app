@@ -540,6 +540,7 @@ const de = {
   "mentorship.cancel": "Abbrechen",
   "mentorship.completeSuccess": "Betreuung erfolgreich abgeschlossen! Der Mentee wurde um Feedback gebeten.",
   "mentorship.completeError": "Fehler beim Abschließen der Betreuung.",
+  "mentorship.stepsIncomplete": "Bitte dokumentiere zuerst alle Schritte, bevor du die Betreuung abschließt.",
   "mentorship.cancelSuccess": "Betreuung wurde abgebrochen. Der Mentee wurde benachrichtigt.",
   "mentorship.cancelError": "Fehler beim Abbrechen der Betreuung.",
   "mentorship.feedbackRequestTitle": "Bitte gib dein Feedback",
@@ -1012,6 +1013,9 @@ const de = {
   "assign.pendingSuccessText": "Deine Übernahme-Anfrage wurde an den Admin weitergeleitet.",
 
   // Admin – pending approvals
+  "dashboard.pendingMentorApps": "Neue Mentor-Bewerbungen",
+  "dashboard.pendingMentorAppsCount1": "1 Bewerbung wartet auf Prüfung",
+  "dashboard.pendingMentorAppsCountN": "{0} Bewerbungen warten auf Prüfung",
   "dashboard.pendingApprovals": "Zuweisungen warten auf Bestätigung",
   "dashboard.openAssignments": "Offene Zuweisungen",
   "dashboard.menteesWithoutMentor": "Mentees ohne Mentor",

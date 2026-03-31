@@ -459,6 +459,31 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
+          {/* ── Mentor des Monats Banner ──────────────────────────────── */}
+          {mentorOfMonthVisible && mentorOfMonthForUser && (
+            <View style={[styles.momBanner, { borderLeftColor: COLORS.gold }]}>
+              <View style={styles.momHeader}>
+                <Text style={styles.momStar}>🏆</Text>
+                <Text style={[styles.momTitle, { color: themeColors.text }]}>{t("leaderboard.mentorOfMonth")}</Text>
+              </View>
+              <Text style={[styles.momName, { color: themeColors.text }]}>{mentorOfMonthForUser.name}</Text>
+              <View style={styles.momStatsRow}>
+                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.completedCount}</Text>
+                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.completions")}</Text>
+                </View>
+                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.sessionCount}</Text>
+                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text>
+                </View>
+                <View style={[styles.momStatPill, { backgroundColor: themeColors.card }]}>
+                  <Text style={styles.momStatValue}>{mentorOfMonthForUser.score}</Text>
+                  <Text style={[styles.momStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.points_short")}</Text>
+                </View>
+              </View>
+            </View>
+          )}
+
           {/* Legende */}
           <View style={[styles.legendCard, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.legendTitle, { color: themeColors.text }]}>{t("leaderboard.legendTitle")}</Text>

@@ -106,6 +106,12 @@ export default function MentorshipDetailScreen() {
     mentorship.status === "active";
 
   async function handleComplete() {
+    // Mentoren dürfen erst abschließen wenn alle Schritte dokumentiert sind
+    const allStepsDone = completedStepIds.length === sessionTypes.length;
+    if (!allStepsDone && user?.role === "mentor") {
+      showError(t("mentorship.stepsIncomplete"));
+      return;
+    }
     const ok = await showConfirm(t("mentorship.completeTitle"), t("mentorship.completeText"));
     if (!ok) return;
     setIsUpdatingStatus(true);
@@ -417,7 +423,11 @@ export default function MentorshipDetailScreen() {
             {canChangeStatus && (
               <View style={{ flexDirection: "row", gap: 12 }}>
                 <TouchableOpacity
-                  style={[styles.completeButton, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2d6a4a" : "#bbf7d0" }, isUpdatingStatus ? { opacity: 0.5 } : {}]}
+                  style={[
+                    styles.completeButton,
+                    { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2d6a4a" : "#bbf7d0" },
+                    (isUpdatingStatus || (user?.role === "mentor" && completedStepIds.length < sessionTypes.length)) ? { opacity: 0.4 } : {},
+                  ]}
                   onPress={handleComplete}
                   disabled={isUpdatingStatus}
                 >

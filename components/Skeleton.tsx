@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { Animated, StyleSheet, View, ViewStyle } from "react-native";
+import { Animated, Platform, StyleSheet, View, ViewStyle } from "react-native";
 import { COLORS } from "../constants/Colors";
 import { useThemeColors } from "../contexts/ThemeContext";
 
@@ -13,12 +13,12 @@ function usePulse() {
         Animated.timing(opacity, {
           toValue: 1,
           duration: 700,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
         Animated.timing(opacity, {
           toValue: 0.4,
           duration: 700,
-          useNativeDriver: true,
+          useNativeDriver: Platform.OS !== "web",
         }),
       ])
     );

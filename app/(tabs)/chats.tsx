@@ -10,6 +10,7 @@ import {
   StyleSheet,
   Platform,
   TextInput,
+  KeyboardAvoidingView,
   useWindowDimensions,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -105,7 +106,11 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       : t("chat.cancelled");
 
   return (
-    <View style={panelStyles.container}>
+    <KeyboardAvoidingView
+      style={panelStyles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
       {/* Chat-Header */}
       {mentorship && (
         <View style={[panelStyles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
@@ -223,7 +228,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
           </Text>
         </View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -325,7 +330,11 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
   if (!user) return null;
 
   return (
-    <View style={panelStyles.container}>
+    <KeyboardAvoidingView
+      style={panelStyles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+    >
       {/* Header */}
       <View style={[panelStyles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
         <Text style={[panelStyles.headerName, { color: themeColors.text }]}>
@@ -427,7 +436,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
           <Ionicons name="send" size={18} color={COLORS.white} />
         </TouchableOpacity>
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

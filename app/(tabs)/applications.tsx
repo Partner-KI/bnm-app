@@ -178,7 +178,8 @@ export default function ApplicationsTabScreen() {
         onReject={() => openRejectModal(app)}
       />
     </View>
-  ), []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [approveApplication, refreshData]);
 
   const listHeader = useCallback(() => (
     <View style={styles.page}>

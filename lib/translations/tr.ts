@@ -542,6 +542,7 @@ const tr: Record<TranslationKeys, string> = {
   "mentorship.cancel": "İptal Et",
   "mentorship.completeSuccess": "Danışmanlık başarıyla tamamlandı! Danışandan geri bildirim istendi.",
   "mentorship.completeError": "Danışmanlığı tamamlarken hata oluştu.",
+  "mentorship.stepsIncomplete": "Danışmanlığı tamamlamadan önce lütfen tüm adımları belgeleyin.",
   "mentorship.cancelSuccess": "Danışmanlık iptal edildi. Danışan bilgilendirildi.",
   "mentorship.cancelError": "Danışmanlığı iptal ederken hata oluştu.",
   "mentorship.feedbackRequestTitle": "Lütfen geri bildiriminizi verin",
@@ -1014,6 +1015,9 @@ const tr: Record<TranslationKeys, string> = {
   "assign.pendingSuccessText": "Atama isteğiniz yöneticiye iletildi.",
 
   // Admin – bekleyen onaylar
+  "dashboard.pendingMentorApps": "Yeni Mentor Başvuruları",
+  "dashboard.pendingMentorAppsCount1": "1 başvuru inceleme bekliyor",
+  "dashboard.pendingMentorAppsCountN": "{0} başvuru inceleme bekliyor",
   "dashboard.pendingApprovals": "Onay bekleyen atamalar",
   "dashboard.openAssignments": "Açık Atamalar",
   "dashboard.menteesWithoutMentor": "Mentörsüz öğrenciler",

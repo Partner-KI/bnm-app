@@ -542,6 +542,7 @@ const en: Record<TranslationKeys, string> = {
   "mentorship.cancel": "Cancel",
   "mentorship.completeSuccess": "Mentorship completed! The mentee has been asked for feedback.",
   "mentorship.completeError": "Error completing the mentorship.",
+  "mentorship.stepsIncomplete": "Please document all steps before completing the mentorship.",
   "mentorship.cancelSuccess": "Mentorship cancelled. The mentee has been notified.",
   "mentorship.cancelError": "Error cancelling the mentorship.",
   "mentorship.feedbackRequestTitle": "Please give your feedback",
@@ -1014,6 +1015,9 @@ const en: Record<TranslationKeys, string> = {
   "assign.pendingSuccessText": "Your assignment request has been forwarded to the admin.",
 
   // Admin – pending approvals
+  "dashboard.pendingMentorApps": "New Mentor Applications",
+  "dashboard.pendingMentorAppsCount1": "1 application awaiting review",
+  "dashboard.pendingMentorAppsCountN": "{0} applications awaiting review",
   "dashboard.pendingApprovals": "Assignments awaiting confirmation",
   "dashboard.openAssignments": "Open Assignments",
   "dashboard.menteesWithoutMentor": "Mentees without mentor",
