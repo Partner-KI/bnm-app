@@ -365,6 +365,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const realtimeChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   // Ref für Mentorships — immer aktuell, auch in Realtime-Callbacks (Closure-Problem vermeiden)
   const mentorshipsRef = useRef<Mentorship[]>([]);
+  // Guard: verhindert parallele foreground-Loads (würden State inkonsistent machen)
+  const isActiveLoadRef = useRef(false);
 
   // ─── Initial Load ────────────────────────────────────────────────────────────
 
@@ -388,11 +390,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
 
     // Cache-first: Zuerst gecachte Daten anzeigen, dann im Hintergrund frisch laden
-    // Safety-Timeout: Wenn nach 10 Sekunden kein Ergebnis (z.B. hängender Fetch), force-refresh
-    const safetyTimer = setTimeout(() => {
-      loadAllData(false);
-    }, 10_000);
-
     (async () => {
       const cached = await readCache();
 
@@ -412,8 +409,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setAppSettings(cached.appSettings);
         setMentorOfMonthVisible(cached.mentorOfMonthVisible);
         setIsLoading(false);
-        // Safety-Timer nicht mehr nötig, da Cache geladen
-        clearTimeout(safetyTimer);
 
         // IMMER im Hintergrund frisch laden — Messages, Notifications,
         // Applications werden nicht gecacht und müssen immer geholt werden
@@ -422,11 +417,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         );
       } else {
         // Kein Cache oder Cache leer/veraltet: normal laden mit Loading-Indikator
-        // Safety-Timer canceln — loadAllData wird jetzt direkt aufgerufen
-        clearTimeout(safetyTimer);
-        // Fallback: nach 15 Sekunden isLoading force-auf-false setzen falls loadAllData hängt
-        const loadingFallback = setTimeout(() => setIsLoading(false), 15_000);
-        loadAllData(false).finally(() => clearTimeout(loadingFallback));
+        loadAllData(false);
       }
     })();
 
@@ -455,33 +446,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (Platform.OS !== "web" || !authUser) return;
 
-    let lastVisible = Date.now();
+    let lastHidden = Date.now();
+    // Shared ref: verhindert Doppel-Load wenn visibility + focus gleichzeitig feuern
+    let lastTriggered = 0;
 
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible") {
-        const elapsed = Date.now() - lastVisible;
-        // Nur neu laden wenn Tab >30 Sekunden inaktiv war
-        if (elapsed > 30_000) {
-          loadAllData(true).catch((err) =>
-            console.warn("[DataContext] visibility refresh error:", err)
-          );
-        }
-      } else {
-        lastVisible = Date.now();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    // Auch bei window focus (z.B. Alt+Tab zurück)
-    const handleFocus = () => {
-      const elapsed = Date.now() - lastVisible;
-      if (elapsed > 30_000) {
+    const triggerRefresh = () => {
+      const now = Date.now();
+      const elapsed = now - lastHidden;
+      // Nur laden wenn >30s inaktiv UND kein anderer Trigger in den letzten 5s
+      if (elapsed > 30_000 && now - lastTriggered > 5_000) {
+        lastTriggered = now;
         loadAllData(true).catch((err) =>
-          console.warn("[DataContext] focus refresh error:", err)
+          console.warn("[DataContext] visibility refresh error:", err)
         );
       }
     };
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        triggerRefresh();
+      } else {
+        lastHidden = Date.now();
+      }
+    };
+
+    const handleFocus = () => triggerRefresh();
+
+    document.addEventListener("visibilitychange", handleVisibility);
     window.addEventListener("focus", handleFocus);
 
     return () => {
@@ -491,6 +482,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [authUser?.id]);
 
   async function loadAllData(background = false) {
+    // Concurrent-Load-Guard: Kein paralleler foreground-Load erlaubt
+    if (!background) {
+      if (isActiveLoadRef.current) return;
+      isActiveLoadRef.current = true;
+    }
     if (!background) setIsLoading(true);
     try {
       // Session-Check: Nur laden wenn gültige Supabase-Session vorhanden
@@ -500,6 +496,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         if (!background) setIsLoading(false);
         return;
       }
+
+      const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
+      const isMentor = authUser?.role === "mentor";
+      // Platzhalter für Queries die nur für bestimmte Rollen ausgeführt werden
+      const empty = Promise.resolve({ data: null, error: null });
 
       const [
         profilesRes,
@@ -513,6 +514,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
         messagesRes,
         haditheRes,
         qaEntriesRes,
+        adminMsgsRes,
+        xpRes,
+        achievementsRes,
+        thanksRes,
+        streakRes,
       ] = await Promise.all([
         supabase.from("profiles").select("*"),
         supabase.from("mentorships").select("*"),
@@ -525,7 +531,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
         supabase.from("messages").select("*"),
         supabase.from("hadithe").select("*").order("sort_order", { ascending: true }),
         supabase.from("qa_entries").select("*").order("created_at", { ascending: true }),
-      ]);
+        // admin_messages: jetzt parallel statt sequenziell
+        isAdminOrOffice
+          ? supabase.from("admin_messages").select("*").order("created_at", { ascending: true })
+          : supabase.from("admin_messages").select("*").eq("user_id", authUser!.id).order("created_at", { ascending: true }),
+        // Gamification (nur für Mentoren): jetzt parallel statt sequenziell
+        isMentor ? supabase.from("xp_log").select("*").eq("user_id", authUser!.id).order("created_at", { ascending: false }).limit(100) : empty,
+        isMentor ? supabase.from("achievements").select("*").eq("user_id", authUser!.id) : empty,
+        isMentor ? supabase.from("thanks").select("*").eq("mentor_id", authUser!.id).order("created_at", { ascending: false }) : empty,
+        isMentor ? supabase.from("streaks").select("*").eq("user_id", authUser!.id).maybeSingle() : empty,
+      ] as const);
 
       // Error-Logging: Supabase-Fehler sichtbar machen
       if (profilesRes.error) console.warn("[DataContext] profiles error:", profilesRes.error.message);
@@ -709,125 +724,74 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setQAEntries(entries);
       }
 
-      // ─── Admin-Messages laden ──────────────────────────────────────────────
+      // ─── Admin-Messages verarbeiten (Query läuft parallel im Promise.all oben) ──
       {
         const profileMap2: Record<string, User> = {};
         if (profilesRes.data) {
           profilesRes.data.map(mapProfile).forEach((u) => (profileMap2[u.id] = u));
         }
-        const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
-        if (isAdminOrOffice) {
-          const { data: adminMsgsData } = await supabase
-            .from("admin_messages")
-            .select("*")
-            .order("created_at", { ascending: true });
-          if (adminMsgsData) {
-            const mapped: AdminMessage[] = adminMsgsData.map((row: any) => ({
-              id: row.id,
-              admin_id: row.admin_id,
-              user_id: row.user_id,
-              sender_id: row.sender_id,
-              content: row.content,
-              read_at: row.read_at ?? undefined,
-              created_at: row.created_at,
-              sender: profileMap2[row.sender_id],
-            }));
-            setAdminMessages(mapped);
-          }
-        } else {
-          const { data: myAdminMsgs } = await supabase
-            .from("admin_messages")
-            .select("*")
-            .eq("user_id", authUser!.id)
-            .order("created_at", { ascending: true });
-          if (myAdminMsgs) {
-            const mapped: AdminMessage[] = myAdminMsgs.map((row: any) => ({
-              id: row.id,
-              admin_id: row.admin_id,
-              user_id: row.user_id,
-              sender_id: row.sender_id,
-              content: row.content,
-              read_at: row.read_at ?? undefined,
-              created_at: row.created_at,
-              sender: profileMap2[row.sender_id],
-            }));
-            setAdminMessages(mapped);
-          }
+        if (adminMsgsRes.data) {
+          const mapped: AdminMessage[] = (adminMsgsRes.data as any[]).map((row) => ({
+            id: row.id,
+            admin_id: row.admin_id,
+            user_id: row.user_id,
+            sender_id: row.sender_id,
+            content: row.content,
+            read_at: row.read_at ?? undefined,
+            created_at: row.created_at,
+            sender: profileMap2[row.sender_id],
+          }));
+          setAdminMessages(mapped);
         }
       }
 
-      // ─── Gamification-Daten laden (nur für Mentoren) ──────────────────────────
-      if (authUser?.role === "mentor") {
-        const [xpRes, achievementsRes, thanksRes, streakRes] = await Promise.all([
-          supabase
-            .from("xp_log")
-            .select("*")
-            .eq("user_id", authUser.id)
-            .order("created_at", { ascending: false })
-            .limit(100),
-          supabase
-            .from("achievements")
-            .select("*")
-            .eq("user_id", authUser.id),
-          supabase
-            .from("thanks")
-            .select("*")
-            .eq("mentor_id", authUser.id)
-            .order("created_at", { ascending: false }),
-          supabase
-            .from("streaks")
-            .select("*")
-            .eq("user_id", authUser.id)
-            .maybeSingle(),
-        ]);
-
-        if (xpRes.data) {
-          setXpLog(
-            xpRes.data.map((row: Record<string, unknown>) => ({
-              id: row.id as string,
-              user_id: row.user_id as string,
-              amount: row.amount as number,
-              reason: row.reason as string,
-              related_id: (row.related_id as string) ?? undefined,
-              created_at: row.created_at as string,
-            }))
-          );
-        }
-
-        if (achievementsRes.data) {
-          setUserAchievements(
-            achievementsRes.data.map((row: Record<string, unknown>) => ({
-              id: row.id as string,
-              user_id: row.user_id as string,
-              achievement_key: row.achievement_key as string,
-              unlocked_at: row.unlocked_at as string,
-            }))
-          );
-        }
-
-        if (thanksRes.data) {
-          setThanks(
-            thanksRes.data.map((row: Record<string, unknown>) => ({
-              id: row.id as string,
-              mentorship_id: row.mentorship_id as string,
-              mentee_id: row.mentee_id as string,
-              mentor_id: row.mentor_id as string,
-              session_type_id: (row.session_type_id as string) ?? undefined,
-              message: (row.message as string) ?? "",
-              created_at: row.created_at as string,
-            }))
-          );
-        }
-
-        if (streakRes.data) {
-          const row = streakRes.data as Record<string, unknown>;
-          setStreak({
+      // ─── Gamification-Daten verarbeiten (Queries laufen parallel im Promise.all oben) ──
+      if (xpRes.data) {
+        setXpLog(
+          (xpRes.data as any[]).map((row) => ({
+            id: row.id as string,
             user_id: row.user_id as string,
-            current_streak: (row.current_streak as number) ?? 0,
-            longest_streak: (row.longest_streak as number) ?? 0,
-            last_activity_date: (row.last_activity_date as string) ?? undefined,
-          });
-        }
+            amount: row.amount as number,
+            reason: row.reason as string,
+            related_id: (row.related_id as string) ?? undefined,
+            created_at: row.created_at as string,
+          }))
+        );
+      }
+
+      if (achievementsRes.data) {
+        setUserAchievements(
+          (achievementsRes.data as any[]).map((row) => ({
+            id: row.id as string,
+            user_id: row.user_id as string,
+            achievement_key: row.achievement_key as string,
+            unlocked_at: row.unlocked_at as string,
+          }))
+        );
+      }
+
+      if (thanksRes.data) {
+        setThanks(
+          (thanksRes.data as any[]).map((row) => ({
+            id: row.id as string,
+            mentorship_id: row.mentorship_id as string,
+            mentee_id: row.mentee_id as string,
+            mentor_id: row.mentor_id as string,
+            session_type_id: (row.session_type_id as string) ?? undefined,
+            message: (row.message as string) ?? "",
+            created_at: row.created_at as string,
+          }))
+        );
+      }
+
+      if (streakRes.data) {
+        const row = streakRes.data as Record<string, unknown>;
+        setStreak({
+          user_id: row.user_id as string,
+          current_streak: (row.current_streak as number) ?? 0,
+          longest_streak: (row.longest_streak as number) ?? 0,
+          last_activity_date: (row.last_activity_date as string) ?? undefined,
+        });
       }
 
       // ─── Cache schreiben (messages werden NICHT gecacht — Realtime) ─────────
@@ -982,14 +946,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       console.warn("[DataContext] loadAllData error:", err);
       if (!background) {
         showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
-        // Retry nach 5 Sekunden
-        setTimeout(() => loadAllData(false), 5000);
       }
     } finally {
       if (!background) {
+        isActiveLoadRef.current = false;
         setIsLoading(false);
-        // Force-Refresh: Wenn nach dem Laden keine User vorhanden, nochmal nach 2s laden
-        // (kann passieren wenn Session gerade erneuert wurde oder RLS kurz blockiert hat)
+        // Force-Refresh: Wenn nach dem Laden keine User vorhanden, einmalig nochmal laden
+        // (RLS-Timing: Session gerade erneuert → Profile noch nicht sichtbar)
         setTimeout(() => {
           setUsers((prev) => {
             if (prev.length === 0) {
