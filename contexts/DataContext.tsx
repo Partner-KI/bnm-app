@@ -706,7 +706,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
             created_at: row.created_at as string,
             sender: profileMap[row.sender_id as string],
           }));
-        setMessages(msgs);
+        // Merge statt Replace: Lokal gesendete Nachrichten die noch nicht in der
+        // DB-Antwort sind (weil background-Load vor dem INSERT startete) bewahren.
+        // Verhindert Race Condition: sendMessage → background-loadAllData überschreibt.
+        setMessages((prev) => {
+          const dbIds = new Set(msgs.map((m) => m.id));
+          const localPending = prev.filter((m) => !dbIds.has(m.id));
+          return localPending.length > 0 ? [...msgs, ...localPending] : msgs;
+        });
       }
 
       // Hadithe
