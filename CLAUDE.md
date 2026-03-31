@@ -33,7 +33,8 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
   9. `supabase/fix-admin-chat.sql` — Admin darf in Chats schreiben (RLS)
   10. `supabase/fix-profiles-rls.sql` — Admin/Office-Profile für alle sichtbar (Chat-Name-Fix)
   11. `supabase/fix-messages-update.sql` — messages UPDATE Policy (markChatAsRead + Badge-Fix)
-  12. Dashboard: Auth → Email → "Confirm email" OFF
+  12. `supabase/fix-missing-rls.sql` — sessions/notifications/mentorships/profiles Policies
+  13. Dashboard: Auth → Email → "Confirm email" OFF
   13. Test-User manuell anlegen + Profile-INSERT
   14. `lib/supabase.ts`: URL + Anon Key ändern (2 Zeilen)
 

@@ -427,7 +427,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const cleanupMentorships = subscribeToMentorships();
     const cleanupAdminMessages = subscribeToAdminMessages();
     return () => {
-      clearTimeout(safetyTimer);
       cleanupMessages();
       cleanupProfiles();
       cleanupMentorships();
