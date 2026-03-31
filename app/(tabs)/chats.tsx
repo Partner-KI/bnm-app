@@ -244,11 +244,11 @@ const panelStyles = StyleSheet.create({
   bubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
   ownBubble: {
     backgroundColor: COLORS.gradientStart,
-    borderTopRightRadius: 4,
+    borderTopRightRadius: 6,
   },
   otherBubble: {
     borderWidth: 1,
-    borderTopLeftRadius: 4,
+    borderTopLeftRadius: 6,
   },
   messageText: { fontSize: 14, lineHeight: 20 },
   timeText: { fontSize: 11, marginTop: 3, opacity: 0.6 },

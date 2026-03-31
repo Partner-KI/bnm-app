@@ -92,8 +92,8 @@ export default function RegisterPublicScreen() {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const activeColor = isDark ? "#FFCA28" : COLORS.primary;
-  const activeTextColor = isDark ? "#0E0E14" : COLORS.white;
+  const activeColor = isDark ? themeColors.accent : themeColors.primary;
+  const activeTextColor = isDark ? themeColors.black : themeColors.white;
   const femaleActiveColor = isDark ? "#c084fc" : "#7e22ce";
 
   function validate(): boolean {
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
 
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -934,7 +934,7 @@ const styles = StyleSheet.create({
 
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
@@ -1000,7 +1000,7 @@ const styles = StyleSheet.create({
   },
   backToLoginButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 28,
     paddingVertical: 10,
     alignItems: "center",

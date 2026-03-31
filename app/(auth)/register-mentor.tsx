@@ -203,8 +203,8 @@ export default function RegisterMentorScreen() {
     }
   }
 
-  const activeColor = isDark ? "#FFCA28" : COLORS.primary;
-  const activeTextColor = isDark ? "#0E0E14" : COLORS.white;
+  const activeColor = isDark ? themeColors.accent : themeColors.primary;
+  const activeTextColor = isDark ? themeColors.black : themeColors.white;
 
   // Gemeinsame Theme-Props für alle PillGroup-Aufrufe
   const pp = {
@@ -697,7 +697,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 12,
@@ -744,7 +744,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 12,
     alignItems: "center",
   },
@@ -782,7 +782,7 @@ const styles = StyleSheet.create({
   },
   successButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 28,
     paddingVertical: 10,
   },

@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: 14,
     borderWidth: 1,
   },
   filterChipActive: {
@@ -252,7 +252,7 @@ const styles = StyleSheet.create({
   feedbackDate: { fontSize: 11, marginTop: 4 },
 
   commentsBox: {
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 10,
     marginBottom: 8,
   },
@@ -260,7 +260,7 @@ const styles = StyleSheet.create({
   noComments: { fontSize: 12, fontStyle: "italic", marginBottom: 4 },
 
   negativeBadge: {
-    borderRadius: 8,
+    borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 4,
     alignSelf: "flex-start",

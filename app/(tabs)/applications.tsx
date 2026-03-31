@@ -568,7 +568,7 @@ const styles = StyleSheet.create({
 
   searchInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -615,7 +615,7 @@ const styles = StyleSheet.create({
   statusText: { fontSize: 12, fontWeight: "600" },
 
   infoSection: {
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 10,
     marginTop: 12,
     marginBottom: 10,
@@ -639,7 +639,7 @@ const styles = StyleSheet.create({
   },
   textSectionContent: { fontSize: 13, lineHeight: 19 },
   extraDataTable: {
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 10,
     paddingTop: 4,
     paddingBottom: 4,
@@ -666,14 +666,14 @@ const styles = StyleSheet.create({
   rejectButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 9,
     alignItems: "center",
   },
   rejectButtonText: { fontWeight: "600", fontSize: 13 },
   approveButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -714,7 +714,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     marginBottom: 8,
     gap: 10,
   },
@@ -741,7 +741,7 @@ const styles = StyleSheet.create({
   },
   customReasonInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
@@ -762,7 +762,7 @@ const styles = StyleSheet.create({
   modalCancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
   modalRejectButton: {
     flex: 1,
     backgroundColor: COLORS.error,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 10,
     alignItems: "center",
   },
