@@ -71,6 +71,33 @@ function ChatTabIcon({ color }: { color: string }) {
 
 // AdminSidebar ist jetzt in components/AdminSidebar.tsx und wird vom Root-Layout gerendert
 
+// ─── Tab Icon mit Dot-Indikator ──────────────────────────────────────────────
+
+function TabIcon({
+  iosName,
+  iosActiveName,
+  ionName,
+  color,
+  focused,
+}: {
+  iosName: string;
+  iosActiveName: string;
+  ionName: string;
+  color: string;
+  focused: boolean;
+}) {
+  return (
+    <View style={tabStyles.iconWrapper}>
+      {Platform.OS === "ios" ? (
+        <SymbolView name={(focused ? iosActiveName : iosName) as any} tintColor={color} size={23} />
+      ) : (
+        <Ionicons name={ionName as any} size={22} color={color} />
+      )}
+      {focused && <View style={[tabStyles.activeDot, { backgroundColor: color }]} />}
+    </View>
+  );
+}
+
 // ─── Styles ─────────────────────────────────────────────────────────────────
 
 const tabStyles = StyleSheet.create({
@@ -84,10 +111,19 @@ const tabStyles = StyleSheet.create({
   },
   chatIconWrapper: {
     position: "relative",
-    width: 44,
-    height: 44,
     alignItems: "center",
     justifyContent: "center",
+  },
+  iconWrapper: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 2,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
   },
   badge: {
     position: "absolute",
@@ -139,11 +175,16 @@ function TabsLayout() {
         tabBarStyle: {
           backgroundColor: themeColors.tabBar,
           borderTopColor: themeColors.tabBarBorder,
-          minHeight: 56,
+          borderTopWidth: 1,
+          minHeight: 62,
+          paddingBottom: 6,
+          paddingTop: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: "600",
+          letterSpacing: 0.2,
+          marginTop: 0,
         },
         headerStyle: {
           backgroundColor: themeColors.headerBackground,
@@ -156,8 +197,8 @@ function TabsLayout() {
         options={{
           title: t("tabs.dashboard"),
           headerRight: () => <BellButton />,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"house.fill" as any} tintColor={color} size={24} /> : <Ionicons name="home" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="house" iosActiveName="house.fill" ionName="home" color={color} focused={focused} />
           ),
         }}
       />
@@ -166,8 +207,8 @@ function TabsLayout() {
         options={{
           title: t("tabs.mentees"),
           href: showMentees ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"person.2.fill" as any} tintColor={color} size={24} /> : <Ionicons name="people" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="person.2" iosActiveName="person.2.fill" ionName="people" color={color} focused={focused} />
           ),
         }}
       />
@@ -184,8 +225,8 @@ function TabsLayout() {
         options={{
           title: t("tabs.ranking"),
           href: showLeaderboard ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"trophy.fill" as any} tintColor={color} size={24} /> : <Ionicons name="trophy" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="trophy" iosActiveName="trophy.fill" ionName="trophy" color={color} focused={focused} />
           ),
         }}
       />
@@ -194,8 +235,8 @@ function TabsLayout() {
         options={{
           title: t("tabs.faq"),
           href: showFAQ ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"questionmark.circle.fill" as any} tintColor={color} size={24} /> : <Ionicons name="help-circle" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="questionmark.circle" iosActiveName="questionmark.circle.fill" ionName="help-circle" color={color} focused={focused} />
           ),
         }}
       />
@@ -203,10 +244,9 @@ function TabsLayout() {
         name="mentors"
         options={{
           title: t("sidebar.mentors"),
-          // Nur auf Web für Admin/Office sichtbar; auf Mobile ausgeblendet (TabBar zu voll)
           href: showAdminTabOnMobile ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"person.badge.clock.fill" as any} tintColor={color} size={24} /> : <Ionicons name="school" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="person.badge.clock" iosActiveName="person.badge.clock.fill" ionName="school" color={color} focused={focused} />
           ),
         }}
       />
@@ -215,8 +255,8 @@ function TabsLayout() {
         options={{
           title: t("sidebar.applications"),
           href: showAdminTabOnMobile ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"doc.text.fill" as any} tintColor={color} size={24} /> : <Ionicons name="document-text" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="doc.text" iosActiveName="doc.text.fill" ionName="document-text" color={color} focused={focused} />
           ),
         }}
       />
@@ -225,8 +265,8 @@ function TabsLayout() {
         options={{
           title: "Tools",
           href: showAdminTabOnMobile ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"wrench.and.screwdriver.fill" as any} tintColor={color} size={24} /> : <Ionicons name="construct" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="wrench.and.screwdriver" iosActiveName="wrench.and.screwdriver.fill" ionName="construct" color={color} focused={focused} />
           ),
         }}
       />
@@ -234,10 +274,9 @@ function TabsLayout() {
         name="reports"
         options={{
           title: t("tabs.reports"),
-          // Reports auf Mobile für Admin sichtbar lassen (wichtig für unterwegs)
           href: isAdminOrOffice ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"chart.bar.fill" as any} tintColor={color} size={24} /> : <Ionicons name="bar-chart" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="chart.bar" iosActiveName="chart.bar.fill" ionName="bar-chart" color={color} focused={focused} />
           ),
         }}
       />
@@ -246,8 +285,8 @@ function TabsLayout() {
         options={{
           title: t("tabs.feedback"),
           href: showAdminTabOnMobile ? undefined : null,
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="star" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="star" iosActiveName="star.fill" ionName={focused ? "star" : "star-outline"} color={color} focused={focused} />
           ),
         }}
       />
@@ -255,8 +294,8 @@ function TabsLayout() {
         name="profile"
         options={{
           title: t("tabs.profile"),
-          tabBarIcon: ({ color }) => (
-            Platform.OS === "ios" ? <SymbolView name={"person.circle.fill" as any} tintColor={color} size={24} /> : <Ionicons name="person-circle" size={22} color={color} />
+          tabBarIcon: ({ color, focused }) => (
+            <TabIcon iosName="person.circle" iosActiveName="person.circle.fill" ionName={focused ? "person-circle" : "person-circle-outline"} color={color} focused={focused} />
           ),
         }}
       />

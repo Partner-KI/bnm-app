@@ -68,21 +68,25 @@ export default function LoginScreen() {
 
           {/* E-Mail */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("login.email")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }]}
-            placeholder="deine@email.de"
-            placeholderTextColor={themeColors.textTertiary}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            value={email}
-            onChangeText={setEmail}
-            accessibilityLabel={t("login.email")}
-          />
+          <View style={[styles.inputRow, { backgroundColor: themeColors.input, borderColor: themeColors.border }]}>
+            <Ionicons name="mail-outline" size={18} color={themeColors.textTertiary} style={styles.inputIcon} />
+            <TextInput
+              style={[styles.inputInner, { color: themeColors.text }]}
+              placeholder="deine@email.de"
+              placeholderTextColor={themeColors.textTertiary}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={setEmail}
+              accessibilityLabel={t("login.email")}
+            />
+          </View>
 
           {/* Passwort */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("login.password")}</Text>
-          <View style={[styles.passwordRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+          <View style={[styles.passwordRow, { backgroundColor: themeColors.input, borderColor: themeColors.border }]}>
+            <Ionicons name="lock-closed-outline" size={18} color={themeColors.textTertiary} style={styles.inputIcon} />
             <TextInput
               style={[styles.passwordInput, { color: themeColors.text }]}
               placeholder={t("login.password")}
@@ -101,15 +105,16 @@ export default function LoginScreen() {
               <Ionicons
                 name={showPassword ? "eye-outline" : "eye-off-outline"}
                 size={20}
-                color={themeColors.textSecondary}
+                color={themeColors.textTertiary}
               />
             </BNMPressable>
           </View>
 
           {/* Fehlermeldung */}
           {errorMsg ? (
-            <View style={[styles.errorBox, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
-              <Text style={[styles.errorText, { color: isDark ? "#f87171" : "#dc2626" }]}>{errorMsg}</Text>
+            <View style={[styles.errorBox, { backgroundColor: isDark ? "#2D0808" : "#FEF2F2", borderColor: isDark ? "#7a2a2a" : "#FECACA" }]}>
+              <Ionicons name="alert-circle-outline" size={16} color={isDark ? "#F87171" : "#DC2626"} />
+              <Text style={[styles.errorText, { color: isDark ? "#F87171" : "#DC2626" }]}>{errorMsg}</Text>
             </View>
           ) : null}
 
@@ -191,8 +196,8 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: COLORS.gradientStart,
-    paddingTop: 52,
-    paddingBottom: 32,
+    paddingTop: 60,
+    paddingBottom: 40,
     paddingHorizontal: 24,
     alignItems: "center",
   },
@@ -211,8 +216,8 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   goldDivider: {
-    marginTop: 18,
-    width: 48,
+    marginTop: 20,
+    width: 64,
     height: 3,
     backgroundColor: COLORS.gold,
     borderRadius: 2,
@@ -220,9 +225,8 @@ const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingTop: 24,
+    paddingTop: 28,
     paddingBottom: 32,
-    // Auf Web: Formular auf max. 480px begrenzen und zentrieren
     ...(Platform.OS === "web" ? {
       maxWidth: 480,
       width: "100%",
@@ -232,46 +236,70 @@ const styles = StyleSheet.create({
   welcomeTitle: {
     fontSize: 24,
     fontWeight: "800",
+    letterSpacing: -0.3,
     marginBottom: 4,
   },
   welcomeSubtitle: {
     fontSize: 14,
-    marginBottom: 20,
+    marginBottom: 24,
+    lineHeight: 20,
   },
   fieldLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-    marginBottom: 4,
+    fontSize: 12,
+    fontWeight: "600",
+    letterSpacing: 0.3,
+    marginBottom: 6,
+    textTransform: "uppercase",
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "web" ? 8 : 10,
-    marginBottom: 10,
+  // Input mit Icon-Prefix
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1.5,
+    borderRadius: 14,
+    marginBottom: 14,
+    minHeight: 50,
+    overflow: "hidden",
+  },
+  inputIcon: {
+    marginLeft: 14,
+    marginRight: 4,
+  },
+  inputInner: {
+    flex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === "web" ? 10 : 12,
     fontSize: 14,
-    minHeight: 44,
+  },
+  // Legacy — bleibt für Passwortfeld
+  input: {
+    borderWidth: 1.5,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === "web" ? 10 : 12,
+    marginBottom: 14,
+    fontSize: 14,
+    minHeight: 50,
   },
   passwordRow: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginBottom: 10,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    marginBottom: 14,
     overflow: "hidden",
-    minHeight: 44,
+    minHeight: 50,
   },
   passwordInput: {
     flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: Platform.OS === "web" ? 8 : 10,
+    paddingHorizontal: 10,
+    paddingVertical: Platform.OS === "web" ? 10 : 12,
     fontSize: 14,
   },
   eyeButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    minWidth: 44,
-    minHeight: 44,
+    paddingHorizontal: 14,
+    minWidth: 48,
+    minHeight: 50,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -282,30 +310,42 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   errorText: {
     fontSize: 13,
+    flex: 1,
   },
   forgotPasswordRow: {
     alignItems: "flex-end",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   forgotPasswordText: {
     fontSize: 13,
+    fontWeight: "500",
   },
   loginButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
-    paddingVertical: Platform.OS === "web" ? 9 : 10,
+    borderRadius: 14,
+    paddingVertical: 14,
     alignItems: "center",
     marginBottom: 12,
-    minHeight: 44,
+    minHeight: 52,
     justifyContent: "center",
+    // Blauer Schatten für mehr Tiefe
+    shadowColor: COLORS.gradientStart,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+    elevation: 6,
   },
   loginButtonText: {
     color: COLORS.white,
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 15,
+    letterSpacing: 0.2,
   },
   registerRow: {
     flexDirection: "row",
@@ -314,20 +354,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   publicRegisterButton: {
-    backgroundColor: "rgba(238,167,27,0.10)",
-    borderWidth: 1,
+    backgroundColor: "rgba(238,167,27,0.08)",
+    borderWidth: 1.5,
     borderColor: COLORS.gold,
-    borderRadius: 12,
-    paddingVertical: 10,
+    borderRadius: 14,
+    paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
     marginBottom: 20,
-    minHeight: 44,
+    minHeight: 50,
     justifyContent: "center",
   },
   publicRegisterText: {
     color: COLORS.primary,
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: "600",
   },
   linkText: {
