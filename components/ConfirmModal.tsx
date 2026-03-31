@@ -6,7 +6,7 @@ import {
   Pressable,
   Modal,
 } from "react-native";
-import { COLORS } from "../constants/Colors";
+import { COLORS, SHADOWS } from "../constants/Colors";
 import { BNMPressable } from "./BNMPressable";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -130,11 +130,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 24,
-    elevation: 12,
+    ...SHADOWS.lg,
     alignItems: "center",
   },
   iconCircle: {

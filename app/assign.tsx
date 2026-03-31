@@ -19,6 +19,7 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { getCoordinatesForPLZ, haversineDistance } from "../lib/plzCoordinates";
 import { Container } from "../components/Container";
+import { SkeletonList } from "../components/Skeleton";
 
 interface MatchScore {
   mentor: User;
@@ -103,7 +104,7 @@ export default function AssignScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { users, mentorships, assignMentorship, getUnassignedMentees, refreshData } = useData();
+  const { users, mentorships, assignMentorship, getUnassignedMentees, refreshData, isLoading } = useData();
   const params = useLocalSearchParams<{ menteeId?: string }>();
 
   const isMentor = user?.role === "mentor";
@@ -198,6 +199,16 @@ export default function AssignScreen() {
     } finally {
       setIsAssigning(false);
     }
+  }
+
+  if (isLoading) {
+    return (
+      <Container>
+        <View style={{ padding: 20 }}>
+          <SkeletonList count={5} />
+        </View>
+      </Container>
+    );
   }
 
   if (!isAdmin && !isMentor) {

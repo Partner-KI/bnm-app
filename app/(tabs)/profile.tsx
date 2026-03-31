@@ -20,7 +20,7 @@ import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
 import type { ThemeMode } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
 
@@ -459,11 +459,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
     position: "relative",
   },
   heroLogoPosition: {
@@ -500,11 +496,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   sectionLabel: {
     fontSize: 11,

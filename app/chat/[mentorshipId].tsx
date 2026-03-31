@@ -18,6 +18,8 @@ import { showError, showConfirm } from "../../lib/errorHandler";
 import { COLORS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
+import { SkeletonChatMessages } from "../../components/Skeleton";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -30,6 +32,7 @@ export default function ChatScreen() {
     sendMessage,
     deleteMessage,
     markChatAsRead,
+    isLoading: dataLoading,
   } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
 
@@ -78,12 +81,15 @@ export default function ChatScreen() {
     }
   }
 
-  if (!user) return null;
+  const chatPartnerName = user
+    ? (user.id === mentorship?.mentor_id
+        ? mentorship?.mentee?.name
+        : mentorship?.mentor?.name)
+    : undefined;
 
-  const chatPartnerName =
-    user.id === mentorship?.mentor_id
-      ? mentorship?.mentee?.name
-      : mentorship?.mentor?.name;
+  usePageTitle(chatPartnerName ? `Chat – ${chatPartnerName}` : "Chat");
+
+  if (!user) return null;
 
   const statusLabel =
     mentorship?.status === "active"
@@ -98,7 +104,7 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={[styles.flex1, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={90}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
       {/* Chat-Header-Info */}
       {mentorship && (
@@ -119,7 +125,9 @@ export default function ChatScreen() {
           scrollViewRef.current?.scrollToEnd({ animated: false })
         }
       >
-        {messages.length === 0 ? (
+        {dataLoading ? (
+          <SkeletonChatMessages count={6} />
+        ) : messages.length === 0 ? (
           <View style={styles.emptyMessages}>
             <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>
               {t("chat.noMessages")}
@@ -240,7 +248,7 @@ const styles = StyleSheet.create({
   messagesScroll: { flex: 1 },
   emptyMessages: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 64 },
   emptyText: { textAlign: "center", fontSize: 14 },
-  messageBubbleWrapper: { marginBottom: 10, maxWidth: "80%" },
+  messageBubbleWrapper: { marginBottom: 10, maxWidth: Platform.OS === "web" ? "60%" : "80%" },
   senderName: { fontSize: 11, marginBottom: 3, marginLeft: 12, opacity: 0.7 },
   messageBubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
   ownBubble: {

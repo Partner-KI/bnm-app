@@ -13,9 +13,10 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import type { TranslationKeys } from "../../lib/translations/de";
 
@@ -35,6 +36,7 @@ const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"] as const;
 type GenderFilter = "all" | "male" | "female";
 
 export default function LeaderboardScreen() {
+  usePageTitle("Leaderboard");
   const router = useRouter();
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -288,11 +290,6 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
-          {/* Mentor des Monats — entfernt, da redundant zum Podium Platz 1 */}
-          {false && mentorOfMonthVisible && mentorOfMonthForUser && (
-            <View style={styles.momBanner}>
-            </View>
-          )}
 
           {/* ── Podium: Top 3 ───────────────────────────────────────────── */}
           {ranked.length > 0 && (
@@ -570,22 +567,14 @@ const styles = StyleSheet.create({
   restList: {
     borderRadius: 16,
     padding: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
 
   filterCard: {
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   filterLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   filterRow: { flexDirection: "row", gap: 8 },
@@ -612,11 +601,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   momHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   momStar: { color: COLORS.gold, fontSize: 22, marginRight: 8 },
@@ -640,11 +625,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   cardTitle: { fontWeight: "800", marginBottom: 16, fontSize: 15 },
   emptyText: { textAlign: "center", fontSize: 14, paddingVertical: 16 },
@@ -699,11 +680,7 @@ const styles = StyleSheet.create({
     borderLeftColor: COLORS.gold,
     padding: 20,
     marginBottom: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   legendTitle: { fontWeight: "800", marginBottom: 12 },
   legendRow: { flexDirection: "row", alignItems: "center", marginBottom: 8, gap: 8 },

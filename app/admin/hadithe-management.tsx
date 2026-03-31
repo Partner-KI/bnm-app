@@ -16,7 +16,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData, type Hadith } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 
@@ -394,14 +394,14 @@ export default function HaditheManagementScreen() {
                       onPress={() => handleReorder(h.id, "up")}
                       disabled={idx === 0}
                     >
-                      <Text style={[styles.orderBtnText, idx === 0 ? { opacity: 0.3 } : {}, { color: themeColors.text }]}>↑</Text>
+                      <Text style={[styles.orderBtnText, { color: idx === 0 ? themeColors.border : themeColors.text }]}>↑</Text>
                     </TouchableOpacity>
                     <TouchableOpacity
                       style={[styles.orderBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                       onPress={() => handleReorder(h.id, "down")}
                       disabled={idx === sortedHadithe.length - 1}
                     >
-                      <Text style={[styles.orderBtnText, idx === sortedHadithe.length - 1 ? { opacity: 0.3 } : {}, { color: themeColors.text }]}>↓</Text>
+                      <Text style={[styles.orderBtnText, { color: idx === sortedHadithe.length - 1 ? themeColors.border : themeColors.text }]}>↓</Text>
                     </TouchableOpacity>
                   </View>
 
@@ -559,11 +559,7 @@ const styles = StyleSheet.create({
   listCard: {
     borderRadius: 10,
     padding: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 2,
+    ...SHADOWS.md,
   },
   listTitle: { fontSize: 15, fontWeight: "700", marginBottom: 12 },
   emptyText: { fontSize: 14, textAlign: "center", paddingVertical: 20 },

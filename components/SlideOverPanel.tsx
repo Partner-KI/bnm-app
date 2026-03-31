@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useThemeColors, useTheme } from "../contexts/ThemeContext";
+import { useLanguage } from "../contexts/LanguageContext";
 
 interface SlideOverPanelProps {
   visible: boolean;
@@ -22,6 +23,7 @@ interface SlideOverPanelProps {
 export function SlideOverPanel({ visible, onClose, children, title }: SlideOverPanelProps) {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
+  const { t } = useLanguage();
   const { width: screenWidth, height: screenHeight } = useWindowDimensions();
 
   // Modal-Größe: responsive — auf kleinen Screens (mobile Browser) fast Vollbreite
@@ -55,7 +57,7 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
   return (
     <View style={styles.container}>
       {/* Overlay */}
-      <TouchableWithoutFeedback onPress={onClose} accessibilityLabel="Schließen" accessibilityRole="button">
+      <TouchableWithoutFeedback onPress={onClose} accessibilityLabel={t("common.close")} accessibilityRole="button">
         <Animated.View style={[styles.overlay, { opacity: opacityAnim }]} />
       </TouchableWithoutFeedback>
 
@@ -82,7 +84,7 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
           ) : (
             <View />
           )}
-          <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: themeColors.elevated }]} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel="Schließen">
+          <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: themeColors.elevated }]} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t("common.close")}>
             <Text style={[styles.closeButtonText, { color: themeColors.textSecondary }]}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -103,9 +105,9 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
             onPress={onClose}
             activeOpacity={0.8}
             accessibilityRole="button"
-            accessibilityLabel="Schließen"
+            accessibilityLabel={t("common.close")}
           >
-            <Text style={[styles.closeFooterText, { color: isDark ? "#0E0E14" : "#fff" }]}>Schließen</Text>
+            <Text style={[styles.closeFooterText, { color: isDark ? "#0E0E14" : "#fff" }]}>{t("common.close")}</Text>
           </TouchableOpacity>
         </View>
       </Animated.View>

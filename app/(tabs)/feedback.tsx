@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -240,11 +240,7 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 12,
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   feedbackHeader: {
     flexDirection: "row",

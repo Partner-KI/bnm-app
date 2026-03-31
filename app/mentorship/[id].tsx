@@ -14,7 +14,7 @@ import { navigateToChat } from "../../lib/chatNavigation";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
@@ -557,11 +557,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 18,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   cardSectionLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
   cardTitle: { fontWeight: "800" },
@@ -639,11 +635,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 18,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   notesTitle: { fontWeight: "800", fontSize: 15, marginBottom: 4 },
   notesHint: { fontSize: 12, marginBottom: 10 },
@@ -694,11 +686,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: "100%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   modalTitle: { fontWeight: "800", fontSize: 16, marginBottom: 6 },
   modalSubtitle: { fontSize: 13, marginBottom: 14 },

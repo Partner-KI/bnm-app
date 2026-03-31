@@ -16,13 +16,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import type { UserRole } from "../../types";
 import { COLORS } from "../../constants/Colors";
 import { BNMLogo } from "../../components/BNMLogo";
 
 export default function LoginScreen() {
   const router = useRouter();
-  const { login, loginAs, isLoading } = useAuth();
+  const { login, isLoading } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
@@ -41,22 +40,6 @@ export default function LoginScreen() {
     const success = await login(email.trim(), password);
     if (!success) {
       setErrorMsg(t("login.errorInvalid"));
-    }
-  }
-
-  async function handleQuickLogin(role: UserRole) {
-    setErrorMsg("");
-    const result = await loginAs(role);
-    if (!result.success) {
-      setErrorMsg(result.error ?? t("login.errorFailed"));
-    }
-  }
-
-  async function handleQuickOffice() {
-    setErrorMsg("");
-    const result = await loginAs("office");
-    if (!result.success) {
-      setErrorMsg(result.error ?? t("login.errorFailed"));
     }
   }
 

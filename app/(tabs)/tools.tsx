@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { geocodeAllUsers } from "../../lib/geocoding";
@@ -143,11 +143,7 @@ const styles = StyleSheet.create({
     padding: 18,
     alignItems: "center",
     gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   toolLabel: {
     fontSize: 12,

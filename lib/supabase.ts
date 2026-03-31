@@ -14,6 +14,6 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     detectSessionInUrl: true,
     debug: false,
     lock: undefined, // Deaktiviert den Navigator.locks Lock — verhindert AbortError auf Web
-    flowType: "implicit",
+    flowType: "pkce",
   },
 });

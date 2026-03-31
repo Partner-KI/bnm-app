@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -294,11 +294,7 @@ const styles = StyleSheet.create({
     padding: 20,
     alignItems: "center",
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   avatarCircle: {
     width: 72,
@@ -341,11 +337,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   statValue: { fontSize: 26, fontWeight: "800" },
   statLabel: { fontSize: 11, marginTop: 2, textAlign: "center" },
@@ -354,11 +346,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   menteeRow: {
     flexDirection: "row",

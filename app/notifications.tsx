@@ -17,6 +17,7 @@ import { COLORS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 function getTypeConfig(isDark: boolean): Record<NotificationType, { icon: string; bg: string; color: string }> {
   return {
@@ -30,6 +31,7 @@ function getTypeConfig(isDark: boolean): Record<NotificationType, { icon: string
 }
 
 export default function NotificationsScreen() {
+  usePageTitle("Benachrichtigungen");
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();

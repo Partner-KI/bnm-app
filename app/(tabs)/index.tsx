@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,16 +9,19 @@ import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import type { Mentorship, Feedback } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
 import { SlideOverPanel } from "../../components/SlideOverPanel";
+import { SkeletonDashboard } from "../../components/Skeleton";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { MentorDetailPanel } from "../../components/MentorDetailPanel";
 import { MenteeDetailPanel } from "../../components/MenteeDetailPanel";
 import { getLevelForXP, getNextLevel, getLevelProgress, ACHIEVEMENTS, XP_VALUES, LEVELS } from "../../lib/gamification";
 
 export default function DashboardScreen() {
+  usePageTitle("Dashboard");
   const { user } = useAuth();
 
   if (!user) return null;
@@ -29,6 +33,7 @@ export default function DashboardScreen() {
 }
 
 function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: boolean }) {
+  const insets = useSafeAreaInsets();
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
@@ -45,6 +50,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     sendAdminDirectMessage,
     adminMessages,
     refreshData,
+    isLoading,
   } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [activePeriod, setActivePeriod] = useState<"thisMonth" | "lastMonth" | "thisQuarter" | "thisYear">("thisMonth");
@@ -259,10 +265,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     return scored[0].score > 0 ? scored[0] : null;
   }, [users, mentorships, sessions]);
 
+  if (isLoading) return <SkeletonDashboard />;
+
   return (
     <>
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
+      contentContainerStyle={{ paddingTop: insets.top }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
@@ -662,12 +671,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
 
 function MentorDashboard() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, xpLog, userAchievements, thanks, streak, sessionTypes } = useData();
+  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, xpLog, userAchievements, thanks, streak, sessionTypes, isLoading } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
   const onRefresh = useCallback(async () => {
@@ -832,9 +842,12 @@ function MentorDashboard() {
 
   const [showAchievementTooltip, setShowAchievementTooltip] = useState<string | null>(null);
 
+  if (isLoading) return <SkeletonDashboard />;
+
   return (
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
+      contentContainerStyle={{ paddingTop: insets.top }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
@@ -1180,12 +1193,13 @@ async function shareHadith(text: string, suffix: string) {
 }
 
 function MenteeDashboard() {
+  const insets = useSafeAreaInsets();
   const { user } = useAuth();
   const router = useRouter();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, sendThanks } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, sendThanks, isLoading } = useData();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
   const [showThanksModal, setShowThanksModal] = useState(false);
@@ -1245,9 +1259,12 @@ function MenteeDashboard() {
     ? Math.max(0, Math.floor((Date.now() - new Date(mentorship.assigned_at).getTime()) / 86400000))
     : null;
 
+  if (isLoading) return <SkeletonDashboard />;
+
   return (
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
+      contentContainerStyle={{ paddingTop: insets.top }}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
     >
       <View style={styles.page}>
@@ -1720,11 +1737,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   cardTitle: { fontWeight: "600", fontSize: 15, color: COLORS.primary, marginBottom: 12 },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
@@ -1749,11 +1762,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    ...SHADOWS.md,
     minHeight: 100,
   },
   statGradientTop: {
@@ -1833,11 +1842,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
+    ...SHADOWS.sm,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
   },
@@ -1867,11 +1872,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   greetingSmall: { color: COLORS.white, fontSize: 13, opacity: 0.75, marginBottom: 2 },
   greetingName: { color: COLORS.white, fontSize: 22, fontWeight: "700" },
@@ -1883,11 +1884,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    ...SHADOWS.md,
   },
   stepsBadge: {
     backgroundColor: COLORS.bg,
@@ -2009,11 +2006,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   chartArea: {
     flexDirection: "row",
@@ -2318,11 +2311,7 @@ const styles = StyleSheet.create({
     padding: 12,
     alignItems: "center",
     gap: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
+    ...SHADOWS.sm,
   },
   quickToolLabel: {
     fontSize: 11,
@@ -2375,11 +2364,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   levelHeaderRow: {
     flexDirection: "row",
@@ -2473,11 +2458,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 10,
     zIndex: 100,
-    elevation: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    ...SHADOWS.lg,
   },
   achievementTooltipTitle: {
     fontSize: 12,
@@ -2535,11 +2516,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 12,
+    ...SHADOWS.lg,
   },
   modalTitle: {
     fontSize: 17,
@@ -2763,11 +2740,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 20,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   menteeProgressHeader: {
     flexDirection: "row",
@@ -2856,11 +2829,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   ratingsSectionHeader: {
     flexDirection: "row",

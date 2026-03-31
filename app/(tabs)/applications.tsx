@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { COLORS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { sendApplicationRejectionEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
 // Öffentliche Anmeldungen sind in mentor_applications mit diesem Motivation-Marker gespeichert
@@ -46,6 +47,7 @@ function translateExtraValue(value: string): string {
 }
 
 export default function ApplicationsTabScreen() {
+  usePageTitle("Bewerbungen");
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
@@ -59,6 +61,7 @@ export default function ApplicationsTabScreen() {
   const [customReason, setCustomReason] = useState("");
   const [rejectReasonError, setRejectReasonError] = useState("");
   const [isRejecting, setIsRejecting] = useState(false);
+  const isApprovingRef = useRef(false);
 
   if (user?.role !== "admin" && user?.role !== "office") {
     return (
@@ -86,14 +89,17 @@ export default function ApplicationsTabScreen() {
   const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
 
   async function handleApproveMentor(app: MentorApplication) {
+    if (isApprovingRef.current) return;
     const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
     if (ok) {
+      isApprovingRef.current = true;
       try {
         await approveApplication(app.id);
-        // Daten neu laden damit die UI aktualisiert wird
         await refreshData();
       } catch {
         // Fehler wird bereits in approveApplication angezeigt
+      } finally {
+        isApprovingRef.current = false;
       }
     }
   }

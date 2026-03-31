@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -254,11 +254,7 @@ const styles = StyleSheet.create({
     borderLeftColor: COLORS.gold,
     padding: 14,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 1,
+    ...SHADOWS.sm,
   },
   cardHeader: { marginBottom: 12 },
   cardInfo: {},

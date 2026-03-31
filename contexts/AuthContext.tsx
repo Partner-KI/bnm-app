@@ -39,46 +39,6 @@ async function loadProfile(userId: string): Promise<User | null> {
   };
 }
 
-// Dev-Shortcut: Credentials werden zur Laufzeit aus Environment geladen, nicht hardcoded
-const DEV_CREDENTIALS: Record<string, { email: string; password: string }> = {};
-
-/**
- * Erstellt Test-User in Supabase Auth (einmalig aufrufen).
- * Benötigt signUp, daher Email-Bestätigung je nach Supabase-Einstellung nötig.
- */
-export async function registerTestUsers(): Promise<string[]> {
-  const results: string[] = [];
-
-  const testUsers = [
-    { email: "admin@bnm.org", password: "admin123", name: "Ahmad Al-Farsi", role: "admin", gender: "male", city: "Berlin", age: 38 },
-    { email: "office@bnm.org", password: "office123", name: "Maryam Hassan", role: "office", gender: "female", city: "Berlin", age: 31 },
-    { email: "mentor@bnm.org", password: "mentor123", name: "Yusuf Schneider", role: "mentor", gender: "male", city: "Hamburg", age: 32 },
-    { email: "mentee@bnm.org", password: "mentee123", name: "Michael Bauer", role: "mentee", gender: "male", city: "Hamburg", age: 27 },
-  ];
-
-  for (const u of testUsers) {
-    const { error } = await supabase.auth.signUp({
-      email: u.email,
-      password: u.password,
-      options: {
-        data: {
-          name: u.name,
-          role: u.role,
-          gender: u.gender,
-          city: u.city,
-          age: u.age,
-        },
-      },
-    });
-    if (error) {
-      results.push(`${u.email}: FEHLER – ${error.message}`);
-    } else {
-      results.push(`${u.email}: OK`);
-    }
-  }
-
-  return results;
-}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -136,37 +96,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     []
   );
 
-  /**
-   * Dev-Shortcut: Als bestimmte Rolle einloggen.
-   * Nur in Development verfügbar (__DEV__ === true).
-   */
+  // loginAs: nicht mehr verfügbar (Test-Credentials entfernt)
   const loginAs = useCallback(
-    async (role: UserRole): Promise<{ success: boolean; error?: string }> => {
-      if (!__DEV__) {
-        return { success: false, error: "Schnellzugang nur in Development verfügbar." };
-      }
-
-      const creds = DEV_CREDENTIALS[role];
-      if (!creds) return { success: false, error: "Unbekannte Rolle" };
-
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: creds.email,
-        password: creds.password,
-      });
-
-      if (error || !data.user) {
-        setIsLoading(false);
-        return {
-          success: false,
-          error: `Benutzer existiert nicht. Bitte zuerst registerTestUsers() aufrufen.`,
-        };
-      }
-
-      const profile = await loadProfile(data.user.id);
-      setUser(profile);
-      setIsLoading(false);
-      return { success: true };
+    async (_role: UserRole): Promise<{ success: boolean; error?: string }> => {
+      return { success: false, error: "Schnellzugang nicht verfügbar." };
     },
     []
   );

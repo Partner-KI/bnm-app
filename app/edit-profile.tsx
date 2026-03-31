@@ -49,6 +49,7 @@ export default function EditProfileScreen() {
     user?.contact_preference ?? "email"
   );
   const [isSaving, setIsSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [avatarPreview, setAvatarPreview] = useState<string | undefined>(user?.avatar_url);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 
@@ -118,11 +119,16 @@ export default function EditProfileScreen() {
   }
 
   async function handleSave() {
-    const error = validate();
-    if (error) {
-      showError(error);
+    const errors: Record<string, string> = {};
+    if (!name.trim()) errors.name = t("editProfile.errorName");
+    if (!city.trim()) errors.city = t("editProfile.errorCity");
+    const ageNum = parseInt(age, 10);
+    if (isNaN(ageNum) || ageNum < 14 || ageNum > 99) errors.age = t("editProfile.errorAge");
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
 
     setIsSaving(true);
     const plzChanged = plz.trim() !== (safeUser.plz ?? "");
@@ -215,31 +221,37 @@ export default function EditProfileScreen() {
           {/* Name */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.name")}</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.name && styles.inputError]}
             value={name}
-            onChangeText={setName}
+            onChangeText={(v) => { setName(v); if (fieldErrors.name) setFieldErrors(p => ({ ...p, name: "" })); }}
             placeholder={t("editProfile.namePlaceholder")}
             placeholderTextColor={themeColors.textTertiary}
             autoCapitalize="words"
             accessibilityLabel={t("editProfile.name")}
           />
+          {fieldErrors.name ? (
+            <Text style={styles.fieldError}>{fieldErrors.name}</Text>
+          ) : null}
 
           {/* Stadt */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.city")}</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.city && styles.inputError]}
             value={city}
-            onChangeText={setCity}
+            onChangeText={(v) => { setCity(v); if (fieldErrors.city) setFieldErrors(p => ({ ...p, city: "" })); }}
             placeholder={t("editProfile.cityPlaceholder")}
             placeholderTextColor={themeColors.textTertiary}
             autoCapitalize="words"
             accessibilityLabel={t("editProfile.city")}
           />
+          {fieldErrors.city ? (
+            <Text style={styles.fieldError}>{fieldErrors.city}</Text>
+          ) : null}
 
           {/* Postleitzahl */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("profile.plz")}</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, marginBottom: 12 }]}
             value={plz}
             onChangeText={setPlz}
             placeholder={t("register.plzPlaceholder")}
@@ -252,19 +264,22 @@ export default function EditProfileScreen() {
           {/* Alter */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.age")}</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.age && styles.inputError]}
             value={age}
-            onChangeText={setAge}
+            onChangeText={(v) => { setAge(v); if (fieldErrors.age) setFieldErrors(p => ({ ...p, age: "" })); }}
             placeholder={t("editProfile.agePlaceholder")}
             placeholderTextColor={themeColors.textTertiary}
             keyboardType="number-pad"
             accessibilityLabel={t("editProfile.age")}
           />
+          {fieldErrors.age ? (
+            <Text style={styles.fieldError}>{fieldErrors.age}</Text>
+          ) : null}
 
           {/* Telefon */}
           <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.phone")}</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
+            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, marginBottom: 12 }]}
             value={phone}
             onChangeText={setPhone}
             placeholder="+49 151 ..."
@@ -363,8 +378,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
-    marginBottom: 12,
+    marginBottom: 4,
   },
+  inputError: { borderColor: "#EF4444" },
+  fieldError: { color: "#EF4444", fontSize: 12, marginTop: 2, marginBottom: 8 },
   contactGrid: {
     flexDirection: "row",
     flexWrap: "wrap",

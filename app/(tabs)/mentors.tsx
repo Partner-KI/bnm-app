@@ -14,7 +14,8 @@ import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS } from "../../constants/Colors";
+import { usePageTitle } from "../../hooks/usePageTitle";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { useAuth } from "../../contexts/AuthContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
@@ -24,6 +25,7 @@ import { SlideOverPanel } from "../../components/SlideOverPanel";
 import { MentorDetailPanel } from "../../components/MentorDetailPanel";
 
 export default function MentorsTabScreen() {
+  usePageTitle("Mentoren");
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useAuth();
@@ -470,11 +472,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     marginBottom: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gradientStart,
   },
@@ -575,11 +573,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
+    ...SHADOWS.lg,
   },
   modalTitle: { fontSize: 17, fontWeight: "800", marginBottom: 10 },
   modalMsg: { fontSize: 14, lineHeight: 20, marginBottom: 20 },

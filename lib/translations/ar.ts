@@ -144,6 +144,7 @@ const ar: Record<TranslationKeys, string> = {
   // Common
   "common.save": "حفظ",
   "common.cancel": "إلغاء",
+  "common.close": "إغلاق",
   "common.confirm": "تأكيد",
   "common.back": "رجوع",
   "common.error": "خطأ",

@@ -144,6 +144,7 @@ const en: Record<TranslationKeys, string> = {
   // Common
   "common.save": "Save",
   "common.cancel": "Cancel",
+  "common.close": "Close",
   "common.confirm": "Confirm",
   "common.back": "Back",
   "common.error": "Error",

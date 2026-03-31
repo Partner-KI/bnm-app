@@ -16,7 +16,7 @@ import type { ReportData } from "../../lib/pdfGenerator";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -808,11 +808,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   cardSectionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
   quickFilterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },
@@ -857,11 +853,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   kpiLabel: { fontSize: 12, marginBottom: 2 },
   kpiValue: { fontSize: 26, fontWeight: "800" },
@@ -881,11 +873,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   chartTitle: { fontWeight: "800", color: COLORS.white, marginBottom: 16, fontSize: 15 },
   barChartContainer: {

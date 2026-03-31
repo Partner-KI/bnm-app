@@ -118,6 +118,7 @@ export default function DocumentSessionScreen() {
   const [isOnline, setIsOnline] = useState<boolean>(false);
   const [details, setDetails] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Edit-Mode: ID der Session die bearbeitet wird (null = neue Session)
   const [editingSessionId, setEditingSessionId] = useState<string | null>(
@@ -239,25 +240,30 @@ export default function DocumentSessionScreen() {
       return;
     }
 
+    const newFieldErrors: Record<string, string> = {};
+
     if (!details.trim()) {
-      showError(t("docSession.detailsRequired"));
-      return;
+      newFieldErrors.details = t("docSession.detailsRequired");
     }
 
     if (!date.trim()) {
-      showError(t("docSession.dateError"));
-      return;
+      newFieldErrors.date = t("docSession.dateError");
+    } else {
+      const { ok: dateOk, isoDate: isoCheck } = validateAndParseDate(date);
+      if (!dateOk) {
+        newFieldErrors.date = isoCheck === "future"
+          ? t("docSession.dateErrorFuture")
+          : t("docSession.dateErrorFormat");
+      }
     }
 
-    const { ok: dateOk, isoDate } = validateAndParseDate(date);
-    if (!dateOk) {
-      if (isoDate === "future") {
-        showError(t("docSession.dateErrorFuture"));
-      } else {
-        showError(t("docSession.dateErrorFormat"));
-      }
+    if (Object.keys(newFieldErrors).length > 0) {
+      setFieldErrors(newFieldErrors);
       return;
     }
+    setFieldErrors({});
+
+    const { ok: dateOk, isoDate } = validateAndParseDate(date);
 
     // Update-Modus: bestehende Session aktualisieren
     if (editingSessionId) {
@@ -574,7 +580,7 @@ export default function DocumentSessionScreen() {
                       type="date"
                       value={date}
                       max={todayIso}
-                      onChange={(e) => setDate(e.target.value)}
+                      onChange={(e) => { setDate(e.target.value); if (fieldErrors.date) setFieldErrors(p => ({ ...p, date: "" })); }}
                       style={{
                         borderWidth: 1,
                         borderColor: themeColors.border,
@@ -752,6 +758,9 @@ export default function DocumentSessionScreen() {
                       )}
                     </>
                   )}
+                  {fieldErrors.date ? (
+                    <Text style={styles.fieldError}>{fieldErrors.date}</Text>
+                  ) : null}
                 </View>
 
                 <View style={[styles.formCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -789,15 +798,18 @@ export default function DocumentSessionScreen() {
                 <View style={[styles.formCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                   <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>{t("docSession.detailsLabel")}</Text>
                   <TextInput
-                    style={[styles.textInput, { height: 80, minHeight: undefined, borderColor: themeColors.border, color: themeColors.text }]}
+                    style={[styles.textInput, { height: 80, minHeight: undefined, color: themeColors.text }, fieldErrors.details ? styles.textInputError : { borderColor: themeColors.border }]}
                     value={details}
-                    onChangeText={setDetails}
+                    onChangeText={(v) => { setDetails(v); if (fieldErrors.details) setFieldErrors(p => ({ ...p, details: "" })); }}
                     placeholder={t("docSession.detailsPlaceholder")}
                     placeholderTextColor={themeColors.textTertiary}
                     multiline
                     numberOfLines={4}
                     textAlignVertical="top"
                   />
+                  {fieldErrors.details ? (
+                    <Text style={styles.fieldError}>{fieldErrors.details}</Text>
+                  ) : null}
                 </View>
 
                 <View style={[styles.formCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -1104,6 +1116,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 14,
   },
+  textInputError: { borderColor: "#EF4444" },
+  fieldError: { color: "#EF4444", fontSize: 12, marginTop: 6, marginBottom: 0 },
   attemptHint: { fontSize: 12, marginTop: 6 },
   toggleRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   toggleButton: { flex: 1, paddingVertical: 9, borderRadius: 12, borderWidth: 1, alignItems: "center", minWidth: 80 },

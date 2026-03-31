@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useThemeColors } from "../contexts/ThemeContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, SHADOWS } from "../constants/Colors";
 
 // ─── Route definitions ───────────────────────────────────────────────────────
 
@@ -568,12 +568,7 @@ function makeStyles(themeColors: ReturnType<typeof useThemeColors>) {
       backgroundColor: themeColors.card,
       borderRadius: 16,
       overflow: "hidden",
-      // Shadow
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.24,
-      shadowRadius: 24,
-      elevation: 16,
+      ...SHADOWS.lg,
     },
     searchRow: {
       flexDirection: "row",

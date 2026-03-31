@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS } from "../constants/Colors";
+import { COLORS, SHADOWS } from "../constants/Colors";
 import { useData } from "../contexts/DataContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
@@ -157,11 +157,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   todayHeader: { flexDirection: "row", alignItems: "center", marginBottom: 16 },
   todayStar: { color: COLORS.gold, fontSize: 20, marginRight: 8 },
@@ -194,11 +190,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 18,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   hadithText: {
     fontSize: 14,

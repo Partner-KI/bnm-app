@@ -417,10 +417,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
         // IMMER im Hintergrund frisch laden — Messages, Notifications,
         // Applications werden nicht gecacht und müssen immer geholt werden
-        loadAllData(/* background */ true);
+        loadAllData(/* background */ true).catch((err) =>
+          console.warn("[DataContext] background refresh error:", err)
+        );
       } else {
         // Kein Cache oder Cache leer/veraltet: normal laden mit Loading-Indikator
-        // Safety-Timer läuft weiter und löst nach 10s nochmal aus falls nötig
+        // Safety-Timer canceln — loadAllData wird jetzt direkt aufgerufen
+        clearTimeout(safetyTimer);
         loadAllData(false);
       }
     })();
@@ -457,7 +460,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const elapsed = Date.now() - lastVisible;
         // Nur neu laden wenn Tab >30 Sekunden inaktiv war
         if (elapsed > 30_000) {
-          loadAllData(true);
+          loadAllData(true).catch((err) =>
+            console.warn("[DataContext] visibility refresh error:", err)
+          );
         }
       } else {
         lastVisible = Date.now();
@@ -470,7 +475,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     const handleFocus = () => {
       const elapsed = Date.now() - lastVisible;
       if (elapsed > 30_000) {
-        loadAllData(true);
+        loadAllData(true).catch((err) =>
+          console.warn("[DataContext] focus refresh error:", err)
+        );
       }
     };
     window.addEventListener("focus", handleFocus);

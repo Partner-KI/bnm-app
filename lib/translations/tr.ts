@@ -144,6 +144,7 @@ const tr: Record<TranslationKeys, string> = {
   // Common
   "common.save": "Kaydet",
   "common.cancel": "İptal",
+  "common.close": "Kapat",
   "common.confirm": "Onayla",
   "common.back": "Geri",
   "common.error": "Hata",

@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { showSuccess } from "../../lib/errorHandler";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -1015,11 +1015,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     marginBottom: 14,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 6,
-    elevation: 2,
+    ...SHADOWS.sm,
   },
   sectionLabel: {
     fontSize: 11,
@@ -1075,11 +1071,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: 3,
     borderTopColor: COLORS.gold,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
+    ...SHADOWS.sm,
   },
   kpiValue: { fontSize: 30, fontWeight: "800" },
   kpiLabel: {
@@ -1141,11 +1133,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 1,
+    ...SHADOWS.sm,
   },
   summaryText: { fontSize: 14, lineHeight: 22 },
 

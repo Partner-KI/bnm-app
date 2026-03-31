@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
@@ -19,16 +19,18 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import type { Mentorship } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { navigateToChat } from "../../lib/chatNavigation";
 import { SlideOverPanel } from "../../components/SlideOverPanel";
 import { MenteeDetailPanel } from "../../components/MenteeDetailPanel";
 
 export default function MenteesScreen() {
+  usePageTitle("Mentees");
   const { user } = useAuth();
   if (!user) return null;
 
@@ -175,7 +177,7 @@ function AdminMenteesView() {
     }
   }
 
-  const filteredMentees = allMentees
+  const filteredMentees = useMemo(() => allMentees
     .filter((mentee) => {
       const mentorship = mentorships.find((m) => m.mentee_id === mentee.id);
       const matchesSearch =
@@ -208,7 +210,7 @@ function AdminMenteesView() {
         return progB - progA;
       }
       return 0;
-    });
+    }), [allMentees, mentorships, search, assignFilter, statusFilter, genderFilter, sortKey, getCompletedStepIds]);
 
   const selectedCount = selectedIds.size;
   const confirmWord = t("admin.deleteConfirmInput");
@@ -1160,11 +1162,7 @@ const styles = StyleSheet.create({
     padding: 24,
     width: "100%",
     maxWidth: 400,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    ...SHADOWS.lg,
   },
   modalTitle: { fontSize: 17, fontWeight: "700", marginBottom: 10 },
   modalMsg: { fontSize: 14, lineHeight: 20, marginBottom: 20 },
@@ -1233,22 +1231,14 @@ const styles = StyleSheet.create({
     padding: 32,
     alignItems: "center",
     marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   emptyText: { textAlign: "center", fontSize: 14, marginTop: 8 },
   menteeCard: {
     borderRadius: 16,
     padding: 18,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   menteeCardAssigned: {
     borderLeftWidth: 4,
@@ -1323,11 +1313,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 16,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   progressHeaderLabel: { color: COLORS.white, opacity: 0.75, fontSize: 13, marginBottom: 2 },
   progressHeaderValue: { color: COLORS.white, fontSize: 30, fontWeight: "700", marginBottom: 10 },
@@ -1401,11 +1387,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderLeftWidth: 3,
     borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 1,
+    ...SHADOWS.sm,
   },
   completedCardRow: {
     flexDirection: "row",

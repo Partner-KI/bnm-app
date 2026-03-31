@@ -21,6 +21,7 @@ import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { showError, showConfirm } from "../../lib/errorHandler";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 function formatTime(dateStr: string, yesterday: string): string {
   const d = new Date(dateStr);
@@ -433,6 +434,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
 // ─── Chats Screen ─────────────────────────────────────────────────────────────
 
 export default function ChatsScreen() {
+  usePageTitle("Chats");
   const router = useRouter();
   const params = useLocalSearchParams<{ openChat?: string }>();
   const { user } = useAuth();

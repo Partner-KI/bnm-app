@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, SHADOWS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
 import { Container } from "../components/Container";
@@ -521,11 +521,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 18,
     marginBottom: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   cardLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   modeRow: { flexDirection: "row", gap: 8, marginBottom: 10 },
@@ -565,11 +561,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 10,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
     borderTopWidth: 3,
     borderTopColor: COLORS.gold,
   },
@@ -667,11 +659,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 16,
-    elevation: 3,
+    ...SHADOWS.md,
   },
   summaryText: { fontSize: 14, lineHeight: 22 },
 

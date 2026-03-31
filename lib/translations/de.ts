@@ -142,6 +142,7 @@ const de = {
   // Common
   "common.save": "Speichern",
   "common.cancel": "Abbrechen",
+  "common.close": "Schließen",
   "common.confirm": "Bestätigen",
   "common.back": "Zurück",
   "common.error": "Fehler",
