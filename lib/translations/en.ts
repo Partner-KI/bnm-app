@@ -1145,6 +1145,11 @@ const en: Record<TranslationKeys, string> = {
   "editUser.resetPasswordDoneTitle": "Password reset",
   "editUser.resetPasswordDoneText": "The new temporary password has been set and an email has been sent.",
   "editUser.resetPasswordEmailHint": "Email sent to: {0}",
+  "editUser.certButton": "Create Certificate (PDF)",
+  "editUser.certGenerating": "Creating certificate...",
+  "editUser.certSuccess": "Certificate created successfully.",
+  "editUser.certError": "Error creating certificate",
+  "editUser.certNoCompleted": "No completed mentorships found.",
   "editUser.editProfile": "Edit Profile",
 
   // CSV Export

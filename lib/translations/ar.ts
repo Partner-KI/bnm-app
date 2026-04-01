@@ -1145,6 +1145,11 @@ const ar: Record<TranslationKeys, string> = {
   "editUser.resetPasswordDoneTitle": "تمت إعادة تعيين كلمة المرور",
   "editUser.resetPasswordDoneText": "تم تعيين كلمة المرور المؤقتة الجديدة وإرسال بريد إلكتروني.",
   "editUser.resetPasswordEmailHint": "تم إرسال البريد الإلكتروني إلى: {0}",
+  "editUser.certButton": "إنشاء شهادة (PDF)",
+  "editUser.certGenerating": "جارٍ إنشاء الشهادة...",
+  "editUser.certSuccess": "تم إنشاء الشهادة بنجاح.",
+  "editUser.certError": "خطأ في إنشاء الشهادة",
+  "editUser.certNoCompleted": "لا توجد إرشادات مكتملة.",
   "editUser.editProfile": "تعديل الملف الشخصي",
 
   // تصدير CSV

@@ -1145,6 +1145,11 @@ const tr: Record<TranslationKeys, string> = {
   "editUser.resetPasswordDoneTitle": "Şifre sıfırlandı",
   "editUser.resetPasswordDoneText": "Yeni geçici şifre ayarlandı ve bir e-posta gönderildi.",
   "editUser.resetPasswordEmailHint": "E-posta gönderildi: {0}",
+  "editUser.certButton": "Sertifika Oluştur (PDF)",
+  "editUser.certGenerating": "Sertifika oluşturuluyor...",
+  "editUser.certSuccess": "Sertifika başarıyla oluşturuldu.",
+  "editUser.certError": "Sertifika oluşturulurken hata oluştu",
+  "editUser.certNoCompleted": "Tamamlanmış rehberlik bulunamadı.",
   "editUser.editProfile": "Profili Düzenle",
 
   // CSV Dışa Aktarma

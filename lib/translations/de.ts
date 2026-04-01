@@ -1145,6 +1145,11 @@ const de = {
   "editUser.resetPasswordDoneTitle": "Passwort zurückgesetzt",
   "editUser.resetPasswordDoneText": "Das neue temporäre Passwort wurde gesetzt und eine E-Mail wurde verschickt.",
   "editUser.resetPasswordEmailHint": "E-Mail gesendet an: {0}",
+  "editUser.certButton": "Urkunde erstellen (PDF)",
+  "editUser.certGenerating": "Urkunde wird erstellt...",
+  "editUser.certSuccess": "Urkunde wurde erfolgreich erstellt.",
+  "editUser.certError": "Fehler beim Erstellen der Urkunde",
+  "editUser.certNoCompleted": "Keine abgeschlossenen Betreuungen vorhanden.",
   "editUser.editProfile": "Profil bearbeiten",
 
   // CSV Export
