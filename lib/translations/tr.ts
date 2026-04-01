@@ -981,6 +981,8 @@ const tr: Record<TranslationKeys, string> = {
   "tabs.tools": "Araçlar",
   "tabs.feedback": "Geri Bildirim",
   "tools.sessionTypesDesc": "10 mentorluk adımını yönet",
+  "tools.qaDesc": "SSS girişlerini düzenle",
+  "tools.hadithDesc": "Hadisleri yönet",
 
   // Chats Tab
   "tabs.chats": "Sohbetler",

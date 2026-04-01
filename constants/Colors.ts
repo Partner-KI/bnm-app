@@ -187,55 +187,55 @@ export const LIGHT_COLORS = {
   input: "#FFFFFF",
 } as const;
 
-// ─── Dark Theme — tiefes Blau-Schwarz ─────────────────────────────────────────
+// ─── Dark Theme — tiefes Schwarz ──────────────────────────────────────────────
 export const DARK_COLORS = {
-  // Backgrounds — Stufen mit deutlicherem Kontrast
-  background: "#0B0F18",        // Basis
-  card: "#151E2E",              // +1 Stufe — deutlicher als vorher (#131926)
-  elevated: "#1D2940",          // +2 Stufen — klar abgesetzt für Inputs, Dropdowns
-  surface: "#111825",           // Zwischen bg und card — für gruppierte Sektionen
+  // Backgrounds — echtes Schwarz mit minimaler Aufhellung pro Ebene
+  background: "#0E0E14",        // Fast Schwarz — neutral, kein Blaustich
+  card: "#18181F",              // Card-Ebene — minimal heller
+  elevated: "#222230",          // Inputs, Dropdowns — klar abgesetzt
+  surface: "#131319",           // Zwischen bg und card — für Sektionen
 
   // Text
   text: "#F1F5F9",
-  textSecondary: "#94A0B4",     // Etwas heller für bessere Lesbarkeit
-  textTertiary: "#64748B",      // Etwas heller als vorher (#5B6475)
-  textInverse: "#0B0F18",
+  textSecondary: "#94A0B4",
+  textTertiary: "#64748B",
+  textInverse: "#0E0E14",
 
   // Borders
-  border: "#243347",            // Etwas heller für bessere Sichtbarkeit
-  borderFocus: "#2D7AB8",       // Kräftigerer Focus
+  border: "#2A2A38",            // Dezente Borders
+  borderFocus: "#2D7AB8",       // Kräftiger Focus
 
   // Brand
-  primary: "#2D7AB8",           // Heller + kräftiger für Buttons/Links im Dark Mode
+  primary: "#2D7AB8",
   primaryDark: "#0A3A5A",
-  primaryLight: "#0D2540",
-  accent: "#F5B731",            // Gold etwas heller im Dark Mode für Kontrast
+  primaryLight: "#0D1F35",
+  accent: "#F5B731",
   accentLight: "#2A1F00",
 
-  // Semantic — kräftiger für Dark Mode Lesbarkeit
+  // Semantic
   success: "#34D399",
   successLight: "#0A2E1A",
   warning: "#FBBF24",
-  warningLight: "#2A1F0A",       // War #1C1300 — heller für besseren Kontrast
+  warningLight: "#2A1F0A",
   error: "#F87171",
-  errorLight: "#2D1010",         // War #2D0808 — etwas roter
+  errorLight: "#2D1010",
   info: "#60CDFF",
   infoLight: "#0C1F2E",
   link: "#7CB8FF",
 
   // Misc
   white: "#F1F5F9",
-  black: "#0B0F18",
+  black: "#0E0E14",
 
   // Navigation
-  tabBar: "#0B0F18",
-  tabBarBorder: "#243347",
-  tabIconActive: "#F5B731",     // Helleres Gold im Dark Mode
+  tabBar: "#0E0E14",
+  tabBarBorder: "#2A2A38",
+  tabIconActive: "#F5B731",
   tabIconInactive: "#4B5563",
-  headerBackground: "#0B0F18",
+  headerBackground: "#0E0E14",
   headerText: "#F1F5F9",
-  statItem: "#151E2E",
-  input: "#1D2940",
+  statItem: "#18181F",
+  input: "#222230",
 } as const;
 
 // Lockerer Typ für Theme-Farben

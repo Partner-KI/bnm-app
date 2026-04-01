@@ -123,12 +123,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    // Push Token aus DB entfernen bevor Session ungültig wird
-    if (user?.id) {
-      await unregisterPushToken(user.id).catch(() => {});
-    }
-    await supabase.auth.signOut();
+    // Sofort User-State löschen → Navigation reagiert unmittelbar,
+    // unabhängig vom Netz oder Supabase-Antwortzeit.
     setUser(null);
+    // Cleanup asynchron im Hintergrund (fire-and-forget)
+    const userId = user?.id;
+    if (userId) {
+      unregisterPushToken(userId).catch(() => {});
+    }
+    supabase.auth.signOut().catch(() => {});
   }, [user?.id]);
 
   const refreshUser = useCallback(async () => {

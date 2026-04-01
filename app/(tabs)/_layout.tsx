@@ -99,7 +99,12 @@ function TabIcon({
   return (
     <View style={tabStyles.iconWrapper}>
       {Platform.OS === "ios" ? (
-        <SymbolView name={(focused ? iosActiveName : iosName) as any} tintColor={color} size={23} />
+        <SymbolView
+          name={(focused ? iosActiveName : iosName) as any}
+          tintColor={color}
+          size={23}
+          style={tabStyles.symbolView}
+        />
       ) : (
         <Ionicons name={ionName as any} size={22} color={color} />
       )}
@@ -128,6 +133,12 @@ const tabStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingTop: 2,
+    width: 28,
+    height: 26,
+  },
+  symbolView: {
+    width: 24,
+    height: 24,
   },
   activeDot: {
     width: 4,

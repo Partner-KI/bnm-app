@@ -979,6 +979,8 @@ const de = {
   "tabs.tools": "Tools",
   "tabs.feedback": "Feedback",
   "tools.sessionTypesDesc": "Die 10 Mentoring-Schritte verwalten",
+  "tools.qaDesc": "FAQ-Einträge bearbeiten",
+  "tools.hadithDesc": "Hadithe verwalten",
 
   // Chats Tab
   "tabs.chats": "Chats",

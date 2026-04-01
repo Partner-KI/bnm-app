@@ -16,7 +16,8 @@ if (Platform.OS !== "web") {
 if (Notifications) {
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
-      shouldShowAlert: true,
+      shouldShowBanner: true,  // Neu: ersetzt shouldShowAlert (deprecated)
+      shouldShowList: true,    // Neu: in Notification Center anzeigen
       shouldPlaySound: true,
       shouldSetBadge: true,
     }),

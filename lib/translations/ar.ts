@@ -981,6 +981,8 @@ const ar: Record<TranslationKeys, string> = {
   "tabs.tools": "الأدوات",
   "tabs.feedback": "التقييمات",
   "tools.sessionTypesDesc": "إدارة خطوات الإرشاد العشر",
+  "tools.qaDesc": "تعديل إدخالات الأسئلة الشائعة",
+  "tools.hadithDesc": "إدارة الأحاديث",
 
   // تبويب المحادثات
   "tabs.chats": "المحادثات",

@@ -8,6 +8,7 @@ import {
   Platform,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +24,11 @@ export default function ToolsTabScreen() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const themeColors = useThemeColors();
+  const { width } = useWindowDimensions();
   const [isGeocoding, setIsGeocoding] = useState(false);
+  // Auf Mobile: 2-Spalten-Grid; auf Web/Desktop: flexibles Layout
+  const isMobileLayout = Platform.OS !== "web" || width < 600;
+  const itemWidth = isMobileLayout ? "48%" : undefined;
 
   if (!user || (user.role !== "admin" && user.role !== "office")) {
     return (
@@ -70,53 +75,65 @@ export default function ToolsTabScreen() {
           <View style={styles.toolGrid}>
             {showSystemSettings && (
               <TouchableOpacity
-                style={[styles.toolItem, { backgroundColor: themeColors.card }]}
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
                 onPress={() => router.push("/admin/session-types")}
               >
-                <Ionicons name="list-outline" size={28} color={COLORS.gradientStart} />
+                <View style={[styles.toolIconBg, { backgroundColor: "#E8F0FE" }]}>
+                  <Ionicons name="list-outline" size={24} color={COLORS.gradientStart} />
+                </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("dashboard.sessionTypes")}</Text>
                 <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.sessionTypesDesc")}</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
-              style={[styles.toolItem, { backgroundColor: themeColors.card }]}
+              style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/qa-management" as never)}
             >
-              <Ionicons name="help-circle-outline" size={28} color={COLORS.gold} />
+              <View style={[styles.toolIconBg, { backgroundColor: "#FFF8E6" }]}>
+                <Ionicons name="help-circle-outline" size={24} color={COLORS.gold} />
+              </View>
               <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("qa.manage")}</Text>
+              <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.qaDesc")}</Text>
             </TouchableOpacity>
 
             {showSystemSettings && (
               <TouchableOpacity
-                style={[styles.toolItem, { backgroundColor: themeColors.card }]}
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
                 onPress={() => router.push("/admin/hadithe-management" as never)}
               >
-                <Ionicons name="book-outline" size={28} color={COLORS.cta} />
+                <View style={[styles.toolIconBg, { backgroundColor: "#ECFDF5" }]}>
+                  <Ionicons name="book-outline" size={24} color={COLORS.cta} />
+                </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.hadithDesc")}</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
-              style={[styles.toolItem, { backgroundColor: themeColors.card }]}
+              style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/certificate-generator" as never)}
             >
-              <Ionicons name="ribbon-outline" size={28} color={COLORS.gold} />
+              <View style={[styles.toolIconBg, { backgroundColor: "#FFF8E6" }]}>
+                <Ionicons name="ribbon-outline" size={24} color={COLORS.gold} />
+              </View>
               <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("certGen.toolTitle")}</Text>
               <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("certGen.toolDesc")}</Text>
             </TouchableOpacity>
 
             {showSystemSettings && (
               <TouchableOpacity
-                style={[styles.toolItem, { backgroundColor: themeColors.card, opacity: isGeocoding ? 0.6 : 1 }]}
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth, opacity: isGeocoding ? 0.6 : 1 }]}
                 onPress={handleGeocodeAllUsers}
                 disabled={isGeocoding}
               >
-                {isGeocoding ? (
-                  <ActivityIndicator size="small" color={COLORS.gradientStart} />
-                ) : (
-                  <Ionicons name="location-outline" size={28} color={COLORS.gradientStart} />
-                )}
+                <View style={[styles.toolIconBg, { backgroundColor: "#E8F0FE" }]}>
+                  {isGeocoding ? (
+                    <ActivityIndicator size="small" color={COLORS.gradientStart} />
+                  ) : (
+                    <Ionicons name="location-outline" size={24} color={COLORS.gradientStart} />
+                  )}
+                </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>
                   {isGeocoding ? "Geocoding..." : "PLZ → Koordinaten"}
                 </Text>
@@ -143,27 +160,35 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 12,
+    justifyContent: "space-between",
   },
   toolItem: {
-    width: "22%",
-    minWidth: 80,
-    flex: 1,
     borderRadius: RADIUS.lg,
-    padding: 18,
+    padding: 16,
     alignItems: "center",
-    gap: 8,
+    gap: 10,
     ...SHADOWS.md,
+    // Ohne explizite Breite: flex für Web/breite Screens
+    flex: Platform.OS === "web" ? 1 : undefined,
+    minWidth: Platform.OS === "web" ? 120 : undefined,
+  },
+  toolIconBg: {
+    width: 48,
+    height: 48,
+    borderRadius: RADIUS.md,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
   },
   toolLabel: {
-    fontSize: 12,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "600",
     textAlign: "center",
-    lineHeight: 16,
+    lineHeight: 17,
   },
   toolSubLabel: {
-    fontSize: 10,
+    fontSize: 11,
     textAlign: "center",
-    lineHeight: 14,
-    marginTop: 2,
+    lineHeight: 15,
   },
 });

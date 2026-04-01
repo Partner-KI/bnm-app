@@ -159,12 +159,8 @@ export default function MentorshipDetailScreen() {
         });
       }
       setShowCancelModal(false);
-      showSuccess(t("cancel.cancelled"), () =>
-        router.replace({
-          pathname: "/feedback",
-          params: { mentorshipId: mentorshipId, type: "cancellation" },
-        })
-      );
+      // Mentor geht zurück — nur der Mentee bekommt die Feedback-Anfrage per Notification
+      showSuccess(t("cancel.cancelled"), () => router.back());
     } catch {
       showError(t("mentorship.cancelError"));
     } finally {

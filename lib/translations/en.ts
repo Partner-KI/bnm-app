@@ -981,6 +981,8 @@ const en: Record<TranslationKeys, string> = {
   "tabs.tools": "Tools",
   "tabs.feedback": "Feedback",
   "tools.sessionTypesDesc": "Manage the 10 mentoring steps",
+  "tools.qaDesc": "Edit FAQ entries",
+  "tools.hadithDesc": "Manage hadiths",
 
   // Chats Tab
   "tabs.chats": "Chats",
