@@ -193,6 +193,27 @@ export default function MentorAwardScreen() {
     }
   }
 
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function handleDownloadPastPDF(award: MentorAward) {
+    if (Platform.OS !== "web") return;
+    setDownloadingId(award.id);
+    try {
+      const { downloadMentorAwardPDF } = await import("../../lib/pdfGenerator");
+      await downloadMentorAwardPDF({
+        mentorName: award.mentor_name,
+        period: `${getMonthName(award.month, "de")} ${award.year}`,
+        score: award.score,
+        sessions: award.sessions_count,
+        completed: award.completions,
+      });
+    } catch {
+      showError("PDF-Generator konnte nicht geladen werden");
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
   return (
     <Container fullWidth={Platform.OS === "web"}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
@@ -376,6 +397,21 @@ export default function MentorAwardScreen() {
                     color={themeColors.textSecondary}
                     style={{ marginLeft: 8 }}
                   />
+                  {Platform.OS === "web" && (
+                    <TouchableOpacity
+                      onPress={(e) => { e.stopPropagation?.(); handleDownloadPastPDF(award); }}
+                      style={[styles.pastPdfBtn, downloadingId === award.id && { opacity: 0.5 }]}
+                      disabled={downloadingId === award.id}
+                      accessibilityRole="button"
+                      accessibilityLabel="PDF herunterladen"
+                    >
+                      <Ionicons
+                        name={downloadingId === award.id ? "hourglass-outline" : "download-outline"}
+                        size={16}
+                        color={COLORS.gradientStart}
+                      />
+                    </TouchableOpacity>
+                  )}
                 </TouchableOpacity>
               ))}
             </View>
@@ -563,4 +599,15 @@ const styles = StyleSheet.create({
   pastRowName: { fontWeight: "600", fontSize: 14 },
   pastRowPeriod: { fontSize: 12, marginTop: 2 },
   pastRowScore: { fontSize: 13, fontWeight: "700" },
+  pastPdfBtn: {
+    marginLeft: 10,
+    width: 30,
+    height: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: COLORS.gradientStart + "40",
+    backgroundColor: COLORS.gradientStart + "10",
+  },
 });

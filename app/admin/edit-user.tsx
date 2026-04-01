@@ -20,7 +20,6 @@ import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import { sendCredentialsEmail } from "../../lib/emailService";
-import { generateMentorCertificate } from "../../lib/certificateService";
 import type { UserRole, Gender } from "../../types";
 
 const ROLES: { key: UserRole; labelKey: "editUser.roleMentor" | "editUser.roleMentee" | "editUser.roleAdmin" | "editUser.roleOffice" }[] = [
@@ -67,7 +66,7 @@ export default function EditUserScreen() {
 
 function EditUserForm({ userId }: { userId: string }) {
   const router = useRouter();
-  const { getUserById, updateUser, setUserActive, getMentorshipsByMentorId, sessions } = useData();
+  const { getUserById, updateUser, setUserActive } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
@@ -83,7 +82,6 @@ function EditUserForm({ userId }: { userId: string }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
-  const [isGeneratingCert, setIsGeneratingCert] = useState(false);
   const [resetTempPw, setResetTempPw] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -167,39 +165,6 @@ function EditUserForm({ userId }: { userId: string }) {
       showError(t("editUser.resetPasswordError") + (e?.message ? ": " + e.message : ""));
     } finally {
       setIsResetting(false);
-    }
-  }
-
-  async function handleGenerateCertificate() {
-    const myMentorships = getMentorshipsByMentorId(userId);
-    const completed = myMentorships.filter((m) => m.status === "completed");
-    if (completed.length === 0) {
-      showError(t("editUser.certNoCompleted"));
-      return;
-    }
-    const totalSessions = sessions.filter((s) =>
-      myMentorships.some((m) => m.id === s.mentorship_id)
-    ).length;
-
-    const now = new Date();
-    const issueDate = now.toLocaleDateString("de-DE", {
-      day: "numeric", month: "long", year: "numeric",
-    });
-
-    setIsGeneratingCert(true);
-    try {
-      await generateMentorCertificate({
-        mentorName: target.name,
-        mentorCity: target.city || "",
-        completedMentorships: completed.length,
-        totalSessions,
-        issueDate,
-      });
-      showSuccess(t("editUser.certSuccess"));
-    } catch (e: any) {
-      showError(t("editUser.certError") + (e?.message ? ": " + e.message : ""));
-    } finally {
-      setIsGeneratingCert(false);
     }
   }
 
@@ -365,19 +330,6 @@ function EditUserForm({ userId }: { userId: string }) {
             </Text>
           </TouchableOpacity>
 
-          {/* Urkunde erstellen — nur für Mentoren */}
-          {target.role === "mentor" && (
-            <TouchableOpacity
-              style={[styles.certButton, isGeneratingCert ? { opacity: 0.6 } : {}]}
-              onPress={handleGenerateCertificate}
-              disabled={isGeneratingCert}
-            >
-              <Text style={styles.certButtonText}>
-                {isGeneratingCert ? t("editUser.certGenerating") : t("editUser.certButton")}
-              </Text>
-            </TouchableOpacity>
-          )}
-
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -532,16 +484,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   resetPwButtonText: { fontWeight: "600", fontSize: 14 },
-  certButton: {
-    borderWidth: 1,
-    borderColor: COLORS.gold,
-    backgroundColor: "rgba(238,167,27,0.08)",
-    borderRadius: 5,
-    paddingVertical: 12,
-    alignItems: "center",
-    marginTop: 10,
-  },
-  certButtonText: { fontWeight: "600", fontSize: 14, color: COLORS.gold },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
