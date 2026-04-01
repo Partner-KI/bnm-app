@@ -1,48 +1,101 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Platform, StyleSheet, View, ViewStyle } from "react-native";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { useThemeColors } from "../contexts/ThemeContext";
 
-// Gemeinsame Pulsier-Animation
-function usePulse() {
-  const opacity = useRef(new Animated.Value(0.4)).current;
+const isWeb = Platform.OS === "web";
+
+// Lazy-Import: LinearGradient nur wenn verfügbar (vermeidet Web-Crashes)
+let LinearGradient: any = null;
+try {
+  LinearGradient = require("expo-linear-gradient").LinearGradient;
+} catch {
+  // expo-linear-gradient nicht verfügbar — Fallback auf Pulse
+}
+
+// Shimmer-Animation: Gradient wandert von links nach rechts
+function useShimmer() {
+  const translateX = useRef(new Animated.Value(-1)).current;
 
   useEffect(() => {
     const animation = Animated.loop(
+      Animated.timing(translateX, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: !isWeb,
+      })
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [translateX]);
+
+  return translateX;
+}
+
+// Fallback Pulse-Animation (wenn LinearGradient nicht verfügbar)
+function usePulse() {
+  const opacity = useRef(new Animated.Value(0.4)).current;
+  useEffect(() => {
+    const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 700,
-          useNativeDriver: Platform.OS !== "web",
-        }),
-        Animated.timing(opacity, {
-          toValue: 0.4,
-          duration: 700,
-          useNativeDriver: Platform.OS !== "web",
-        }),
+        Animated.timing(opacity, { toValue: 1, duration: 700, useNativeDriver: !isWeb }),
+        Animated.timing(opacity, { toValue: 0.4, duration: 700, useNativeDriver: !isWeb }),
       ])
     );
     animation.start();
     return () => animation.stop();
   }, [opacity]);
-
   return opacity;
 }
 
-// Basis-Skeleton-Block
+// Basis-Skeleton-Block mit Shimmer (oder Pulse-Fallback)
 function SkeletonBase({ style }: { style?: ViewStyle }) {
-  const opacity = usePulse();
+  const shimmerX = useShimmer();
+  const pulseOpacity = usePulse();
   const themeColors = useThemeColors();
+  const isDark = themeColors.background === "#0B0F18";
+
+  const baseColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
+  const shimmerColor = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.11)";
+
+  // LinearGradient-Shimmer wenn verfügbar, sonst Pulse-Fallback
+  if (!LinearGradient) {
+    return (
+      <Animated.View
+        style={[styles.base, { backgroundColor: themeColors.border, opacity: pulseOpacity }, style]}
+      />
+    );
+  }
+
   return (
-    <Animated.View
-      style={[styles.base, { backgroundColor: themeColors.border }, style, { opacity }]}
-    />
+    <View style={[styles.base, { backgroundColor: baseColor, overflow: "hidden" }, style]}>
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          {
+            transform: [{
+              translateX: shimmerX.interpolate({
+                inputRange: [-1, 1],
+                outputRange: [-200, 200],
+              }),
+            }],
+          },
+        ]}
+      >
+        <LinearGradient
+          colors={["transparent", shimmerColor, "transparent"]}
+          start={{ x: 0, y: 0.5 }}
+          end={{ x: 1, y: 0.5 }}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
+    </View>
   );
 }
 
 // Rechteckige Karte
 export function SkeletonCard({ height = 80, style }: { height?: number; style?: ViewStyle }) {
-  return <SkeletonBase style={{ height, borderRadius: 14, ...(style ?? {}) }} />;
+  return <SkeletonBase style={{ height, borderRadius: RADIUS.md, ...(style ?? {}) }} />;
 }
 
 // Schmale Linie
@@ -150,7 +203,7 @@ export function SkeletonChatMessages({ count = 5 }: { count?: number }) {
               style={{
                 height: 44 + (i % 2) * 20,
                 width: `${50 + (i % 3) * 15}%` as `${number}%`,
-                borderRadius: 14,
+                borderRadius: RADIUS.md,
               }}
             />
           </View>
@@ -163,7 +216,7 @@ export function SkeletonChatMessages({ count = 5 }: { count?: number }) {
 const skeletonStyles = StyleSheet.create({
   kpiCard: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 14,
     borderWidth: 1,
     margin: 4,
@@ -173,7 +226,7 @@ const skeletonStyles = StyleSheet.create({
     marginBottom: 0,
   },
   section: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 16,
     borderWidth: 1,
     marginTop: 12,
@@ -187,7 +240,7 @@ const styles = StyleSheet.create({
   userCard: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     padding: 14,
     marginBottom: 10,
     gap: 12,

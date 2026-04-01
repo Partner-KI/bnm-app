@@ -20,7 +20,7 @@ import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
 import type { ThemeMode } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
 
@@ -455,7 +455,7 @@ const styles = StyleSheet.create({
   page: { padding: 16 },
   heroHeader: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 20,
     alignItems: "center",
     marginBottom: 16,
@@ -493,7 +493,7 @@ const styles = StyleSheet.create({
   genderText: { color: COLORS.white, opacity: 0.75, fontSize: 13 },
   infoCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 12,
     ...SHADOWS.md,
@@ -540,7 +540,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: "40%",
     backgroundColor: COLORS.bg,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
     borderLeftWidth: 3,
@@ -551,7 +551,7 @@ const styles = StyleSheet.create({
   rankHint: { color: COLORS.tertiary, fontSize: 11, textAlign: "center", marginTop: 4 },
   logoutButton: {
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
@@ -561,7 +561,7 @@ const styles = StyleSheet.create({
   partnerMessageBtn: {
     marginTop: 10,
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -586,7 +586,7 @@ const styles = StyleSheet.create({
   },
   overlayCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 24,
     width: "100%",
   },
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   overlayText: { color: COLORS.secondary, fontSize: 14, lineHeight: 22, marginBottom: 20 },
   overlayClose: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -614,7 +614,7 @@ const themeToggleStyles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 4,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     borderWidth: 1.5,
     gap: 4,
   },

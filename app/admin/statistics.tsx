@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { Container } from "../../components/Container";
 
@@ -305,7 +305,7 @@ const kpiStyles = StyleSheet.create({
     flex: 1,
     minWidth: "44%",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     alignItems: "center",
     marginBottom: 10,
@@ -337,13 +337,13 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
   },
   emptyCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 24,
     alignItems: "center",

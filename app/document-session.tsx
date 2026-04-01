@@ -13,7 +13,7 @@ import { showError, showSuccess, showConfirm } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { Container } from "../components/Container";
@@ -580,7 +580,7 @@ export default function DocumentSessionScreen() {
                       style={{
                         borderWidth: 1,
                         borderColor: themeColors.border,
-                        borderRadius: 6,
+                        borderRadius: RADIUS.xs,
                         paddingLeft: 12,
                         paddingRight: 12,
                         paddingTop: 8,
@@ -1050,12 +1050,12 @@ const styles = StyleSheet.create({
   accessText: { fontWeight: "600" },
   boldTitle: { fontWeight: "800", fontSize: 18, marginBottom: 8 },
   centerSubText: { textAlign: "center", fontSize: 14, marginBottom: 24 },
-  backButton: { backgroundColor: COLORS.primary, paddingHorizontal: 24, paddingVertical: 9, borderRadius: 12 },
+  backButton: { backgroundColor: COLORS.primary, paddingHorizontal: 24, paddingVertical: 9, borderRadius: RADIUS.md },
   backButtonText: { color: COLORS.white, fontWeight: "600" },
   page: { padding: 24 },
   sectionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   listCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 16,
@@ -1064,26 +1064,26 @@ const styles = StyleSheet.create({
   listItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
   listItemSelected: {},
   radioCircle: {
-    width: 20, height: 20, borderRadius: 9999, borderWidth: 2, marginRight: 12,
+    width: 20, height: 20, borderRadius: RADIUS.full, borderWidth: 2, marginRight: 12,
     alignItems: "center", justifyContent: "center",
   },
   radioCircleActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
   radioCircleInactive: { borderColor: COLORS.border },
-  radioDot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: COLORS.white },
+  radioDot: { width: 8, height: 8, borderRadius: RADIUS.full, backgroundColor: COLORS.white },
   itemName: { fontWeight: "600" },
   itemSub: { fontSize: 12, marginTop: 2 },
-  doneChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  doneChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.full },
   doneChipText: { fontSize: 11, fontWeight: "500" },
-  progressCard: { backgroundColor: COLORS.primary, borderRadius: 16, padding: 20, marginBottom: 16 },
+  progressCard: { backgroundColor: COLORS.primary, borderRadius: RADIUS.lg, padding: 20, marginBottom: 16 },
   progressCardLabel: { color: COLORS.white, opacity: 0.7, fontSize: 13, marginBottom: 2 },
   progressCardName: { color: COLORS.white, fontSize: 17, fontWeight: "800", marginBottom: 10 },
   miniStepRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  miniStepChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
+  miniStepChip: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: RADIUS.sm },
   miniStepText: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   progressCardSub: { color: COLORS.white, opacity: 0.6, fontSize: 12, marginTop: 12 },
   nachbetreuungBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -1091,7 +1091,7 @@ const styles = StyleSheet.create({
   nachbetreuungText: { fontSize: 14 },
   amberBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -1099,7 +1099,7 @@ const styles = StyleSheet.create({
   amberStepName: { fontWeight: "800", fontSize: 15 },
   amberDesc: { fontSize: 13, marginTop: 2 },
   formCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 12,
@@ -1107,7 +1107,7 @@ const styles = StyleSheet.create({
   formLabel: { fontSize: 13, fontWeight: "500", marginBottom: 6 },
   textInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -1116,16 +1116,16 @@ const styles = StyleSheet.create({
   fieldError: { color: "#EF4444", fontSize: 12, marginTop: 6, marginBottom: 0 },
   attemptHint: { fontSize: 12, marginTop: 6 },
   toggleRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
-  toggleButton: { flex: 1, paddingVertical: 9, borderRadius: 12, borderWidth: 1, alignItems: "center", minWidth: 80 },
+  toggleButton: { flex: 1, paddingVertical: 9, borderRadius: RADIUS.md, borderWidth: 1, alignItems: "center", minWidth: 80 },
   toggleButtonActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   toggleButtonInactive: {},
   toggleTextActive: { color: COLORS.white, fontWeight: "600" },
   toggleTextInactive: { fontWeight: "600" },
-  saveButton: { borderRadius: 12, paddingVertical: 9, alignItems: "center" },
+  saveButton: { borderRadius: RADIUS.md, paddingVertical: 9, alignItems: "center" },
   saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   completedBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     alignItems: "center",
   },
@@ -1134,7 +1134,7 @@ const styles = StyleSheet.create({
   backToMentorshipButton: {
     marginTop: 12,
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -1146,7 +1146,7 @@ const styles = StyleSheet.create({
   repeatStepLink: { marginBottom: 16, alignItems: "center" },
   repeatStepLinkText: { color: COLORS.tertiary, fontSize: 13, textDecorationLine: "underline" },
   moreSessionBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 16,
@@ -1157,7 +1157,7 @@ const styles = StyleSheet.create({
   moreSessionSub: { fontSize: 13, marginBottom: 12 },
   addMoreButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginTop: 10,
@@ -1166,7 +1166,7 @@ const styles = StyleSheet.create({
   cancelMoreButton: {
     borderWidth: 1,
     borderColor: COLORS.error,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
     marginBottom: 12,
@@ -1176,7 +1176,7 @@ const styles = StyleSheet.create({
   cancelEditButton: {
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
     marginTop: 8,
@@ -1186,7 +1186,7 @@ const styles = StyleSheet.create({
   deleteSessionButton: {
     borderWidth: 1,
     borderColor: COLORS.error,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
     marginBottom: 12,
@@ -1194,7 +1194,7 @@ const styles = StyleSheet.create({
   deleteSessionButtonText: { color: COLORS.error, fontWeight: "600", fontSize: 13 },
 
   historyBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginTop: 16,
@@ -1220,7 +1220,7 @@ const styles = StyleSheet.create({
   historyEditButton: {
     paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
   },
   historyEditText: { fontSize: 12, fontWeight: "500" },
@@ -1233,7 +1233,7 @@ const styles = StyleSheet.create({
   datePickerCol: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 10,
     paddingVertical: 8,
     alignItems: "center",
@@ -1254,7 +1254,7 @@ const styles = StyleSheet.create({
   },
   datePickerDropdown: {
     marginTop: 6,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     overflow: "hidden",
     maxHeight: 200,

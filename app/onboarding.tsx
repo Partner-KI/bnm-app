@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS, SPACING } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { BNMLogo } from "../components/BNMLogo";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -589,7 +589,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(16,24,40,0.08)",
     borderWidth: 1,
     borderColor: "rgba(16,24,40,0.15)",
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     paddingHorizontal: 12,
     paddingVertical: 4,
     marginBottom: 12,
@@ -600,20 +600,18 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
   },
   slideTitle: {
-    fontSize: 26,
-    fontWeight: "800",
-    marginBottom: 12,
-    lineHeight: 32,
+    ...TYPOGRAPHY.styles.h1,
+    marginBottom: SPACING.md,
   },
   slideBody: {
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 20,
+    fontSize: TYPOGRAPHY.size.lg,
+    lineHeight: TYPOGRAPHY.lineHeight.relaxed,
+    marginBottom: SPACING.xl,
   },
   highlightBox: {
     borderLeftWidth: 3,
     borderLeftColor: COLORS.primary,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 20,
   },
@@ -633,7 +631,7 @@ const styles = StyleSheet.create({
   statPill: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -653,7 +651,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 14,
     gap: 12,
@@ -678,7 +676,7 @@ const styles = StyleSheet.create({
   },
   noteBox: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 18,
   },
   noteText: {
@@ -687,7 +685,7 @@ const styles = StyleSheet.create({
   },
   tipsCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -717,7 +715,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff7ed",
     borderWidth: 1,
     borderColor: "#fed7aa",
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 18,
   },
   reminderTitle: {
@@ -734,33 +732,37 @@ const styles = StyleSheet.create({
   dotsRow: {
     flexDirection: "row",
     justifyContent: "center",
-    gap: 8,
-    paddingVertical: 16,
+    gap: 10,
+    paddingVertical: 20,
   },
   dot: {
     height: 8,
     borderRadius: 4,
   },
   dotActive: {
-    width: 24,
-    backgroundColor: COLORS.primary,
+    width: 28,
+    backgroundColor: COLORS.gold,
+    ...SHADOWS.glow(COLORS.gold),
+    shadowOpacity: 0.25,
   },
   dotInactive: {
     width: 8,
   },
   ctaContainer: {
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: 44,
   },
   ctaButton: {
-    backgroundColor: COLORS.primary,
-    borderRadius: 12,
-    paddingVertical: 9,
+    backgroundColor: COLORS.gradientStart,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 16,
     alignItems: "center",
+    ...SHADOWS.md,
   },
   ctaText: {
     color: COLORS.white,
-    fontWeight: "800",
-    fontSize: 16,
+    fontWeight: TYPOGRAPHY.weight.extrabold,
+    fontSize: TYPOGRAPHY.size.subtitle,
+    letterSpacing: 0.3,
   },
 });

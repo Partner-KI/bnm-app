@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors, useTheme } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 
 const CATEGORIES = ["Grundlagen", "Gebet", "Alltag", "Persönliches"];
@@ -123,7 +123,7 @@ export default function FAQScreen() {
               ) : null}
               <View style={styles.hadithActions}>
                 <TouchableOpacity
-                  style={[styles.hadithNextBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", borderColor: isDark ? "#3A3A5C" : "#c5cae9" }]}
+                  style={[styles.hadithNextBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6", borderColor: isDark ? themeColors.border : "#c5cae9" }]}
                   onPress={() => setHadithOffset((prev) => prev + 1)}
                   accessibilityRole="button"
                   accessibilityLabel="Nächster Hadith"
@@ -134,7 +134,7 @@ export default function FAQScreen() {
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[styles.hadithShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6" }]}
+                  style={[styles.hadithShareBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6" }]}
                   accessibilityRole="button"
                   accessibilityLabel="Hadith teilen"
                   onPress={() => {
@@ -327,7 +327,7 @@ const styles = StyleSheet.create({
 
   // Hadith Card
   hadithCard: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     padding: 18,
     marginBottom: 24,
   },
@@ -344,11 +344,11 @@ const styles = StyleSheet.create({
     gap: 4,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
   },
   hadithNextText: { fontSize: 13, fontWeight: "500" },
-  hadithShareBtn: { padding: 8, borderRadius: 8 },
+  hadithShareBtn: { padding: 8, borderRadius: RADIUS.sm },
   hadithAllBtn: { marginLeft: "auto", borderBottomWidth: 1, paddingBottom: 1 },
   hadithAllText: { fontSize: 13, fontWeight: "500" },
 
@@ -361,7 +361,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -375,18 +375,18 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
   },
   chipText: { fontSize: 13, fontWeight: "500" },
 
   // Leer
-  emptyBox: { padding: 24, borderRadius: 12, alignItems: "center" },
+  emptyBox: { padding: 24, borderRadius: RADIUS.md, alignItems: "center" },
   emptyText: { fontSize: 14 },
 
   // Akkordeon
   listContainer: { gap: 0 },
   accordionItem: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     overflow: "hidden",
   },
@@ -402,7 +402,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     marginBottom: 2,
   },
   categoryPillText: { fontSize: 11, fontWeight: "600", textTransform: "uppercase", letterSpacing: 0.5 },
@@ -417,11 +417,11 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     marginBottom: 10,
   },
   shareBtnText: { fontSize: 13 },
   tagsRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  tagBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  tagBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: RADIUS.xs },
   tagText: { fontSize: 12 },
 });

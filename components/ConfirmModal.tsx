@@ -6,7 +6,7 @@ import {
   Pressable,
   Modal,
 } from "react-native";
-import { COLORS, SHADOWS } from "../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
 import { BNMPressable } from "./BNMPressable";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   card: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 24,
     width: "100%",
     maxWidth: 400,
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
     backgroundColor: "transparent",
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   confirmButton: {
     flex: 1,
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
   },

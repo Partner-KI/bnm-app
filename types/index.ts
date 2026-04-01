@@ -1,6 +1,6 @@
 export type UserRole = "admin" | "office" | "mentor" | "mentee";
 export type Gender = "male" | "female";
-export type MentorshipStatus = "pending_approval" | "active" | "completed" | "cancelled";
+export type MentorshipStatus = "active" | "completed" | "cancelled";
 export type ContactPreference = "phone" | "whatsapp" | "telegram" | "email";
 export type SessionMode = "online" | "offline";
 

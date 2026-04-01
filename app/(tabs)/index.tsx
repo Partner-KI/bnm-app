@@ -9,7 +9,9 @@ import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import type { Mentorship, Feedback } from "../../types";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS, TYPOGRAPHY } from "../../constants/Colors";
+import { FAB } from "../../components/FAB";
+import { Confetti } from "../../components/Confetti";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
@@ -333,6 +335,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 value={activeMentorships.length}
                 color={COLORS.gradientStart}
                 iconName="people-outline"
+                highlight
               />
               <StatCard
                 label={t("dashboard.completed")}
@@ -530,7 +533,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             {/* XP-System Übersicht (Admin) */}
             <View style={[styles.card, styles.dashCol, { backgroundColor: themeColors.card }]}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: COLORS.gold + "18", alignItems: "center", justifyContent: "center" }}>
+                <View style={{ width: 36, height: 36, borderRadius: RADIUS.md, backgroundColor: COLORS.gold + "18", alignItems: "center", justifyContent: "center" }}>
                   <Ionicons name="trophy" size={18} color={COLORS.gold} />
                 </View>
                 <View>
@@ -545,7 +548,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <View key={lvl.key} style={{
                     flex: 1,
                     backgroundColor: isDark ? lvl.color + "10" : lvl.color + "08",
-                    borderRadius: 14,
+                    borderRadius: RADIUS.md,
                     padding: 12,
                     alignItems: "center",
                     borderWidth: 1.5,
@@ -596,8 +599,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <View style={{
                     width: 30,
                     height: 30,
-                    borderRadius: 8,
-                    backgroundColor: isDark ? "#1E1E2A" : "#f5f5f7",
+                    borderRadius: RADIUS.sm,
+                    backgroundColor: isDark ? themeColors.surface : themeColors.statItem,
                     alignItems: "center",
                     justifyContent: "center",
                   }}>
@@ -606,7 +609,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <Text style={{ flex: 1, color: themeColors.text, fontSize: 13, fontWeight: "500" }}>{item.label}</Text>
                   <View style={{
                     backgroundColor: item.xp >= 100 ? COLORS.gold + "25" : COLORS.gold + "15",
-                    borderRadius: 8,
+                    borderRadius: RADIUS.sm,
                     paddingHorizontal: 10,
                     paddingVertical: 4,
                   }}>
@@ -628,7 +631,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             </View>
             <View style={[styles.card, styles.dashCol, { backgroundColor: themeColors.card }]}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <View style={{ width: 36, height: 36, borderRadius: 12, backgroundColor: COLORS.gradientStart + "18", alignItems: "center", justifyContent: "center" }}>
+                <View style={{ width: 36, height: 36, borderRadius: RADIUS.md, backgroundColor: COLORS.gradientStart + "18", alignItems: "center", justifyContent: "center" }}>
                   <Ionicons name="git-compare-outline" size={18} color={COLORS.gradientStart} />
                 </View>
                 <View>
@@ -647,21 +650,21 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   flexDirection: "row", alignItems: "center", paddingVertical: 10,
                   borderBottomWidth: i < 2 ? 1 : 0, borderBottomColor: themeColors.border, gap: 12,
                 }}>
-                  <View style={{ width: 30, height: 30, borderRadius: 8, backgroundColor: isDark ? "#1E1E2A" : "#f5f5f7", alignItems: "center", justifyContent: "center" }}>
+                  <View style={{ width: 30, height: 30, borderRadius: RADIUS.sm, backgroundColor: isDark ? themeColors.surface : themeColors.statItem, alignItems: "center", justifyContent: "center" }}>
                     <Ionicons name={item.icon} size={15} color={themeColors.textSecondary} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={{ color: themeColors.text, fontSize: 13, fontWeight: "600" }}>{item.label}</Text>
                     <Text style={{ color: themeColors.textTertiary, fontSize: 10, marginTop: 2 }}>{item.desc}</Text>
                   </View>
-                  <View style={{ backgroundColor: COLORS.gradientStart + "15", borderRadius: 8, paddingHorizontal: 10, paddingVertical: 4 }}>
+                  <View style={{ backgroundColor: COLORS.gradientStart + "15", borderRadius: RADIUS.sm, paddingHorizontal: 10, paddingVertical: 4 }}>
                     <Text style={{ color: isDark ? "#42A5F5" : COLORS.gradientStart, fontSize: 12, fontWeight: "800" }}>max {item.max}</Text>
                   </View>
                 </View>
               ))}
 
               {/* Formel */}
-              <View style={{ marginTop: 12, backgroundColor: isDark ? "#1E1E2A" : "#f5f5f7", borderRadius: 10, padding: 12 }}>
+              <View style={{ marginTop: 12, backgroundColor: isDark ? themeColors.surface : themeColors.statItem, borderRadius: RADIUS.sm, padding: 12 }}>
                 <Text style={{ color: themeColors.textSecondary, fontSize: 11, fontWeight: "600", textAlign: "center" }}>
                   {t("matchingOverview.formula")}
                 </Text>
@@ -870,6 +873,7 @@ function MentorDashboard() {
   if (isLoading) return <SkeletonDashboard />;
 
   return (
+    <View style={{ flex: 1, backgroundColor: themeColors.background }}>
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
@@ -917,7 +921,7 @@ function MentorDashboard() {
         {mentorStats && (
           <>
             <KpiGrid style={{ marginBottom: 16 }}>
-              <StatCard label={t("dashboard.statsActive")} value={mentorStats.active} color={COLORS.gradientStart} iconName="people-outline" />
+              <StatCard label={t("dashboard.statsActive")} value={mentorStats.active} color={COLORS.gradientStart} iconName="people-outline" highlight />
               <StatCard label={t("dashboard.statsCompleted")} value={mentorStats.completed} color={COLORS.cta} iconName="checkmark-circle-outline" />
               <StatCard label={t("dashboard.statsSessions")} value={mentorStats.totalSessions} color={COLORS.gold} iconName="document-text-outline" />
               <StatCard label={t("dashboard.statsRank")} value={mentorStats.rank} color="#6366f1" iconName="trophy-outline" sublabel={`/ ${mentorStats.totalMentors}`} />
@@ -1113,6 +1117,15 @@ function MentorDashboard() {
 
       </View>
     </ScrollView>
+    <FAB
+      icon="document-text-outline"
+      color={COLORS.gold}
+      actions={[
+        { icon: "create-outline", label: t("mentor.documentSession"), onPress: () => router.push("/document-session"), color: COLORS.gradientStart },
+        { icon: "chatbubble-outline", label: t("tabs.chats"), onPress: () => router.push("/(tabs)/chats"), color: COLORS.cta },
+      ]}
+    />
+    </View>
   );
 }
 
@@ -1320,7 +1333,7 @@ function MenteeDashboard() {
               <TouchableOpacity style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
                 <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? "#2A2A3C" : "#e8eaf6", padding: 12, borderRadius: 10 }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
+              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6", padding: 12, borderRadius: RADIUS.sm }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
                 <Ionicons name="share-outline" size={20} color={COLORS.gold} />
               </TouchableOpacity>
             </View>
@@ -1360,7 +1373,7 @@ function MenteeDashboard() {
               <Text style={{ fontSize: 11, fontWeight: "700", color: themeColors.textTertiary, letterSpacing: 0.8, textTransform: "uppercase", marginBottom: 10 }}>
                 {t("menteeProgress.title")}
               </Text>
-              <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? "#1E1E2A" : themeColors.border, overflow: "hidden", marginBottom: 12 }}>
+              <View style={{ height: 8, borderRadius: 4, backgroundColor: isDark ? themeColors.surface : themeColors.border, overflow: "hidden", marginBottom: 12 }}>
                 <View style={{ height: "100%", width: `${progressPercent}%` as any, backgroundColor: allDone ? COLORS.cta : COLORS.gold, borderRadius: 4 }} />
               </View>
               <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
@@ -1368,7 +1381,7 @@ function MenteeDashboard() {
                   const done = completedStepIds.includes(st.id);
                   return (
                     <View key={st.id} style={{
-                      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8,
+                      paddingHorizontal: 10, paddingVertical: 6, borderRadius: RADIUS.sm,
                       backgroundColor: done ? (isDark ? COLORS.cta + "20" : "#dcfce7") : (isDark ? "#1A1A24" : "#f5f5f7"),
                       borderWidth: 1,
                       borderColor: done ? (isDark ? COLORS.cta + "40" : "#86efac") : (isDark ? "#2A2A35" : themeColors.border),
@@ -1393,13 +1406,16 @@ function MenteeDashboard() {
               </TouchableOpacity>
             )}
 
-            {/* ── Glückwunsch-Banner (ganz unten) ── */}
+            {/* ── Glückwunsch-Banner + Confetti (ganz unten) ── */}
             {(mentorship.status === "active" || mentorship.status === "completed") && allDone && (
-              <View style={[styles.congratsBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-                <Ionicons name="ribbon-outline" size={28} color={isDark ? "#4ade80" : "#15803d"} style={{ marginBottom: 4 }} />
-                <Text style={[styles.congratsTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
-                <Text style={[styles.congratsText, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
-              </View>
+              <>
+                <Confetti />
+                <View style={[styles.congratsBanner, { backgroundColor: isDark ? themeColors.successLight : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
+                  <Ionicons name="ribbon-outline" size={28} color={isDark ? themeColors.success : "#15803d"} style={{ marginBottom: 4 }} />
+                  <Text style={[styles.congratsTitle, { color: isDark ? themeColors.success : "#15803d" }]}>{t("mentorship.congratulations")}</Text>
+                  <Text style={[styles.congratsText, { color: isDark ? themeColors.success : "#16a34a" }]}>{t("mentorship.allStepsDone")}</Text>
+                </View>
+              </>
             )}
 
             {/* Danke-Modal (Overlay) */}
@@ -1484,25 +1500,38 @@ function StatCard({
 }) {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const valueColor = isDark ? (highlight ? themeColors.accent : themeColors.text) : themeColors.text;
+  const valueColor = highlight
+    ? (isDark ? themeColors.accent : COLORS.gradientStart)
+    : (isDark ? themeColors.text : themeColors.text);
   return (
     <View style={[styles.statCard, {
-      backgroundColor: isDark ? themeColors.card : "#FFFFFF",
-      borderColor: isDark ? color + "25" : themeColors.border,
+      backgroundColor: highlight
+        ? (isDark ? color + "12" : color + "08")
+        : (isDark ? themeColors.card : "#FFFFFF"),
+      borderColor: highlight
+        ? (isDark ? color + "40" : color + "30")
+        : (isDark ? color + "25" : themeColors.border),
+    }, highlight && {
+      ...SHADOWS.md,
+      shadowColor: color,
+      shadowOpacity: 0.15,
     }]}>
       {/* Linker Akzent-Balken */}
       <View style={[styles.statAccentBar, { backgroundColor: color }]} />
       <View style={styles.statCardInner}>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.statValue, { color: valueColor }]}>{value}</Text>
-          <Text style={[styles.statLabel, { color: themeColors.textSecondary }]}>{label}</Text>
+          <Text style={[styles.statValue, highlight && styles.statValueHighlight, { color: valueColor }]}>{value}</Text>
+          <Text style={[styles.statLabel, { color: highlight ? color : themeColors.textSecondary }]}>{label}</Text>
           {sublabel && (
             <Text style={[styles.statSublabel, { color: themeColors.textTertiary }]}>{sublabel}</Text>
           )}
         </View>
         {iconName && (
-          <View style={[styles.statIconCircle, { backgroundColor: color + (isDark ? "22" : "15") }]}>
-            <Ionicons name={iconName as any} size={20} color={color} />
+          <View style={[styles.statIconCircle, {
+            backgroundColor: color + (isDark ? "22" : "15"),
+            ...(highlight ? { borderWidth: 1.5, borderColor: color + "30" } : {}),
+          }]}>
+            <Ionicons name={iconName as any} size={highlight ? 22 : 20} color={color} />
           </View>
         )}
       </View>
@@ -1515,7 +1544,7 @@ function ProgressBar({ progress, color }: { progress: number; color?: string }) 
   const { isDark } = useTheme();
   const barColor = color ?? COLORS.cta;
   return (
-    <View style={[styles.progressTrack, { backgroundColor: isDark ? "#1E1E2A" : themeColors.border }]}>
+    <View style={[styles.progressTrack, { backgroundColor: isDark ? themeColors.surface : themeColors.border }]}>
       <View
         style={[styles.progressFill, {
           width: `${progress}%` as any,
@@ -1617,7 +1646,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
   },
   refreshButtonText: {
@@ -1630,7 +1659,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -1655,7 +1684,7 @@ const styles = StyleSheet.create({
   periodBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
   },
   periodBtnText: {
@@ -1666,7 +1695,7 @@ const styles = StyleSheet.create({
   // Admin Dashboard Tabs
   adminTabRow: {
     flexDirection: "row",
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 16,
@@ -1713,7 +1742,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -1722,7 +1751,7 @@ const styles = StyleSheet.create({
   },
   searchResultsBox: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     borderColor: COLORS.border,
     marginBottom: 16,
@@ -1751,18 +1780,18 @@ const styles = StyleSheet.create({
   searchResultName: { color: COLORS.primary, fontWeight: "500", fontSize: 14 },
   searchResultSub: { color: COLORS.tertiary, fontSize: 12 },
   headerTextGroup: { flex: 1 },
-  pageTitle: { fontSize: 26, fontWeight: "800", color: COLORS.primary, marginBottom: 4, letterSpacing: -0.3 },
-  pageSubtitle: { color: COLORS.secondary, fontSize: 13, fontWeight: "400" },
-  sectionTitle: { fontSize: 18, fontWeight: "700", color: COLORS.primary, marginBottom: 12 },
+  pageTitle: { ...TYPOGRAPHY.styles.h1, color: COLORS.primary, marginBottom: 4 },
+  pageSubtitle: { ...TYPOGRAPHY.styles.bodySmall, color: COLORS.secondary },
+  sectionTitle: { ...TYPOGRAPHY.styles.h3, color: COLORS.primary, marginBottom: 12 },
   row3: { flexDirection: "row", gap: 12, marginBottom: 12 },
   card: {
     backgroundColor: COLORS.white,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
   },
-  cardTitle: { fontWeight: "600", fontSize: 15, color: COLORS.primary, marginBottom: 12 },
+  cardTitle: { ...TYPOGRAPHY.styles.h4, color: COLORS.primary, marginBottom: 12 },
   emptyText: { color: COLORS.tertiary, textAlign: "center", fontSize: 14, paddingVertical: 16 },
   listItem: { paddingVertical: 12 },
   listItemBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
@@ -1782,12 +1811,12 @@ const styles = StyleSheet.create({
   percentBadgeText: { color: COLORS.primary, fontSize: 12, fontWeight: "700" },
   statCard: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     flexDirection: "row",
     overflow: "hidden",
-    ...SHADOWS.md,
-    minHeight: 100,
+    ...SHADOWS.sm,
+    minHeight: 110,
   },
   statAccentBar: {
     width: 4,
@@ -1797,27 +1826,28 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
-    padding: 14,
-    paddingLeft: 12,
+    padding: 16,
+    paddingLeft: 14,
   },
   statIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
+    width: 48,
+    height: 48,
+    borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 8,
+    marginLeft: 10,
     flexShrink: 0,
   },
-  statLabel: { fontSize: 12, marginTop: 4, fontWeight: "500" },
-  statSublabel: { fontSize: 11, marginTop: 2 },
-  statValue: { fontSize: 26, fontWeight: "800", letterSpacing: -0.5 },
+  statLabel: { fontSize: TYPOGRAPHY.size.sm, marginTop: 4, fontWeight: TYPOGRAPHY.weight.medium, textTransform: "uppercase", letterSpacing: TYPOGRAPHY.letterSpacing.wide },
+  statSublabel: { fontSize: TYPOGRAPHY.size.xs, marginTop: 2 },
+  statValue: { fontSize: TYPOGRAPHY.size.display, fontWeight: TYPOGRAPHY.weight.extrabold, letterSpacing: TYPOGRAPHY.letterSpacing.tight },
+  statValueHighlight: { fontSize: TYPOGRAPHY.size.hero },
   rankHintText: { fontSize: 11, textAlign: "center", marginTop: -4 },
   progressTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
   progressFill: { height: "100%", borderRadius: 3 },
   amberBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -1835,12 +1865,12 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.gradientStart,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
   },
   assignButtonText: { color: COLORS.white, fontSize: 12, fontWeight: "700" },
   actionButton: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -1849,7 +1879,7 @@ const styles = StyleSheet.create({
   actionButtonText: { color: COLORS.white, fontSize: 13, fontWeight: "700", textAlign: "center" },
   actionButtonGold: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -1861,7 +1891,7 @@ const styles = StyleSheet.create({
   actionButtonTextDark: { color: COLORS.primary, fontSize: 13, fontWeight: "700", textAlign: "center" },
   applicationsButton: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 16,
     paddingVertical: 14,
     marginBottom: 12,
@@ -1888,14 +1918,14 @@ const styles = StyleSheet.create({
   applicationsArrow: { color: COLORS.tertiary, fontSize: 18 },
   blueBox: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
   },
   blueTitle: { color: COLORS.white, fontWeight: "600", fontSize: 14, marginBottom: 4 },
   blueText: { color: COLORS.white, opacity: 0.8, fontSize: 13 },
   greetingCard: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -1905,7 +1935,7 @@ const styles = StyleSheet.create({
   greetingMeta: { color: COLORS.white, opacity: 0.65, fontSize: 13, marginTop: 2 },
   menteeCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 12,
     borderLeftWidth: 4,
@@ -1930,7 +1960,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 8,
     alignItems: "center",
   },
@@ -1940,7 +1970,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 8,
     alignItems: "center",
     position: "relative",
@@ -1952,7 +1982,7 @@ const styles = StyleSheet.create({
     top: -6,
     right: -6,
     backgroundColor: COLORS.error,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     minWidth: 18,
     height: 18,
     alignItems: "center",
@@ -1964,7 +1994,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.3)",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginTop: 8,
   },
@@ -1977,7 +2007,7 @@ const styles = StyleSheet.create({
     flex: 1,
     borderWidth: 1,
     borderColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -2029,7 +2059,7 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
   },
   chartCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -2072,7 +2102,7 @@ const styles = StyleSheet.create({
   },
   bar: {
     width: "100%",
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     minWidth: 20,
   },
   xLabel: {
@@ -2085,24 +2115,24 @@ const styles = StyleSheet.create({
   allDoneLabel: { color: COLORS.cta, fontWeight: "700", fontSize: 13, textAlign: "center" },
   completeNowButton: {
     backgroundColor: COLORS.gold,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 8,
     alignItems: "center",
   },
   completeNowButtonText: { color: COLORS.primary, fontWeight: "700", fontSize: 13 },
   congratsBanner: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     alignItems: "center",
   },
   congratsEmoji: { fontSize: 32, marginBottom: 8 },
-  congratsTitle: { fontWeight: "800", fontSize: 18, marginBottom: 6 },
-  congratsText: { fontSize: 14, textAlign: "center", fontWeight: "400" },
+  congratsTitle: { ...TYPOGRAPHY.styles.h3, fontWeight: TYPOGRAPHY.weight.extrabold, marginBottom: 6 },
+  congratsText: { ...TYPOGRAPHY.styles.body, textAlign: "center" },
   feedbackBanner: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 16,
     marginBottom: 16,
     flexDirection: "row",
@@ -2113,7 +2143,7 @@ const styles = StyleSheet.create({
   feedbackBannerText: { fontWeight: "600", fontSize: 13, flex: 1 },
   feedbackBannerButton: {
     backgroundColor: "#f59e0b",
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 12,
     paddingVertical: 7,
     flexShrink: 0,
@@ -2123,7 +2153,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.05)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.25)",
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginTop: 8,
     marginBottom: 8,
@@ -2138,7 +2168,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 16,
     marginBottom: 16,
     gap: 10,
@@ -2172,14 +2202,14 @@ const styles = StyleSheet.create({
   warningBox: {
     borderWidth: 1,
     borderLeftWidth: 4,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
   warningHeader: { flexDirection: "row", alignItems: "center", marginBottom: 12, gap: 10 },
   warningTitle: { fontWeight: "700", fontSize: 15, flex: 1 },
   warningBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     minWidth: 24,
     height: 24,
     alignItems: "center",
@@ -2197,7 +2227,7 @@ const styles = StyleSheet.create({
 
   reminderBtn: {
     backgroundColor: "#3b82f6",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     width: 32,
     height: 32,
     alignItems: "center",
@@ -2213,7 +2243,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(238,167,27,0.25)",
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 16,
     marginBottom: 12,
     width: "100%",
@@ -2226,26 +2256,26 @@ const styles = StyleSheet.create({
   momAdminHeader: { flexDirection: "row", alignItems: "center", marginBottom: 4 },
   momAdminStar: { color: COLORS.gold, fontSize: 18, marginRight: 6 },
   momAdminTitle: { fontWeight: "700", color: COLORS.secondary, fontSize: 11, letterSpacing: 0.8 },
-  momAdminName: { fontSize: 18, fontWeight: "800", color: COLORS.primary, marginBottom: 10, letterSpacing: -0.3 },
+  momAdminName: { ...TYPOGRAPHY.styles.h3, fontWeight: TYPOGRAPHY.weight.extrabold, color: COLORS.primary, marginBottom: 10 },
   momAdminSub: { fontSize: 11, color: "#6B7280" },
   momAdminStatsRow: { flexDirection: "row", gap: 8, marginBottom: 8 },
   momAdminStat: {
     flex: 1,
     backgroundColor: COLORS.white,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 8,
     alignItems: "center",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.2)",
   },
-  momAdminStatValue: { fontSize: 20, fontWeight: "800", color: COLORS.gold },
-  momAdminStatLabel: { color: COLORS.secondary, fontSize: 10, marginTop: 3, fontWeight: "500" },
+  momAdminStatValue: { fontSize: TYPOGRAPHY.size.xxl, fontWeight: TYPOGRAPHY.weight.extrabold, color: COLORS.gold },
+  momAdminStatLabel: { color: COLORS.secondary, fontSize: 10, marginTop: 3, fontWeight: TYPOGRAPHY.weight.medium },
   momAdminArrow: { color: COLORS.link, fontSize: 13, fontWeight: "600" },
   momAwardButton: {
     backgroundColor: "rgba(238,167,27,0.12)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.35)",
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 16,
     alignItems: "center" as const,
@@ -2257,7 +2287,7 @@ const styles = StyleSheet.create({
   openAssignmentsCard: {
     borderWidth: 1,
     borderLeftWidth: 4,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 14,
   },
@@ -2269,7 +2299,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#0A3A5A",
     borderWidth: 2,
     borderColor: "#EEA71B",
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 16,
   },
@@ -2309,14 +2339,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(238,167,27,0.12)",
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
   },
   motivationNextBtn: {
     alignSelf: "flex-start",
     backgroundColor: "rgba(238,167,27,0.12)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.35)",
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 14,
     paddingVertical: 7,
   },
@@ -2333,7 +2363,7 @@ const styles = StyleSheet.create({
     width: "22%",
     minWidth: 72,
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
     gap: 6,
@@ -2353,26 +2383,22 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   mentorGreetingLabel: {
-    fontSize: 11,
-    fontWeight: "800",
+    ...TYPOGRAPHY.styles.label,
     letterSpacing: 1.8,
     marginBottom: 4,
   },
   mentorGreetingName: {
-    fontSize: 28,
-    fontWeight: "800",
+    ...TYPOGRAPHY.styles.h1,
     lineHeight: 32,
     marginBottom: 4,
-    letterSpacing: -0.3,
   },
   mentorGreetingMeta: {
-    fontSize: 13,
-    fontWeight: "400",
+    ...TYPOGRAPHY.styles.bodySmall,
   },
   mentorLogoBadge: {
     width: 44,
     height: 44,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -2386,7 +2412,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1,
   },
   levelCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
@@ -2407,7 +2433,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   levelScoreBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },
@@ -2436,7 +2462,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   levelBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1.5,
     paddingHorizontal: 12,
     paddingVertical: 5,
@@ -2463,7 +2489,7 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   achievementChip: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1.5,
     padding: 12,
     marginHorizontal: 4,
@@ -2480,7 +2506,7 @@ const styles = StyleSheet.create({
     top: 58,
     left: -20,
     width: 170,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     padding: 10,
     zIndex: 100,
@@ -2518,7 +2544,7 @@ const styles = StyleSheet.create({
   },
   // Danke-Button (Mentee)
   thankButton: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 14,
     alignItems: "center",
@@ -2538,7 +2564,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     width: "100%",
     maxWidth: 400,
@@ -2556,7 +2582,7 @@ const styles = StyleSheet.create({
   },
   thankInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 10,
     fontSize: 14,
     minHeight: 80,
@@ -2570,7 +2596,7 @@ const styles = StyleSheet.create({
   modalCancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
   },
@@ -2580,7 +2606,7 @@ const styles = StyleSheet.create({
   },
   modalConfirmBtn: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
     backgroundColor: COLORS.gold,
@@ -2592,7 +2618,7 @@ const styles = StyleSheet.create({
   },
   // Kompakte Mentees-Card im Mentor-Dashboard
   compactMenteesCard: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     padding: 16,
     marginBottom: 12,
@@ -2634,7 +2660,7 @@ const styles = StyleSheet.create({
   },
   quickActionBtn: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     padding: 14,
     alignItems: "center",
@@ -2647,7 +2673,7 @@ const styles = StyleSheet.create({
   },
 
   menteeCardNew: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     padding: 16,
     marginBottom: 12,
@@ -2672,7 +2698,7 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stepsBadgeNew: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -2703,7 +2729,7 @@ const styles = StyleSheet.create({
   mentorHadithCard: {
     backgroundColor: "rgba(238,167,27,0.05)",
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 8,
     shadowColor: COLORS.gold,
@@ -2739,14 +2765,14 @@ const styles = StyleSheet.create({
   // Große Hadith-Card für Mentee Dashboard
   menteeHadithBigCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 22,
     marginBottom: 16,
   },
 
   // ── Mentee Dashboard Redesign ──────────────────────────────────────────
   menteeInfoCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -2762,7 +2788,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   menteeProgressCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     marginBottom: 20,
@@ -2801,7 +2827,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   stepChip: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 8,
@@ -2834,7 +2860,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderWidth: 1,
     borderLeftWidth: 4,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 14,
     paddingVertical: 12,
     marginBottom: 8,
@@ -2851,7 +2877,7 @@ const styles = StyleSheet.create({
 
   // Mentor Dashboard – Bewertungen
   ratingsCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     marginBottom: 16,
@@ -2864,7 +2890,7 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   avgRatingBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },

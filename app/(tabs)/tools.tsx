@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { geocodeAllUsers } from "../../lib/geocoding";
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     width: "22%",
     minWidth: 80,
     flex: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     alignItems: "center",
     gap: 8,

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, SHADOWS } from "../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
 import { useData } from "../contexts/DataContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   },
 
   emptyContainer: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 24,
     alignItems: "center",
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
 
   todayCard: {
     backgroundColor: COLORS.primary,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 24,
     ...SHADOWS.md,
@@ -172,7 +172,7 @@ const styles = StyleSheet.create({
   todayQuelle: { color: COLORS.white, opacity: 0.7, fontSize: 13, marginBottom: 20 },
   shareButton: {
     backgroundColor: COLORS.gold,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   },
 
   hadithCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 12,
@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
   hadithQuelle: { fontSize: 12, flex: 1 },
   hadithShareButton: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 12,
     paddingVertical: 6,
   },

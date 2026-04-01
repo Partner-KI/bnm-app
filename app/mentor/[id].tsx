@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 16 },
   profileCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     alignItems: "center",
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(238,167,27,0.4)",
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
   },
   rankBadgeText: { color: "#92600a", fontSize: 13, fontWeight: "800" },
   sectionLabel: {
@@ -334,7 +334,7 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: "44%",
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     alignItems: "center",
     ...SHADOWS.md,
@@ -342,7 +342,7 @@ const styles = StyleSheet.create({
   statValue: { fontSize: 26, fontWeight: "800" },
   statLabel: { fontSize: 11, marginTop: 2, textAlign: "center" },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
@@ -364,7 +364,7 @@ const styles = StyleSheet.create({
   menteeAvatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: RADIUS.xl,
     backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -383,23 +383,23 @@ const styles = StyleSheet.create({
   progressTrack: {
     flex: 1,
     height: 6,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
   },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: RADIUS.full },
   progressText: { fontSize: 11 },
   arrowText: { fontSize: 20 },
   completedBadge: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     backgroundColor: "#dcfce7",
     alignItems: "center",
     justifyContent: "center",
   },
   completedBadgeText: { color: "#15803d", fontWeight: "800" },
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 32,
     alignItems: "center",
@@ -407,7 +407,7 @@ const styles = StyleSheet.create({
   emptyCardText: { fontSize: 14 },
   editProfileButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 11,
     alignItems: "center",
     marginTop: 4,

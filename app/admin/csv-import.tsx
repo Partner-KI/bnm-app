@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { supabaseAnon } from "../../lib/supabaseAnon";
 import { sendCredentialsEmail } from "../../lib/emailService";
@@ -537,7 +537,7 @@ const styles = StyleSheet.create({
   // Tabs
   tabRow: {
     flexDirection: "row",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     marginBottom: 16,
     overflow: "hidden",
@@ -560,7 +560,7 @@ const styles = StyleSheet.create({
 
   // Aktionsbereich
   actionCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
@@ -573,7 +573,7 @@ const styles = StyleSheet.create({
   uploadButton: {
     flex: 1,
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -584,7 +584,7 @@ const styles = StyleSheet.create({
   },
   templateButton: {
     flex: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     borderWidth: 1,
     paddingVertical: 10,
     alignItems: "center",
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     lineHeight: 16,
   },
   nativeHintBox: {
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     padding: 12,
   },
   nativeHintText: {
@@ -608,7 +608,7 @@ const styles = StyleSheet.create({
 
   // Ergebnis
   resultCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   },
   resultChip: {
     flex: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     padding: 10,
     alignItems: "center",
   },
@@ -643,7 +643,7 @@ const styles = StyleSheet.create({
   errorList: {
     marginTop: 12,
     padding: 10,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
   },
   errorListItem: {
     fontSize: 12,
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
 
   // Fortschritt
   progressCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
@@ -706,7 +706,7 @@ const styles = StyleSheet.create({
 
   // Vorschau-Zeilen
   previewRow: {
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     padding: 12,
     marginBottom: 8,
     borderWidth: 1,
@@ -760,7 +760,7 @@ const styles = StyleSheet.create({
   // Import-Button
   importButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 13,
     alignItems: "center",
     marginTop: 8,
@@ -773,7 +773,7 @@ const styles = StyleSheet.create({
 
   // Leer-Zustand
   emptyCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 32,
     alignItems: "center",
     borderWidth: 1,

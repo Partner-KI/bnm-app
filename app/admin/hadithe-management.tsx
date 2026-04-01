@@ -16,9 +16,10 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData, type Hadith } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
+import { EmptyState } from "../../components/EmptyState";
 
 type FormData = {
   text_ar: string;
@@ -377,7 +378,12 @@ export default function HaditheManagementScreen() {
             </Text>
 
             {sortedHadithe.length === 0 ? (
-              <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("haditheMgmt.empty")}</Text>
+              <EmptyState
+                icon="book-outline"
+                title={t("haditheMgmt.empty")}
+                description="Fuege einen neuen Hadith hinzu oder importiere eine CSV-Datei."
+                compact
+              />
             ) : (
               sortedHadithe.map((h, idx) => (
                 <View
@@ -458,7 +464,7 @@ const styles = StyleSheet.create({
   addButton: {
     flex: 1,
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -467,7 +473,7 @@ const styles = StyleSheet.create({
   csvButton: {
     flex: 1,
     backgroundColor: "transparent",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     borderColor: COLORS.gold,
     paddingVertical: 10,
@@ -478,7 +484,7 @@ const styles = StyleSheet.create({
 
   // Formular
   formCard: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 16,
     marginBottom: 16,
@@ -487,7 +493,7 @@ const styles = StyleSheet.create({
   fieldLabel: { fontSize: 12, fontWeight: "600", marginBottom: 4, marginTop: 8 },
   textArea: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 10,
     fontSize: 14,
     minHeight: 80,
@@ -495,7 +501,7 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 10,
     fontSize: 14,
     height: 44,
@@ -503,7 +509,7 @@ const styles = StyleSheet.create({
   formButtons: { flexDirection: "row", gap: 10, marginTop: 16 },
   cancelBtn: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
     borderWidth: 1,
@@ -512,7 +518,7 @@ const styles = StyleSheet.create({
   cancelBtnText: { fontSize: 14, fontWeight: "600" },
   saveBtn: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
     backgroundColor: COLORS.gradientStart,
@@ -525,14 +531,14 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 8,
   },
   filePickerText: { color: COLORS.cta, fontWeight: "600", fontSize: 14 },
   csvToggleBtn: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     paddingVertical: 8,
     alignItems: "center",
@@ -541,7 +547,7 @@ const styles = StyleSheet.create({
   csvToggleBtnText: { fontSize: 13, fontWeight: "600" },
   previewBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 10,
     marginTop: 8,
   },
@@ -557,7 +563,7 @@ const styles = StyleSheet.create({
 
   // Liste
   listCard: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 16,
     ...SHADOWS.md,
   },
@@ -574,7 +580,7 @@ const styles = StyleSheet.create({
   orderBtn: {
     width: 30,
     height: 30,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
@@ -593,7 +599,7 @@ const styles = StyleSheet.create({
   hadithActions: { flexShrink: 0, gap: 4 },
   editBtn: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 8,
     paddingVertical: 5,
     alignItems: "center",
@@ -601,7 +607,7 @@ const styles = StyleSheet.create({
   editBtnText: { fontSize: 12, fontWeight: "600" },
   deleteBtn: {
     backgroundColor: "rgba(239,68,68,0.08)",
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 8,
     paddingVertical: 5,
     alignItems: "center",

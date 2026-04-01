@@ -21,7 +21,7 @@ import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { showError, showSuccess } from "../../lib/errorHandler";
 // PDF wird dynamisch importiert um ESM-Kompatibilitätsprobleme zu vermeiden
@@ -466,22 +466,22 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontSize: 13, marginTop: 2 },
 
   // Periode Auswahl
-  card: { borderRadius: 12, borderWidth: 1, padding: 16, marginBottom: 20 },
+  card: { borderRadius: RADIUS.md, borderWidth: 1, padding: 16, marginBottom: 20 },
   cardLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
   periodRow: { gap: 16 },
   periodGroup: { gap: 8 },
   periodLabel: { fontSize: 12, fontWeight: "500" },
   monthGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  monthBtn: { width: 42, height: 36, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  monthBtn: { width: 42, height: 36, borderRadius: RADIUS.sm, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   monthBtnText: { fontSize: 13, fontWeight: "600" },
   yearRow: { flexDirection: "row", gap: 8 },
-  yearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, borderWidth: 1 },
+  yearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: RADIUS.sm, borderWidth: 1 },
   yearBtnText: { fontSize: 14, fontWeight: "600" },
 
   // Award Card
   awardCard: {
     borderWidth: 3,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     overflow: "hidden",
     marginBottom: 20,
     backgroundColor: "#FFFDF5",
@@ -613,7 +613,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: 13,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     gap: 8,
   },
   actionBtnPrint: { backgroundColor: COLORS.gold },
@@ -622,7 +622,7 @@ const styles = StyleSheet.create({
   actionBtnSaveText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
 
   // Vergangene Awards
-  pastCard: { borderRadius: 12, borderWidth: 1, marginBottom: 20, overflow: "hidden" },
+  pastCard: { borderRadius: RADIUS.md, borderWidth: 1, marginBottom: 20, overflow: "hidden" },
   pastTitle: { fontSize: 14, fontWeight: "700", padding: 14, paddingBottom: 10 },
   pastRow: {
     flexDirection: "row",
@@ -640,7 +640,7 @@ const styles = StyleSheet.create({
     height: 30,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     borderColor: COLORS.gradientStart + "40",
     backgroundColor: COLORS.gradientStart + "10",

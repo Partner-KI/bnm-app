@@ -21,7 +21,7 @@ import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 22, fontWeight: "800" },
   pageSubtitle: { fontSize: 13, marginTop: 2 },
 
-  card: { borderRadius: 8, borderWidth: 1, padding: 16, marginBottom: 16 },
+  card: { borderRadius: RADIUS.sm, borderWidth: 1, padding: 16, marginBottom: 16 },
   cardLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
 
   // Mentor-Picker
@@ -388,7 +388,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
@@ -403,15 +403,15 @@ const styles = StyleSheet.create({
   periodGroup: { gap: 8 },
   periodLabel: { fontSize: 12, fontWeight: "500" },
   monthGrid: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
-  monthBtn: { width: 42, height: 36, borderRadius: 8, borderWidth: 1, alignItems: "center", justifyContent: "center" },
+  monthBtn: { width: 42, height: 36, borderRadius: RADIUS.sm, borderWidth: 1, alignItems: "center", justifyContent: "center" },
   monthBtnText: { fontSize: 13, fontWeight: "600" },
   yearRow: { flexDirection: "row", gap: 8 },
-  yearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, borderWidth: 1 },
+  yearBtn: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: RADIUS.sm, borderWidth: 1 },
   yearBtnText: { fontSize: 14, fontWeight: "600" },
 
   // Award-Card
   awardCard: {
-    borderWidth: 3, borderRadius: 16, overflow: "hidden", marginBottom: 16,
+    borderWidth: 3, borderRadius: RADIUS.lg, overflow: "hidden", marginBottom: 16,
     backgroundColor: "#FFFDF5",
     shadowColor: COLORS.gold, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18, shadowRadius: 12, elevation: 6,
@@ -442,7 +442,7 @@ const styles = StyleSheet.create({
 
   // Downloads
   downloadRow: { flexDirection: "row", gap: 12, marginBottom: 16 },
-  dlBtn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 12, borderRadius: 8, gap: 6 },
+  dlBtn: { flex: 1, flexDirection: "row", alignItems: "center", justifyContent: "center", paddingVertical: 12, borderRadius: RADIUS.sm, gap: 6 },
   dlBtnPDF: { backgroundColor: COLORS.gold },
   dlBtnPDFText: { color: "#0E0E14", fontWeight: "700", fontSize: 14 },
   dlBtnPNG: { backgroundColor: "#10B981" },
@@ -451,11 +451,11 @@ const styles = StyleSheet.create({
   // E-Mail
   emailRow: {
     flexDirection: "row", alignItems: "center",
-    borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 12,
+    borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 10, marginBottom: 12,
   },
   emailInput: { flex: 1, fontSize: 14 },
   sendBtn: {
-    backgroundColor: COLORS.primary, borderRadius: 8,
+    backgroundColor: COLORS.primary, borderRadius: RADIUS.sm,
     flexDirection: "row", alignItems: "center", justifyContent: "center",
     paddingVertical: 12, gap: 8,
   },
@@ -463,7 +463,7 @@ const styles = StyleSheet.create({
 
   // Modal
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalSheet: { borderTopLeftRadius: 16, borderTopRightRadius: 16, maxHeight: "70%", paddingBottom: 32 },
+  modalSheet: { borderTopLeftRadius: RADIUS.lg, borderTopRightRadius: RADIUS.lg, maxHeight: "70%", paddingBottom: 32 },
   modalHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16, borderBottomWidth: 1, borderBottomColor: "rgba(128,128,128,0.2)" },
   modalTitle: { fontSize: 16, fontWeight: "700" },
   mentorRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1 },

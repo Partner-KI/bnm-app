@@ -18,8 +18,9 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData, type QAEntry } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { EmptyState } from "../../components/EmptyState";
 
 const CATEGORIES = ["Grundlagen", "Gebet", "Alltag", "Persönliches", "allgemein"];
 
@@ -328,11 +329,12 @@ export default function QAManagementScreen() {
 
           {/* Einträge-Liste */}
           {qaEntries.length === 0 ? (
-            <View style={[styles.emptyBox, { backgroundColor: themeColors.card }]}>
-              <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
-                {t("qa.noResults")}
-              </Text>
-            </View>
+            <EmptyState
+              icon="help-circle-outline"
+              title={t("qa.noResults")}
+              description="Erstelle eine neue Frage, um loszulegen."
+              compact
+            />
           ) : (
             qaEntries.map((entry) => (
               <View
@@ -427,21 +429,21 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 22, fontWeight: "700" },
   countBadge: { fontSize: 13 },
   addButton: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 12,
     alignItems: "center",
     marginBottom: 16,
   },
   addButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 15 },
   emptyBox: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 24,
     alignItems: "center",
   },
   emptyText: { fontSize: 14 },
   entryCard: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 12,
   },
@@ -455,7 +457,7 @@ const styles = StyleSheet.create({
   categoryPill: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     alignSelf: "flex-start",
   },
   categoryPillText: { fontSize: 10, fontWeight: "600" },
@@ -481,7 +483,7 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
     paddingVertical: 7,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     alignItems: "center",
   },
   editButton: { backgroundColor: "rgba(39,174,96,0.1)", borderWidth: 1, borderColor: "rgba(39,174,96,0.3)" },
@@ -495,7 +497,7 @@ const styles = StyleSheet.create({
   fieldLabel: { fontSize: 13, fontWeight: "600", marginBottom: 6, marginTop: 12 },
   textInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -503,7 +505,7 @@ const styles = StyleSheet.create({
   textAreaInput: { minHeight: 100, textAlignVertical: "top" },
   categoryScroll: { marginBottom: 4 },
   categoryContent: { gap: 8, paddingRight: 4, paddingVertical: 2 },
-  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20 },
+  chip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: RADIUS.xl },
   chipText: { fontSize: 13, fontWeight: "500" },
   publishRow: {
     flexDirection: "row",
@@ -516,14 +518,14 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 12,
     alignItems: "center",
   },
   cancelButtonText: { fontSize: 14, fontWeight: "600" },
   saveButton: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingVertical: 12,
     alignItems: "center",
   },

@@ -10,9 +10,10 @@ import {
   StyleSheet,
   Linking,
 } from "react-native";
+import { BNMInput } from "../../components/BNMInput";
 import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import type { Gender, ContactPreference } from "../../types";
 import { Container } from "../../components/Container";
@@ -395,56 +396,47 @@ export default function RegisterPublicScreen() {
             <SectionHeader label={t("register.section1")} />
 
             {/* Vorname */}
-            <FormField label={t("register.firstName")} error={errors.firstName}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.firstName ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.firstNamePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                value={firstName}
-                onChangeText={setFirstName}
-                accessibilityLabel={t("register.firstName")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.firstName")}
+              icon="person-outline"
+              value={firstName}
+              onChangeText={setFirstName}
+              error={errors.firstName}
+              accessibilityLabel={t("register.firstName")}
+            />
 
             {/* Nachname */}
-            <FormField label={t("register.lastName")} error={errors.lastName}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.lastName ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.lastNamePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                value={lastName}
-                onChangeText={setLastName}
-                accessibilityLabel={t("register.lastName")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.lastName")}
+              icon="person-outline"
+              value={lastName}
+              onChangeText={setLastName}
+              error={errors.lastName}
+              accessibilityLabel={t("register.lastName")}
+            />
 
             {/* E-Mail */}
-            <FormField label={t("register.email")} error={errors.email}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.email ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder="deine@email.de"
-                placeholderTextColor={themeColors.textTertiary}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-                value={email}
-                onChangeText={setEmail}
-                accessibilityLabel={t("register.email")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.email")}
+              icon="mail-outline"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              error={errors.email}
+              accessibilityLabel={t("register.email")}
+            />
 
             {/* Telefon */}
-            <FormField label={t("register.phone")}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                placeholder="+49 ..."
-                placeholderTextColor={themeColors.textTertiary}
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
-                accessibilityLabel={t("register.phone")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.phone")}
+              icon="call-outline"
+              value={phone}
+              onChangeText={setPhone}
+              keyboardType="phone-pad"
+              accessibilityLabel={t("register.phone")}
+            />
 
             {/* Geschlecht */}
             <FormField label={t("register.gender")} error={errors.gender}>
@@ -461,41 +453,37 @@ export default function RegisterPublicScreen() {
             </FormField>
 
             {/* Alter */}
-            <FormField label={t("register.age")} error={errors.age}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.age ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.agePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                keyboardType="numeric"
-                value={age}
-                onChangeText={setAge}
-                accessibilityLabel={t("register.age")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.age")}
+              value={age}
+              onChangeText={setAge}
+              keyboardType="numeric"
+              error={errors.age}
+              accessibilityLabel={t("register.age")}
+            />
 
             {/* PLZ + Stadt */}
-            <FormField label={t("register.plzCity")} error={errors.plz ?? errors.city}>
-              <View style={styles.rowInputs}>
-                <TextInput
-                  style={[styles.input, styles.inputPlz, { backgroundColor: themeColors.card, color: themeColors.text }, errors.plz ? styles.inputError : { borderColor: themeColors.border }]}
-                  placeholder="PLZ"
-                  placeholderTextColor={themeColors.textTertiary}
-                  keyboardType="numeric"
-                  maxLength={5}
-                  value={plz}
-                  onChangeText={setPlz}
-                  accessibilityLabel="PLZ"
-                />
-                <TextInput
-                  style={[styles.input, styles.inputCity, { backgroundColor: themeColors.card, color: themeColors.text }, errors.city ? styles.inputError : { borderColor: themeColors.border }]}
-                  placeholder={t("register.cityPlaceholder")}
-                  placeholderTextColor={themeColors.textTertiary}
-                  value={city}
-                  onChangeText={setCity}
-                  accessibilityLabel={t("register.cityPlaceholder")}
-                />
-              </View>
-            </FormField>
+            <View style={styles.rowInputs}>
+              <BNMInput
+                label="PLZ"
+                icon="location-outline"
+                value={plz}
+                onChangeText={setPlz}
+                keyboardType="numeric"
+                maxLength={5}
+                error={errors.plz}
+                containerStyle={{ width: 120, flex: 0 }}
+                accessibilityLabel="PLZ"
+              />
+              <BNMInput
+                label={t("register.cityPlaceholder")}
+                value={city}
+                onChangeText={setCity}
+                error={errors.city}
+                containerStyle={{ flex: 1 }}
+                accessibilityLabel={t("register.cityPlaceholder")}
+              />
+            </View>
 
             {/* Land */}
             <FormField label={t("register.country")} error={errors.country}>
@@ -630,61 +618,42 @@ export default function RegisterPublicScreen() {
             </View>
 
             {/* Optionale Nachricht */}
-            <FormField label={t("register.additionalMessage")}>
-              <TextInput
-                style={[styles.input, styles.textarea, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                placeholder={t("register.additionalMessagePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                value={additionalMessage}
-                onChangeText={setAdditionalMessage}
-                accessibilityLabel={t("register.additionalMessage")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.additionalMessage")}
+              value={additionalMessage}
+              onChangeText={setAdditionalMessage}
+              multiline
+              numberOfLines={3}
+              accessibilityLabel={t("register.additionalMessage")}
+            />
 
             {/* SEKTION 4: Passwort */}
             <SectionHeader label={t("register.section4")} />
 
             {/* Passwort */}
-            <FormField label={t("register.password")} error={errors.password}>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <TextInput
-                  style={[styles.input, { flex: 1, backgroundColor: themeColors.card, color: themeColors.text }, errors.password ? styles.inputError : { borderColor: themeColors.border }]}
-                  placeholder={t("register.passwordPlaceholder")}
-                  placeholderTextColor={themeColors.textTertiary}
-                  secureTextEntry={!showPassword}
-                  value={password}
-                  onChangeText={setPassword}
-                  accessibilityLabel={t("register.password")}
-                />
-                <TouchableOpacity
-                  style={{ paddingHorizontal: 10 }}
-                  onPress={() => setShowPassword(!showPassword)}
-                  accessibilityRole="button"
-                  accessibilityLabel={showPassword ? t("register.hidePassword") : t("register.showPassword")}
-                >
-                  <Text style={{ color: themeColors.textSecondary, fontSize: 13 }}>
-                    {showPassword ? t("register.hidePassword") : t("register.showPassword")}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              {password.length > 0 && <PasswordStrengthBar password={password} />}
-            </FormField>
+            <BNMInput
+              label={t("register.password")}
+              icon="lock-closed-outline"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
+              rightIcon={showPassword ? "eye-outline" : "eye-off-outline"}
+              onRightIconPress={() => setShowPassword(!showPassword)}
+              error={errors.password}
+              accessibilityLabel={t("register.password")}
+            />
+            {password.length > 0 && <PasswordStrengthBar password={password} />}
 
             {/* Passwort bestätigen */}
-            <FormField label={t("register.passwordConfirm")} error={errors.passwordConfirm}>
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.passwordConfirm ? styles.inputError : { borderColor: themeColors.border }]}
-                placeholder={t("register.passwordConfirmPlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                secureTextEntry={!showPassword}
-                value={passwordConfirm}
-                onChangeText={setPasswordConfirm}
-                accessibilityLabel={t("register.passwordConfirm")}
-              />
-            </FormField>
+            <BNMInput
+              label={t("register.passwordConfirm")}
+              icon="lock-closed-outline"
+              value={passwordConfirm}
+              onChangeText={setPasswordConfirm}
+              secureTextEntry={!showPassword}
+              error={errors.passwordConfirm}
+              accessibilityLabel={t("register.passwordConfirm")}
+            />
 
             {/* Honeypot – für Menschen unsichtbar, Bots füllen es aus */}
             <View
@@ -848,7 +817,7 @@ const styles = StyleSheet.create({
 
   benefitsBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 8,
   },
@@ -868,33 +837,16 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-  },
-  inputError: { borderColor: COLORS.error },
-  textarea: { height: 80 },
-
   rowInputs: {
     flexDirection: "row",
     gap: 8,
-  },
-  inputPlz: {
-    width: 90,
-    flex: 0,
-  },
-  inputCity: {
-    flex: 1,
   },
 
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
   },
   pillText: { fontSize: 13 },
@@ -934,7 +886,7 @@ const styles = StyleSheet.create({
 
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 12,
@@ -1000,7 +952,7 @@ const styles = StyleSheet.create({
   },
   backToLoginButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 28,
     paddingVertical: 10,
     alignItems: "center",

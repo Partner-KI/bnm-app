@@ -1,11 +1,23 @@
 import { Alert, Platform } from "react-native";
 import { getGlobalShowConfirm, getGlobalShowAlert } from "../contexts/ModalContext";
 
+// Globale Toast-Referenz – wird von ToastProvider gesetzt
+let _globalToast: ((message: string, type: "success" | "error" | "warning" | "info") => void) | null = null;
+
+export function setGlobalToast(fn: typeof _globalToast) {
+  _globalToast = fn;
+}
+
 /**
  * Zeigt eine Fehlermeldung plattformübergreifend an.
- * Web: Custom-Modal, Mobile: Nativer Alert (zuverlässiger auf iOS)
+ * Web: Toast-Notification (non-blocking), Mobile: Nativer Alert
  */
 export function showError(message: string): void {
+  // Toast zuerst versuchen (non-blocking, bessere UX)
+  if (_globalToast) {
+    _globalToast(message, "error");
+    return;
+  }
   if (Platform.OS !== "web") {
     Alert.alert("Fehler", message);
     return;
@@ -20,9 +32,15 @@ export function showError(message: string): void {
 
 /**
  * Zeigt eine Erfolgs-/Info-Meldung plattformübergreifend an.
- * Web: Custom-Modal, Mobile: Nativer Alert
+ * Web: Toast-Notification (non-blocking), Mobile: Nativer Alert
  */
 export function showSuccess(message: string, onDismiss?: () => void): void {
+  // Toast zuerst versuchen (non-blocking, bessere UX)
+  if (_globalToast) {
+    _globalToast(message, "success");
+    onDismiss?.();
+    return;
+  }
   if (Platform.OS !== "web") {
     Alert.alert("Erfolg", message, [{ text: "OK", onPress: onDismiss }]);
     return;

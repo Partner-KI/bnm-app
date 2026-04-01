@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -8,6 +8,9 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
@@ -15,11 +18,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { showError, showConfirm } from "../../lib/errorHandler";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { SkeletonChatMessages } from "../../components/Skeleton";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { BNMPressable } from "../../components/BNMPressable";
+import { EmptyState } from "../../components/EmptyState";
 
 export default function ChatScreen() {
   const { user } = useAuth();
@@ -38,6 +43,23 @@ export default function ChatScreen() {
 
   const [inputText, setInputText] = useState("");
   const scrollViewRef = useRef<ScrollView>(null);
+  const [showScrollFab, setShowScrollFab] = useState(false);
+  const fabOpacity = useRef(new Animated.Value(0)).current;
+
+  // Scroll-Position tracken für FAB
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+    const distFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
+    const shouldShow = distFromBottom > 150;
+    if (shouldShow !== showScrollFab) {
+      setShowScrollFab(shouldShow);
+      Animated.timing(fabOpacity, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showScrollFab]);
 
   const mentorship = mentorshipId ? getMentorshipById(mentorshipId) : undefined;
   const messages = mentorshipId ? getMessagesByMentorshipId(mentorshipId) : [];
@@ -117,97 +139,140 @@ export default function ChatScreen() {
       )}
 
       {/* Nachrichten */}
-      <ScrollView
-        ref={scrollViewRef}
-        style={styles.messagesScroll}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
-        onContentSizeChange={() =>
-          scrollViewRef.current?.scrollToEnd({ animated: false })
-        }
-      >
-        {dataLoading ? (
-          <SkeletonChatMessages count={6} />
-        ) : messages.length === 0 ? (
-          <View style={styles.emptyMessages}>
-            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>
-              {t("chat.noMessages")}
-            </Text>
-          </View>
-        ) : (
-          messages.map((msg) => {
-            const isOwn = msg.sender_id === user.id;
-            const sender =
-              msg.sender ??
-              (isOwn ? { name: user.name } : { name: chatPartnerName ?? "?" });
+      <View style={{ flex: 1 }}>
+        <ScrollView
+          ref={scrollViewRef}
+          style={styles.messagesScroll}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+          onContentSizeChange={() =>
+            scrollViewRef.current?.scrollToEnd({ animated: false })
+          }
+          onScroll={handleScroll}
+          scrollEventThrottle={100}
+        >
+          {dataLoading ? (
+            <SkeletonChatMessages count={6} />
+          ) : messages.length === 0 ? (
+            <EmptyState
+              icon="chatbubble-ellipses-outline"
+              title={t("chat.noMessages")}
+              description="Starte die Konversation mit einer Nachricht."
+              compact
+            />
+          ) : (
+            messages.map((msg, idx) => {
+              const isOwn = msg.sender_id === user.id;
+              const sender =
+                msg.sender ??
+                (isOwn ? { name: user.name } : { name: chatPartnerName ?? "?" });
 
-            // Sender-Anzeige: Admin/Office → Rolle zeigen
-            // Wenn Sender weder Mentor noch Mentee der Mentorship ist → muss Admin/Office sein
-            // (Profil evtl. nicht sichtbar wegen Gender-RLS → Fallback via Mentorship-IDs)
-            const senderRole = (msg.sender as any)?.role;
-            const isThirdParty = !isOwn
-              && msg.sender_id !== mentorship?.mentor_id
-              && msg.sender_id !== mentorship?.mentee_id;
-            const displayName =
-              senderRole === "admin" ? "Admin" :
-              senderRole === "office" ? "Office" :
-              isThirdParty ? "Admin" :
-              sender.name ?? chatPartnerName ?? "?";
+              const senderRole = (msg.sender as any)?.role;
+              const isThirdParty = !isOwn
+                && msg.sender_id !== mentorship?.mentor_id
+                && msg.sender_id !== mentorship?.mentee_id;
+              const displayName =
+                senderRole === "admin" ? "Admin" :
+                senderRole === "office" ? "Office" :
+                isThirdParty ? "Admin" :
+                sender.name ?? chatPartnerName ?? "?";
 
-            const timeStr = new Date(msg.created_at).toLocaleTimeString("de-DE", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+              const msgDate = new Date(msg.created_at);
+              const timeStr = msgDate.toLocaleTimeString("de-DE", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
 
-            return (
-              <View
-                key={msg.id}
-                style={[
-                  styles.messageBubbleWrapper,
-                  isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
-                ]}
-              >
-                {!isOwn && (
-                  <Text style={[styles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
-                )}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onLongPress={() => handleLongPress(msg.id, isOwn)}
-                  delayLongPress={500}
-                >
+              // Timestamp-Gruppierung: Nur anzeigen wenn >15 Min seit letzter Nachricht
+              // oder Datumswechsel oder erste Nachricht
+              const prevMsg = idx > 0 ? messages[idx - 1] : null;
+              const prevDate = prevMsg ? new Date(prevMsg.created_at) : null;
+              const showTimeSeparator = !prevDate
+                || (msgDate.getTime() - prevDate.getTime() > 15 * 60 * 1000)
+                || msgDate.toDateString() !== prevDate.toDateString();
+
+              // Nachrichtengruppe: Aufeinanderfolgende Nachrichten desselben Senders
+              const isContinuation = prevMsg
+                && prevMsg.sender_id === msg.sender_id
+                && !showTimeSeparator;
+
+              // Datum-Separator formatieren
+              const dateSepLabel = showTimeSeparator ? (() => {
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (msgDate.toDateString() === today.toDateString()) return timeStr;
+                if (msgDate.toDateString() === yesterday.toDateString()) return `Gestern, ${timeStr}`;
+                return `${msgDate.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}, ${timeStr}`;
+              })() : null;
+
+              return (
+                <React.Fragment key={msg.id}>
+                  {/* Timestamp-Separator */}
+                  {showTimeSeparator && (
+                    <View style={styles.timeSeparator}>
+                      <View style={[styles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
+                      <Text style={[styles.timeSeparatorText, { color: themeColors.textTertiary, backgroundColor: themeColors.background }]}>
+                        {dateSepLabel}
+                      </Text>
+                      <View style={[styles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
+                    </View>
+                  )}
                   <View
                     style={[
-                      styles.messageBubble,
-                      isOwn
-                        ? styles.ownBubble
-                        : [styles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                      styles.messageBubbleWrapper,
+                      isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+                      isContinuation && { marginTop: -6 },
                     ]}
                   >
-                    <Text
-                      style={[
-                        styles.messageText,
-                        isOwn ? { color: COLORS.white } : { color: themeColors.text },
-                      ]}
+                    {/* Sender-Name nur bei erstem in der Gruppe */}
+                    {!isOwn && !isContinuation && (
+                      <Text style={[styles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
+                    )}
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onLongPress={() => handleLongPress(msg.id, isOwn)}
+                      delayLongPress={500}
                     >
-                      {msg.content}
-                    </Text>
+                      <View
+                        style={[
+                          styles.messageBubble,
+                          isOwn
+                            ? styles.ownBubble
+                            : [styles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                          isContinuation && isOwn && { borderTopRightRadius: RADIUS.lg },
+                          isContinuation && !isOwn && { borderTopLeftRadius: RADIUS.lg },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.messageText,
+                            isOwn ? { color: COLORS.white } : { color: themeColors.text },
+                          ]}
+                        >
+                          {msg.content}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-                <Text
-                  style={[
-                    styles.timeText,
-                    { color: themeColors.textTertiary },
-                    isOwn ? { textAlign: "right", marginRight: 4 } : { marginLeft: 4 },
-                  ]}
-                >
-                  {timeStr}
-                </Text>
-              </View>
-            );
-          })
+                </React.Fragment>
+              );
+            })
+          )}
+          <View style={{ height: 16 }} />
+        </ScrollView>
+
+        {/* Scroll-to-Bottom FAB */}
+        {showScrollFab && (
+          <Animated.View style={[styles.scrollFab, { opacity: fabOpacity }]}>
+            <BNMPressable
+              onPress={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+              style={[styles.scrollFabBtn, { backgroundColor: themeColors.card, ...SHADOWS.md }]}
+            >
+              <Ionicons name="chevron-down" size={20} color={themeColors.text} />
+            </BNMPressable>
+          </Animated.View>
         )}
-        {/* Abstandhalter unten */}
-        <View style={{ height: 16 }} />
-      </ScrollView>
+      </View>
 
       {/* Input-Bereich — Admin/Office dürfen schreiben (als Beobachter/Moderator) */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
@@ -255,9 +320,9 @@ const styles = StyleSheet.create({
   messagesScroll: { flex: 1 },
   emptyMessages: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 64 },
   emptyText: { textAlign: "center", fontSize: 14 },
-  messageBubbleWrapper: { marginBottom: 10, maxWidth: Platform.OS === "web" ? "60%" : "80%" },
-  senderName: { fontSize: 11, marginBottom: 3, marginLeft: 12, opacity: 0.7 },
-  messageBubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
+  messageBubbleWrapper: { marginBottom: 6, maxWidth: Platform.OS === "web" ? "60%" : "80%" },
+  senderName: { fontSize: TYPOGRAPHY.size.xs, marginBottom: 3, marginLeft: 12, fontWeight: TYPOGRAPHY.weight.medium },
+  messageBubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: RADIUS.lg },
   ownBubble: {
     backgroundColor: COLORS.gradientStart,
     borderTopRightRadius: 4,
@@ -266,8 +331,37 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderTopLeftRadius: 4,
   },
-  messageText: { fontSize: 14, lineHeight: 20 },
-  timeText: { fontSize: 11, marginTop: 3, opacity: 0.6 },
+  messageText: { fontSize: TYPOGRAPHY.size.base, lineHeight: TYPOGRAPHY.lineHeight.relaxed },
+  timeSeparator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+    gap: 10,
+  },
+  timeSeparatorLine: {
+    flex: 1,
+    height: 1,
+  },
+  timeSeparatorText: {
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.medium,
+    paddingHorizontal: 8,
+  },
+  scrollFab: {
+    position: "absolute",
+    bottom: 12,
+    right: 16,
+    zIndex: 10,
+  },
+  scrollFabBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+  },
   inputContainer: {
     borderTopWidth: 1,
     paddingHorizontal: 12,
@@ -279,7 +373,7 @@ const styles = StyleSheet.create({
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: RADIUS.xl,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
@@ -289,7 +383,7 @@ const styles = StyleSheet.create({
   sendButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: RADIUS.full,
     alignItems: "center",
     justifyContent: "center",
   },

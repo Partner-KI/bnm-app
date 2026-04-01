@@ -16,7 +16,7 @@ import type { ReportData } from "../../lib/pdfGenerator";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -449,7 +449,7 @@ export default function ReportsScreen() {
           {Platform.OS === "web" && (
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
               <TouchableOpacity
-                style={{ flex: 1, backgroundColor: dynamicPrimaryBg, borderRadius: 8, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+                style={{ flex: 1, backgroundColor: dynamicPrimaryBg, borderRadius: RADIUS.sm, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
                 onPress={handleDownloadPDF}
                 activeOpacity={0.8}
               >
@@ -458,7 +458,7 @@ export default function ReportsScreen() {
               </TouchableOpacity>
               {user?.role === "admin" && (
                 <TouchableOpacity
-                  style={{ flex: 1, backgroundColor: COLORS.gold, borderRadius: 8, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
+                  style={{ flex: 1, backgroundColor: COLORS.gold, borderRadius: RADIUS.sm, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
                   onPress={handleDownloadDonorPDF}
                   activeOpacity={0.8}
                 >
@@ -797,7 +797,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 24, fontWeight: "800" },
   betaBadge: {
     backgroundColor: "#f59e0b",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 7,
     paddingVertical: 2,
     alignSelf: "center",
@@ -805,7 +805,7 @@ const styles = StyleSheet.create({
   betaBadgeText: { color: "#1c1400", fontSize: 10, fontWeight: "700" },
   pageSubtitle: { fontSize: 13, marginBottom: 16 },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -815,7 +815,7 @@ const styles = StyleSheet.create({
   quickFilterBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
   },
   quickFilterBtnActive: {
@@ -826,30 +826,30 @@ const styles = StyleSheet.create({
   quickFilterTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   quickFilterTextInactive: { fontSize: 13 },
   modeRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  modeButton: { flex: 1, paddingVertical: 9, borderRadius: 14, borderWidth: 1, alignItems: "center" },
+  modeButton: { flex: 1, paddingVertical: 9, borderRadius: RADIUS.md, borderWidth: 1, alignItems: "center" },
   modeButtonActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   modeButtonInactive: {},
   modeTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   modeTextInactive: { fontSize: 13 },
   yearRow: { flexDirection: "row", gap: 8, marginBottom: 12 },
-  yearButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 14, borderWidth: 1 },
+  yearButton: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: RADIUS.md, borderWidth: 1 },
   yearButtonActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   yearButtonInactive: {},
   yearButtonTextActive: { color: COLORS.white, fontSize: 14, fontWeight: "600" },
   yearButtonTextInactive: { fontSize: 14, fontWeight: "600" },
   monthRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  monthChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 12, borderWidth: 1 },
+  monthChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: RADIUS.md, borderWidth: 1 },
   monthChipActive: { backgroundColor: COLORS.gold, borderColor: COLORS.gold },
   monthChipInactive: {},
   monthChipTextActive: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   monthChipTextInactive: { fontSize: 12, fontWeight: "500" },
   quarterRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  quarterChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12, borderWidth: 1 },
+  quarterChip: { paddingHorizontal: 10, paddingVertical: 6, borderRadius: RADIUS.md, borderWidth: 1 },
   periodTitle: { fontWeight: "800", fontSize: 20, marginBottom: 16 },
   kpiRow: { flexDirection: "row", gap: 10, marginBottom: 10 },
   kpiCard: {
     flex: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 14,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
@@ -859,7 +859,7 @@ const styles = StyleSheet.create({
   kpiValue: { fontSize: 26, fontWeight: "800" },
   cancellationBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 14,
     marginBottom: 16,
     flexDirection: "row",
@@ -870,7 +870,7 @@ const styles = StyleSheet.create({
   cancellationValue: { fontWeight: "800", fontSize: 22 },
   chartCard: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -899,7 +899,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1,
     borderColor: "rgba(238,167,27,0.4)",
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
   },
@@ -910,14 +910,14 @@ const styles = StyleSheet.create({
   goldMentorSub: { fontSize: 14 },
   emptyDataBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
   },
   emptyDataText: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   emptyMonthBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
   },
@@ -925,7 +925,7 @@ const styles = StyleSheet.create({
   toggleMomButton: {
     borderWidth: 1,
     borderColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
@@ -933,7 +933,7 @@ const styles = StyleSheet.create({
   toggleMomText: { color: COLORS.gradientStart, fontWeight: "600", fontSize: 14 },
   exportButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -943,7 +943,7 @@ const styles = StyleSheet.create({
   spendenButton: {
     borderWidth: 1,
     borderColor: COLORS.gold,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -952,7 +952,7 @@ const styles = StyleSheet.create({
   spendenButtonText: { color: COLORS.gold, fontWeight: "700" },
   tabSwitcherRow: {
     flexDirection: "row",
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     marginBottom: 16,
     overflow: "hidden",
@@ -976,7 +976,7 @@ const styles = StyleSheet.create({
   sessionDistValue: { fontSize: 16, fontWeight: "800" },
   summaryBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
   },
@@ -984,7 +984,7 @@ const styles = StyleSheet.create({
   summaryText: { fontSize: 13, lineHeight: 20 },
   donorReportButton: {
     backgroundColor: COLORS.gold,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -993,7 +993,7 @@ const styles = StyleSheet.create({
   donorReportButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
   donorDashboardButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -1005,7 +1005,7 @@ const styles = StyleSheet.create({
   printButton: {
     borderWidth: 1,
     borderColor: COLORS.secondary,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     paddingHorizontal: 16,
     alignItems: "center",

@@ -11,11 +11,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
+import { StatusBadge } from "../../components/StatusBadge";
 
 export default function MenteeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -85,25 +86,12 @@ export default function MenteeDetailScreen() {
       : t("menteeDetail.cancelled")
     : t("menteeDetail.noMentor");
 
-  const statusBg = mentorship
-    ? mentorship.status === "active"
-      ? (isDark ? "#2A2D3A" : "#F5F5F7")
-      : mentorship.status === "completed"
-      ? (isDark ? "#1a3a2a" : "#dcfce7")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#3a2e1a" : "#fef3c7")
-      : (isDark ? "#3a1a1a" : "#fee2e2")
-    : (isDark ? "#3a2e1a" : "#fef3c7");
-
-  const statusColor = mentorship
-    ? mentorship.status === "active"
-      ? (isDark ? "#A0A0B0" : "#475467")
-      : mentorship.status === "completed"
-      ? (isDark ? "#4ade80" : "#15803d")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#fbbf24" : "#b45309")
-      : (isDark ? "#f87171" : "#b91c1c")
-    : (isDark ? "#fbbf24" : "#b45309");
+  const badgeStatus = mentorship
+    ? mentorship.status === "active" ? "active" as const
+      : mentorship.status === "completed" ? "completed" as const
+      : mentorship.status === "pending_approval" ? "pending" as const
+      : "cancelled" as const
+    : "pending" as const;
 
   return (
     <Container fullWidth={Platform.OS === "web"}>
@@ -129,11 +117,7 @@ export default function MenteeDetailScreen() {
               {mentee.city} · {mentee.age} {t("common.yearsOld")} ·{" "}
               {mentee.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
             </Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>
-                {statusLabel}
-              </Text>
-            </View>
+            <StatusBadge status={badgeStatus} label={statusLabel} />
           </View>
 
           {/* Kontaktinformationen */}
@@ -352,7 +336,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 16 },
   profileCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     alignItems: "center",
@@ -371,7 +355,7 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontSize: 22, fontWeight: "800" },
   profileName: { fontSize: 20, fontWeight: "800", marginBottom: 4 },
   profileSub: { fontSize: 14, marginBottom: 10 },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: RADIUS.full },
   statusText: { fontSize: 13, fontWeight: "600" },
   sectionLabel: {
     fontSize: 12,
@@ -381,7 +365,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
@@ -410,7 +394,7 @@ const styles = StyleSheet.create({
   mentorAvatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: RADIUS.xl,
     backgroundColor: COLORS.primary,
     alignItems: "center",
     justifyContent: "center",
@@ -422,7 +406,7 @@ const styles = StyleSheet.create({
   mentorSub: { fontSize: 12, marginTop: 2 },
   mentorDetailButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -439,12 +423,12 @@ const styles = StyleSheet.create({
   progressValue: { fontWeight: "800", color: COLORS.cta, fontSize: 16 },
   progressTrack: {
     height: 8,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
     marginHorizontal: 16,
     marginBottom: 6,
   },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: RADIUS.full },
   progressSub: {
     fontSize: 12,
     paddingHorizontal: 16,
@@ -464,7 +448,7 @@ const styles = StyleSheet.create({
   stepIndicator: {
     width: 28,
     height: 28,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -474,7 +458,7 @@ const styles = StyleSheet.create({
   currentChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
   },
   currentChipText: { fontSize: 11, fontWeight: "600" },
   actionsCard: {
@@ -482,7 +466,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   actionButton: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },

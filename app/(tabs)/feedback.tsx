@@ -9,10 +9,11 @@ import {
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { EmptyState } from "../../components/EmptyState";
 
 type FeedbackFilter = "all" | "positive" | "negative";
 
@@ -114,16 +115,19 @@ export default function FeedbackTabScreen() {
 
           {/* Empty State */}
           {allFeedbacks.length === 0 && (
-            <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("feedbackOverview.noFeedbackYet")}</Text>
-            </View>
+            <EmptyState
+              icon="star-outline"
+              title={t("feedbackOverview.noFeedbackYet") ?? "Kein Feedback vorhanden"}
+            />
           )}
 
           {/* Feedback-Liste */}
           {filtered.length === 0 && allFeedbacks.length > 0 ? (
-            <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("feedbackOverview.noFeedbacks")}</Text>
-            </View>
+            <EmptyState
+              icon="star-outline"
+              title={t("feedbackOverview.noFeedbacks") ?? "Kein Feedback vorhanden"}
+              description="Versuche andere Filter."
+            />
           ) : (
             filtered.map((fb) => {
               const submitter = users.find((u) => u.id === fb.submitted_by);
@@ -191,7 +195,7 @@ const styles = StyleSheet.create({
 
   warningBanner: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
   warningText: { fontSize: 13 },
 
   filterCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
     borderWidth: 1,
@@ -215,7 +219,7 @@ const styles = StyleSheet.create({
   filterChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
   },
   filterChipActive: {
@@ -227,7 +231,7 @@ const styles = StyleSheet.create({
   filterChipTextInactive: { fontSize: 13 },
 
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     alignItems: "center",
     borderWidth: 1,
@@ -236,7 +240,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14 },
 
   feedbackCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 12,
     borderWidth: 1,
@@ -252,7 +256,7 @@ const styles = StyleSheet.create({
   feedbackDate: { fontSize: 11, marginTop: 4 },
 
   commentsBox: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     padding: 10,
     marginBottom: 8,
   },
@@ -260,7 +264,7 @@ const styles = StyleSheet.create({
   noComments: { fontSize: 12, fontStyle: "italic", marginBottom: 4 },
 
   negativeBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 8,
     paddingVertical: 4,
     alignSelf: "flex-start",

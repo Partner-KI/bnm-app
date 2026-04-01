@@ -13,7 +13,7 @@ import type { TranslationKeys } from "../lib/translations/de";
 import { useData } from "../contexts/DataContext";
 import { showSuccess, showError, showConfirm } from "../lib/errorHandler";
 import type { User } from "../types";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -427,21 +427,21 @@ const styles = StyleSheet.create({
   accessText: { fontWeight: "600" },
   boldTitle: { fontWeight: "800", fontSize: 18, marginBottom: 8 },
   centerSubText: { textAlign: "center", fontSize: 14, marginBottom: 24 },
-  backButton: { backgroundColor: COLORS.primary, paddingHorizontal: 24, paddingVertical: 9, borderRadius: 12 },
+  backButton: { backgroundColor: COLORS.primary, paddingHorizontal: 24, paddingVertical: 9, borderRadius: RADIUS.md },
   backButtonText: { color: COLORS.white, fontWeight: "600" },
   page: { padding: 24 },
   sectionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   sectionHint: { fontSize: 12, marginBottom: 10 },
   mentorModeBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
   mentorModeTitle: { fontWeight: "600", fontSize: 14, marginBottom: 4 },
   mentorModeText: { fontSize: 13 },
   listCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 16,
@@ -457,7 +457,7 @@ const styles = StyleSheet.create({
   radioCircle: {
     width: 20,
     height: 20,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     borderWidth: 2,
     marginRight: 12,
     alignItems: "center",
@@ -465,19 +465,19 @@ const styles = StyleSheet.create({
   },
   radioCircleActive: { borderColor: COLORS.primary, backgroundColor: COLORS.primary },
   radioCircleInactive: {},
-  radioDot: { width: 8, height: 8, borderRadius: 9999, backgroundColor: COLORS.white },
+  radioDot: { width: 8, height: 8, borderRadius: RADIUS.full, backgroundColor: COLORS.white },
   itemName: { fontWeight: "600" },
   itemSub: { fontSize: 12 },
   errorBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
   errorTitle: { fontWeight: "500" },
   errorText: { fontSize: 14, marginTop: 4 },
   mentorCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 10,
@@ -489,7 +489,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.2)",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     marginBottom: 4,
     alignSelf: "flex-start",
   },
@@ -500,13 +500,13 @@ const styles = StyleSheet.create({
   scoreLabel: { fontSize: 12 },
   scoreBar: {
     height: 6,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
     marginBottom: 8,
   },
-  scoreBarFill: { height: "100%", borderRadius: 9999 },
+  scoreBarFill: { height: "100%", borderRadius: RADIUS.full },
   reasonsRow: { flexDirection: "row", flexWrap: "wrap", gap: 4 },
-  reasonChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  reasonChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.full },
   reasonText: { fontSize: 12 },
   selectedIndicator: {
     marginTop: 8,
@@ -515,11 +515,11 @@ const styles = StyleSheet.create({
     paddingTop: 8,
   },
   selectedIndicatorText: { fontSize: 12, fontWeight: "600" },
-  assignButton: { borderRadius: 12, paddingVertical: 9, alignItems: "center" },
+  assignButton: { borderRadius: RADIUS.md, paddingVertical: 9, alignItems: "center" },
   assignButtonText: { fontWeight: "600", fontSize: 14 },
   pendingHintBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 12,
   },

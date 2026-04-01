@@ -4,16 +4,15 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  TextInput,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
+import { BNMInput } from "../components/BNMInput";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -97,54 +96,30 @@ export default function ChangePasswordScreen() {
           </View>
 
           {/* Aktuelles Passwort */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("changePassword.currentPassword")}</Text>
-          <View style={[styles.inputRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <TextInput
-              style={[styles.inputFlex, { color: themeColors.text }]}
-              value={oldPassword}
-              onChangeText={setOldPassword}
-              placeholder={t("changePassword.currentPassword")}
-              placeholderTextColor={themeColors.textTertiary}
-              secureTextEntry={!showOld}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowOld((v) => !v)}
-            >
-              <Ionicons
-                name={showOld ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color={themeColors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          <BNMInput
+            label={t("changePassword.currentPassword")}
+            icon="lock-closed-outline"
+            value={oldPassword}
+            onChangeText={setOldPassword}
+            secureTextEntry={!showOld}
+            autoCapitalize="none"
+            autoCorrect={false}
+            rightIcon={showOld ? "eye-outline" : "eye-off-outline"}
+            onRightIconPress={() => setShowOld((v) => !v)}
+          />
 
           {/* Neues Passwort */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("changePassword.newPassword")}</Text>
-          <View style={[styles.inputRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <TextInput
-              style={[styles.inputFlex, { color: themeColors.text }]}
-              value={newPassword}
-              onChangeText={setNewPassword}
-              placeholder={t("changePassword.passwordPlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
-              secureTextEntry={!showNew}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowNew((v) => !v)}
-            >
-              <Ionicons
-                name={showNew ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color={themeColors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          <BNMInput
+            label={t("changePassword.newPassword")}
+            icon="lock-open-outline"
+            value={newPassword}
+            onChangeText={setNewPassword}
+            secureTextEntry={!showNew}
+            autoCapitalize="none"
+            autoCorrect={false}
+            rightIcon={showNew ? "eye-outline" : "eye-off-outline"}
+            onRightIconPress={() => setShowNew((v) => !v)}
+          />
 
           {/* Passwortstärke */}
           {newPasswordStrength && (
@@ -167,29 +142,18 @@ export default function ChangePasswordScreen() {
           )}
 
           {/* Passwort bestätigen */}
-          <Text style={[styles.fieldLabel, { marginTop: 8, color: themeColors.textSecondary }]}>{t("changePassword.confirmPassword")}</Text>
-          <View style={[styles.inputRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <TextInput
-              style={[styles.inputFlex, { color: themeColors.text }]}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder={t("changePassword.confirmPlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
-              secureTextEntry={!showConfirm}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            <TouchableOpacity
-              style={styles.eyeButton}
-              onPress={() => setShowConfirm((v) => !v)}
-            >
-              <Ionicons
-                name={showConfirm ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color={themeColors.textSecondary}
-              />
-            </TouchableOpacity>
-          </View>
+          <BNMInput
+            label={t("changePassword.confirmPassword")}
+            icon="lock-closed-outline"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirm}
+            autoCapitalize="none"
+            autoCorrect={false}
+            rightIcon={showConfirm ? "eye-outline" : "eye-off-outline"}
+            onRightIconPress={() => setShowConfirm((v) => !v)}
+            containerStyle={{ marginTop: 8 }}
+          />
 
           {/* Match-Indikator */}
           {confirmPassword.length > 0 && (
@@ -252,35 +216,11 @@ const styles = StyleSheet.create({
   content: { padding: 24, paddingBottom: 40 },
   infoBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 14,
   },
   infoText: { fontSize: 13 },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 12,
-    marginBottom: 10,
-    overflow: "hidden",
-  },
-  inputFlex: {
-    flex: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-  },
-  eyeButton: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  eyeText: { fontSize: 18 },
   strengthRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -290,16 +230,16 @@ const styles = StyleSheet.create({
   strengthTrack: {
     flex: 1,
     height: 6,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
     borderWidth: 1,
   },
-  strengthFill: { height: "100%", borderRadius: 9999 },
+  strengthFill: { height: "100%", borderRadius: RADIUS.full },
   strengthLabel: { fontSize: 12, fontWeight: "600", minWidth: 50 },
   matchText: { fontSize: 13, fontWeight: "500", marginBottom: 16 },
   tipCard: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginTop: 6,
     marginBottom: 16,
@@ -308,7 +248,7 @@ const styles = StyleSheet.create({
   tipText: { fontSize: 12, lineHeight: 18 },
   saveButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
@@ -317,7 +257,7 @@ const styles = StyleSheet.create({
   saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },

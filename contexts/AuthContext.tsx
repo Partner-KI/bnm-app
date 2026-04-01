@@ -50,7 +50,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
         const profile = await loadProfile(session.user.id);
-        setUser(profile);
+        if (profile?.is_active === false) {
+          await supabase.auth.signOut();
+        } else {
+          setUser(profile);
+        }
       }
       setIsLoading(false);
     });
@@ -60,7 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       async (event, session) => {
         if (session?.user) {
           const profile = await loadProfile(session.user.id);
-          setUser(profile);
+          if (profile?.is_active === false) {
+            await supabase.auth.signOut();
+          } else {
+            setUser(profile);
+          }
         } else {
           setUser(null);
         }
@@ -85,6 +93,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const profile = await loadProfile(data.user.id);
+
+        // Gesperrte User sofort ausloggen (Fallback falls auth.banned_until nicht greift)
+        if (profile?.is_active === false) {
+          await supabase.auth.signOut();
+          setIsLoading(false);
+          return false;
+        }
+
         setUser(profile);
         setIsLoading(false);
         return true;

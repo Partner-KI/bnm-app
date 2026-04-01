@@ -15,10 +15,11 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
+import { EmptyState } from "../../components/EmptyState";
 
 export default function PendingApprovalsScreen() {
   const router = useRouter();
@@ -117,9 +118,12 @@ export default function PendingApprovalsScreen() {
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("pendingApprovals.title")}</Text>
 
           {pendingList.length === 0 ? (
-            <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>{t("pendingApprovals.empty")}</Text>
-            </View>
+            <EmptyState
+              icon="checkmark-done-outline"
+              title={t("pendingApprovals.empty")}
+              description="Alle Zuweisungen wurden bereits bearbeitet."
+              compact
+            />
           ) : (
             pendingList.map((m) => (
               <View key={m.id} style={[styles.card, { backgroundColor: themeColors.card }]}>
@@ -240,14 +244,14 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   emptyCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 24,
     alignItems: "center",
   },
   emptyText: { fontSize: 14 },
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     borderColor: "#fde68a",
     borderLeftWidth: 4,
@@ -265,7 +269,7 @@ const styles = StyleSheet.create({
   approveButton: {
     flex: 1,
     backgroundColor: COLORS.cta,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -273,7 +277,7 @@ const styles = StyleSheet.create({
   rejectButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -288,7 +292,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   modalBox: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 20,
     width: "100%",
@@ -301,7 +305,7 @@ const styles = StyleSheet.create({
   },
   modalInput: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     fontSize: 14,
     minHeight: 90,
@@ -314,14 +318,14 @@ const styles = StyleSheet.create({
   modalCancelBtn: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
   },
   modalCancelText: { fontWeight: "600", fontSize: 14 },
   modalConfirmBtn: {
     flex: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
   },

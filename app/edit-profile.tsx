@@ -4,12 +4,12 @@ import {
   Text,
   Image,
   ScrollView,
-  TextInput,
   Platform,
   StyleSheet,
   KeyboardAvoidingView,
 } from "react-native";
 import { BNMPressable } from "../components/BNMPressable";
+import { BNMInput } from "../components/BNMInput";
 import * as ImagePicker from "expo-image-picker";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { ContactPreference } from "../types";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { uploadAvatar } from "../lib/storage";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -219,71 +219,54 @@ export default function EditProfileScreen() {
           )}
 
           {/* Name */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.name")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.name && styles.inputError]}
+          <BNMInput
+            label={t("editProfile.name")}
+            icon="person-outline"
             value={name}
             onChangeText={(v) => { setName(v); if (fieldErrors.name) setFieldErrors(p => ({ ...p, name: "" })); }}
-            placeholder={t("editProfile.namePlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
             autoCapitalize="words"
+            error={fieldErrors.name}
             accessibilityLabel={t("editProfile.name")}
           />
-          {fieldErrors.name ? (
-            <Text style={styles.fieldError}>{fieldErrors.name}</Text>
-          ) : null}
 
           {/* Stadt */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.city")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.city && styles.inputError]}
+          <BNMInput
+            label={t("editProfile.city")}
+            icon="location-outline"
             value={city}
             onChangeText={(v) => { setCity(v); if (fieldErrors.city) setFieldErrors(p => ({ ...p, city: "" })); }}
-            placeholder={t("editProfile.cityPlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
             autoCapitalize="words"
+            error={fieldErrors.city}
             accessibilityLabel={t("editProfile.city")}
           />
-          {fieldErrors.city ? (
-            <Text style={styles.fieldError}>{fieldErrors.city}</Text>
-          ) : null}
 
           {/* Postleitzahl */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("profile.plz")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, marginBottom: 12 }]}
+          <BNMInput
+            label={t("profile.plz")}
+            icon="navigate-outline"
             value={plz}
             onChangeText={setPlz}
-            placeholder={t("register.plzPlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
             keyboardType="number-pad"
             maxLength={5}
             accessibilityLabel={t("profile.plz")}
           />
 
           {/* Alter */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.age")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }, fieldErrors.age && styles.inputError]}
+          <BNMInput
+            label={t("editProfile.age")}
             value={age}
             onChangeText={(v) => { setAge(v); if (fieldErrors.age) setFieldErrors(p => ({ ...p, age: "" })); }}
-            placeholder={t("editProfile.agePlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
             keyboardType="number-pad"
+            error={fieldErrors.age}
             accessibilityLabel={t("editProfile.age")}
           />
-          {fieldErrors.age ? (
-            <Text style={styles.fieldError}>{fieldErrors.age}</Text>
-          ) : null}
 
           {/* Telefon */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("editProfile.phone")}</Text>
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, marginBottom: 12 }]}
+          <BNMInput
+            label={t("editProfile.phone")}
+            icon="call-outline"
             value={phone}
             onChangeText={setPhone}
-            placeholder="+49 151 ..."
-            placeholderTextColor={themeColors.textTertiary}
             keyboardType="phone-pad"
             accessibilityLabel={t("editProfile.phone")}
           />
@@ -372,16 +355,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     marginBottom: 4,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  inputError: { borderColor: "#EF4444" },
-  fieldError: { color: "#EF4444", fontSize: 12, marginTop: 2, marginBottom: 8 },
   contactGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -391,7 +364,7 @@ const styles = StyleSheet.create({
   contactChip: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
   },
   contactChipActive: {
@@ -403,7 +376,7 @@ const styles = StyleSheet.create({
   contactChipTextInactive: { fontWeight: "500", fontSize: 13 },
   infoBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -412,7 +385,7 @@ const styles = StyleSheet.create({
   infoBoxValue: { fontSize: 13, fontWeight: "600" },
   saveButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
@@ -421,7 +394,7 @@ const styles = StyleSheet.create({
   saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -455,7 +428,7 @@ const styles = StyleSheet.create({
   avatarButton: {
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 16,
     paddingVertical: 7,
   },

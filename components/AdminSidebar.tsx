@@ -447,7 +447,7 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     zIndex: 999,
     // @ts-ignore
     ...(Platform.OS === "web" ? { whiteSpace: "nowrap", pointerEvents: "none" } : {}),

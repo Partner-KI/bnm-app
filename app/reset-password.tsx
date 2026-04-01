@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     width: "100%",
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     marginBottom: 16,
     overflow: "hidden",
   },
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 12,
     alignItems: "center",
     marginTop: 8,
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   successBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
     alignItems: "center",

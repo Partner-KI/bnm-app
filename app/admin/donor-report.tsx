@@ -12,7 +12,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { showSuccess } from "../../lib/errorHandler";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -1012,7 +1012,7 @@ const styles = StyleSheet.create({
 
   // Zeitraum-Filter
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 14,
     ...SHADOWS.sm,
@@ -1027,7 +1027,7 @@ const styles = StyleSheet.create({
   quickFilterBtn: {
     paddingHorizontal: 12,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     borderWidth: 1,
   },
   quickFilterBtnActive: {
@@ -1041,7 +1041,7 @@ const styles = StyleSheet.create({
   modeBtn: {
     paddingVertical: 7,
     paddingHorizontal: 12,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     alignItems: "center",
   },
@@ -1050,7 +1050,7 @@ const styles = StyleSheet.create({
   modeBtnTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 12 },
   modeBtnTextInactive: { fontSize: 12 },
   yearRow: { flexDirection: "row", gap: 8, marginBottom: 10 },
-  yearBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 5, borderWidth: 1 },
+  yearBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: RADIUS.sm, borderWidth: 1 },
   yearBtnActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   yearBtnInactive: {},
   yearBtnTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
@@ -1066,7 +1066,7 @@ const styles = StyleSheet.create({
   kpiGrid: { flexDirection: "row", gap: 10, marginBottom: 10 },
   kpiCard: {
     flex: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
     borderTopWidth: 3,
@@ -1084,7 +1084,7 @@ const styles = StyleSheet.create({
   // Chart Sections
   chartSectionHeader: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 10,
@@ -1092,7 +1092,7 @@ const styles = StyleSheet.create({
   chartSectionTitle: { color: COLORS.white, fontWeight: "700", fontSize: 13 },
   chartCard: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 16,
   },
@@ -1128,7 +1128,7 @@ const styles = StyleSheet.create({
 
   // Zusammenfassung
   summaryCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 16,
     borderLeftWidth: 4,
@@ -1140,7 +1140,7 @@ const styles = StyleSheet.create({
   // Export-Buttons
   exportBtnPrimary: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 10,
@@ -1149,7 +1149,7 @@ const styles = StyleSheet.create({
   exportBtnSecondary: {
     borderWidth: 1,
     borderColor: COLORS.gold,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 10,
     alignItems: "center",
     marginBottom: 10,
@@ -1157,7 +1157,7 @@ const styles = StyleSheet.create({
   exportBtnSecText: { color: COLORS.gold, fontWeight: "700", fontSize: 14 },
   printBtn: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
@@ -1165,7 +1165,7 @@ const styles = StyleSheet.create({
   printBtnText: { fontWeight: "600", fontSize: 13 },
   backBtnBottom: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 32,

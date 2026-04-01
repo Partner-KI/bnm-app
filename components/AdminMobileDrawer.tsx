@@ -15,7 +15,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
-import { COLORS, SHADOWS } from "../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
 
 const DRAWER_WIDTH = 280;
 
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 12,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     marginBottom: 2,
     position: "relative",
     overflow: "hidden",
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
   },
   badge: {
     backgroundColor: COLORS.error,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     minWidth: 18,
     height: 18,
     alignItems: "center",

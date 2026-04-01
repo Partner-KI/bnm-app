@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import { useLanguage, type Language } from "../contexts/LanguageContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 
@@ -194,7 +194,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 14,
@@ -231,7 +231,7 @@ const styles = StyleSheet.create({
   checkMark: {
     width: 24,
     height: 24,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     backgroundColor: COLORS.cta,
     alignItems: "center",
     justifyContent: "center",
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 20,

@@ -1,5 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
-import { COLORS, TYPOGRAPHY, SPACING } from './Colors';
+import { COLORS, TYPOGRAPHY, SPACING, RADIUS, SHADOWS } from './Colors';
 
 const isWeb = Platform.OS === 'web';
 
@@ -11,7 +11,7 @@ export const SHARED = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 6,
+    borderRadius: RADIUS.sm,
     paddingVertical: isWeb ? 8 : 10,
     paddingHorizontal: 12,
     fontSize: TYPOGRAPHY.size.base,
@@ -22,7 +22,7 @@ export const SHARED = StyleSheet.create({
     backgroundColor: COLORS.card,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 6,
+    borderRadius: RADIUS.sm,
     paddingVertical: isWeb ? 8 : 10,
     paddingHorizontal: 12,
     fontSize: TYPOGRAPHY.size.base,
@@ -38,38 +38,26 @@ export const SHARED = StyleSheet.create({
   },
   // Überschriften
   pageTitle: {
-    fontSize: TYPOGRAPHY.size.xxl,
-    fontWeight: TYPOGRAPHY.weight.extrabold,
-    lineHeight: TYPOGRAPHY.lineHeight.loose,
+    ...TYPOGRAPHY.styles.h1,
   },
   sectionTitle: {
-    fontSize: TYPOGRAPHY.size.lg,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    lineHeight: TYPOGRAPHY.lineHeight.relaxed,
+    ...TYPOGRAPHY.styles.h3,
   },
   cardTitle: {
-    fontSize: TYPOGRAPHY.size.base,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    lineHeight: TYPOGRAPHY.lineHeight.normal,
+    ...TYPOGRAPHY.styles.h4,
   },
   bodyText: {
-    fontSize: TYPOGRAPHY.size.base,
-    fontWeight: TYPOGRAPHY.weight.regular,
-    lineHeight: TYPOGRAPHY.lineHeight.normal,
+    ...TYPOGRAPHY.styles.body,
   },
   captionText: {
-    fontSize: TYPOGRAPHY.size.sm,
-    fontWeight: TYPOGRAPHY.weight.regular,
-    lineHeight: TYPOGRAPHY.lineHeight.tight,
+    ...TYPOGRAPHY.styles.caption,
   },
   labelCaps: {
-    fontSize: TYPOGRAPHY.size.xs,
-    fontWeight: TYPOGRAPHY.weight.bold,
-    letterSpacing: TYPOGRAPHY.letterSpacing.wider,
+    ...TYPOGRAPHY.styles.label,
   },
   primaryButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: isWeb ? 8 : 10,
     paddingHorizontal: 16,
     alignItems: 'center' as const,
@@ -78,13 +66,12 @@ export const SHARED = StyleSheet.create({
   },
   primaryButtonText: {
     color: COLORS.white,
-    fontSize: TYPOGRAPHY.size.base,
-    fontWeight: TYPOGRAPHY.weight.semibold,
+    ...TYPOGRAPHY.styles.button,
   },
   secondaryButton: {
     borderWidth: 1,
     borderColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: isWeb ? 8 : 10,
     paddingHorizontal: 16,
     alignItems: 'center' as const,
@@ -93,38 +80,29 @@ export const SHARED = StyleSheet.create({
   },
   secondaryButtonText: {
     color: COLORS.gradientStart,
-    fontSize: TYPOGRAPHY.size.base,
-    fontWeight: TYPOGRAPHY.weight.semibold,
+    ...TYPOGRAPHY.styles.button,
   },
   card: {
     backgroundColor: COLORS.card,
-    borderRadius: 8,
-    padding: 14,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
+    ...SHADOWS.sm,
   },
   goldCard: {
     backgroundColor: COLORS.card,
-    borderRadius: 8,
-    padding: 14,
+    borderRadius: RADIUS.md,
+    padding: SPACING.md,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    elevation: 2,
+    ...SHADOWS.sm,
   },
   fieldSpacing: {
-    marginBottom: 10,
+    marginBottom: SPACING.sm,
   },
   sectionSpacing: {
-    marginBottom: 14,
+    marginBottom: SPACING.md,
   },
   screenPadding: {
-    padding: 16,
+    padding: SPACING.lg,
   },
 });

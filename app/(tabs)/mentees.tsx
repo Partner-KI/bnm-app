@@ -19,7 +19,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import type { Mentorship } from "../../types";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
@@ -28,6 +28,8 @@ import { usePageTitle } from "../../hooks/usePageTitle";
 import { navigateToChat } from "../../lib/chatNavigation";
 import { SlideOverPanel } from "../../components/SlideOverPanel";
 import { MenteeDetailPanel } from "../../components/MenteeDetailPanel";
+import { EmptyState } from "../../components/EmptyState";
+import { StatusBadge } from "../../components/StatusBadge";
 
 export default function MenteesScreen() {
   usePageTitle("Mentees");
@@ -433,9 +435,11 @@ function AdminMenteesView() {
         isLoading ? (
           <SkeletonList count={5} />
         ) : (
-          <View style={[styles.emptyCard, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("mentees.noResults")}</Text>
-          </View>
+          <EmptyState
+            icon="people-outline"
+            title={t("mentees.noResults") ?? "Keine Mentees gefunden"}
+            description="Versuche andere Filter oder füge neue Mentees hinzu."
+          />
         )
       }
       renderItem={({ item: mentee }) => {
@@ -445,26 +449,12 @@ function AdminMenteesView() {
           ? Math.round((completedSteps.length / sessionTypes.length) * 100)
           : 0;
 
-        const statusBg =
-          mentorship
-            ? mentorship.status === "active"
-              ? (isDark ? "#2A2D3A" : "#F5F5F7")
-              : mentorship.status === "completed"
-              ? (isDark ? "#1a3a2a" : "#dcfce7")
-              : mentorship.status === "pending_approval"
-              ? (isDark ? "#3a2e1a" : "#fef3c7")
-              : (isDark ? "#3a1a1a" : "#fee2e2")
-            : (isDark ? "#3a2e1a" : "#fef3c7");
-        const statusColor =
-          mentorship
-            ? mentorship.status === "active"
-              ? (isDark ? "#A0A0B0" : "#475467")
-              : mentorship.status === "completed"
-              ? (isDark ? "#4ade80" : "#15803d")
-              : mentorship.status === "pending_approval"
-              ? (isDark ? "#fbbf24" : "#b45309")
-              : (isDark ? "#f87171" : "#b91c1c")
-            : (isDark ? "#fbbf24" : "#b45309");
+        const badgeStatus = mentorship
+          ? mentorship.status === "active" ? "active" as const
+            : mentorship.status === "completed" ? "completed" as const
+            : mentorship.status === "pending_approval" ? "pending" as const
+            : "cancelled" as const
+          : "pending" as const;
         const statusLabel =
           mentorship
             ? mentorship.status === "active"
@@ -516,9 +506,7 @@ function AdminMenteesView() {
                   {mentee.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
                 </Text>
               </View>
-              <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-                <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
-              </View>
+              <StatusBadge status={badgeStatus} label={statusLabel} compact />
             </View>
 
             {!selectMode && mentorship ? (
@@ -671,30 +659,18 @@ function MentorMenteesView() {
         }
         ListEmptyComponent={
           activeTab === "active" ? (
-            <View style={[styles.emptyCard, { backgroundColor: themeColors.card }]}>
-              <Ionicons name="people-outline" size={36} color={themeColors.textTertiary} style={{ marginBottom: 12 }} />
-              <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8, color: themeColors.text }]}>
-                {t("mentees.noMenteesYet")}
-              </Text>
-              <Text style={[styles.emptyText, { marginTop: 0, marginBottom: 12, color: themeColors.textTertiary }]}>
-                {t("mentees.noMenteesText")}
-              </Text>
-              <BNMPressable
-                style={{ backgroundColor: COLORS.gradientStart, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 20 }}
-                onPress={() => router.push("/assign")}
-              >
-                <Text style={{ color: COLORS.white, fontWeight: "600", fontSize: 14 }}>
-                  {t("mentees.takeMenteeButton")}
-                </Text>
-              </BNMPressable>
-            </View>
+            <EmptyState
+              icon="people-outline"
+              title={t("mentees.noMenteesYet")}
+              description={t("mentees.noMenteesText")}
+              actionLabel={t("mentees.takeMenteeButton")}
+              onAction={() => router.push("/assign")}
+            />
           ) : (
-            <View style={[styles.emptyCard, { backgroundColor: themeColors.card }]}>
-              <Ionicons name="checkmark-circle-outline" size={36} color={themeColors.textTertiary} style={{ marginBottom: 12 }} />
-              <Text style={[styles.emptyText, { marginTop: 0, color: themeColors.textTertiary }]}>
-                {t("mentees.noCompletedYet")}
-              </Text>
-            </View>
+            <EmptyState
+              icon="checkmark-circle-outline"
+              title={t("mentees.noCompletedYet")}
+            />
           )
         }
         renderItem={({ item: mentorship }) => {
@@ -721,11 +697,7 @@ function MentorMenteesView() {
                       {mentorship.mentee?.city} · {mentorship.mentee?.age} J.
                     </Text>
                   </View>
-                  <View style={[styles.mentorSplitStatus, { backgroundColor: isDark ? "#2A3A28" : "#dcfce7" }]}>
-                    <Text style={[styles.mentorSplitStatusText, { color: isDark ? "#4ade80" : "#15803d" }]}>
-                      {t("mentees.active")}
-                    </Text>
-                  </View>
+                  <StatusBadge status="active" label={t("mentees.active")} compact />
                 </View>
                 <View style={styles.mentorSplitProgressRow}>
                   <View style={[styles.mentorSplitTrack, { backgroundColor: isDark ? "#2A2520" : themeColors.border }]}>
@@ -817,45 +789,11 @@ function MentorMenteeCard({ mentorship }: { mentorship: Mentorship }) {
             {mentorship.mentee?.gender === "male" ? t("mentees.brother") : t("mentees.sister")}
           </Text>
         </View>
-        <View
-          style={[
-            styles.statusBadge,
-            {
-              backgroundColor:
-                mentorship.status === "active"
-                  ? (isDark ? "#2A2D3A" : "#F5F5F7")
-                  : mentorship.status === "completed"
-                  ? (isDark ? "#1a3a2a" : "#dcfce7")
-                  : mentorship.status === "pending_approval"
-                  ? (isDark ? "#3a2e1a" : "#fef3c7")
-                  : (isDark ? "#3a1a1a" : "#fee2e2"),
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.statusText,
-              {
-                color:
-                  mentorship.status === "active"
-                    ? (isDark ? "#A0A0B0" : "#475467")
-                    : mentorship.status === "completed"
-                    ? (isDark ? "#4ade80" : "#15803d")
-                    : mentorship.status === "pending_approval"
-                    ? (isDark ? "#fbbf24" : "#b45309")
-                    : (isDark ? "#f87171" : "#b91c1c"),
-              },
-            ]}
-          >
-            {mentorship.status === "active"
-              ? t("mentees.active")
-              : mentorship.status === "completed"
-              ? t("mentees.completedStatus")
-              : mentorship.status === "pending_approval"
-              ? t("mentees.pendingApproval")
-              : t("mentees.cancelled")}
-          </Text>
-        </View>
+        <StatusBadge
+          status={mentorship.status === "active" ? "active" : mentorship.status === "completed" ? "completed" : mentorship.status === "pending_approval" ? "pending" : "cancelled"}
+          label={mentorship.status === "active" ? t("mentees.active") : mentorship.status === "completed" ? t("mentees.completedStatus") : mentorship.status === "pending_approval" ? t("mentees.pendingApproval") : t("mentees.cancelled")}
+          compact
+        />
       </View>
 
       {/* Fortschrittsbalken */}
@@ -954,15 +892,11 @@ function MenteeProgressView() {
       >
         <View style={styles.page}>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("mentees.myProgress")}</Text>
-          <View style={[styles.emptyCard, { backgroundColor: themeColors.card }]}>
-            <Ionicons name="leaf-outline" size={36} color={themeColors.textTertiary} style={{ marginBottom: 12 }} />
-            <Text style={[styles.meneeName, { textAlign: "center", marginBottom: 8, color: themeColors.text }]}>
-              {t("mentees.noAssignmentYet")}
-            </Text>
-            <Text style={[styles.emptyText, { marginTop: 0, color: themeColors.textTertiary }]}>
-              {t("mentees.noAssignmentText")}
-            </Text>
-          </View>
+          <EmptyState
+            icon="leaf-outline"
+            title={t("mentees.noAssignmentYet")}
+            description={t("mentees.noAssignmentText")}
+          />
         </View>
       </ScrollView>
     );
@@ -1108,7 +1042,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -1145,7 +1079,7 @@ const styles = StyleSheet.create({
   footerBarText: { fontSize: 14, fontWeight: "500" },
   footerDeleteBtn: {
     backgroundColor: COLORS.error,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
@@ -1158,7 +1092,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     width: "100%",
     maxWidth: 400,
@@ -1169,7 +1103,7 @@ const styles = StyleSheet.create({
   modalButtons: { flexDirection: "row", gap: 10 },
   modalBtn: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     paddingVertical: 10,
     alignItems: "center",
@@ -1179,7 +1113,7 @@ const styles = StyleSheet.create({
   modalBtnDisabled: { backgroundColor: "#666", borderColor: "#666", opacity: 0.5 },
   deleteInput: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,
@@ -1192,7 +1126,7 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontSize: 13, textAlign: "center" as const },
   csvButton: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 10,
     paddingVertical: 6,
     marginTop: 4,
@@ -1201,7 +1135,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: "600", marginBottom: 10 },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
@@ -1216,18 +1150,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 10,
     minHeight: 44,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     flexShrink: 0,
   },
   filterIconBtnText: { fontSize: 11, fontWeight: "500" },
-  filterChip: { paddingHorizontal: 12, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: 10, borderWidth: 1 },
+  filterChip: { paddingHorizontal: 12, paddingVertical: 10, minHeight: 44, justifyContent: "center", borderRadius: RADIUS.sm, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   filterChipInactive: { borderWidth: 1 },
   filterChipTextActive: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   filterChipTextInactive: { fontSize: 12, fontWeight: "500" },
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 32,
     alignItems: "center",
     marginBottom: 24,
@@ -1235,7 +1169,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { textAlign: "center", fontSize: 14, marginTop: 8 },
   menteeCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 12,
     ...SHADOWS.md,
@@ -1250,7 +1184,7 @@ const styles = StyleSheet.create({
   menteeCardHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 },
   meneeName: { fontWeight: "700", fontSize: 15, letterSpacing: -0.2 },
   menteeSubText: { fontSize: 12 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: RADIUS.sm },
   statusText: { fontSize: 12, fontWeight: "500" },
   mentorLabel: { fontSize: 12, marginBottom: 8 },
   progressRow: { flexDirection: "row", alignItems: "center", gap: 8 },
@@ -1260,7 +1194,7 @@ const styles = StyleSheet.create({
   assignButton: {
     marginTop: 10,
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 20,
     alignItems: "center",
@@ -1290,7 +1224,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(39,174,96,0.3)",
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
   },
   docChipText: { color: COLORS.cta, fontSize: 12, fontWeight: "600" },
   blockedBadge: {
@@ -1301,7 +1235,7 @@ const styles = StyleSheet.create({
   blockedBadgeText: { fontSize: 11, fontWeight: "600" },
   selfAssignButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 16,
     marginBottom: 12,
@@ -1310,7 +1244,7 @@ const styles = StyleSheet.create({
   selfAssignText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   progressHeaderCard: {
     backgroundColor: COLORS.gradientStart,  // intentional accent color
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     padding: 16,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -1324,7 +1258,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(39,174,96,0.08)",
     borderWidth: 1,
     borderColor: "rgba(39,174,96,0.3)",
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     paddingHorizontal: 16,
     marginBottom: 24,
@@ -1353,7 +1287,7 @@ const styles = StyleSheet.create({
   // Tab-Switcher (Mentor Mentees Aktiv/Abgeschlossen)
   tabSwitcher: {
     flexDirection: "row",
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 16,
@@ -1382,7 +1316,7 @@ const styles = StyleSheet.create({
 
   // Kompakte Karte für abgeschlossene Mentees
   completedCompactCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 10,
     borderLeftWidth: 3,

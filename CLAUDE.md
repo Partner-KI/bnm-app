@@ -48,4 +48,15 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
 ## BRANDING
 
 iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
-Buttons: borderRadius 5. Cards: borderRadius 8 + Schatten. Logo: `assets/images/bnm-logo.png`.
+**Design-Tokens nutzen:** `RADIUS.sm` (Buttons/Inputs), `RADIUS.md` (Cards), `RADIUS.lg` (Modals). `SHADOWS.sm/md/lg` statt hardcoded Shadows. `TYPOGRAPHY.styles.*` für Text. Logo: `assets/images/bnm-logo.png`.
+
+## DESIGN-KOMPONENTEN
+
+- **BNMPressable:** Drop-in für TouchableOpacity — Haptic (iOS), Ripple (Android), Hover+Transition (Web)
+- **BNMInput:** Floating Label + Focus-Glow + Error-Shake. Nutzen statt roher TextInputs.
+- **Toast:** `useToast().show("msg", "success")` oder automatisch via `showSuccess()`/`showError()`
+- **EmptyState:** Icon-Illustration + Titel + Beschreibung + optionaler CTA. Nutzen statt leerer Texte.
+- **StatusBadge:** Dot + Label mit konsistentem Farb-Schema (active/pending/completed/cancelled/none/warning/info)
+- **FAB:** Floating Action Button mit Speed-Dial. `<FAB actions={[...]} />` für Multi-Actions.
+- **Skeleton:** Shimmer-Effekt (LinearGradient) statt Opacity-Pulse. Braucht `expo-linear-gradient`.
+- **GlassTabBar:** Custom TabBar mit `expo-blur` Glassmorphism-Effekt.

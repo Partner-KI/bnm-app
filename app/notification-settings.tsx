@@ -14,7 +14,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
 import { Container } from "../components/Container";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { showSuccess } from "../lib/errorHandler";
 
 let AsyncStorage: any = null;
@@ -224,13 +224,13 @@ const styles = StyleSheet.create({
   page: { padding: 24 },
   subtitle: { fontSize: 13, marginBottom: 20, lineHeight: 18 },
   sectionLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 6, marginTop: 4 },
-  card: { borderRadius: 12, borderWidth: 1, overflow: "hidden", marginBottom: 24 },
+  card: { borderRadius: RADIUS.md, borderWidth: 1, overflow: "hidden", marginBottom: 24 },
   divider: { height: 1, marginHorizontal: 16 },
   toggleRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingVertical: 14, gap: 12 },
   toggleRowLast: {},
   toggleTexts: { flex: 1 },
   toggleLabel: { fontSize: 15, fontWeight: "600", marginBottom: 2 },
   toggleSub: { fontSize: 12, lineHeight: 16 },
-  saveButton: { borderRadius: 12, paddingVertical: 14, alignItems: "center" },
+  saveButton: { borderRadius: RADIUS.md, paddingVertical: 14, alignItems: "center" },
   saveButtonText: { color: COLORS.white, fontSize: 15, fontWeight: "800" },
 });

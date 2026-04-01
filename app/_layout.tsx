@@ -17,6 +17,7 @@ import { registerForPushNotifications } from "../lib/notificationService";
 import { AdminSidebar } from "../components/AdminSidebar";
 import { CommandPalette } from "../components/CommandPalette";
 import { OfflineBanner } from "../components/OfflineBanner";
+import { ToastProvider } from "../components/Toast";
 
 // Expo Notifications nur auf Native importieren
 let Notifications: typeof import("expo-notifications") | null = null;
@@ -176,6 +177,12 @@ function RootLayoutInner() {
   const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
   const showPermanentSidebar = hasMounted && Platform.OS === "web" && isAdminOrOffice && width >= 768;
 
+  // Gemeinsame Screen-Transition-Options (nur auf Native — Web hat eigene CSS-Transitions)
+  const isNative = Platform.OS !== "web";
+  const fadeAnimation = isNative ? { animation: "fade" as const, animationDuration: 200 } : {};
+  const slideAnimation = isNative ? { animation: "slide_from_right" as const, animationDuration: 250 } : {};
+  const modalAnimation = isNative ? { animation: "slide_from_bottom" as const, animationDuration: 300, presentation: "modal" as const } : { presentation: "modal" as const };
+
   if (showPermanentSidebar) {
     return (
       <NavigationThemeProvider value={navigationTheme}>
@@ -186,9 +193,9 @@ function RootLayoutInner() {
         <View style={{ flexDirection: "row", flex: 1, backgroundColor: themeColors.background }}>
           <AdminSidebar />
           <View style={{ flex: 1, overflow: "hidden" }}>
-            <Stack>
-              <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack screenOptions={{ ...slideAnimation }}>
+              <Stack.Screen name="(auth)" options={{ headerShown: false, ...fadeAnimation }} />
+              <Stack.Screen name="(tabs)" options={{ headerShown: false, ...fadeAnimation }} />
               <Stack.Screen name="+not-found" />
               <Stack.Screen name="onboarding" options={{ headerShown: false }} />
               <Stack.Screen name="notifications" options={{ headerShown: false }} />
@@ -229,13 +236,13 @@ function RootLayoutInner() {
       <NavigationGuard />
       <CommandPalette />
       <OfflineBanner />
-      <Stack>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ ...slideAnimation }}>
+        <Stack.Screen name="(auth)" options={{ headerShown: false, ...fadeAnimation }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false, ...fadeAnimation }} />
         <Stack.Screen name="+not-found" />
         <Stack.Screen
           name="onboarding"
-          options={{ headerShown: false }}
+          options={{ headerShown: false, ...fadeAnimation }}
         />
         <Stack.Screen
           name="notifications"
@@ -268,7 +275,7 @@ function RootLayoutInner() {
         <Stack.Screen
           name="assign"
           options={{
-            presentation: "modal",
+            ...modalAnimation,
             title: "Mentor zuweisen",
             headerStyle: { backgroundColor: themeColors.headerBackground },
             headerTintColor: themeColors.headerText,
@@ -277,7 +284,7 @@ function RootLayoutInner() {
         <Stack.Screen
           name="document-session"
           options={{
-            presentation: "modal",
+            ...modalAnimation,
             title: "Session dokumentieren",
             headerStyle: { backgroundColor: themeColors.headerBackground },
             headerTintColor: themeColors.headerText,
@@ -286,7 +293,7 @@ function RootLayoutInner() {
         <Stack.Screen
           name="feedback"
           options={{
-            presentation: "modal",
+            ...modalAnimation,
             title: "Feedback",
             headerStyle: { backgroundColor: themeColors.headerBackground },
             headerTintColor: themeColors.headerText,
@@ -402,7 +409,9 @@ export default function RootLayout() {
         <AuthProvider>
           <DataProvider>
             <ModalProvider>
-              <RootLayoutInner />
+              <ToastProvider>
+                <RootLayoutInner />
+              </ToastProvider>
             </ModalProvider>
           </DataProvider>
         </AuthProvider>

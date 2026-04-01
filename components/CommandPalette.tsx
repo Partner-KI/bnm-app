@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useThemeColors } from "../contexts/ThemeContext";
-import { COLORS, SHADOWS } from "../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
 
 // ─── Route definitions ───────────────────────────────────────────────────────
 
@@ -566,7 +566,7 @@ function makeStyles(themeColors: ReturnType<typeof useThemeColors>) {
       width: "100%",
       maxWidth: 560,
       backgroundColor: themeColors.card,
-      borderRadius: 16,
+      borderRadius: RADIUS.lg,
       overflow: "hidden",
       ...SHADOWS.lg,
     },
@@ -612,7 +612,7 @@ function makeStyles(themeColors: ReturnType<typeof useThemeColors>) {
       paddingVertical: 10,
       marginHorizontal: 8,
       marginVertical: 2,
-      borderRadius: 8,
+      borderRadius: RADIUS.sm,
       borderWidth: 1,
       borderColor: "transparent",
     },
@@ -623,7 +623,7 @@ function makeStyles(themeColors: ReturnType<typeof useThemeColors>) {
     iconContainer: {
       width: 32,
       height: 32,
-      borderRadius: 8,
+      borderRadius: RADIUS.sm,
       backgroundColor: themeColors.background,
       alignItems: "center",
       justifyContent: "center",

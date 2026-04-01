@@ -25,6 +25,7 @@ export const TYPOGRAPHY = {
     md: 13,
     base: 14,
     lg: 15,
+    subtitle: 16,    // Für Untertitel, Card-Titles — füllt die Lücke zwischen lg und xl
     xl: 18,
     xxl: 20,
     xxxl: 24,
@@ -188,39 +189,39 @@ export const LIGHT_COLORS = {
 
 // ─── Dark Theme — tiefes Blau-Schwarz ─────────────────────────────────────────
 export const DARK_COLORS = {
-  // Backgrounds — leichter Blauton für mehr Tiefe als reines Grau
-  background: "#0B0F18",
-  card: "#131926",
-  elevated: "#1A2233",
-  surface: "#0F1520",
+  // Backgrounds — Stufen mit deutlicherem Kontrast
+  background: "#0B0F18",        // Basis
+  card: "#151E2E",              // +1 Stufe — deutlicher als vorher (#131926)
+  elevated: "#1D2940",          // +2 Stufen — klar abgesetzt für Inputs, Dropdowns
+  surface: "#111825",           // Zwischen bg und card — für gruppierte Sektionen
 
   // Text
   text: "#F1F5F9",
-  textSecondary: "#8B95A5",
-  textTertiary: "#5B6475",
+  textSecondary: "#94A0B4",     // Etwas heller für bessere Lesbarkeit
+  textTertiary: "#64748B",      // Etwas heller als vorher (#5B6475)
   textInverse: "#0B0F18",
 
   // Borders
-  border: "#1E2D40",
-  borderFocus: "#1A5C8A",
+  border: "#243347",            // Etwas heller für bessere Sichtbarkeit
+  borderFocus: "#2D7AB8",       // Kräftigerer Focus
 
   // Brand
-  primary: "#1A5C8A",           // Heller im Dark Mode sichtbar
+  primary: "#2D7AB8",           // Heller + kräftiger für Buttons/Links im Dark Mode
   primaryDark: "#0A3A5A",
   primaryLight: "#0D2540",
-  accent: "#EEA71B",            // Gold bleibt konstant
+  accent: "#F5B731",            // Gold etwas heller im Dark Mode für Kontrast
   accentLight: "#2A1F00",
 
-  // Semantic
-  success: "#10B981",
-  successLight: "#052E16",
-  warning: "#F59E0B",
-  warningLight: "#1C1300",
-  error: "#EF5350",
-  errorLight: "#2D0808",
-  info: "#38BDF8",
+  // Semantic — kräftiger für Dark Mode Lesbarkeit
+  success: "#34D399",
+  successLight: "#0A2E1A",
+  warning: "#FBBF24",
+  warningLight: "#2A1F0A",       // War #1C1300 — heller für besseren Kontrast
+  error: "#F87171",
+  errorLight: "#2D1010",         // War #2D0808 — etwas roter
+  info: "#60CDFF",
   infoLight: "#0C1F2E",
-  link: "#60A5FA",
+  link: "#7CB8FF",
 
   // Misc
   white: "#F1F5F9",
@@ -228,13 +229,13 @@ export const DARK_COLORS = {
 
   // Navigation
   tabBar: "#0B0F18",
-  tabBarBorder: "#1E2D40",
-  tabIconActive: "#EEA71B",     // ✨ Gold im Dark Mode — Premium-Gefühl
+  tabBarBorder: "#243347",
+  tabIconActive: "#F5B731",     // Helleres Gold im Dark Mode
   tabIconInactive: "#4B5563",
   headerBackground: "#0B0F18",
   headerText: "#F1F5F9",
-  statItem: "#131926",
-  input: "#1A2233",
+  statItem: "#151E2E",
+  input: "#1D2940",
 } as const;
 
 // Lockerer Typ für Theme-Farben

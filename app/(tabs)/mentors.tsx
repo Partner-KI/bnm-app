@@ -15,7 +15,7 @@ import { useRouter } from "expo-router";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { useAuth } from "../../contexts/AuthContext";
 import { showError, showSuccess } from "../../lib/errorHandler";
 import { SkeletonList } from "../../components/Skeleton";
@@ -23,6 +23,7 @@ import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { Container } from "../../components/Container";
 import { SlideOverPanel } from "../../components/SlideOverPanel";
 import { MentorDetailPanel } from "../../components/MentorDetailPanel";
+import { EmptyState } from "../../components/EmptyState";
 
 export default function MentorsTabScreen() {
   usePageTitle("Mentoren");
@@ -302,9 +303,11 @@ export default function MentorsTabScreen() {
         {isLoading ? (
           <SkeletonList count={4} />
         ) : filtered.length === 0 ? (
-          <View style={[styles.emptyCard, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("adminMentors.noMentors")}</Text>
-          </View>
+          <EmptyState
+            icon="person-outline"
+            title={t("adminMentors.noMentors") ?? "Keine Mentoren gefunden"}
+            description="Versuche andere Filter."
+          />
         ) : (
           filtered.map((mentor) => {
             const myMentorships = mentorships.filter((m) => m.mentor_id === mentor.id);
@@ -455,7 +458,7 @@ const styles = StyleSheet.create({
   pageTitle: { fontSize: 26, fontWeight: "800", letterSpacing: -0.3, textAlign: "center" },
   pageSubtitle: { fontSize: 13, textAlign: "center" },
   searchInput: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -463,13 +466,13 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 32,
     alignItems: "center",
   },
   emptyText: { fontSize: 14 },
   mentorCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 10,
     ...SHADOWS.md,
@@ -492,7 +495,7 @@ const styles = StyleSheet.create({
   statsRow: { flexDirection: "row", gap: 8 },
   statChip: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 8,
     alignItems: "center",
   },
@@ -500,13 +503,13 @@ const styles = StyleSheet.create({
   statChipLabel: { fontSize: 10, fontWeight: "500", marginTop: 2, textAlign: "center" },
   csvButton: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
   csvButtonText: { fontSize: 12, fontWeight: "600" },
   blockedBadge: {
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 5,
     paddingVertical: 1,
   },
@@ -519,7 +522,7 @@ const styles = StyleSheet.create({
     gap: 12,
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     marginBottom: 12,
   },
@@ -556,7 +559,7 @@ const styles = StyleSheet.create({
   footerBarText: { fontSize: 14, fontWeight: "500" },
   footerDeleteBtn: {
     backgroundColor: COLORS.error,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
@@ -569,7 +572,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     width: "100%",
     maxWidth: 400,
@@ -580,7 +583,7 @@ const styles = StyleSheet.create({
   modalButtons: { flexDirection: "row", gap: 10 },
   modalBtn: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     paddingVertical: 10,
     alignItems: "center",
@@ -591,7 +594,7 @@ const styles = StyleSheet.create({
   modalBtnDisabled: { backgroundColor: "#666", borderColor: "#666", opacity: 0.5 },
   deleteInput: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 15,

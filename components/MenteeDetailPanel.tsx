@@ -8,10 +8,11 @@ import {
 import { useRouter } from "expo-router";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { navigateToChat } from "../lib/chatNavigation";
+import { StatusBadge } from "./StatusBadge";
 
 interface MenteeDetailPanelProps {
   id: string | null;
@@ -85,25 +86,12 @@ export function MenteeDetailPanel({ id }: MenteeDetailPanelProps) {
       : t("menteeDetail.cancelled")
     : t("menteeDetail.noMentor");
 
-  const statusBg = mentorship
-    ? mentorship.status === "active"
-      ? (isDark ? "#2A2D3A" : "#F5F5F7")
-      : mentorship.status === "completed"
-      ? (isDark ? "#1a3a2a" : "#dcfce7")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#3a2e1a" : "#fef3c7")
-      : (isDark ? "#3a1a1a" : "#fee2e2")
-    : (isDark ? "#3a2e1a" : "#fef3c7");
-
-  const statusColor = mentorship
-    ? mentorship.status === "active"
-      ? (isDark ? "#A0A0B0" : "#475467")
-      : mentorship.status === "completed"
-      ? (isDark ? "#4ade80" : "#15803d")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#fbbf24" : "#b45309")
-      : (isDark ? "#f87171" : "#b91c1c")
-    : (isDark ? "#fbbf24" : "#b45309");
+  const badgeStatus = mentorship
+    ? mentorship.status === "active" ? "active" as const
+      : mentorship.status === "completed" ? "completed" as const
+      : mentorship.status === "pending_approval" ? "pending" as const
+      : "cancelled" as const
+    : "pending" as const;
 
   return (
     <View style={styles.content}>
@@ -118,11 +106,7 @@ export function MenteeDetailPanel({ id }: MenteeDetailPanelProps) {
           {mentee.city} · {mentee.age} {t("common.yearsOld")} ·{" "}
           {mentee.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
         </Text>
-        <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-          <Text style={[styles.statusText, { color: statusColor }]}>
-            {statusLabel}
-          </Text>
-        </View>
+        <StatusBadge status={badgeStatus} label={statusLabel} />
       </View>
 
       {/* Kontaktinformationen */}
@@ -300,7 +284,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 16 },
   profileCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 14,
     alignItems: "center",
@@ -318,7 +302,7 @@ const styles = StyleSheet.create({
   avatarText: { color: COLORS.white, fontSize: 22, fontWeight: "bold" },
   profileName: { fontSize: 20, fontWeight: "bold", marginBottom: 4 },
   profileSub: { fontSize: 14, marginBottom: 10 },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: RADIUS.full },
   statusText: { fontSize: 13, fontWeight: "600" },
   sectionLabel: {
     fontSize: 12,
@@ -328,7 +312,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
@@ -368,7 +352,7 @@ const styles = StyleSheet.create({
   mentorSub: { fontSize: 12, marginTop: 2 },
   mentorDetailButton: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     paddingHorizontal: 10,
     paddingVertical: 6,
   },
@@ -385,12 +369,12 @@ const styles = StyleSheet.create({
   progressValue: { fontWeight: "bold", color: COLORS.cta, fontSize: 16 },
   progressTrack: {
     height: 8,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
     marginHorizontal: 16,
     marginBottom: 6,
   },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: RADIUS.full },
   progressSub: {
     fontSize: 12,
     paddingHorizontal: 16,
@@ -420,7 +404,7 @@ const styles = StyleSheet.create({
   currentChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
   },
   currentChipText: { fontSize: 11, fontWeight: "600" },
   actionsCard: {
@@ -428,7 +412,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   actionButton: {
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },

@@ -15,9 +15,10 @@ import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { SessionType } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { EmptyState } from "../../components/EmptyState";
 
 export default function SessionTypesScreen() {
   const router = useRouter();
@@ -109,6 +110,14 @@ export default function SessionTypesScreen() {
         </View>
 
         {/* Liste */}
+        {sortedTypes.length === 0 ? (
+          <EmptyState
+            icon="list-outline"
+            title={t("sessionTypes.title")}
+            description="Noch keine Sitzungstypen vorhanden."
+            compact
+          />
+        ) : (
         <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
           {sortedTypes.map((st, idx) => (
             <View
@@ -179,6 +188,7 @@ export default function SessionTypesScreen() {
             </View>
           ))}
         </View>
+        )}
 
         {/* Neuen Typ hinzufügen (nur Admin) */}
         {isAdminRole && showAddForm ? (
@@ -247,14 +257,14 @@ const styles = StyleSheet.create({
   pageSubtitle: { marginBottom: 24 },
   blueBox: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     marginBottom: 24,
   },
   blueTitle: { fontSize: 14, fontWeight: "500", marginBottom: 4 },
   blueText: { fontSize: 12 },
   listCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 24,
@@ -264,7 +274,7 @@ const styles = StyleSheet.create({
   numberCircle: {
     width: 32,
     height: 32,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     backgroundColor: COLORS.gradientStart,
     alignItems: "center",
     justifyContent: "center",
@@ -281,7 +291,7 @@ const styles = StyleSheet.create({
   arrowButton: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -289,7 +299,7 @@ const styles = StyleSheet.create({
   deleteButton: {
     width: 32,
     height: 32,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     backgroundColor: "#fef2f2",
     alignItems: "center",
     justifyContent: "center",
@@ -297,7 +307,7 @@ const styles = StyleSheet.create({
   },
   deleteButtonText: { color: "#ef4444", fontSize: 14, fontWeight: "bold" },
   addFormCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 14,
     marginBottom: 16,
@@ -306,7 +316,7 @@ const styles = StyleSheet.create({
   formLabel: { fontSize: 14, fontWeight: "500", marginBottom: 8 },
   textInput: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 12,
     paddingVertical: 8,
     marginBottom: 16,
@@ -315,7 +325,7 @@ const styles = StyleSheet.create({
   cancelFormButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -323,14 +333,14 @@ const styles = StyleSheet.create({
   addButton: {
     flex: 1,
     backgroundColor: COLORS.cta,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },
   addButtonText: { color: COLORS.white, fontWeight: "600" },
   primaryButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
     paddingVertical: 9,
     alignItems: "center",
   },

@@ -14,7 +14,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -403,7 +403,7 @@ const styles = StyleSheet.create({
   content: { padding: 20, paddingBottom: 40 },
   blockedBanner: {
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 12,
     marginBottom: 16,
     alignItems: "center",
@@ -413,7 +413,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 14,
     marginBottom: 20,
@@ -438,7 +438,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 12,
     paddingVertical: 9,
     fontSize: 14,
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
   },
   pillActiveMale: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
@@ -460,7 +460,7 @@ const styles = StyleSheet.create({
   pillTextInactive: {},
   saveButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 11,
     alignItems: "center",
     marginBottom: 12,
@@ -469,7 +469,7 @@ const styles = StyleSheet.create({
   saveButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 15 },
   blockButton: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 11,
     alignItems: "center",
   },
@@ -478,7 +478,7 @@ const styles = StyleSheet.create({
   unblockButtonText: {},
   resetPwButton: {
     borderWidth: 1,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 11,
     alignItems: "center",
     marginTop: 10,
@@ -492,7 +492,7 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   modalCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     width: "100%",
     maxWidth: 420,
@@ -501,7 +501,7 @@ const styles = StyleSheet.create({
   modalBody: { fontSize: 14, marginBottom: 16, lineHeight: 20 },
   pwBox: {
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     padding: 14,
     alignItems: "center",
     marginBottom: 12,
@@ -510,7 +510,7 @@ const styles = StyleSheet.create({
   modalHint: { fontSize: 12, marginBottom: 20, lineHeight: 18 },
   modalClose: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },

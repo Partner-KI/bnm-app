@@ -13,12 +13,14 @@ import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { MentorApplication } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { sendApplicationRejectionEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { StatusBadge } from "../../components/StatusBadge";
+import { EmptyState } from "../../components/EmptyState";
 
 // Öffentliche Anmeldungen sind in mentor_applications mit diesem Motivation-Marker gespeichert
 const PUBLIC_REGISTRATION_MARKER = "Anmeldung als neuer Muslim (öffentliches Formular)";
@@ -239,15 +241,15 @@ export default function ApplicationsTabScreen() {
   ), [themeColors, search, mentorFilter, pendingMentorCount, mentorApps]);
 
   const listEmpty = useCallback(() => (
-    <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border, marginHorizontal: 24 }]}>
-      <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>
-        {mentorFilter === "pending"
-          ? t("applications.noOpen")
-          : mentorFilter === "approved"
-          ? t("applications.noApproved")
-          : t("applications.noRejected")}
-      </Text>
-    </View>
+    <EmptyState
+      icon={mentorFilter === "pending" ? "document-text-outline" : mentorFilter === "approved" ? "checkmark-circle-outline" : "close-circle-outline"}
+      title={mentorFilter === "pending"
+        ? t("applications.noOpen")
+        : mentorFilter === "approved"
+        ? t("applications.noApproved")
+        : t("applications.noRejected")}
+      compact
+    />
   ), [themeColors, mentorFilter]);
 
   const keyExtractor = useCallback((item: MentorApplication) => item.id, []);
@@ -395,8 +397,7 @@ function ApplicationCard({
   const isPending = application.status === "pending";
   const isApproved = application.status === "approved";
 
-  const statusBg = isPending ? (isDark ? "#3a2e1a" : "#fef3c7") : isApproved ? (isDark ? "#1a3a2a" : "#dcfce7") : (isDark ? "#3a1a1a" : "#fee2e2");
-  const statusColor = isPending ? (isDark ? "#fbbf24" : "#b45309") : isApproved ? (isDark ? "#4ade80" : "#15803d") : (isDark ? "#f87171" : "#b91c1c");
+  const badgeStatus = isPending ? "pending" as const : isApproved ? "active" as const : "cancelled" as const;
   const statusLabel = isPending ? t("applications.statusOpen") : isApproved ? t("applications.statusApproved") : t("applications.statusRejected");
 
   const genderLabel = application.gender === "male" ? t("applications.brother") : t("applications.sister");
@@ -429,9 +430,7 @@ function ApplicationCard({
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <Text style={[styles.applicantName, { color: themeColors.text }]}>{application.name}</Text>
-            <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-              <Text style={[styles.statusText, { color: statusColor }]}>{statusLabel}</Text>
-            </View>
+            <StatusBadge status={badgeStatus} label={statusLabel} compact />
           </View>
           <Text style={[styles.applicantSummary, { color: themeColors.textTertiary }]}>
             {application.email} · {application.city} · {submittedDate}
@@ -569,21 +568,21 @@ const styles = StyleSheet.create({
 
   searchInput: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
     marginBottom: 12,
   },
   filterRow: { flexDirection: "row", gap: 8, marginBottom: 16, flexWrap: "wrap" },
-  filterChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 9999, borderWidth: 1 },
+  filterChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: RADIUS.full, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   filterChipInactive: {},
   filterChipTextActive: { color: COLORS.white, fontSize: 12, fontWeight: "500" },
   filterChipTextInactive: { fontSize: 12, fontWeight: "500" },
 
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 28,
     alignItems: "center",
@@ -591,7 +590,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, textAlign: "center" },
 
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 14,
@@ -612,11 +611,11 @@ const styles = StyleSheet.create({
   applicantSummary: { fontSize: 12, marginTop: 3 },
   applicantSub: { fontSize: 12, marginTop: 2 },
   accordionArrow: { fontSize: 11, paddingHorizontal: 4 },
-  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 9999 },
+  statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: RADIUS.full },
   statusText: { fontSize: 12, fontWeight: "600" },
 
   infoSection: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     padding: 10,
     marginTop: 12,
     marginBottom: 10,
@@ -640,7 +639,7 @@ const styles = StyleSheet.create({
   },
   textSectionContent: { fontSize: 13, lineHeight: 19 },
   extraDataTable: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 10,
     paddingTop: 4,
     paddingBottom: 4,
@@ -667,14 +666,14 @@ const styles = StyleSheet.create({
   rejectButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
   rejectButtonText: { fontWeight: "600", fontSize: 13 },
   approveButton: {
     flex: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -691,7 +690,7 @@ const styles = StyleSheet.create({
   modalBox: {
     width: "100%",
     maxWidth: 420,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
   },
   modalTitle: {
@@ -715,7 +714,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 12,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     marginBottom: 8,
     gap: 10,
   },
@@ -725,7 +724,7 @@ const styles = StyleSheet.create({
   radioOuter: {
     width: 20,
     height: 20,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
     borderWidth: 2,
     alignItems: "center",
     justifyContent: "center",
@@ -734,7 +733,7 @@ const styles = StyleSheet.create({
   radioInner: {
     width: 10,
     height: 10,
-    borderRadius: 5,
+    borderRadius: RADIUS.sm,
   },
   reasonLabel: {
     fontSize: 14,
@@ -742,7 +741,7 @@ const styles = StyleSheet.create({
   },
   customReasonInput: {
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 13,
@@ -763,7 +762,7 @@ const styles = StyleSheet.create({
   modalCancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     alignItems: "center",
   },
@@ -774,7 +773,7 @@ const styles = StyleSheet.create({
   modalRejectButton: {
     flex: 1,
     backgroundColor: COLORS.error,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     alignItems: "center",
   },

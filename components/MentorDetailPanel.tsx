@@ -25,7 +25,7 @@ function StarDisplay({ rating }: { rating: number }) {
 import { useRouter } from "expo-router";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
 
@@ -280,7 +280,7 @@ const styles = StyleSheet.create({
   },
   emptyText: { fontSize: 16 },
   profileCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 14,
     alignItems: "center",
@@ -304,7 +304,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(238,167,27,0.4)",
     paddingHorizontal: 12,
     paddingVertical: 4,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
   },
   rankBadgeText: { color: "#92600a", fontSize: 13, fontWeight: "700" },
   ratingsBlock: { marginTop: 12, gap: 6, alignSelf: "stretch", paddingHorizontal: 8 },
@@ -328,14 +328,14 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: "44%",
     borderWidth: 1,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     padding: 14,
     alignItems: "center",
   },
   statValue: { fontSize: 26, fontWeight: "bold" },
   statLabel: { fontSize: 11, marginTop: 2, textAlign: "center" },
   card: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: 20,
@@ -375,10 +375,10 @@ const styles = StyleSheet.create({
   progressTrack: {
     flex: 1,
     height: 6,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     overflow: "hidden",
   },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: RADIUS.full },
   progressText: { fontSize: 11 },
   arrowText: { fontSize: 20 },
   completedBadge: {
@@ -391,7 +391,7 @@ const styles = StyleSheet.create({
   },
   completedBadgeText: { color: "#15803d", fontWeight: "bold" },
   emptyCard: {
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     borderWidth: 1,
     padding: 32,
     alignItems: "center",
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
   emptyCardText: { fontSize: 14 },
   editProfileButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingVertical: 11,
     alignItems: "center",
     marginTop: 4,

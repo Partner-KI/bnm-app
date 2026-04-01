@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   ScrollView,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,12 +10,13 @@ import {
   Linking,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
+import { BNMInput } from "../../components/BNMInput";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { BNMLogo } from "../../components/BNMLogo";
 
 export default function LoginScreen() {
@@ -67,48 +67,28 @@ export default function LoginScreen() {
           <Text style={[styles.welcomeSubtitle, { color: themeColors.textSecondary }]}>{t("login.subtitle")}</Text>
 
           {/* E-Mail */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("login.email")}</Text>
-          <View style={[styles.inputRow, { backgroundColor: themeColors.input, borderColor: themeColors.border }]}>
-            <Ionicons name="mail-outline" size={18} color={themeColors.textTertiary} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.inputInner, { color: themeColors.text }]}
-              placeholder="deine@email.de"
-              placeholderTextColor={themeColors.textTertiary}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              autoCorrect={false}
-              value={email}
-              onChangeText={setEmail}
-              accessibilityLabel={t("login.email")}
-            />
-          </View>
+          <BNMInput
+            label={t("login.email")}
+            icon="mail-outline"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            autoCorrect={false}
+            accessibilityLabel={t("login.email")}
+          />
 
           {/* Passwort */}
-          <Text style={[styles.fieldLabel, { color: themeColors.textSecondary }]}>{t("login.password")}</Text>
-          <View style={[styles.passwordRow, { backgroundColor: themeColors.input, borderColor: themeColors.border }]}>
-            <Ionicons name="lock-closed-outline" size={18} color={themeColors.textTertiary} style={styles.inputIcon} />
-            <TextInput
-              style={[styles.passwordInput, { color: themeColors.text }]}
-              placeholder={t("login.password")}
-              placeholderTextColor={themeColors.textTertiary}
-              secureTextEntry={!showPassword}
-              value={password}
-              onChangeText={setPassword}
-              accessibilityLabel={t("login.password")}
-            />
-            <BNMPressable
-              style={styles.eyeButton}
-              onPress={() => setShowPassword((v) => !v)}
-              accessibilityRole="button"
-              accessibilityLabel={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
-            >
-              <Ionicons
-                name={showPassword ? "eye-outline" : "eye-off-outline"}
-                size={20}
-                color={themeColors.textTertiary}
-              />
-            </BNMPressable>
-          </View>
+          <BNMInput
+            label={t("login.password")}
+            icon="lock-closed-outline"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            rightIcon={showPassword ? "eye-outline" : "eye-off-outline"}
+            onRightIconPress={() => setShowPassword((v) => !v)}
+            accessibilityLabel={t("login.password")}
+          />
 
           {/* Fehlermeldung */}
           {errorMsg ? (
@@ -244,69 +224,11 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     lineHeight: 20,
   },
-  fieldLabel: {
-    fontSize: 12,
-    fontWeight: "600",
-    letterSpacing: 0.3,
-    marginBottom: 6,
-    textTransform: "uppercase",
-  },
-  // Input mit Icon-Prefix
-  inputRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderRadius: 14,
-    marginBottom: 14,
-    minHeight: 50,
-    overflow: "hidden",
-  },
-  inputIcon: {
-    marginLeft: 14,
-    marginRight: 4,
-  },
-  inputInner: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "web" ? 10 : 12,
-    fontSize: 14,
-  },
-  // Legacy — bleibt für Passwortfeld
-  input: {
-    borderWidth: 1.5,
-    borderRadius: 14,
-    paddingHorizontal: 14,
-    paddingVertical: Platform.OS === "web" ? 10 : 12,
-    marginBottom: 14,
-    fontSize: 14,
-    minHeight: 50,
-  },
-  passwordRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderWidth: 1.5,
-    borderRadius: 14,
-    marginBottom: 14,
-    overflow: "hidden",
-    minHeight: 50,
-  },
-  passwordInput: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingVertical: Platform.OS === "web" ? 10 : 12,
-    fontSize: 14,
-  },
-  eyeButton: {
-    paddingHorizontal: 14,
-    minWidth: 48,
-    minHeight: 50,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  // Legacy — unused after BNMInput migration (kept for reference)
   eyeText: { fontSize: 18 },
   errorBox: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     marginBottom: 12,
@@ -328,7 +250,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 14,
     alignItems: "center",
     marginBottom: 12,
@@ -357,7 +279,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(238,167,27,0.08)",
     borderWidth: 1.5,
     borderColor: COLORS.gold,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 12,
     paddingHorizontal: 16,
     alignItems: "center",
@@ -400,7 +322,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.bg,
     borderWidth: 1,
     borderColor: COLORS.border,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
   },

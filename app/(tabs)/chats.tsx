@@ -12,17 +12,22 @@ import {
   TextInput,
   KeyboardAvoidingView,
   useWindowDimensions,
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { showError, showConfirm } from "../../lib/errorHandler";
 import { usePageTitle } from "../../hooks/usePageTitle";
+import { EmptyState } from "../../components/EmptyState";
 
 function formatTime(dateStr: string, yesterday: string): string {
   const d = new Date(dateStr);
@@ -53,6 +58,22 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
 
   const [inputText, setInputText] = useState("");
   const flatListRef = useRef<FlatList>(null);
+  const [showScrollFab, setShowScrollFab] = useState(false);
+  const fabOpacity = useRef(new Animated.Value(0)).current;
+
+  // Scroll-Position tracken für FAB (inverted FlatList: offset 0 = unten)
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const { contentOffset } = event.nativeEvent;
+    const shouldShow = contentOffset.y > 150;
+    if (shouldShow !== showScrollFab) {
+      setShowScrollFab(shouldShow);
+      Animated.timing(fabOpacity, {
+        toValue: shouldShow ? 1 : 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [showScrollFab]);
 
   const mentorship = getMentorshipById(mentorshipId);
   const messages = getMessagesByMentorshipId(mentorshipId);
@@ -122,81 +143,141 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       )}
 
       {/* Nachrichten */}
-      {messages.length === 0 ? (
-        <View style={[panelStyles.messagesScroll, { justifyContent: "center" }]}>
-          <View style={panelStyles.emptyMessages}>
-            <Text style={[panelStyles.emptyText, { color: themeColors.textTertiary }]}>
-              {t("chat.noMessages")}
-            </Text>
+      <View style={{ flex: 1 }}>
+        {messages.length === 0 ? (
+          <View style={[panelStyles.messagesScroll, { justifyContent: "center" }]}>
+            <EmptyState
+              icon="chatbubbles-outline"
+              title={t("chat.noMessages")}
+              description="Starte die Konversation mit einer Nachricht."
+              compact
+            />
           </View>
-        </View>
-      ) : (
-        <FlatList
-          ref={flatListRef}
-          data={reversedMessages}
-          keyExtractor={(item) => item.id}
-          inverted={true}
-          removeClippedSubviews={true}
-          style={panelStyles.messagesScroll}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
-          renderItem={({ item: msg }) => {
-            const isOwn = msg.sender_id === user!.id;
-            const sender =
-              msg.sender ??
-              (isOwn ? { name: user!.name } : { name: chatPartnerName ?? "?" });
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={reversedMessages}
+            keyExtractor={(item) => item.id}
+            inverted={true}
+            removeClippedSubviews={true}
+            style={panelStyles.messagesScroll}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+            onScroll={handleScroll}
+            scrollEventThrottle={100}
+            renderItem={({ item: msg, index }) => {
+              const isOwn = msg.sender_id === user!.id;
+              const sender =
+                msg.sender ??
+                (isOwn ? { name: user!.name } : { name: chatPartnerName ?? "?" });
 
-            const timeStr = new Date(msg.created_at).toLocaleTimeString("de-DE", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
+              const senderRole = (msg.sender as any)?.role;
+              const isThirdParty = !isOwn
+                && msg.sender_id !== mentorship?.mentor_id
+                && msg.sender_id !== mentorship?.mentee_id;
+              const displayName =
+                senderRole === "admin" ? "Admin" :
+                senderRole === "office" ? "Office" :
+                isThirdParty ? "Admin" :
+                sender.name ?? chatPartnerName ?? "?";
 
-            return (
-              <View
-                style={[
-                  panelStyles.bubbleWrapper,
-                  isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
-                ]}
-              >
-                {!isOwn && (
-                  <Text style={[panelStyles.senderName, { color: themeColors.textTertiary }]}>{sender.name}</Text>
-                )}
-                <TouchableOpacity
-                  activeOpacity={0.8}
-                  onLongPress={() => handleLongPress(msg.id, isOwn)}
-                  delayLongPress={500}
-                >
+              const msgDate = new Date(msg.created_at);
+              const timeStr = msgDate.toLocaleTimeString("de-DE", {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
+
+              // In inverted list: index 0 = neueste, index+1 = ältere Nachricht
+              // "Vorherige" im chronologischen Sinn = nächsthöherer Index
+              const prevMsg = index < reversedMessages.length - 1 ? reversedMessages[index + 1] : null;
+              const prevDate = prevMsg ? new Date(prevMsg.created_at) : null;
+
+              // Timestamp-Separator: erste Nachricht, >15 Min Abstand, oder Datumswechsel
+              const showTimeSeparator = !prevDate
+                || (msgDate.getTime() - prevDate.getTime() > 15 * 60 * 1000)
+                || msgDate.toDateString() !== prevDate.toDateString();
+
+              // Nachrichtengruppe: gleicher Sender, kein Separator dazwischen
+              const isContinuation = prevMsg
+                && prevMsg.sender_id === msg.sender_id
+                && !showTimeSeparator;
+
+              // Datum-Separator formatieren
+              const dateSepLabel = showTimeSeparator ? (() => {
+                const today = new Date();
+                const yesterday = new Date(today);
+                yesterday.setDate(yesterday.getDate() - 1);
+                if (msgDate.toDateString() === today.toDateString()) return timeStr;
+                if (msgDate.toDateString() === yesterday.toDateString()) return `Gestern, ${timeStr}`;
+                return `${msgDate.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}, ${timeStr}`;
+              })() : null;
+
+              return (
+                <React.Fragment key={msg.id}>
+                  {/* Timestamp-Separator (erscheint VOR der Nachricht, in inverted = darunter) */}
+                  {showTimeSeparator && (
+                    <View style={panelStyles.timeSeparator}>
+                      <View style={[panelStyles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
+                      <Text style={[panelStyles.timeSeparatorText, { color: themeColors.textTertiary, backgroundColor: themeColors.background }]}>
+                        {dateSepLabel}
+                      </Text>
+                      <View style={[panelStyles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
+                    </View>
+                  )}
                   <View
                     style={[
-                      panelStyles.bubble,
-                      isOwn
-                        ? panelStyles.ownBubble
-                        : [panelStyles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                      panelStyles.bubbleWrapper,
+                      isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+                      isContinuation && { marginTop: -6 },
                     ]}
                   >
-                    <Text
-                      style={[
-                        panelStyles.messageText,
-                        isOwn ? { color: COLORS.white } : { color: themeColors.text },
-                      ]}
+                    {/* Sender-Name nur beim ersten in der Gruppe */}
+                    {!isOwn && !isContinuation && (
+                      <Text style={[panelStyles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
+                    )}
+                    <TouchableOpacity
+                      activeOpacity={0.8}
+                      onLongPress={() => handleLongPress(msg.id, isOwn)}
+                      delayLongPress={500}
                     >
-                      {msg.content}
-                    </Text>
+                      <View
+                        style={[
+                          panelStyles.bubble,
+                          isOwn
+                            ? panelStyles.ownBubble
+                            : [panelStyles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                          isContinuation && isOwn && { borderTopRightRadius: RADIUS.lg },
+                          isContinuation && !isOwn && { borderTopLeftRadius: RADIUS.lg },
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            panelStyles.messageText,
+                            isOwn ? { color: COLORS.white } : { color: themeColors.text },
+                          ]}
+                        >
+                          {msg.content}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
                   </View>
-                </TouchableOpacity>
-                <Text
-                  style={[
-                    panelStyles.timeText,
-                    { color: themeColors.textTertiary },
-                    isOwn ? { textAlign: "right", marginRight: 4 } : { marginLeft: 4 },
-                  ]}
-                >
-                  {timeStr}
-                </Text>
-              </View>
-            );
-          }}
-        />
-      )}
+                </React.Fragment>
+              );
+            }}
+          />
+        )}
+
+        {/* Scroll-to-Bottom FAB */}
+        {showScrollFab && (
+          <Animated.View style={[panelStyles.scrollFab, { opacity: fabOpacity }]}>
+            <BNMPressable
+              onPress={() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true })}
+              style={[panelStyles.scrollFabBtn, { backgroundColor: themeColors.card, ...SHADOWS.md }]}
+            >
+              <Ionicons name="chevron-down" size={20} color={themeColors.text} />
+            </BNMPressable>
+          </Animated.View>
+        )}
+      </View>
 
       {/* Input-Bereich */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
@@ -244,19 +325,48 @@ const panelStyles = StyleSheet.create({
   messagesScroll: { flex: 1 },
   emptyMessages: { flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 64 },
   emptyText: { textAlign: "center", fontSize: 14 },
-  bubbleWrapper: { marginBottom: 10, maxWidth: "80%" },
-  senderName: { fontSize: 11, marginBottom: 3, marginLeft: 12, opacity: 0.7 },
-  bubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: 18 },
+  bubbleWrapper: { marginBottom: 6, maxWidth: "80%" },
+  senderName: { fontSize: TYPOGRAPHY.size.xs, marginBottom: 3, marginLeft: 12, fontWeight: TYPOGRAPHY.weight.medium },
+  bubble: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: RADIUS.lg },
   ownBubble: {
     backgroundColor: COLORS.gradientStart,
-    borderTopRightRadius: 6,
+    borderTopRightRadius: 4,
   },
   otherBubble: {
     borderWidth: 1,
-    borderTopLeftRadius: 6,
+    borderTopLeftRadius: 4,
   },
-  messageText: { fontSize: 14, lineHeight: 20 },
-  timeText: { fontSize: 11, marginTop: 3, opacity: 0.6 },
+  messageText: { fontSize: TYPOGRAPHY.size.base, lineHeight: TYPOGRAPHY.lineHeight.relaxed },
+  timeSeparator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 16,
+    gap: 10,
+  },
+  timeSeparatorLine: {
+    flex: 1,
+    height: 1,
+  },
+  timeSeparatorText: {
+    fontSize: TYPOGRAPHY.size.xs,
+    fontWeight: TYPOGRAPHY.weight.medium,
+    paddingHorizontal: 8,
+  },
+  scrollFab: {
+    position: "absolute",
+    bottom: 12,
+    right: 16,
+    zIndex: 10,
+  },
+  scrollFabBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+  },
   inputContainer: {
     borderTopWidth: 1,
     paddingHorizontal: 12,
@@ -269,7 +379,7 @@ const panelStyles = StyleSheet.create({
   textInput: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 24,
+    borderRadius: RADIUS.xl,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
@@ -279,7 +389,7 @@ const panelStyles = StyleSheet.create({
   sendButton: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: RADIUS.full,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -348,11 +458,12 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
       {/* Nachrichten */}
       {messages.length === 0 ? (
         <View style={[panelStyles.messagesScroll, { justifyContent: "center" }]}>
-          <View style={panelStyles.emptyMessages}>
-            <Text style={[panelStyles.emptyText, { color: themeColors.textTertiary }]}>
-              {t("chat.noMessages")}
-            </Text>
-          </View>
+          <EmptyState
+            icon="chatbubbles-outline"
+            title={t("chat.noMessages")}
+            description="Starte die Konversation mit einer Nachricht."
+            compact
+          />
         </View>
       ) : (
         <FlatList
@@ -705,7 +816,7 @@ export default function ChatsScreen() {
                           </TouchableOpacity>
                         </View>
                         <TextInput
-                          style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
+                          style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
                           value={newChatSearch}
                           onChangeText={setNewChatSearch}
                           placeholder={t("chats.search") ?? "Suchen..."}
@@ -820,31 +931,29 @@ export default function ChatsScreen() {
             ListEmptyComponent={() => {
               if (isAdmin && chatTab === "admin") {
                 return (
-                  <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border, marginHorizontal: 24 }]}>
-                    <Ionicons name="mail-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
-                    <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noAdminChats") ?? "Keine Direktnachrichten"}</Text>
-                    <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
-                      {isAdmin
-                        ? (t("chats.noAdminChatsAdmin") ?? "Starte einen neuen Chat mit einem Mentor oder Mentee.")
-                        : (t("chats.noAdminChatsUser") ?? "Noch keine Nachrichten vom Admin.")}
-                    </Text>
-                  </View>
+                  <EmptyState
+                    icon="mail-outline"
+                    title={t("chats.noAdminChats") ?? "Keine Direktnachrichten"}
+                    description={isAdmin
+                      ? (t("chats.noAdminChatsAdmin") ?? "Starte einen neuen Chat mit einem Mentor oder Mentee.")
+                      : (t("chats.noAdminChatsUser") ?? "Noch keine Nachrichten vom Admin.")}
+                  />
                 );
               }
               return (
-                <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border, marginHorizontal: 24 }]}>
-                  <Ionicons name="chatbubbles-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
-                  <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noChats")}</Text>
-                  <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>{t("chats.noChatsText")}</Text>
-                </View>
+                <EmptyState
+                  icon="chatbubbles-outline"
+                  title={t("chats.noChats") ?? "Keine Chats"}
+                  description={t("chats.noChatsText") ?? "Chats werden automatisch erstellt wenn Mentorships zugewiesen werden."}
+                />
               );
             }}
             renderItem={({ item, index }: { item: any; index: number }) => {
               const isFirst = index === 0;
               const isLast = index === activeChatData.length - 1;
               const wrapperStyle = [
-                isFirst ? { borderTopLeftRadius: 16, borderTopRightRadius: 16, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1 } : { borderLeftWidth: 1, borderRightWidth: 1 },
-                isLast ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderBottomWidth: 1 } : {},
+                isFirst ? { borderTopLeftRadius: RADIUS.lg, borderTopRightRadius: RADIUS.lg, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1 } : { borderLeftWidth: 1, borderRightWidth: 1 },
+                isLast ? { borderBottomLeftRadius: RADIUS.lg, borderBottomRightRadius: RADIUS.lg, borderBottomWidth: 1 } : {},
                 { backgroundColor: themeColors.card, borderColor: isDark ? "#2A2A35" : themeColors.border, marginHorizontal: 24, overflow: "hidden" as const },
               ];
 
@@ -874,12 +983,10 @@ export default function ChatsScreen() {
           ) : selectedChatId ? (
             <ChatPanel mentorshipId={selectedChatId} />
           ) : (
-            <View style={styles.noChatSelected}>
-              <Ionicons name="chatbubbles-outline" size={56} color={themeColors.textTertiary} />
-              <Text style={[styles.noChatText, { color: themeColors.textTertiary }]}>
-                {t("chats.selectChat") ?? "Wähle einen Chat aus"}
-              </Text>
-            </View>
+            <EmptyState
+              icon="chatbubbles-outline"
+              title={t("chats.selectChat") ?? "Wähle einen Chat aus"}
+            />
           )}
         </View>
       </View>
@@ -1073,7 +1180,7 @@ export default function ChatsScreen() {
                   </TouchableOpacity>
                 </View>
                 <TextInput
-                  style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
+                  style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
                   value={newChatSearch}
                   onChangeText={setNewChatSearch}
                   placeholder={t("chats.search") ?? "Suchen..."}
@@ -1199,27 +1306,21 @@ export default function ChatsScreen() {
   function renderMobileListEmpty() {
     if (isAdmin && chatTab === "admin") {
       return (
-        <View style={{ paddingHorizontal: 24 }}>
-          <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <Ionicons name="mail-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
-            <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noAdminChats") ?? "Keine Direktnachrichten"}</Text>
-            <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>
-              {isAdmin
-                ? (t("chats.noAdminChatsAdmin") ?? "Starte einen neuen Chat mit einem Mentor oder Mentee.")
-                : (t("chats.noAdminChatsUser") ?? "Noch keine Nachrichten vom Admin.")}
-            </Text>
-          </View>
-        </View>
+        <EmptyState
+          icon="mail-outline"
+          title={t("chats.noAdminChats") ?? "Keine Direktnachrichten"}
+          description={isAdmin
+            ? (t("chats.noAdminChatsAdmin") ?? "Starte einen neuen Chat mit einem Mentor oder Mentee.")
+            : (t("chats.noAdminChatsUser") ?? "Noch keine Nachrichten vom Admin.")}
+        />
       );
     }
     return (
-      <View style={{ paddingHorizontal: 24 }}>
-        <View style={[styles.emptyCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-          <Ionicons name="chatbubbles-outline" size={40} color={themeColors.textTertiary} style={styles.emptyIcon} />
-          <Text style={[styles.emptyTitle, { color: themeColors.text }]}>{t("chats.noChats")}</Text>
-          <Text style={[styles.emptyText, { color: themeColors.textSecondary }]}>{t("chats.noChatsText")}</Text>
-        </View>
-      </View>
+      <EmptyState
+        icon="chatbubbles-outline"
+        title={t("chats.noChats") ?? "Keine Chats"}
+        description={t("chats.noChatsText") ?? "Chats werden automatisch erstellt wenn Mentorships zugewiesen werden."}
+      />
     );
   }
 
@@ -1245,8 +1346,8 @@ export default function ChatsScreen() {
           const isFirst = index === 0;
           const isLast = index === activeChatData.length - 1;
           const wrapperStyle = [
-            isFirst ? { borderTopLeftRadius: 16, borderTopRightRadius: 16, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1 } : { borderLeftWidth: 1, borderRightWidth: 1 },
-            isLast ? { borderBottomLeftRadius: 16, borderBottomRightRadius: 16, borderBottomWidth: 1 } : {},
+            isFirst ? { borderTopLeftRadius: RADIUS.lg, borderTopRightRadius: RADIUS.lg, borderTopWidth: 1, borderLeftWidth: 1, borderRightWidth: 1 } : { borderLeftWidth: 1, borderRightWidth: 1 },
+            isLast ? { borderBottomLeftRadius: RADIUS.lg, borderBottomRightRadius: RADIUS.lg, borderBottomWidth: 1 } : {},
             { backgroundColor: themeColors.card, borderColor: isDark ? "#2A2A35" : themeColors.border, marginHorizontal: 24, overflow: "hidden" as const },
           ];
 
@@ -1287,7 +1388,7 @@ const styles = StyleSheet.create({
 
   // Filter
   filterRow: { flexDirection: "row" as const, gap: 8, flexWrap: "wrap" as const },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: RADIUS.xl, borderWidth: 1 },
 
   // Zwei-Spalten-Layout
   twoColContainer: {
@@ -1322,7 +1423,7 @@ const styles = StyleSheet.create({
   searchWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -1355,7 +1456,7 @@ const styles = StyleSheet.create({
 
   // Leerer Zustand
   emptyCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 40,
     alignItems: "center",
@@ -1374,7 +1475,7 @@ const styles = StyleSheet.create({
 
   // Chat-Liste
   listCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     overflow: "hidden",
   },
@@ -1427,7 +1528,7 @@ const styles = StyleSheet.create({
   },
   unreadBadge: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     minWidth: 20,
     height: 20,
     alignItems: "center",
@@ -1441,7 +1542,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   adminBadge: {
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     paddingHorizontal: 6,
     paddingVertical: 2,
     alignItems: "center",
@@ -1483,7 +1584,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     marginBottom: 12,
     gap: 6,
   },
@@ -1496,7 +1597,7 @@ const styles = StyleSheet.create({
   // Neue-Chat Modal
   newChatModal: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 12,
     marginBottom: 12,
   },

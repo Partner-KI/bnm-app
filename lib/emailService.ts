@@ -1,39 +1,25 @@
 import { supabase } from "./supabase";
 
 // ============================================================
-// E-Mail Service — schreibt in die email_queue UND sendet
-// direkt über die Resend API (Client-seitiger Fallback).
-//
-// WICHTIG: Der API-Key unten gehört langfristig serverseitig
-// in eine Supabase Edge Function oder einen sicheren Proxy.
-// Er ist hier nur als Übergangslösung hinterlegt, bis eine
-// Edge Function deployt werden kann (erfordert Supabase CLI).
+// E-Mail Service — schreibt in die email_queue (Audit-Trail)
+// und sendet über die Supabase Edge Function "send-direct".
+// Der Resend API-Key liegt serverseitig als Supabase Secret.
 // ============================================================
 
 const OVERRIDE_RECIPIENT = "hasan.sevenler@partner.ki";
 
-// Resend-Versand direkt vom Client (Übergangslösung).
-// API-Key MUSS später serverseitig verwaltet werden.
+// Resend-Versand über Supabase Edge Function (kein API-Key im Client).
 async function sendViaResend(
   to: string,
   subject: string,
-  htmlBody: string
+  htmlBody: string,
+  attachments?: { filename: string; content: string }[]
 ): Promise<boolean> {
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": "Bearer re_VsfpM6qP_5GZdMEN3FETajnjmJpbDnAdc",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "BNM <onboarding@resend.dev>",
-        to: [to],
-        subject,
-        html: htmlBody,
-      }),
+    const { error } = await supabase.functions.invoke("send-direct", {
+      body: { to, subject, html: htmlBody, attachments },
     });
-    return res.ok;
+    return !error;
   } catch {
     return false;
   }
@@ -296,23 +282,5 @@ export async function sendCertificateEmail(
   const base64 = btoa(Array.from(pdfBytes, (b) => String.fromCharCode(b)).join(""));
   const filename = `BNM-Urkunde-${mentorName.replace(/\s+/g, "-")}-${period.replace(/\s+/g, "-")}.pdf`;
 
-  try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer re_VsfpM6qP_5GZdMEN3FETajnjmJpbDnAdc",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "BNM <onboarding@resend.dev>",
-        to: [to],
-        subject,
-        html,
-        attachments: [{ filename, content: base64 }],
-      }),
-    });
-    return res.ok;
-  } catch {
-    return false;
-  }
+  return sendViaResend(to, subject, html, [{ filename, content: base64 }]);
 }

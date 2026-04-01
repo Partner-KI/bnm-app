@@ -2448,10 +2448,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const setUserActive = useCallback(async (userId: string, isActive: boolean) => {
-    const { error } = await supabase
-      .from("profiles")
-      .update({ is_active: isActive })
-      .eq("id", userId);
+    // Setzt profiles.is_active UND auth.users.banned_until via SECURITY DEFINER RPC
+    const { error } = await supabase.rpc("admin_set_user_banned", {
+      target_user_id: userId,
+      should_ban: !isActive,
+    });
 
     if (error) {
       throw new Error(error.message);

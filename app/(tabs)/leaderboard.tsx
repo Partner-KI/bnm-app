@@ -13,12 +13,13 @@ import {
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import type { TranslationKeys } from "../../lib/translations/de";
+import { EmptyState } from "../../components/EmptyState";
 
 interface MentorScore {
   mentorId: string;
@@ -405,7 +406,7 @@ export default function LeaderboardScreen() {
                         style={[
                           styles.rankRow,
                           idx < rest.length - 1 ? [styles.rankRowBorder, { borderBottomColor: themeColors.border }] : {},
-                          isMe ? [styles.rankRowHighlight, { borderWidth: 2, borderColor: COLORS.gold, borderRadius: 6 }] : {},
+                          isMe ? [styles.rankRowHighlight, { borderWidth: 2, borderColor: COLORS.gold, borderRadius: RADIUS.xs }] : {},
                         ]}
                         onPress={() =>
                           router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })
@@ -448,15 +449,17 @@ export default function LeaderboardScreen() {
                 </View>
               )}
 
-              {/* Leere Rangliste */}
-              {ranked.length === 0 && (
-                <View style={[styles.card, { backgroundColor: themeColors.card }]}>
-                  <View style={styles.emptyStateContainer}>
-                    <Text style={[styles.emptyStateText, { color: themeColors.textTertiary }]}>{t("leaderboard.noMentorsYet")}</Text>
-                  </View>
-                </View>
-              )}
             </View>
+          )}
+
+          {/* Leere Rangliste */}
+          {ranked.length === 0 && (
+            <EmptyState
+              icon="trophy-outline"
+              title={t("leaderboard.noMentorsYet")}
+              description="In diesem Monat wurden noch keine Punkte gesammelt."
+              compact
+            />
           )}
 
           {/* ── Mentor des Monats Banner ──────────────────────────────── */}
@@ -516,7 +519,7 @@ const styles = StyleSheet.create({
   myPositionCard: {
     flexDirection: "row",
     alignItems: "center",
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 2,
     padding: 18,
     marginBottom: 16,
@@ -530,41 +533,41 @@ const styles = StyleSheet.create({
   myPositionStatVal: { fontSize: 20, fontWeight: "800" },
   myPositionStatLbl: { fontSize: 10, fontWeight: "500", marginTop: 2 },
 
-  // Podium
-  podiumContainer: { marginBottom: 16 },
+  // Podium — echtes Podium-Design mit unterschiedlichen Höhen
+  podiumContainer: { marginBottom: 20 },
   podiumRow: {
     flexDirection: "row",
     alignItems: "flex-end",
     justifyContent: "center",
-    gap: 8,
+    gap: 10,
     marginBottom: 16,
+    paddingHorizontal: 4,
   },
   podiumCard: {
-    borderRadius: 12,
+    borderRadius: RADIUS.lg,
     borderWidth: 2,
-    padding: 12,
+    padding: 14,
     alignItems: "center",
     flex: 1,
   },
   podiumCard1: {
-    // Platz 1: größte Karte
-    paddingVertical: 12,
+    // Platz 1: größte Karte — steht am höchsten
+    paddingVertical: 20,
+    paddingHorizontal: 16,
     marginBottom: 0,
     shadowColor: "#EEA71B",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 16,
+    elevation: 8,
   },
   podiumCard2: {
-    // Platz 2: etwas kleiner
-    marginBottom: 16,
-    opacity: 0.95,
+    // Platz 2: mittel — deutlich tiefer als 1
+    marginBottom: 28,
   },
   podiumCard3: {
-    // Platz 3: etwas kleiner
-    marginBottom: 16,
-    opacity: 0.95,
+    // Platz 3: noch tiefer
+    marginBottom: 40,
   },
   podiumCardEmpty: { flex: 1 },
   podiumCardMe: {
@@ -575,35 +578,35 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 6,
   },
-  podiumCrown: { fontSize: 16, marginBottom: 1 },
-  podiumEmoji: { fontSize: 22, marginBottom: 3 },
-  podiumEmoji1: { fontSize: 24, marginBottom: 4 },
+  podiumCrown: { fontSize: 20, marginBottom: 2 },
+  podiumEmoji: { fontSize: 24, marginBottom: 4 },
+  podiumEmoji1: { fontSize: 30, marginBottom: 6 },
   podiumName: { fontSize: 12, fontWeight: "600", textAlign: "center", marginBottom: 2 },
-  podiumName1: { fontSize: 13, fontWeight: "800", textAlign: "center", marginBottom: 2 },
-  podiumCity: { fontSize: 10, textAlign: "center", marginBottom: 4 },
-  podiumScore: { fontSize: 20, fontWeight: "800" },
-  podiumScore1: { fontSize: 24, fontWeight: "800" },
-  podiumPts: { fontSize: 10, marginBottom: 4 },
+  podiumName1: { fontSize: 14, fontWeight: "800", textAlign: "center", marginBottom: 3 },
+  podiumCity: { fontSize: 10, textAlign: "center", marginBottom: 6 },
+  podiumScore: { fontSize: 22, fontWeight: "800" },
+  podiumScore1: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
+  podiumPts: { fontSize: 10, marginBottom: 4, fontWeight: "500" },
   podiumStats1Row: { flexDirection: "row", alignItems: "center", gap: 4, flexWrap: "wrap", justifyContent: "center" },
   podiumStatSep: { fontSize: 10 },
   podiumStat: { fontSize: 10, textAlign: "center" },
 
   // Rest-Liste (ab Platz 4)
   restList: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 8,
     ...SHADOWS.md,
   },
 
   filterCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
   },
   filterLabel: { fontSize: 11, fontWeight: "600", letterSpacing: 1, marginBottom: 10 },
   filterRow: { flexDirection: "row", gap: 8 },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10, borderWidth: 1 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: RADIUS.sm, borderWidth: 1 },
   filterChipActive: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   filterChipInactive: {},
   filterChipTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
@@ -611,7 +614,7 @@ const styles = StyleSheet.create({
 
   genderHintBox: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 12,
     marginBottom: 16,
   },
@@ -623,7 +626,7 @@ const styles = StyleSheet.create({
     borderColor: "rgba(238,167,27,0.4)",
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -635,7 +638,7 @@ const styles = StyleSheet.create({
   momStatsRow: { flexDirection: "row", gap: 12 },
   momStatPill: {
     flex: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 12,
     alignItems: "center",
     borderWidth: 1,
@@ -647,7 +650,7 @@ const styles = StyleSheet.create({
   myPositionScore: { color: COLORS.white, fontWeight: "700", fontSize: 16 },
 
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
@@ -665,7 +668,7 @@ const styles = StyleSheet.create({
   },
   rankRowBorder: { borderBottomWidth: 1 },
   rankRowHighlight: {
-    borderRadius: 6,
+    borderRadius: RADIUS.xs,
     marginHorizontal: -8,
     paddingHorizontal: 8,
   },
@@ -673,7 +676,7 @@ const styles = StyleSheet.create({
   rankBadge: {
     width: 40,
     height: 40,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -687,10 +690,10 @@ const styles = StyleSheet.create({
   meChip: {
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 8,
+    borderRadius: RADIUS.sm,
   },
   meChipText: { fontSize: 11, fontWeight: "600" },
-  medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
+  medalChip: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.sm },
   medalChipText: { color: COLORS.white, fontSize: 11, fontWeight: "600" },
   rankSub: { fontSize: 12 },
   rankDetail: { fontSize: 12, marginTop: 2 },
@@ -700,7 +703,7 @@ const styles = StyleSheet.create({
   scoreLabel: { fontSize: 11 },
 
   legendCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderLeftWidth: 4,
     borderLeftColor: COLORS.gold,
     padding: 20,
@@ -714,7 +717,7 @@ const styles = StyleSheet.create({
   legendBold: { fontWeight: "700" },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -726,7 +729,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     paddingHorizontal: 8,
     paddingVertical: 10,
     marginBottom: 16,

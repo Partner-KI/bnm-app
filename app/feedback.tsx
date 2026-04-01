@@ -14,7 +14,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { sendNewFeedbackNotification } from "../lib/emailService";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   page: { padding: 24 },
   headerCard: {
     backgroundColor: COLORS.primary,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     alignItems: "center",
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   headerSub: { color: COLORS.white, opacity: 0.7, fontSize: 13, textAlign: "center" },
   subText: { textAlign: "center", marginBottom: 16, fontSize: 13 },
   ratingCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 20,
     marginBottom: 12,
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
   starText: { fontSize: 30 },
   ratingLabel: { textAlign: "center", marginTop: 10, fontSize: 13 },
   commentCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 16,
@@ -225,13 +225,13 @@ const styles = StyleSheet.create({
   commentTitle: { fontWeight: "600", marginBottom: 6, fontSize: 13 },
   commentInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
     height: 80,
   },
-  submitButton: { borderRadius: 12, paddingVertical: 9, alignItems: "center", marginBottom: 10 },
+  submitButton: { borderRadius: RADIUS.md, paddingVertical: 9, alignItems: "center", marginBottom: 10 },
   submitButtonText: { fontWeight: "600", fontSize: 14 },
   skipButton: { paddingVertical: 10, alignItems: "center" },
   skipText: { fontSize: 13 },

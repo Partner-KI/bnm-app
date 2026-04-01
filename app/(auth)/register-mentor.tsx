@@ -2,17 +2,17 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
 } from "react-native";
+import { BNMInput } from "../../components/BNMInput";
 import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import type { Gender, ContactPreference } from "../../types";
-import { COLORS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import { sendNewMentorApplicationNotification } from "../../lib/emailService";
@@ -279,35 +279,32 @@ export default function RegisterMentorScreen() {
           {/* SEKTION 1: Persönliche Daten */}
           <SectionHeader label={t("registerMentor.section1")} />
 
-          <FieldLabel label={t("registerMentor.firstName")} error={errors.firstName} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.firstName ? styles.inputError : { borderColor: themeColors.border }]}
-            placeholder={t("registerMentor.firstNamePlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
+          <BNMInput
+            label={t("registerMentor.firstName")}
+            icon="person-outline"
             value={form.firstName}
             onChangeText={(v) => update("firstName", v)}
+            error={errors.firstName}
             accessibilityLabel={t("registerMentor.firstName")}
           />
 
-          <FieldLabel label={t("registerMentor.lastName")} error={errors.lastName} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.lastName ? styles.inputError : { borderColor: themeColors.border }]}
-            placeholder={t("registerMentor.lastNamePlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
+          <BNMInput
+            label={t("registerMentor.lastName")}
+            icon="person-outline"
             value={form.lastName}
             onChangeText={(v) => update("lastName", v)}
+            error={errors.lastName}
             accessibilityLabel={t("registerMentor.lastName")}
           />
 
-          <FieldLabel label={t("registerMentor.email")} error={errors.email} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.email ? styles.inputError : { borderColor: themeColors.border }]}
-            placeholder="deine@email.de"
-            placeholderTextColor={themeColors.textTertiary}
-            keyboardType="email-address"
-            autoCapitalize="none"
+          <BNMInput
+            label={t("registerMentor.email")}
+            icon="mail-outline"
             value={form.email}
             onChangeText={(v) => update("email", v)}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            error={errors.email}
             accessibilityLabel={t("registerMentor.email")}
           />
 
@@ -323,35 +320,34 @@ export default function RegisterMentorScreen() {
             error={errors.gender}
           />
 
-          <FieldLabel label={t("registerMentor.birthdate")} error={errors.birthdate} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.birthdate ? styles.inputError : { borderColor: themeColors.border }]}
-            placeholder="TT.MM.JJJJ"
-            placeholderTextColor={themeColors.textTertiary}
-            keyboardType="numeric"
+          <BNMInput
+            label={t("registerMentor.birthdate")}
+            icon="calendar-outline"
             value={form.birthdate}
             onChangeText={(v) => update("birthdate", v)}
+            keyboardType="numeric"
+            error={errors.birthdate}
             accessibilityLabel={t("registerMentor.birthdate")}
           />
 
-          <FieldLabel label={t("registerMentor.plzCity")} error={errors.plz ?? errors.city} themeColors={themeColors} />
           <View style={styles.rowInputs}>
-            <TextInput
-              style={[styles.input, styles.inputPlz, { backgroundColor: themeColors.card, color: themeColors.text }, errors.plz ? styles.inputError : { borderColor: themeColors.border }]}
-              placeholder="PLZ"
-              placeholderTextColor={themeColors.textTertiary}
-              keyboardType="number-pad"
-              maxLength={5}
+            <BNMInput
+              label="PLZ"
+              icon="location-outline"
               value={form.plz}
               onChangeText={(v) => update("plz", v)}
+              keyboardType="number-pad"
+              maxLength={5}
+              error={errors.plz}
+              containerStyle={{ width: 120, flex: 0 }}
               accessibilityLabel="PLZ"
             />
-            <TextInput
-              style={[styles.input, styles.inputCity, { backgroundColor: themeColors.card, color: themeColors.text }, errors.city ? styles.inputError : { borderColor: themeColors.border }]}
-              placeholder={t("registerMentor.cityPlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
+            <BNMInput
+              label={t("registerMentor.cityPlaceholder")}
               value={form.city}
               onChangeText={(v) => update("city", v)}
+              error={errors.city}
+              containerStyle={{ flex: 1 }}
               accessibilityLabel={t("registerMentor.cityPlaceholder")}
             />
           </View>
@@ -370,14 +366,13 @@ export default function RegisterMentorScreen() {
             error={errors.country}
           />
 
-          <FieldLabel label={t("registerMentor.phone")} error={errors.phone} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text }, errors.phone ? styles.inputError : { borderColor: themeColors.border }]}
-            placeholder="+49 151 ..."
-            placeholderTextColor={themeColors.textTertiary}
-            keyboardType="phone-pad"
+          <BNMInput
+            label={t("registerMentor.phone")}
+            icon="call-outline"
             value={form.phone}
             onChangeText={(v) => update("phone", v)}
+            keyboardType="phone-pad"
+            error={errors.phone}
             accessibilityLabel={t("registerMentor.phone")}
           />
 
@@ -459,20 +454,14 @@ export default function RegisterMentorScreen() {
           />
 
           {form.hasMentoredBefore === "yes" && (
-            <>
-              <FieldLabel label={t("registerMentor.mentoringExperience")} themeColors={themeColors} />
-              <TextInput
-                style={[styles.input, styles.textarea, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                placeholder={t("registerMentor.mentoringExperiencePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                multiline
-                numberOfLines={3}
-                textAlignVertical="top"
-                value={form.mentoringExperience}
-                onChangeText={(v) => update("mentoringExperience", v)}
-                accessibilityLabel={t("registerMentor.mentoringExperience")}
-              />
-            </>
+            <BNMInput
+              label={t("registerMentor.mentoringExperience")}
+              value={form.mentoringExperience}
+              onChangeText={(v) => update("mentoringExperience", v)}
+              multiline
+              numberOfLines={3}
+              accessibilityLabel={t("registerMentor.mentoringExperience")}
+            />
           )}
 
           <FieldLabel label={t("registerMentor.inOrganization")} error={errors.inOrganization} themeColors={themeColors} />
@@ -488,17 +477,13 @@ export default function RegisterMentorScreen() {
           />
 
           {form.inOrganization === "yes" && (
-            <>
-              <FieldLabel label={t("registerMentor.organizationName")} themeColors={themeColors} />
-              <TextInput
-                style={[styles.input, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border }]}
-                placeholder={t("registerMentor.organizationNamePlaceholder")}
-                placeholderTextColor={themeColors.textTertiary}
-                value={form.organizationName}
-                onChangeText={(v) => update("organizationName", v)}
-                accessibilityLabel={t("registerMentor.organizationName")}
-              />
-            </>
+            <BNMInput
+              label={t("registerMentor.organizationName")}
+              icon="business-outline"
+              value={form.organizationName}
+              onChangeText={(v) => update("organizationName", v)}
+              accessibilityLabel={t("registerMentor.organizationName")}
+            />
           )}
 
           {/* SEKTION 4: Kontakt & Sonstiges */}
@@ -518,16 +503,13 @@ export default function RegisterMentorScreen() {
             error={errors.contact_preference}
           />
 
-          <FieldLabel label={t("registerMentor.additionalMessage")} themeColors={themeColors} />
-          <TextInput
-            style={[styles.input, styles.textarea, { backgroundColor: themeColors.card, color: themeColors.text, borderColor: themeColors.border, marginBottom: 20 }]}
-            placeholder={t("registerMentor.additionalMessagePlaceholder")}
-            placeholderTextColor={themeColors.textTertiary}
-            multiline
-            numberOfLines={4}
-            textAlignVertical="top"
+          <BNMInput
+            label={t("registerMentor.additionalMessage")}
             value={form.additionalMessage}
             onChangeText={(v) => update("additionalMessage", v)}
+            multiline
+            numberOfLines={4}
+            containerStyle={{ marginBottom: 20 }}
             accessibilityLabel={t("registerMentor.additionalMessage")}
           />
 
@@ -671,7 +653,7 @@ const styles = StyleSheet.create({
   },
   requirementsBox: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 8,
   },
@@ -695,30 +677,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     flex: 1,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: 14,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    marginBottom: 12,
-    fontSize: 14,
-  },
-  inputError: {
-    borderColor: "#f87171",
-  },
-  textarea: {
-    height: 80,
-  },
   rowInputs: {
     flexDirection: "row",
     gap: 8,
-  },
-  inputPlz: {
-    width: 90,
-    flex: 0,
-  },
-  inputCity: {
-    flex: 1,
   },
   pillRow: {
     flexDirection: "row",
@@ -729,7 +690,7 @@ const styles = StyleSheet.create({
   pill: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     borderWidth: 1,
   },
   pillText: {
@@ -744,7 +705,7 @@ const styles = StyleSheet.create({
   },
   submitButton: {
     backgroundColor: COLORS.cta,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 12,
     alignItems: "center",
   },
@@ -782,7 +743,7 @@ const styles = StyleSheet.create({
   },
   successButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 28,
     paddingVertical: 10,
   },

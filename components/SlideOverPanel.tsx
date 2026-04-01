@@ -11,6 +11,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useThemeColors, useTheme } from "../contexts/ThemeContext";
+import { RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 
 interface SlideOverPanelProps {
@@ -135,7 +136,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.45)",
   },
   modal: {
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
     borderWidth: 1,
     overflow: "hidden",
   },
@@ -175,7 +176,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   closeFooterButton: {
-    borderRadius: 14,
+    borderRadius: RADIUS.md,
     paddingVertical: 13,
     alignItems: "center",
   },

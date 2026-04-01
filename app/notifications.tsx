@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { Notification, NotificationType } from "../types";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontWeight: "800", fontSize: 18, marginBottom: 8 },
   emptyText: { fontSize: 14, textAlign: "center", lineHeight: 20 },
   notifCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     flexDirection: "row",
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   iconBox: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: RADIUS.xl,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
@@ -286,7 +286,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 2,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
   },
   typeBadgeText: { fontSize: 11, fontWeight: "600" },
 });

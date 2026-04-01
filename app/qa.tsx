@@ -16,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useData } from "../contexts/DataContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
-import { COLORS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 
 async function shareAnswer(question: string, answer: string, suffix: string) {
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
   pageSubtitle: { fontSize: 14, marginBottom: 16 },
   searchInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 14,
     paddingVertical: 10,
     fontSize: 14,
@@ -289,12 +289,12 @@ const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: 14,
     paddingVertical: 7,
-    borderRadius: 20,
+    borderRadius: RADIUS.xl,
   },
   chipText: { fontSize: 13, fontWeight: "500" },
   resultCount: { fontSize: 12, marginBottom: 8 },
   emptyBox: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 24,
     alignItems: "center",
   },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
   listContainer: { gap: 0 },
   accordionItem: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     overflow: "hidden",
   },
   accordionItemMargin: { marginBottom: 10 },
@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
   },
   categoryPillText: { fontSize: 10, fontWeight: "600", letterSpacing: 0.5 },
   questionText: { fontSize: 14, fontWeight: "600", lineHeight: 20 },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
     paddingHorizontal: 10,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: RADIUS.sm,
   },
   shareBtnText: { fontSize: 12 },
 });

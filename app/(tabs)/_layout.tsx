@@ -8,13 +8,22 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Tabs, useRouter } from "expo-router";
+import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { SymbolView } from "expo-symbols";
 import { Ionicons } from "@expo/vector-icons";
+// Lazy-Import: BlurView nur wenn verfügbar (vermeidet Web-Crashes)
+let BlurView: any = null;
+try {
+  BlurView = require("expo-blur").BlurView;
+} catch {
+  // expo-blur nicht verfügbar — Fallback auf View
+}
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { useThemeColors } from "../../contexts/ThemeContext";
-import { COLORS } from "../../constants/Colors";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { COLORS, RADIUS, TYPOGRAPHY } from "../../constants/Colors";
 import { AdminMobileDrawer } from "../../components/AdminMobileDrawer";
 
 // ─── Bell Button ────────────────────────────────────────────────────────────
@@ -131,7 +140,7 @@ const tabStyles = StyleSheet.create({
     top: -4,
     right: -6,
     backgroundColor: COLORS.error,
-    borderRadius: 9999,
+    borderRadius: RADIUS.full,
     minWidth: 16,
     height: 16,
     alignItems: "center",
@@ -139,6 +148,107 @@ const tabStyles = StyleSheet.create({
     paddingHorizontal: 3,
   },
   badgeText: { color: COLORS.white, fontSize: 9, fontWeight: "bold" },
+});
+
+// ─── Glassmorphism Tab Bar ──────────────────────────────────────────────────
+
+function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+  const themeColors = useThemeColors();
+  const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+
+  const containerStyle = [
+    glassStyles.container,
+    {
+      paddingBottom: Math.max(insets.bottom, 8),
+      borderTopColor: isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.06)",
+      backgroundColor: isDark ? "rgba(11,15,24,0.85)" : "rgba(255,255,255,0.85)",
+    },
+  ];
+
+  // BlurView mit Fallback auf einfaches View
+  const Wrapper = BlurView ?? View;
+  const wrapperProps = BlurView ? { intensity: isDark ? 40 : 60, tint: isDark ? "dark" : "light" } : {};
+
+  return (
+    <Wrapper {...wrapperProps} style={containerStyle}>
+      {state.routes.map((route, index) => {
+        const { options } = descriptors[route.key];
+        const isFocused = state.index === index;
+
+        // Hidden tabs: Expo Router setzt tabBarButton → null für href: null
+        if (options.tabBarButton) {
+          try {
+            const btn = (options.tabBarButton as any)({ children: null, style: {} });
+            if (btn === null) return null;
+          } catch { /* ignorieren */ }
+        }
+
+        const onPress = () => {
+          const event = navigation.emit({
+            type: "tabPress",
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!isFocused && !event.defaultPrevented) {
+            navigation.navigate(route.name);
+          }
+        };
+
+        const color = isFocused ? themeColors.tabIconActive : themeColors.tabIconInactive;
+
+        return (
+          <TouchableOpacity
+            key={route.key}
+            onPress={onPress}
+            accessibilityRole="button"
+            accessibilityState={isFocused ? { selected: true } : {}}
+            accessibilityLabel={options.tabBarAccessibilityLabel}
+            style={glassStyles.tab}
+          >
+            {options.tabBarIcon?.({ color, focused: isFocused, size: 22 })}
+            <Text style={[
+              glassStyles.label,
+              { color },
+              isFocused && glassStyles.labelActive,
+            ]}>
+              {options.title ?? route.name}
+            </Text>
+          </TouchableOpacity>
+        );
+      })}
+    </Wrapper>
+  );
+}
+
+const glassStyles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    borderTopWidth: 1,
+    paddingTop: 6,
+    // Glassmorphism: halbtransparenter Hintergrund
+    ...(Platform.OS === "web" ? {
+      // @ts-ignore
+      backdropFilter: "blur(20px) saturate(180%)",
+      backgroundColor: "rgba(255,255,255,0.65)",
+    } : {}),
+  },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+    gap: 2,
+  },
+  label: {
+    fontSize: 10,
+    fontWeight: TYPOGRAPHY.weight.semibold,
+    letterSpacing: 0.2,
+    marginTop: 1,
+  },
+  labelActive: {
+    fontWeight: TYPOGRAPHY.weight.bold,
+  },
 });
 
 // ─── Tab Layout (Mobile + Web Non-Admin) ────────────────────────────────────
@@ -170,23 +280,10 @@ function TabsLayout() {
 
   return (
     <Tabs
+      tabBar={(props) => <GlassTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: themeColors.tabIconActive,
         tabBarInactiveTintColor: themeColors.tabIconInactive,
-        tabBarStyle: {
-          backgroundColor: themeColors.tabBar,
-          borderTopColor: themeColors.tabBarBorder,
-          borderTopWidth: 1,
-          minHeight: 62,
-          paddingBottom: 6,
-          paddingTop: 4,
-        },
-        tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: "600",
-          letterSpacing: 0.2,
-          marginTop: 0,
-        },
         headerStyle: {
           backgroundColor: themeColors.headerBackground,
         },

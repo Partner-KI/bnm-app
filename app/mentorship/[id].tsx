@@ -14,11 +14,12 @@ import { navigateToChat } from "../../lib/chatNavigation";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import { Container } from "../../components/Container";
+import { StatusBadge } from "../../components/StatusBadge";
 
 
 export default function MentorshipDetailScreen() {
@@ -182,22 +183,10 @@ export default function MentorshipDetailScreen() {
     }
   }
 
-  const statusBg =
-    mentorship.status === "active"
-      ? (isDark ? "#2A2D3A" : "#F5F5F7")
-      : mentorship.status === "completed"
-      ? (isDark ? "#1a3a2a" : "#dcfce7")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#3a2e1a" : "#fef3c7")
-      : (isDark ? "#3a1a1a" : "#fee2e2");
-  const statusTextColor =
-    mentorship.status === "active"
-      ? (isDark ? "#A0A0B0" : "#475467")
-      : mentorship.status === "completed"
-      ? (isDark ? "#4ade80" : "#15803d")
-      : mentorship.status === "pending_approval"
-      ? (isDark ? "#fbbf24" : "#b45309")
-      : (isDark ? "#f87171" : "#b91c1c");
+  const badgeStatus = mentorship.status === "active" ? "active" as const
+    : mentorship.status === "completed" ? "completed" as const
+    : mentorship.status === "pending_approval" ? "pending" as const
+    : "cancelled" as const;
   const statusLabel =
     mentorship.status === "active"
       ? t("mentorship.active")
@@ -216,9 +205,7 @@ export default function MentorshipDetailScreen() {
       <View style={styles.page}>
         {/* Status-Badge */}
         <View style={styles.statusRow}>
-          <View style={[styles.statusBadge, { backgroundColor: statusBg }]}>
-            <Text style={[styles.statusText, { color: statusTextColor }]}>{statusLabel}</Text>
-          </View>
+          <StatusBadge status={badgeStatus} label={statusLabel} />
           <Text style={[styles.dateSince, { color: themeColors.textTertiary }]}>
             {t("mentorship.since").replace("{0}", new Date(mentorship.assigned_at).toLocaleDateString("de-DE"))}
           </Text>
@@ -559,11 +546,11 @@ const styles = StyleSheet.create({
   boldTitle: { fontWeight: "800" },
   page: { padding: 24 },
   statusRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 16 },
-  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  statusBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: RADIUS.full },
   statusText: { fontSize: 14, fontWeight: "600" },
   dateSince: { fontSize: 12 },
   card: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 16,
@@ -576,14 +563,14 @@ const styles = StyleSheet.create({
   phoneText: { fontSize: 14, marginTop: 8 },
   progressHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 12 },
   progressPercent: { color: COLORS.gold, fontWeight: "800", fontSize: 18 },
-  progressTrack: { height: 12, borderRadius: 9999, overflow: "hidden", marginBottom: 4 },
-  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: 9999 },
+  progressTrack: { height: 12, borderRadius: RADIUS.full, overflow: "hidden", marginBottom: 4 },
+  progressFill: { height: "100%", backgroundColor: COLORS.cta, borderRadius: RADIUS.full },
   progressSub: { fontSize: 12, marginTop: 4 },
   sectionLabel: { fontSize: 12, fontWeight: "600", letterSpacing: 1, marginBottom: 12 },
   timelineItem: { flexDirection: "row", alignItems: "flex-start", paddingHorizontal: 16, paddingVertical: 12 },
   timelineItemBorder: { borderBottomWidth: 1 },
   timelineDotCol: { alignItems: "center", marginRight: 12 },
-  timelineDot: { width: 32, height: 32, borderRadius: 9999, alignItems: "center", justifyContent: "center" },
+  timelineDot: { width: 32, height: 32, borderRadius: RADIUS.full, alignItems: "center", justifyContent: "center" },
   dotTextWhite: { color: COLORS.white, fontSize: 14, fontWeight: "800" },
   dotTextTertiary: { fontSize: 12, fontWeight: "800" },
   timelineLine: { width: 2, flex: 1, minHeight: 16, marginTop: 4 },
@@ -591,14 +578,14 @@ const styles = StyleSheet.create({
   stepName: { fontWeight: "600" },
   sessionDate: { fontSize: 12, marginTop: 2 },
   sessionDetails: { fontSize: 12, marginTop: 4, fontStyle: "italic" },
-  currentBadge: { marginTop: 4, alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 2, borderRadius: 9999 },
+  currentBadge: { marginTop: 4, alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.full },
   currentBadgeText: { fontSize: 12, fontWeight: "500" },
-  primaryButton: { borderRadius: 12, paddingVertical: 9, alignItems: "center" },
+  primaryButton: { borderRadius: RADIUS.md, paddingVertical: 9, alignItems: "center" },
   primaryButtonText: { color: COLORS.white, fontWeight: "800" },
   completeButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
   },
@@ -606,17 +593,17 @@ const styles = StyleSheet.create({
   cancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 8,
     alignItems: "center",
   },
   cancelButtonText: { fontWeight: "600", fontSize: 14 },
   completedAtText: { fontSize: 12, textAlign: "center" },
-  infoChip: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 9999 },
+  infoChip: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: RADIUS.full },
   infoChipText: { fontSize: 12, fontWeight: "500" },
   discrepancyBanner: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 18,
     marginBottom: 16,
   },
@@ -624,14 +611,14 @@ const styles = StyleSheet.create({
   discrepancyItem: { fontSize: 13, marginTop: 2 },
   allDoneBanner: {
     borderWidth: 1,
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     marginBottom: 16,
     alignItems: "center",
   },
   allDoneBannerTitle: { fontWeight: "800", fontSize: 16, marginBottom: 12, textAlign: "center" },
   allDoneButton: {
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 10,
     paddingHorizontal: 24,
     alignItems: "center",
@@ -641,7 +628,7 @@ const styles = StyleSheet.create({
   allDoneButtonText: { color: "#ffffff", fontWeight: "800", fontSize: 15 },
   allDoneBannerHint: { fontSize: 12, textAlign: "center" },
   notesCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     borderWidth: 1,
     padding: 18,
     marginBottom: 20,
@@ -651,7 +638,7 @@ const styles = StyleSheet.create({
   notesHint: { fontSize: 12, marginBottom: 10 },
   notesInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     padding: 10,
     fontSize: 14,
     minHeight: 90,
@@ -660,7 +647,7 @@ const styles = StyleSheet.create({
   },
   notesSaveButton: {
     backgroundColor: COLORS.gradientStart,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -692,7 +679,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   modalCard: {
-    borderRadius: 16,
+    borderRadius: RADIUS.lg,
     padding: 20,
     width: "100%",
     maxWidth: 400,
@@ -703,7 +690,7 @@ const styles = StyleSheet.create({
   modalLabel: { fontSize: 13, fontWeight: "500", marginBottom: 6 },
   modalTextInput: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingHorizontal: 12,
     paddingVertical: 8,
     fontSize: 14,
@@ -715,7 +702,7 @@ const styles = StyleSheet.create({
   modalCancelButton: {
     flex: 1,
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },
@@ -723,7 +710,7 @@ const styles = StyleSheet.create({
   modalConfirmButton: {
     flex: 1,
     backgroundColor: COLORS.error,
-    borderRadius: 12,
+    borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
   },

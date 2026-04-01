@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 // ============================================================
 // PDF-Generator für BNM-Berichte
@@ -67,23 +68,6 @@ export interface DonorReportData {
   summaryText: string;
 }
 
-// ─── CDN Loader ──────────────────────────────────────────────────────────────
-
-let _pdfLib: any = null;
-
-async function loadPdfLib(): Promise<any> {
-  if (_pdfLib) return _pdfLib;
-  return new Promise((resolve, reject) => {
-    const script = document.createElement("script");
-    script.src = "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js";
-    script.onload = () => {
-      _pdfLib = (window as any).PDFLib;
-      resolve(_pdfLib);
-    };
-    script.onerror = () => reject(new Error("pdf-lib CDN konnte nicht geladen werden"));
-    document.head.appendChild(script);
-  });
-}
 
 function triggerDownload(bytes: Uint8Array, filename: string) {
   const blob = new Blob([bytes as unknown as BlobPart], { type: "application/pdf" });
@@ -184,8 +168,7 @@ function drawSummaryBox(
 export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const PDFLib = await loadPdfLib();
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -326,8 +309,7 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 export async function generateMentorAwardPDFBytes(data: AwardData): Promise<Uint8Array | null> {
   if (Platform.OS !== "web") return null;
   try {
-    const PDFLib = await loadPdfLib();
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
     const aDoc = await PDFDocument.create();
     const aFont = await aDoc.embedFont(StandardFonts.Helvetica);
     const aBold = await aDoc.embedFont(StandardFonts.HelveticaBold);
@@ -511,8 +493,7 @@ export async function downloadMentorAwardPNG(data: AwardData): Promise<boolean> 
 export async function downloadDonorReportPDF(data: DonorReportData): Promise<boolean> {
   if (Platform.OS !== "web") return false;
   try {
-    const PDFLib = await loadPdfLib();
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+
     const doc = await PDFDocument.create();
     const font = await doc.embedFont(StandardFonts.Helvetica);
     const bold = await doc.embedFont(StandardFonts.HelveticaBold);
