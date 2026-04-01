@@ -19,12 +19,14 @@ CREATE TABLE IF NOT EXISTS email_queue (
 ALTER TABLE email_queue ENABLE ROW LEVEL SECURITY;
 
 -- Jeder authentifizierte User kann Mails in die Queue legen
+DROP POLICY IF EXISTS "email_queue_insert" ON email_queue;
 CREATE POLICY "email_queue_insert" ON email_queue
   FOR INSERT
   TO authenticated
   WITH CHECK (true);
 
 -- Nur Admin/Office kann Queue lesen
+DROP POLICY IF EXISTS "email_queue_select" ON email_queue;
 CREATE POLICY "email_queue_select" ON email_queue
   FOR SELECT
   TO authenticated
@@ -33,6 +35,7 @@ CREATE POLICY "email_queue_select" ON email_queue
   );
 
 -- Nur Admin/Office kann Status aktualisieren (z.B. als "sent" markieren)
+DROP POLICY IF EXISTS "email_queue_update" ON email_queue;
 CREATE POLICY "email_queue_update" ON email_queue
   FOR UPDATE
   TO authenticated

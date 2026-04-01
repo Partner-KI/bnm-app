@@ -62,6 +62,7 @@ CREATE POLICY "mentorships_delete" ON mentorships FOR DELETE USING (
 -- Admin kann dadurch keine anderen User-Profile bearbeiten
 
 DROP POLICY IF EXISTS "profiles_update_own" ON profiles;
+DROP POLICY IF EXISTS "profiles_update" ON profiles;
 
 CREATE POLICY "profiles_update" ON profiles FOR UPDATE USING (
   -- User kann eigenes Profil bearbeiten
