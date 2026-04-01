@@ -37,8 +37,10 @@ export default function LoginScreen() {
       return;
     }
     setErrorMsg("");
-    const success = await login(email.trim(), password);
-    if (!success) {
+    const result = await login(email.trim(), password);
+    if (result === "banned") {
+      setErrorMsg(t("login.errorBanned"));
+    } else if (result !== "ok") {
       setErrorMsg(t("login.errorInvalid"));
     }
   }

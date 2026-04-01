@@ -13,6 +13,7 @@ const tr: Record<TranslationKeys, string> = {
   "login.quickAccess": "HIZLI ERİŞİM (GELİŞTİRME)",
   "login.errorEmpty": "Lütfen e-posta ve şifrenizi girin.",
   "login.errorInvalid": "E-posta veya şifre yanlış.",
+  "login.errorBanned": "Hesabınız askıya alındı. Lütfen yönetici ile iletişime geçin.",
   "login.errorFailed": "Giriş başarısız.",
 
   // Dashboard

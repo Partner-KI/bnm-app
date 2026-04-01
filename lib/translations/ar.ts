@@ -13,6 +13,7 @@ const ar: Record<TranslationKeys, string> = {
   "login.quickAccess": "وصول سريع (تطوير)",
   "login.errorEmpty": "يرجى إدخال البريد الإلكتروني وكلمة المرور.",
   "login.errorInvalid": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+  "login.errorBanned": "تم تعليق حسابك. يرجى التواصل مع المسؤول.",
   "login.errorFailed": "فشل تسجيل الدخول.",
 
   // Dashboard

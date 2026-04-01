@@ -13,6 +13,7 @@ const en: Record<TranslationKeys, string> = {
   "login.quickAccess": "QUICK ACCESS (DEV)",
   "login.errorEmpty": "Please enter your email and password.",
   "login.errorInvalid": "Email or password is incorrect.",
+  "login.errorBanned": "Your account has been suspended. Please contact the administrator.",
   "login.errorFailed": "Login failed.",
 
   // Dashboard

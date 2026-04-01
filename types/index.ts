@@ -100,7 +100,7 @@ export interface MentorApplication {
 export interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<"ok" | "banned" | "invalid">;
   loginAs: (role: UserRole) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
   refreshUser: () => Promise<void>;

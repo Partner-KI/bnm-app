@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (email: string, password: string): Promise<boolean> => {
+    async (email: string, password: string): Promise<"ok" | "banned" | "invalid"> => {
       setIsLoading(true);
       try {
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -89,24 +89,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (error || !data.user) {
           setIsLoading(false);
-          return false;
+          // Supabase setzt banned_until → Login schlägt mit "User is banned" fehl
+          if (error?.message?.toLowerCase().includes("ban") || error?.message?.toLowerCase().includes("user_banned")) {
+            return "banned";
+          }
+          return "invalid";
         }
 
         const profile = await loadProfile(data.user.id);
 
-        // Gesperrte User sofort ausloggen (Fallback falls auth.banned_until nicht greift)
+        // Fallback: is_active prüfen falls banned_until doch nicht gesetzt war
         if (profile?.is_active === false) {
           await supabase.auth.signOut();
           setIsLoading(false);
-          return false;
+          return "banned";
         }
 
         setUser(profile);
         setIsLoading(false);
-        return true;
+        return "ok";
       } catch {
         setIsLoading(false);
-        return false;
+        return "invalid";
       }
     },
     []

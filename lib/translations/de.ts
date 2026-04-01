@@ -11,6 +11,7 @@ const de = {
   "login.quickAccess": "SCHNELLZUGANG (ENTWICKLUNG)",
   "login.errorEmpty": "Bitte E-Mail und Passwort eingeben.",
   "login.errorInvalid": "E-Mail oder Passwort ist falsch.",
+  "login.errorBanned": "Dein Account wurde gesperrt. Bitte wende dich an den Administrator.",
   "login.errorFailed": "Anmeldung fehlgeschlagen.",
 
   // Dashboard
