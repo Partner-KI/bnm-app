@@ -1689,6 +1689,7 @@ const de = {
   "mentorAward.saveError": "Fehler beim Speichern.",
   "mentorAward.noMentorError": "Kein Mentor ausgewählt.",
   "mentorAward.pastAwards": "Vergangene Auszeichnungen",
+  "mentorAward.monthNotEnded": "Urkunden können nur für abgeschlossene Monate erstellt werden.",
 
   // Mentor-Bewertungen
   "mentorDetail.selfRating": "Selbstbewertung:",

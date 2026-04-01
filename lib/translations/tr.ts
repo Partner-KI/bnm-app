@@ -1687,6 +1687,7 @@ const tr: Record<TranslationKeys, string> = {
   "mentorAward.saveError": "Kaydetme hatası.",
   "mentorAward.noMentorError": "Mentor seçilmedi.",
   "mentorAward.pastAwards": "Geçmiş Ödüller",
+  "mentorAward.monthNotEnded": "Sertifikalar yalnızca tamamlanmış aylar için oluşturulabilir.",
 
   // Değerlendirme
   "mentorDetail.selfRating": "Öz Değerlendirme:",

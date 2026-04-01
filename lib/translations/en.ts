@@ -1687,6 +1687,7 @@ const en: Record<TranslationKeys, string> = {
   "mentorAward.saveError": "Error saving.",
   "mentorAward.noMentorError": "No mentor selected.",
   "mentorAward.pastAwards": "Past Awards",
+  "mentorAward.monthNotEnded": "Certificates can only be created for completed months.",
 
   // Ratings
   "mentorDetail.selfRating": "Self-rating:",

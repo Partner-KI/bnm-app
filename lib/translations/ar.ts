@@ -1687,6 +1687,7 @@ const ar: Record<TranslationKeys, string> = {
   "mentorAward.saveError": "خطأ في الحفظ.",
   "mentorAward.noMentorError": "لم يتم اختيار مرشد.",
   "mentorAward.pastAwards": "الجوائز السابقة",
+  "mentorAward.monthNotEnded": "لا يمكن إنشاء الشهادات إلا للأشهر المنتهية.",
 
   // التقييمات
   "mentorDetail.selfRating": "التقييم الذاتي:",

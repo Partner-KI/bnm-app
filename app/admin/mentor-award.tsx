@@ -70,6 +70,13 @@ export default function MentorAwardScreen() {
   const [loadingPast, setLoadingPast] = useState(true);
   const [viewingPastAward, setViewingPastAward] = useState<MentorAward | null>(null);
 
+  // Urkunden/Speichern nur für abgeschlossene Monate erlauben
+  const isMonthEnded =
+    selectedYear < now.getFullYear() ||
+    (selectedYear === now.getFullYear() && selectedMonth < now.getMonth() + 1);
+  // Beim Anzeigen einer vergangenen Auszeichnung aus der Liste → immer erlaubt
+  const canCreateCertificate = viewingPastAward !== null || isMonthEnded;
+
   // Zugriff nur für Admin
   if (!authUser || (authUser.role !== "admin" && authUser.role !== "office")) {
     return (
@@ -348,15 +355,20 @@ export default function MentorAwardScreen() {
           {/* Aktions-Buttons */}
           <View style={styles.actionsRow}>
             {Platform.OS === "web" && (
-              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnPrint]} onPress={handleDownloadPDF} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={[styles.actionBtn, styles.actionBtnPrint, !canCreateCertificate && { opacity: 0.35 }]}
+                onPress={handleDownloadPDF}
+                disabled={!canCreateCertificate}
+                activeOpacity={0.8}
+              >
                 <Ionicons name="download-outline" size={18} color="#0E0E14" />
                 <Text style={styles.actionBtnPrintText}>{t("mentorAward.download")}</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
-              style={[styles.actionBtn, styles.actionBtnSave, isSaving && { opacity: 0.6 }]}
+              style={[styles.actionBtn, styles.actionBtnSave, (isSaving || !canCreateCertificate) && { opacity: 0.35 }]}
               onPress={handleSave}
-              disabled={isSaving}
+              disabled={isSaving || !canCreateCertificate}
               activeOpacity={0.8}
             >
               {isSaving ? (
@@ -369,6 +381,11 @@ export default function MentorAwardScreen() {
               )}
             </TouchableOpacity>
           </View>
+          {!canCreateCertificate && (
+            <Text style={[styles.monthNotEndedHint, { color: themeColors.textTertiary }]}>
+              {t("mentorAward.monthNotEnded")}
+            </Text>
+          )}
 
           {/* Vergangene Awards */}
           {!loadingPast && pastAwards.length > 0 && (
@@ -571,7 +588,8 @@ const styles = StyleSheet.create({
   },
 
   // Aktionen
-  actionsRow: { flexDirection: "row", gap: 12, marginBottom: 24 },
+  actionsRow: { flexDirection: "row", gap: 12, marginBottom: 8 },
+  monthNotEndedHint: { fontSize: 12, textAlign: "center", marginBottom: 20, fontStyle: "italic" },
   actionBtn: {
     flex: 1,
     flexDirection: "row",
