@@ -362,6 +362,171 @@ export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> 
   }
 }
 
+// Wie downloadMentorAwardPDF, gibt aber die Bytes zurück (für E-Mail-Anhang etc.)
+export async function generateMentorAwardPDFBytes(data: AwardData): Promise<Uint8Array | null> {
+  if (Platform.OS !== "web") return null;
+  try {
+    const PDFLib = await loadPdfLib();
+    const { PDFDocument, StandardFonts, rgb } = PDFLib;
+    const doc = await PDFDocument.create();
+    const font = await doc.embedFont(StandardFonts.Helvetica);
+    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
+    const W = 595; const H = 842; const cx = W / 2;
+
+    const p = doc.addPage([W, H]);
+    p.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(...C.gold), borderWidth: 3 });
+    p.drawText("BNM", { x: cx - bold.widthOfTextAtSize("BNM", 36) / 2, y: H - 120, size: 36, font: bold, color: rgb(...C.gold) });
+    p.drawText("BETREUUNG NEUER MUSLIME", { x: cx - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 140, size: 8, font, color: rgb(...C.gray) });
+    p.drawRectangle({ x: cx - 30, y: H - 170, width: 60, height: 3, color: rgb(...C.gold) });
+    p.drawText("AUSZEICHNUNG", { x: cx - font.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: H - 200, size: 10, font, color: rgb(...C.gray) });
+    p.drawText("Mentor des Monats", { x: cx - bold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: H - 240, size: 24, font: bold, color: rgb(...C.navy) });
+    p.drawText(data.period, { x: cx - font.widthOfTextAtSize(data.period, 12) / 2, y: H - 265, size: 12, font, color: rgb(...C.gray) });
+    p.drawRectangle({ x: cx - 30, y: H - 290, width: 60, height: 3, color: rgb(...C.gold) });
+    p.drawText(data.mentorName, { x: cx - bold.widthOfTextAtSize(data.mentorName, 28) / 2, y: H - 340, size: 28, font: bold, color: rgb(...C.gold) });
+
+    [[String(data.score), "Punkte"], [String(data.completed), "Abgeschlossen"], [String(data.sessions), "Sessions"]].forEach(([v, l], i) => {
+      const sx = 120 + i * 140;
+      p.drawRectangle({ x: sx, y: H - 430, width: 110, height: 50, borderColor: rgb(...C.border), borderWidth: 1 });
+      p.drawText(v, { x: sx + 55 - bold.widthOfTextAtSize(v, 20) / 2, y: H - 410, size: 20, font: bold, color: rgb(...C.navy) });
+      p.drawText(l, { x: sx + 55 - font.widthOfTextAtSize(l, 8) / 2, y: H - 425, size: 8, font, color: rgb(...C.gray) });
+    });
+
+    p.drawRectangle({ x: cx - 30, y: H - 470, width: 60, height: 3, color: rgb(...C.gold) });
+    p.drawText("BNM - Betreuung neuer Muslime - iman.ngo", { x: cx - font.widthOfTextAtSize("BNM - Betreuung neuer Muslime - iman.ngo", 8) / 2, y: H - 500, size: 8, font, color: rgb(...C.lgray) });
+
+    return await doc.save();
+  } catch {
+    return null;
+  }
+}
+
+// ─── Mentor Award als PNG (Canvas 2D, keine externe Bibliothek) ──────────────
+
+export async function downloadMentorAwardPNG(data: AwardData): Promise<boolean> {
+  if (Platform.OS !== "web") return false;
+  try {
+    const SCALE = 2;
+    const W = 595; const H = 842; const cx = W / 2;
+    const canvas = document.createElement("canvas");
+    canvas.width = W * SCALE; canvas.height = H * SCALE;
+    const ctx = canvas.getContext("2d")!;
+    ctx.scale(SCALE, SCALE);
+
+    // Hintergrund
+    ctx.fillStyle = "#FFFDF5";
+    ctx.fillRect(0, 0, W, H);
+
+    // Äußerer Gold-Rahmen
+    ctx.strokeStyle = "#EEA71B";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(30, 30, W - 60, H - 60);
+    // Innerer dünner Rahmen
+    ctx.lineWidth = 1;
+    ctx.strokeRect(38, 38, W - 76, H - 76);
+
+    // Eck-Ornamente
+    ctx.fillStyle = "#EEA71B";
+    for (const [x, y] of [[30, 30], [W - 30, 30], [30, H - 30], [W - 30, H - 30]] as [number,number][]) {
+      ctx.fillRect(x - 5, y - 5, 10, 10);
+    }
+
+    // Navy Header-Balken
+    ctx.fillStyle = "#101828";
+    ctx.fillRect(30, 30, W - 60, 110);
+
+    // BNM
+    ctx.fillStyle = "#EEA71B";
+    ctx.font = "bold 34px Georgia, serif";
+    ctx.textAlign = "center";
+    ctx.fillText("BNM", cx, 90);
+
+    // Untertitel
+    ctx.fillStyle = "rgba(255,255,255,0.45)";
+    ctx.font = "9px Arial, sans-serif";
+    ctx.fillText("BETREUUNG NEUER MUSLIME", cx, 112);
+
+    // Gold-Separator
+    ctx.fillStyle = "#EEA71B";
+    ctx.fillRect(30, 140, W - 60, 3);
+
+    // Sterne
+    ctx.fillStyle = "#EEA71B";
+    ctx.font = "22px Arial";
+    ctx.fillText("★  ★  ★  ★  ★", cx, 182);
+
+    // AUSZEICHNUNG
+    ctx.fillStyle = "#9CA3AF";
+    ctx.font = "bold 9px Arial, sans-serif";
+    ctx.fillText("A U S Z E I C H N U N G", cx, 208);
+
+    // Dekorlinien um Namen
+    ctx.strokeStyle = "rgba(238,167,27,0.4)";
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(55, 270); ctx.lineTo(cx - 90, 270); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx + 90, 270); ctx.lineTo(W - 55, 270); ctx.stroke();
+
+    // Mentor-Name
+    ctx.fillStyle = "#101828";
+    ctx.font = "bold 26px Georgia, serif";
+    ctx.fillText(data.mentorName, cx, 270);
+
+    // Zeitraum
+    ctx.fillStyle = "#6B7280";
+    ctx.font = "italic 13px Georgia, serif";
+    ctx.fillText(data.period, cx, 300);
+
+    // Doppeltrennlinie
+    ctx.strokeStyle = "rgba(238,167,27,0.6)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(80, 330); ctx.lineTo(W - 80, 330); ctx.stroke();
+    ctx.strokeStyle = "rgba(238,167,27,0.25)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(80, 336); ctx.lineTo(W - 80, 336); ctx.stroke();
+
+    // Stats (3 Spalten)
+    const stats: [string, string][] = [
+      [String(data.score), "PUNKTE"],
+      [String(data.completed), "ABSCHLÜSSE"],
+      [String(data.sessions), "SESSIONS"],
+    ];
+    stats.forEach(([val, label], i) => {
+      const sx = cx - 140 + i * 140;
+      if (i > 0) {
+        ctx.strokeStyle = "#E5E7EB"; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(sx - 20, 355); ctx.lineTo(sx - 20, 415); ctx.stroke();
+      }
+      ctx.fillStyle = "#101828"; ctx.font = "bold 28px Arial, sans-serif"; ctx.textAlign = "center";
+      ctx.fillText(val, sx, 392);
+      ctx.fillStyle = "#9CA3AF"; ctx.font = "bold 8px Arial, sans-serif";
+      ctx.fillText(label, sx, 412);
+    });
+
+    // Footer-Linie
+    ctx.strokeStyle = "rgba(238,167,27,0.35)"; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(cx - 32, 455); ctx.lineTo(cx + 32, 455); ctx.stroke();
+
+    // Footer-Text
+    ctx.fillStyle = "#9CA3AF"; ctx.font = "italic 10px Arial, sans-serif"; ctx.textAlign = "center";
+    ctx.fillText("AUSGEZEICHNET DURCH DAS BNM-TEAM", cx, 478);
+    ctx.font = "9px Arial, sans-serif";
+    ctx.fillText("Become a New Muslim (BNM)", cx, 496);
+
+    // Download als PNG
+    return await new Promise<boolean>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (!blob) { resolve(false); return; }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `BNM-Urkunde-${data.mentorName}-${data.period}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        resolve(true);
+      }, "image/png");
+    });
+  } catch {
+    return false;
+  }
+}
+
 // ─── Spenderbericht ──────────────────────────────────────────────────────────
 
 export async function downloadDonorReportPDF(data: DonorReportData): Promise<boolean> {

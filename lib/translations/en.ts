@@ -1688,6 +1688,21 @@ const en: Record<TranslationKeys, string> = {
   "mentorAward.noMentorError": "No mentor selected.",
   "mentorAward.pastAwards": "Past Awards",
   "mentorAward.monthNotEnded": "Certificates can only be created for completed months.",
+  "mentorAward.noAwardForPeriod": "No mentor of the month was saved for this period.",
+
+  // Certificate Generator (Tools)
+  "certGen.title": "Certificate Generator",
+  "certGen.subtitle": "Manually create and send certificates",
+  "certGen.toolTitle": "Certificate Generator",
+  "certGen.toolDesc": "Create certificate for any mentor",
+  "certGen.selectMentor": "SELECT MENTOR",
+  "certGen.noMentorSelected": "No mentor selected",
+  "certGen.noEmailEntered": "Please enter an email address",
+  "certGen.sendEmail": "SEND BY EMAIL",
+  "certGen.emailPlaceholder": "Email address",
+  "certGen.sendEmailBtn": "Send certificate",
+  "certGen.emailSent": "Email sent!",
+  "certGen.emailError": "Error sending email.",
 
   // Ratings
   "mentorDetail.selfRating": "Self-rating:",

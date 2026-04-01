@@ -97,6 +97,15 @@ export default function ToolsTabScreen() {
               </TouchableOpacity>
             )}
 
+            <TouchableOpacity
+              style={[styles.toolItem, { backgroundColor: themeColors.card }]}
+              onPress={() => router.push("/admin/certificate-generator" as never)}
+            >
+              <Ionicons name="ribbon-outline" size={28} color={COLORS.gold} />
+              <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("certGen.toolTitle")}</Text>
+              <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("certGen.toolDesc")}</Text>
+            </TouchableOpacity>
+
             {showSystemSettings && (
               <TouchableOpacity
                 style={[styles.toolItem, { backgroundColor: themeColors.card, opacity: isGeocoding ? 0.6 : 1 }]}

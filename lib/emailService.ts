@@ -262,3 +262,57 @@ export async function sendFeedbackRequestEmail(
   `.trim();
   return sendEmail(menteeEmail, subject, body);
 }
+
+// ─── Urkunde per E-Mail (mit PDF-Anhang) ─────────────────────────────────────
+
+export async function sendCertificateEmail(
+  to: string,
+  mentorName: string,
+  period: string,
+  pdfBytes: Uint8Array
+): Promise<boolean> {
+  const subject = `BNM – Urkunde: ${mentorName} – ${period}`;
+  const html = `
+<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
+  <div style="background:#0A3A5A;padding:24px;text-align:center">
+    <h1 style="color:#EEA71B;margin:0;font-size:28px">BNM</h1>
+    <p style="color:rgba(255,255,255,0.6);margin:4px 0 0;font-size:12px">Betreuung neuer Muslime</p>
+  </div>
+  <div style="padding:32px;background:#fff">
+    <h2 style="color:#0A3A5A;margin:0 0 8px">Urkunde: Mentor des Monats</h2>
+    <p style="color:#6B7280;margin:0 0 24px">Zeitraum: ${escapeHtml(period)}</p>
+    <p style="font-size:16px;color:#111">
+      Im Anhang findest du die Urkunde für <strong>${escapeHtml(mentorName)}</strong> als Mentor des Monats ${escapeHtml(period)}.
+    </p>
+    <p style="color:#6B7280;margin-top:24px">Barakallahu fik<br>Das BNM-Team</p>
+  </div>
+  <div style="padding:16px;background:#F9FAFB;text-align:center">
+    <p style="color:#98A2B3;font-size:12px;margin:0">BNM – Betreuung neuer Muslime · iman.ngo</p>
+  </div>
+</div>
+  `.trim();
+
+  // PDF als Base64 kodieren
+  const base64 = btoa(Array.from(pdfBytes, (b) => String.fromCharCode(b)).join(""));
+  const filename = `BNM-Urkunde-${mentorName.replace(/\s+/g, "-")}-${period.replace(/\s+/g, "-")}.pdf`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer re_VsfpM6qP_5GZdMEN3FETajnjmJpbDnAdc",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "BNM <onboarding@resend.dev>",
+        to: [to],
+        subject,
+        html,
+        attachments: [{ filename, content: base64 }],
+      }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}

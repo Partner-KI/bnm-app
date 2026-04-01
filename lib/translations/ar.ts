@@ -1688,6 +1688,21 @@ const ar: Record<TranslationKeys, string> = {
   "mentorAward.noMentorError": "لم يتم اختيار مرشد.",
   "mentorAward.pastAwards": "الجوائز السابقة",
   "mentorAward.monthNotEnded": "لا يمكن إنشاء الشهادات إلا للأشهر المنتهية.",
+  "mentorAward.noAwardForPeriod": "لم يتم حفظ مرشد الشهر لهذه الفترة.",
+
+  // منشئ الشهادات (الأدوات)
+  "certGen.title": "منشئ الشهادات",
+  "certGen.subtitle": "إنشاء وإرسال الشهادات يدويًا",
+  "certGen.toolTitle": "منشئ الشهادات",
+  "certGen.toolDesc": "إنشاء شهادة لأي مرشد",
+  "certGen.selectMentor": "اختر المرشد",
+  "certGen.noMentorSelected": "لم يتم اختيار مرشد",
+  "certGen.noEmailEntered": "يرجى إدخال عنوان البريد الإلكتروني",
+  "certGen.sendEmail": "إرسال عبر البريد",
+  "certGen.emailPlaceholder": "عنوان البريد الإلكتروني",
+  "certGen.sendEmailBtn": "إرسال الشهادة",
+  "certGen.emailSent": "تم إرسال البريد!",
+  "certGen.emailError": "خطأ في الإرسال.",
 
   // التقييمات
   "mentorDetail.selfRating": "التقييم الذاتي:",

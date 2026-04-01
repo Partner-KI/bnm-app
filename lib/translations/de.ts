@@ -1690,6 +1690,21 @@ const de = {
   "mentorAward.noMentorError": "Kein Mentor ausgewählt.",
   "mentorAward.pastAwards": "Vergangene Auszeichnungen",
   "mentorAward.monthNotEnded": "Urkunden können nur für abgeschlossene Monate erstellt werden.",
+  "mentorAward.noAwardForPeriod": "Für diesen Monat wurde kein Mentor des Monats gespeichert.",
+
+  // Urkunden-Generator (Tools)
+  "certGen.title": "Urkunden-Generator",
+  "certGen.subtitle": "Manuell Urkunde erstellen und versenden",
+  "certGen.toolTitle": "Urkunden-Generator",
+  "certGen.toolDesc": "Urkunde für jeden Mentor erstellen",
+  "certGen.selectMentor": "MENTOR AUSWÄHLEN",
+  "certGen.noMentorSelected": "Kein Mentor ausgewählt",
+  "certGen.noEmailEntered": "Bitte E-Mail-Adresse eingeben",
+  "certGen.sendEmail": "PER E-MAIL SENDEN",
+  "certGen.emailPlaceholder": "E-Mail-Adresse",
+  "certGen.sendEmailBtn": "Urkunde senden",
+  "certGen.emailSent": "E-Mail gesendet!",
+  "certGen.emailError": "Fehler beim E-Mail-Versand.",
 
   // Mentor-Bewertungen
   "mentorDetail.selfRating": "Selbstbewertung:",

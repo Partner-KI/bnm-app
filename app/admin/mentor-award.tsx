@@ -70,12 +70,25 @@ export default function MentorAwardScreen() {
   const [loadingPast, setLoadingPast] = useState(true);
   const [viewingPastAward, setViewingPastAward] = useState<MentorAward | null>(null);
 
-  // Urkunden/Speichern nur für abgeschlossene Monate erlauben
+  // Vergangener Monat?
   const isMonthEnded =
     selectedYear < now.getFullYear() ||
     (selectedYear === now.getFullYear() && selectedMonth < now.getMonth() + 1);
-  // Beim Anzeigen einer vergangenen Auszeichnung aus der Liste → immer erlaubt
-  const canCreateCertificate = viewingPastAward !== null || isMonthEnded;
+
+  // Auto-Match: Gespeicherten Award für den gewählten Monat finden
+  const autoAward = useMemo(
+    () => pastAwards.find((a) => a.month === selectedMonth && a.year === selectedYear) ?? null,
+    [pastAwards, selectedMonth, selectedYear]
+  );
+
+  // Aktiv anzuzeigender Award: explizit via Liste > auto-match aus Monatswahl > null
+  const effectiveAward = viewingPastAward ?? (isMonthEnded ? autoAward : null);
+
+  // Vergangener Monat ohne gespeicherten Award
+  const noAwardForPeriod = isMonthEnded && effectiveAward === null;
+
+  // Erstellen nur erlaubt wenn echte Daten vorhanden
+  const canCreateCertificate = !noAwardForPeriod && (effectiveAward !== null || (!isMonthEnded && topMentor !== null));
 
   // Zugriff nur für Admin
   if (!authUser || (authUser.role !== "admin" && authUser.role !== "office")) {
@@ -102,15 +115,14 @@ export default function MentorAwardScreen() {
 
   // Wenn mentorId per params übergeben, diesen Mentor verwenden
   const paramMentor = params.mentorId ? getUserById(params.mentorId) : null;
-  const displayMentor = viewingPastAward
-    ? null // wird aus pastAward gerendert
-    : (paramMentor ?? topMentor?.mentor ?? null);
-  const displayScore = viewingPastAward?.score ?? topMentor?.score ?? 0;
-  const displayCompletions = viewingPastAward?.completions ?? topMentor?.completedCount ?? 0;
-  const displaySessions = viewingPastAward?.sessions_count ?? topMentor?.sessionCount ?? 0;
-  const displayMentorName = viewingPastAward?.mentor_name ?? displayMentor?.name ?? "–";
-  const displayMonth = viewingPastAward?.month ?? selectedMonth;
-  const displayYear = viewingPastAward?.year ?? selectedYear;
+  // Display-Werte: aus gespeichertem Award ODER aktuellem Top-Mentor (nur laufender Monat)
+  const displayScore = effectiveAward?.score ?? (noAwardForPeriod ? 0 : topMentor?.score ?? 0);
+  const displayCompletions = effectiveAward?.completions ?? (noAwardForPeriod ? 0 : topMentor?.completedCount ?? 0);
+  const displaySessions = effectiveAward?.sessions_count ?? (noAwardForPeriod ? 0 : topMentor?.sessionCount ?? 0);
+  const displayMentorName = effectiveAward?.mentor_name
+    ?? (noAwardForPeriod ? "–" : (paramMentor?.name ?? topMentor?.mentor?.name ?? "–"));
+  const displayMonth = effectiveAward?.month ?? selectedMonth;
+  const displayYear = effectiveAward?.year ?? selectedYear;
 
   // Vergangene Awards laden
   useEffect(() => {
@@ -154,13 +166,13 @@ export default function MentorAwardScreen() {
   }
 
   async function handleSave() {
-    if (!displayMentor && !viewingPastAward) {
+    if (!effectiveAward && !topMentor) {
       showError(t("mentorAward.noMentorError"));
       return;
     }
     setIsSaving(true);
     try {
-      const mentorId = viewingPastAward?.mentor_id ?? displayMentor?.id;
+      const mentorId = effectiveAward?.mentor_id ?? paramMentor?.id ?? topMentor?.mentor?.id;
       const { error } = await supabase.from("mentor_awards").upsert(
         {
           mentor_id: mentorId,
@@ -381,7 +393,12 @@ export default function MentorAwardScreen() {
               )}
             </TouchableOpacity>
           </View>
-          {!canCreateCertificate && (
+          {noAwardForPeriod && (
+            <Text style={[styles.monthNotEndedHint, { color: themeColors.textTertiary }]}>
+              {t("mentorAward.noAwardForPeriod")}
+            </Text>
+          )}
+          {!canCreateCertificate && !noAwardForPeriod && (
             <Text style={[styles.monthNotEndedHint, { color: themeColors.textTertiary }]}>
               {t("mentorAward.monthNotEnded")}
             </Text>

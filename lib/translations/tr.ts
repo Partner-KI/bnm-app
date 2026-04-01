@@ -1688,6 +1688,21 @@ const tr: Record<TranslationKeys, string> = {
   "mentorAward.noMentorError": "Mentor seçilmedi.",
   "mentorAward.pastAwards": "Geçmiş Ödüller",
   "mentorAward.monthNotEnded": "Sertifikalar yalnızca tamamlanmış aylar için oluşturulabilir.",
+  "mentorAward.noAwardForPeriod": "Bu dönem için ayın mentoru kaydedilmedi.",
+
+  // Sertifika Oluşturucu (Araçlar)
+  "certGen.title": "Sertifika Oluşturucu",
+  "certGen.subtitle": "Manuel sertifika oluştur ve gönder",
+  "certGen.toolTitle": "Sertifika Oluşturucu",
+  "certGen.toolDesc": "Her mentor için sertifika oluştur",
+  "certGen.selectMentor": "MENTOR SEÇ",
+  "certGen.noMentorSelected": "Mentor seçilmedi",
+  "certGen.noEmailEntered": "Lütfen e-posta adresi girin",
+  "certGen.sendEmail": "E-POSTA İLE GÖNDER",
+  "certGen.emailPlaceholder": "E-posta adresi",
+  "certGen.sendEmailBtn": "Sertifikayı gönder",
+  "certGen.emailSent": "E-posta gönderildi!",
+  "certGen.emailError": "E-posta gönderilemedi.",
 
   // Değerlendirme
   "mentorDetail.selfRating": "Öz Değerlendirme:",
