@@ -87,6 +87,7 @@ export interface MentorApplication {
   name: string;
   email: string;
   city: string;
+  plz?: string;
   gender: Gender;
   age: number;
   experience: string;

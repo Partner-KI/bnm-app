@@ -832,6 +832,7 @@ const en: Record<TranslationKeys, string> = {
   "applications.phoneLabel": "Phone",
   "applications.contactLabel": "Contact",
   "applications.genderLabel": "Gender / Age",
+  "applications.cityLabel": "City / Postal Code",
   "applications.submittedLabel": "Received",
   "applications.brother": "Brother",
   "applications.sister": "Sister",

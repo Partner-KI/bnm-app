@@ -51,9 +51,10 @@ export default function ChangePasswordScreen() {
 
     setIsSaving(true);
     try {
-      // Passwort direkt aktualisieren (User ist bereits authentifiziert)
-      // signInWithPassword zur Verifikation wurde entfernt, da es auf mobilen
-      // Geräten die Session-State temporär ändert und zu Hängern führt.
+      // Session vor updateUser() frisch holen — ohne diesen Schritt schlägt
+      // updateUser() auf manchen Geräten mit "Auth session missing" fehl,
+      // weil der Access-Token abgelaufen ist (besonders bei Mentoren).
+      await supabase.auth.refreshSession().catch(() => {});
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
       if (updateError) {
         showError(updateError.message);

@@ -830,6 +830,7 @@ const de = {
   "applications.phoneLabel": "Telefon",
   "applications.contactLabel": "Kontakt",
   "applications.genderLabel": "Geschlecht / Alter",
+  "applications.cityLabel": "Stadt / PLZ",
   "applications.submittedLabel": "Eingegangen",
   "applications.brother": "Bruder",
   "applications.sister": "Schwester",

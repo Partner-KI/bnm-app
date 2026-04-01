@@ -75,6 +75,16 @@ export default function ChatScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mentorshipId, markChatAsRead, messages.length]);
 
+  // iOS initial scroll: onContentSizeChange feuert manchmal zu früh, bevor das
+  // Layout vollständig gerendert wurde. Deshalb nochmal nach 300ms scrollen.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: false });
+    }, 300);
+    return () => clearTimeout(timer);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function handleSend() {
     if (!inputText.trim() || !user || !mentorshipId) return;
     const content = inputText.trim();

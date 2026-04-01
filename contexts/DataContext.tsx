@@ -185,6 +185,7 @@ export interface DataContextValue {
   getPendingApplicationsCount: () => number;
   getUnreadMessagesCount: (mentorshipId: string) => number;
   getTotalUnreadMessages: () => number;
+  getTotalUnreadAdminMessages: () => number;
   markChatAsRead: (mentorshipId: string) => Promise<void>;
 
   // Refresh
@@ -657,6 +658,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           name: row.name as string,
           email: row.email as string,
           city: row.city as string,
+          plz: (row.plz as string) ?? undefined,
           gender: row.gender as MentorApplication["gender"],
           age: row.age as number,
           experience: (row.experience as string) ?? "",
@@ -2949,6 +2951,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     ).length;
   }, [messages, authUser]);
 
+  // Ungelesene Admin-DMs zählen (für Mentor/Mentee Badge im Chat-Tab)
+  const getTotalUnreadAdminMessages = useCallback(() => {
+    if (!authUser) return 0;
+    if (authUser.role === "admin" || authUser.role === "office") return 0;
+    return adminMessages.filter(
+      (m) => m.user_id === authUser.id && m.sender_id !== authUser.id && !m.read_at
+    ).length;
+  }, [adminMessages, authUser]);
+
   const markChatAsRead = useCallback(
     async (mentorshipId: string) => {
       if (!authUser) return;
@@ -3064,6 +3075,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         getPendingApplicationsCount,
         getUnreadMessagesCount,
         getTotalUnreadMessages,
+        getTotalUnreadAdminMessages,
         markChatAsRead,
         refreshData,
         isLoading,

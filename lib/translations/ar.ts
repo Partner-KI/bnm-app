@@ -826,6 +826,7 @@ const ar: Record<TranslationKeys, string> = {
   "applications.statusOpen": "مفتوح",
   "applications.statusApproved": "مقبول",
   "applications.statusRejected": "مرفوض",
+  "applications.cityLabel": "المدينة / الرمز البريدي",
   "applications.experience": "الخبرة",
   "applications.motivation": "الدافع",
   "applications.emailLabel": "البريد الإلكتروني",

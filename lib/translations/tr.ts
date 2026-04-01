@@ -826,6 +826,7 @@ const tr: Record<TranslationKeys, string> = {
   "applications.statusOpen": "Açık",
   "applications.statusApproved": "Kabul Edildi",
   "applications.statusRejected": "Reddedildi",
+  "applications.cityLabel": "Şehir / Posta Kodu",
   "applications.experience": "Deneyim",
   "applications.motivation": "Motivasyon",
   "applications.emailLabel": "E-posta",

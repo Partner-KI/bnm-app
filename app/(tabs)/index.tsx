@@ -1055,7 +1055,7 @@ function MentorDashboard() {
                       <Text style={styles.achievementIcon}>{ach.icon}</Text>
                       <Text style={{ fontSize: 9, fontWeight: "600", color: isUnlocked ? (isDark ? COLORS.gold : "#92400e") : themeColors.textTertiary, marginTop: 4, textAlign: "center" }} numberOfLines={1}>{ach.label}</Text>
                       {showAchievementTooltip === ach.key && (
-                        <View style={[styles.achievementTooltip, { backgroundColor: isDark ? "#2A2518" : "#FFF8E1", borderColor: COLORS.gold }]}>
+                        <View style={[styles.achievementTooltip, { backgroundColor: isDark ? "#1C1C28" : "#FFFFFF", borderColor: COLORS.gold }]}>
                           <Text style={[styles.achievementTooltipTitle, { color: themeColors.text }]}>{ach.label}</Text>
                           <Text style={[styles.achievementTooltipDesc, { color: themeColors.textSecondary }]}>{ach.desc}</Text>
                           {!isUnlocked && (
