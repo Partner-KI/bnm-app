@@ -322,81 +322,60 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 
 // ─── Mentor Award ────────────────────────────────────────────────────────────
 
-export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> {
-  if (Platform.OS !== "web") return false;
-  try {
-    const PDFLib = await loadPdfLib();
-    const { PDFDocument, StandardFonts, rgb } = PDFLib;
-    const doc = await PDFDocument.create();
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-    const W = 595; const H = 842; const cx = W / 2;
-
-    const p = doc.addPage([W, H]);
-    p.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(...C.gold), borderWidth: 3 });
-    p.drawText("BNM", { x: cx - bold.widthOfTextAtSize("BNM", 36) / 2, y: H - 120, size: 36, font: bold, color: rgb(...C.gold) });
-    p.drawText("BETREUUNG NEUER MUSLIME", { x: cx - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 140, size: 8, font, color: rgb(...C.gray) });
-    p.drawRectangle({ x: cx - 30, y: H - 170, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText("AUSZEICHNUNG", { x: cx - font.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: H - 200, size: 10, font, color: rgb(...C.gray) });
-    p.drawText("Mentor des Monats", { x: cx - bold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: H - 240, size: 24, font: bold, color: rgb(...C.navy) });
-    p.drawText(data.period, { x: cx - font.widthOfTextAtSize(data.period, 12) / 2, y: H - 265, size: 12, font, color: rgb(...C.gray) });
-    p.drawRectangle({ x: cx - 30, y: H - 290, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText(data.mentorName, { x: cx - bold.widthOfTextAtSize(data.mentorName, 28) / 2, y: H - 340, size: 28, font: bold, color: rgb(...C.gold) });
-
-    [[String(data.score), "Punkte"], [String(data.completed), "Abschluesse"], [String(data.sessions), "Sessions"]].forEach(([v, l], i) => {
-      const sx = 120 + i * 140;
-      p.drawRectangle({ x: sx, y: H - 430, width: 110, height: 50, borderColor: rgb(...C.border), borderWidth: 1 });
-      p.drawText(v, { x: sx + 55 - bold.widthOfTextAtSize(v, 20) / 2, y: H - 410, size: 20, font: bold, color: rgb(...C.navy) });
-      p.drawText(l, { x: sx + 55 - font.widthOfTextAtSize(l, 8) / 2, y: H - 425, size: 8, font, color: rgb(...C.gray) });
-    });
-
-    p.drawRectangle({ x: cx - 30, y: H - 470, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText("BNM - Betreuung neuer Muslime - iman.ngo", { x: cx - font.widthOfTextAtSize("BNM - Betreuung neuer Muslime - iman.ngo", 8) / 2, y: H - 500, size: 8, font, color: rgb(...C.lgray) });
-
-    const bytes = await doc.save();
-    triggerDownload(bytes, "BNM-Mentor-des-Monats-" + data.period + ".pdf");
-    return true;
-  } catch (err) {
-    if (typeof window !== "undefined") window.alert("PDF-Fehler: " + String(err));
-    return false;
-  }
-}
-
-// Wie downloadMentorAwardPDF, gibt aber die Bytes zurück (für E-Mail-Anhang etc.)
+// Einzige Build-Funktion – gibt die Bytes zurück (verhindert TDZ-Bug durch Code-Duplikation)
 export async function generateMentorAwardPDFBytes(data: AwardData): Promise<Uint8Array | null> {
   if (Platform.OS !== "web") return null;
   try {
     const PDFLib = await loadPdfLib();
     const { PDFDocument, StandardFonts, rgb } = PDFLib;
-    const doc = await PDFDocument.create();
-    const font = await doc.embedFont(StandardFonts.Helvetica);
-    const bold = await doc.embedFont(StandardFonts.HelveticaBold);
-    const W = 595; const H = 842; const cx = W / 2;
+    const aDoc = await PDFDocument.create();
+    const aFont = await aDoc.embedFont(StandardFonts.Helvetica);
+    const aBold = await aDoc.embedFont(StandardFonts.HelveticaBold);
+    const AW = 595; const AH = 842; const acx = AW / 2;
 
-    const p = doc.addPage([W, H]);
-    p.drawRectangle({ x: 30, y: 30, width: W - 60, height: H - 60, borderColor: rgb(...C.gold), borderWidth: 3 });
-    p.drawText("BNM", { x: cx - bold.widthOfTextAtSize("BNM", 36) / 2, y: H - 120, size: 36, font: bold, color: rgb(...C.gold) });
-    p.drawText("BETREUUNG NEUER MUSLIME", { x: cx - font.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: H - 140, size: 8, font, color: rgb(...C.gray) });
-    p.drawRectangle({ x: cx - 30, y: H - 170, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText("AUSZEICHNUNG", { x: cx - font.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: H - 200, size: 10, font, color: rgb(...C.gray) });
-    p.drawText("Mentor des Monats", { x: cx - bold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: H - 240, size: 24, font: bold, color: rgb(...C.navy) });
-    p.drawText(data.period, { x: cx - font.widthOfTextAtSize(data.period, 12) / 2, y: H - 265, size: 12, font, color: rgb(...C.gray) });
-    p.drawRectangle({ x: cx - 30, y: H - 290, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText(data.mentorName, { x: cx - bold.widthOfTextAtSize(data.mentorName, 28) / 2, y: H - 340, size: 28, font: bold, color: rgb(...C.gold) });
+    const aPage = aDoc.addPage([AW, AH]);
+    aPage.drawRectangle({ x: 30, y: 30, width: AW - 60, height: AH - 60, borderColor: rgb(...C.gold), borderWidth: 3 });
+    aPage.drawText("BNM", { x: acx - aBold.widthOfTextAtSize("BNM", 36) / 2, y: AH - 120, size: 36, font: aBold, color: rgb(...C.gold) });
+    aPage.drawText("BETREUUNG NEUER MUSLIME", { x: acx - aFont.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: AH - 140, size: 8, font: aFont, color: rgb(...C.gray) });
+    aPage.drawRectangle({ x: acx - 30, y: AH - 170, width: 60, height: 3, color: rgb(...C.gold) });
+    aPage.drawText("AUSZEICHNUNG", { x: acx - aFont.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: AH - 200, size: 10, font: aFont, color: rgb(...C.gray) });
+    aPage.drawText("Mentor des Monats", { x: acx - aBold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: AH - 240, size: 24, font: aBold, color: rgb(...C.navy) });
+    aPage.drawText(data.period, { x: acx - aFont.widthOfTextAtSize(data.period, 12) / 2, y: AH - 265, size: 12, font: aFont, color: rgb(...C.gray) });
+    aPage.drawRectangle({ x: acx - 30, y: AH - 290, width: 60, height: 3, color: rgb(...C.gold) });
+    aPage.drawText(data.mentorName, { x: acx - aBold.widthOfTextAtSize(data.mentorName, 28) / 2, y: AH - 340, size: 28, font: aBold, color: rgb(...C.gold) });
 
-    [[String(data.score), "Punkte"], [String(data.completed), "Abgeschlossen"], [String(data.sessions), "Sessions"]].forEach(([v, l], i) => {
-      const sx = 120 + i * 140;
-      p.drawRectangle({ x: sx, y: H - 430, width: 110, height: 50, borderColor: rgb(...C.border), borderWidth: 1 });
-      p.drawText(v, { x: sx + 55 - bold.widthOfTextAtSize(v, 20) / 2, y: H - 410, size: 20, font: bold, color: rgb(...C.navy) });
-      p.drawText(l, { x: sx + 55 - font.widthOfTextAtSize(l, 8) / 2, y: H - 425, size: 8, font, color: rgb(...C.gray) });
+    const aStats: [string, string][] = [
+      [String(data.score), "Punkte"],
+      [String(data.completed), "Abschluesse"],
+      [String(data.sessions), "Sessions"],
+    ];
+    aStats.forEach(function(pair, i) {
+      const asx = 120 + i * 140;
+      aPage.drawRectangle({ x: asx, y: AH - 430, width: 110, height: 50, borderColor: rgb(...C.border), borderWidth: 1 });
+      aPage.drawText(pair[0], { x: asx + 55 - aBold.widthOfTextAtSize(pair[0], 20) / 2, y: AH - 410, size: 20, font: aBold, color: rgb(...C.navy) });
+      aPage.drawText(pair[1], { x: asx + 55 - aFont.widthOfTextAtSize(pair[1], 8) / 2, y: AH - 425, size: 8, font: aFont, color: rgb(...C.gray) });
     });
 
-    p.drawRectangle({ x: cx - 30, y: H - 470, width: 60, height: 3, color: rgb(...C.gold) });
-    p.drawText("BNM - Betreuung neuer Muslime - iman.ngo", { x: cx - font.widthOfTextAtSize("BNM - Betreuung neuer Muslime - iman.ngo", 8) / 2, y: H - 500, size: 8, font, color: rgb(...C.lgray) });
+    aPage.drawRectangle({ x: acx - 30, y: AH - 470, width: 60, height: 3, color: rgb(...C.gold) });
+    aPage.drawText("BNM - Betreuung neuer Muslime - iman.ngo", { x: acx - aFont.widthOfTextAtSize("BNM - Betreuung neuer Muslime - iman.ngo", 8) / 2, y: AH - 500, size: 8, font: aFont, color: rgb(...C.lgray) });
 
-    return await doc.save();
+    return await aDoc.save();
   } catch {
     return null;
+  }
+}
+
+// Download-Wrapper: erzeugt Bytes via generateMentorAwardPDFBytes, dann Download
+export async function downloadMentorAwardPDF(data: AwardData): Promise<boolean> {
+  if (Platform.OS !== "web") return false;
+  try {
+    const bytes = await generateMentorAwardPDFBytes(data);
+    if (!bytes) return false;
+    triggerDownload(bytes, "BNM-Mentor-des-Monats-" + data.period + ".pdf");
+    return true;
+  } catch (err) {
+    if (typeof window !== "undefined") window.alert("PDF-Fehler: " + String(err));
+    return false;
   }
 }
 
@@ -426,9 +405,9 @@ export async function downloadMentorAwardPNG(data: AwardData): Promise<boolean> 
 
     // Eck-Ornamente
     ctx.fillStyle = "#EEA71B";
-    for (const [x, y] of [[30, 30], [W - 30, 30], [30, H - 30], [W - 30, H - 30]] as [number,number][]) {
-      ctx.fillRect(x - 5, y - 5, 10, 10);
-    }
+    [[30, 30], [W - 30, 30], [30, H - 30], [W - 30, H - 30]].forEach(function(corner) {
+      ctx.fillRect(corner[0] - 5, corner[1] - 5, 10, 10);
+    });
 
     // Navy Header-Balken
     ctx.fillStyle = "#101828";
@@ -487,16 +466,16 @@ export async function downloadMentorAwardPNG(data: AwardData): Promise<boolean> 
       [String(data.completed), "ABSCHLÜSSE"],
       [String(data.sessions), "SESSIONS"],
     ];
-    stats.forEach(([val, label], i) => {
-      const sx = cx - 140 + i * 140;
+    stats.forEach(function(pair, i) {
+      const pngSx = cx - 140 + i * 140;
       if (i > 0) {
         ctx.strokeStyle = "#E5E7EB"; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(sx - 20, 355); ctx.lineTo(sx - 20, 415); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(pngSx - 20, 355); ctx.lineTo(pngSx - 20, 415); ctx.stroke();
       }
       ctx.fillStyle = "#101828"; ctx.font = "bold 28px Arial, sans-serif"; ctx.textAlign = "center";
-      ctx.fillText(val, sx, 392);
+      ctx.fillText(pair[0], pngSx, 392);
       ctx.fillStyle = "#9CA3AF"; ctx.font = "bold 8px Arial, sans-serif";
-      ctx.fillText(label, sx, 412);
+      ctx.fillText(pair[1], pngSx, 412);
     });
 
     // Footer-Linie

@@ -66,10 +66,24 @@ export default function CertificateGeneratorScreen() {
   const mentorStats = useMemo(() => {
     if (!selectedMentor) return { score: 0, completedCount: 0, sessionCount: 0 };
     const myMs = mentorships.filter((m) => m.mentor_id === selectedMentor.id);
-    const completedCount = myMs.filter((m) => m.status === "completed").length;
-    const sessionCount = sessions.filter((s) => myMs.some((m) => m.id === s.mentorship_id)).length;
+
+    // Nur Abschlüsse im gewählten Monat/Jahr
+    const completedCount = myMs.filter((m) => {
+      if (m.status !== "completed" || !m.completed_at) return false;
+      const d = new Date(m.completed_at);
+      return d.getFullYear() === selectedYear && d.getMonth() + 1 === selectedMonth;
+    }).length;
+
+    // Nur Sessions im gewählten Monat/Jahr
+    const sessionCount = sessions.filter((s) => {
+      if (!myMs.some((m) => m.id === s.mentorship_id)) return false;
+      if (!s.date) return false;
+      const d = new Date(s.date);
+      return d.getFullYear() === selectedYear && d.getMonth() + 1 === selectedMonth;
+    }).length;
+
     return { score: completedCount * 10 + sessionCount * 3, completedCount, sessionCount };
-  }, [selectedMentor, mentorships, sessions]);
+  }, [selectedMentor, selectedMonth, selectedYear, mentorships, sessions]);
 
   const awardData = useMemo(() => ({
     mentorName: selectedMentor?.name ?? "–",
