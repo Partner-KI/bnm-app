@@ -20,7 +20,7 @@ import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { navigateToChat } from "../../lib/chatNavigation";
 import type { ThemeMode } from "../../contexts/ThemeContext";
 import type { UserRole } from "../../types";
-import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS, TYPOGRAPHY } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMLogo } from "../../components/BNMLogo";
 
@@ -142,15 +142,15 @@ export default function ProfileScreen() {
     user.role === "admin"
       ? (isDark ? "#2e1a4a" : "#f3e8ff")
       : user.role === "mentor"
-      ? (isDark ? "#1e2d4a" : "#dbeafe")
-      : (isDark ? "#1a3a2a" : "#dcfce7");
+      ? themeColors.primaryLight
+      : themeColors.successLight;
 
   const roleTextColor =
     user.role === "admin"
       ? (isDark ? "#c084fc" : "#7e22ce")
       : user.role === "mentor"
-      ? (isDark ? "#93c5fd" : "#1d4ed8")
-      : (isDark ? "#4ade80" : "#15803d");
+      ? themeColors.primary
+      : themeColors.success;
 
   const THEME_OPTIONS: { value: ThemeMode; labelKey: "theme.light" | "theme.dark" | "theme.system"; icon: string }[] = [
     { value: "light", labelKey: "theme.light", icon: "☀️" },
@@ -162,11 +162,11 @@ export default function ProfileScreen() {
     <Container fullWidth={Platform.OS === "web"}>
     <ScrollView
       style={[styles.scrollView, { backgroundColor: themeColors.background }]}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.gold} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={themeColors.accent} />}
     >
       <View style={styles.page}>
         {/* Hero-Header mit dunklem Blau */}
-        <View style={styles.heroHeader}>
+        <View style={[styles.heroHeader, { backgroundColor: themeColors.primary }]}>
           {/* BNM Logo oben rechts */}
           <View style={styles.heroLogoPosition}>
             <BNMLogo size={40} showSubtitle={false} />
@@ -174,12 +174,12 @@ export default function ProfileScreen() {
           {user.avatar_url ? (
             <Image
               source={{ uri: user.avatar_url }}
-              style={styles.avatarImage}
+              style={[styles.avatarImage, { borderColor: themeColors.accent }]}
               resizeMode="cover"
               accessibilityLabel={`Profilbild von ${user.name}`}
             />
           ) : (
-            <View style={styles.avatarCircle}>
+            <View style={[styles.avatarCircle, { backgroundColor: themeColors.accent }]}>
               <Text style={styles.avatarText}>{initials}</Text>
             </View>
           )}
@@ -256,20 +256,20 @@ export default function ProfileScreen() {
           <View style={[styles.infoCard, { backgroundColor: themeColors.card }]}>
             <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("profile.myStats")}</Text>
             <View style={styles.statsGrid}>
-              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem, borderLeftColor: themeColors.accent }]}>
                 <Text style={[styles.statValue, { color: themeColors.text }]}>{mentorStats.active}</Text>
                 <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.activeMentorships")}</Text>
               </View>
-              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
-                <Text style={[styles.statValue, { color: COLORS.cta }]}>{mentorStats.completed}</Text>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem, borderLeftColor: themeColors.success }]}>
+                <Text style={[styles.statValue, { color: themeColors.success }]}>{mentorStats.completed}</Text>
                 <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.completedMentorships")}</Text>
               </View>
-              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
-                <Text style={[styles.statValue, { color: COLORS.gradientStart }]}>{mentorStats.totalSessions}</Text>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem, borderLeftColor: themeColors.primary }]}>
+                <Text style={[styles.statValue, { color: themeColors.primary }]}>{mentorStats.totalSessions}</Text>
                 <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.totalSessions")}</Text>
               </View>
-              <View style={[styles.statItem, { backgroundColor: themeColors.statItem }]}>
-                <Text style={[styles.statValue, { color: COLORS.gold }]}>
+              <View style={[styles.statItem, { backgroundColor: themeColors.statItem, borderLeftColor: themeColors.accent }]}>
+                <Text style={[styles.statValue, { color: themeColors.accent }]}>
                   #{mentorStats.rank}
                 </Text>
                 <Text style={[styles.statLabel, { color: themeColors.textTertiary }]}>{t("profile.ranking")}</Text>
@@ -298,7 +298,7 @@ export default function ProfileScreen() {
               isLast
             />
             <BNMPressable
-              style={[styles.partnerMessageBtn]}
+              style={[styles.partnerMessageBtn, { backgroundColor: themeColors.primary }]}
               onPress={() =>
                 navigateToChat(router, partnerContact.mentorshipId)
               }
@@ -355,13 +355,13 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <BNMPressable
-          style={[styles.logoutButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
+          style={[styles.logoutButton, { backgroundColor: themeColors.errorLight, borderColor: themeColors.error + "40" }]}
           onPress={handleLogout}
           hapticStyle="warning"
           accessibilityRole="button"
           accessibilityLabel={t("profile.logout")}
         >
-          <Text style={[styles.logoutText, { color: isDark ? "#f87171" : "#dc2626" }]}>{t("profile.logout")}</Text>
+          <Text style={[styles.logoutText, { color: themeColors.error }]}>{t("profile.logout")}</Text>
         </BNMPressable>
 
         {/* App-Footer */}
@@ -403,7 +403,7 @@ export default function ProfileScreen() {
             <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
               <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.privacyTitle")}</Text>
               <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.privacyText")}</Text>
-              <BNMPressable style={styles.overlayClose} onPress={() => setShowPrivacy(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
+              <BNMPressable style={[styles.overlayClose, { backgroundColor: themeColors.primary }]} onPress={() => setShowPrivacy(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
                 <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
               </BNMPressable>
             </View>
@@ -416,7 +416,7 @@ export default function ProfileScreen() {
             <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
               <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.imprintTitle")}</Text>
               <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.imprintText")}</Text>
-              <BNMPressable style={styles.overlayClose} onPress={() => setShowImprint(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
+              <BNMPressable style={[styles.overlayClose, { backgroundColor: themeColors.primary }]} onPress={() => setShowImprint(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
                 <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
               </BNMPressable>
             </View>
@@ -452,11 +452,10 @@ function InfoRow({
 }
 
 const styles = StyleSheet.create({
-  scrollView: { flex: 1, backgroundColor: COLORS.bg },
+  scrollView: { flex: 1 },
   page: { padding: 16 },
   heroHeader: {
-    backgroundColor: COLORS.gradientStart,
-    borderRadius: RADIUS.sm,
+    borderRadius: RADIUS.md,
     padding: 20,
     alignItems: "center",
     marginBottom: 16,
@@ -473,7 +472,6 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: COLORS.gold,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
@@ -484,27 +482,24 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: COLORS.gold,
   },
-  avatarText: { color: COLORS.white, fontSize: 22, fontWeight: "800" },
-  userName: { fontSize: 18, fontWeight: "800", color: COLORS.white, marginBottom: 6 },
-  roleBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: 4 },
+  avatarText: { color: "#FFFFFF", fontSize: 22, fontWeight: "800" },
+  userName: { fontSize: 18, fontWeight: "800", color: "#FFFFFF", marginBottom: 6 },
+  roleBadge: { paddingHorizontal: 12, paddingVertical: 4, borderRadius: RADIUS.xs },
   roleBadgeText: { fontSize: 12, fontWeight: "600" },
   genderBadge: { marginTop: 8 },
-  genderText: { color: COLORS.white, opacity: 0.75, fontSize: 13 },
+  genderText: { color: "#FFFFFF", opacity: 0.75, fontSize: 13 },
   infoCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.sm,
+    borderRadius: RADIUS.md,
     padding: 16,
     marginBottom: 12,
-    ...SHADOWS.md,
+    ...SHADOWS.sm,
   },
   sectionLabel: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: COLORS.tertiary,
+    ...TYPOGRAPHY.styles.label,
     letterSpacing: 1,
     marginBottom: 12,
+    textTransform: "uppercase",
   },
   infoRow: {
     flexDirection: "row",
@@ -512,9 +507,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingVertical: 10,
   },
-  infoLabel: { color: COLORS.secondary, fontSize: 13 },
+  infoLabel: { fontSize: 13 },
   infoValue: {
-    color: COLORS.primary,
     fontSize: 14,
     fontWeight: "500",
     maxWidth: "60%",
@@ -527,10 +521,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
   },
-  menuItemText: { color: COLORS.primary, fontSize: 14 },
-  menuArrow: { color: COLORS.tertiary, fontSize: 18 },
+  menuItemText: { fontSize: 14 },
+  menuArrow: { fontSize: 18 },
   statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -540,16 +533,14 @@ const styles = StyleSheet.create({
   statItem: {
     flex: 1,
     minWidth: "40%",
-    backgroundColor: COLORS.bg,
     borderRadius: RADIUS.sm,
     padding: 12,
     alignItems: "center",
     borderLeftWidth: 3,
-    borderLeftColor: COLORS.gold,
   },
-  statValue: { fontSize: 24, fontWeight: "800", color: COLORS.primary },
-  statLabel: { color: COLORS.tertiary, fontSize: 11, marginTop: 2, textAlign: "center" },
-  rankHint: { color: COLORS.tertiary, fontSize: 11, textAlign: "center", marginTop: 4 },
+  statValue: { fontSize: 24, fontWeight: "800" },
+  statLabel: { fontSize: 11, marginTop: 2, textAlign: "center" },
+  rankHint: { fontSize: 11, textAlign: "center", marginTop: 4 },
   logoutButton: {
     borderWidth: 1,
     borderRadius: RADIUS.sm,
@@ -558,21 +549,19 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logoutText: { fontWeight: "600" },
-  appInfo: { color: COLORS.tertiary, fontSize: 12, textAlign: "center" },
   partnerMessageBtn: {
     marginTop: 10,
-    backgroundColor: COLORS.gradientStart,
     borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
-  partnerMessageBtnText: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
+  partnerMessageBtnText: { color: "#FFFFFF", fontWeight: "600", fontSize: 13 },
   footerBox: { alignItems: "center", marginBottom: 16 },
-  footerVersion: { color: COLORS.tertiary, fontSize: 12, marginBottom: 4 },
+  footerVersion: { fontSize: 12, marginBottom: 4 },
   footerPartner: { fontSize: 11, marginBottom: 8, textAlign: "center" },
   footerLinks: { flexDirection: "row", alignItems: "center", gap: 6 },
-  footerLink: { color: COLORS.link, fontSize: 12 },
-  footerSep: { color: COLORS.tertiary, fontSize: 12 },
+  footerLink: { fontSize: 12 },
+  footerSep: { fontSize: 12 },
   overlay: {
     position: "absolute",
     top: 0,
@@ -586,20 +575,18 @@ const styles = StyleSheet.create({
     padding: 32,
   },
   overlayCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: RADIUS.sm,
+    borderRadius: RADIUS.md,
     padding: 24,
     width: "100%",
   },
-  overlayTitle: { fontWeight: "800", fontSize: 17, color: COLORS.primary, marginBottom: 12 },
-  overlayText: { color: COLORS.secondary, fontSize: 14, lineHeight: 22, marginBottom: 20 },
+  overlayTitle: { fontWeight: "800", fontSize: 17, marginBottom: 12 },
+  overlayText: { fontSize: 14, lineHeight: 22, marginBottom: 20 },
   overlayClose: {
-    backgroundColor: COLORS.gradientStart,
     borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
-  overlayCloseText: { color: COLORS.white, fontWeight: "600" },
+  overlayCloseText: { color: "#FFFFFF", fontWeight: "600" },
 });
 
 // Styles für den Theme-Toggle (SegmentedControl-ähnlich)

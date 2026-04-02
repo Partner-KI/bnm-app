@@ -40,21 +40,33 @@ export async function sendEmail(
   subject: string,
   body: string
 ): Promise<boolean> {
-  // 1) In die Queue schreiben (Audit-Trail)
-  const { error } = await supabase.from("email_queue").insert({
-    to_email: to,
-    subject,
-    body,
-    override_to: OVERRIDE_RECIPIENT,
-    status: "pending",
-    sent_at: null,
-  });
+  try {
+    // 1) In die Queue schreiben (Audit-Trail) — mit 8s Timeout
+    const insertPromise = supabase.from("email_queue").insert({
+      to_email: to,
+      subject,
+      body,
+      override_to: OVERRIDE_RECIPIENT,
+      status: "pending",
+      sent_at: null,
+    });
+    const { error } = await Promise.race([
+      insertPromise,
+      new Promise<{ error: { message: string } }>((resolve) =>
+        setTimeout(() => resolve({ error: { message: "email_queue timeout" } }), 8_000)
+      ),
+    ]);
 
-  // 2) Direkt versenden — Empfänger ist immer OVERRIDE_RECIPIENT
-  // fire-and-forget: Fehler beim Versand blockieren nicht den Rückgabewert
-  sendViaResend(OVERRIDE_RECIPIENT, subject, body).catch(() => {});
+    if (error) console.warn("[emailService] email_queue insert:", error.message ?? error);
 
-  return !error;
+    // 2) Direkt versenden — fire-and-forget
+    sendViaResend(OVERRIDE_RECIPIENT, subject, body).catch(() => {});
+
+    return !error;
+  } catch (err) {
+    console.warn("[emailService] sendEmail failed:", err);
+    return false;
+  }
 }
 
 // ─── Zugangsdaten-E-Mail ─────────────────────────────────────────────────────

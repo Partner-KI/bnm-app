@@ -3,16 +3,16 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
 import { BNMInput } from "../components/BNMInput";
+import { BNMPressable } from "../components/BNMPressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
-import { COLORS, RADIUS } from "../constants/Colors";
+import { RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -78,9 +78,9 @@ export default function ChangePasswordScreen() {
 
   const newPasswordStrength = (() => {
     if (newPassword.length === 0) return null;
-    if (newPassword.length < 8) return { label: t("changePassword.strengthTooShort"), color: COLORS.error, widthPct: "33%" as const };
-    if (newPassword.length < 12) return { label: t("changePassword.strengthMedium"), color: COLORS.gold, widthPct: "66%" as const };
-    return { label: t("changePassword.strengthStrong"), color: COLORS.cta, widthPct: "100%" as const };
+    if (newPassword.length < 8) return { label: t("changePassword.strengthTooShort"), color: themeColors.error, widthPct: "33%" as const };
+    if (newPassword.length < 12) return { label: t("changePassword.strengthMedium"), color: themeColors.warning, widthPct: "66%" as const };
+    return { label: t("changePassword.strengthStrong"), color: themeColors.success, widthPct: "100%" as const };
   })();
 
   return (
@@ -91,17 +91,17 @@ export default function ChangePasswordScreen() {
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button">
             <Text style={[styles.backText, { color: themeColors.text }]}>{t("changePassword.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("changePassword.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
 
-          <View style={[styles.infoBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
-            <Text style={[styles.infoText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
+          <View style={[styles.infoBox, { backgroundColor: themeColors.infoLight, borderColor: themeColors.info + "40" }]}>
+            <Text style={[styles.infoText, { color: themeColors.info }]}>
               {t("changePassword.info")}
             </Text>
           </View>
@@ -171,7 +171,7 @@ export default function ChangePasswordScreen() {
             <Text
               style={[
                 styles.matchText,
-                { color: newPassword === confirmPassword ? COLORS.cta : COLORS.error },
+                { color: newPassword === confirmPassword ? themeColors.success : themeColors.error },
               ]}
             >
               {newPassword === confirmPassword
@@ -189,19 +189,20 @@ export default function ChangePasswordScreen() {
           </View>
 
           {/* Speichern */}
-          <TouchableOpacity
-            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+          <BNMPressable
+            style={[styles.saveButton, { backgroundColor: themeColors.success }, isSaving && styles.saveButtonDisabled]}
             onPress={handleSubmit}
             disabled={isSaving}
+            hapticStyle="success"
           >
             <Text style={styles.saveButtonText}>
               {isSaving ? t("changePassword.submitting") : t("changePassword.submit")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
-          <TouchableOpacity style={[styles.cancelButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]} onPress={() => router.back()}>
+          <BNMPressable style={[styles.cancelButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]} onPress={() => router.back()}>
             <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>{t("changePassword.cancel")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -258,14 +259,13 @@ const styles = StyleSheet.create({
   tipTitle: { fontWeight: "800", fontSize: 12, marginBottom: 6 },
   tipText: { fontSize: 12, lineHeight: 18 },
   saveButton: {
-    backgroundColor: COLORS.cta,
     borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
   },
   saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+  saveButtonText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
     borderRadius: RADIUS.md,

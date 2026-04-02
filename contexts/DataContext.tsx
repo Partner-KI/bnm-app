@@ -944,7 +944,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         );
 
         if (newReminders.length > 0) {
-          const { data: insertedReminders } = await supabase
+          // fire-and-forget: Reminder-INSERT darf loadAllData nicht blockieren
+          supabase
             .from('notifications')
             .insert(
               newReminders.map((r) => ({
@@ -955,14 +956,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 related_id: r.related_id ?? null,
               }))
             )
-            .select();
-
-          if (insertedReminders) {
-            setNotifications((prev) => [
-              ...prev,
-              ...insertedReminders.map(mapNotification),
-            ]);
-          }
+            .select()
+            .then(({ data: insertedReminders }) => {
+              if (insertedReminders) {
+                setNotifications((prev) => [
+                  ...prev,
+                  ...insertedReminders.map(mapNotification),
+                ]);
+              }
+            })
+            .catch((err) => console.warn("[DataContext] reminder insert:", err));
         }
       }
     } catch (err) {
@@ -1440,17 +1443,29 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ─── Hilfsfunktion: Notification in DB einfügen ────────────────────────────────
   const createNotification = useCallback(
     async (userId: string, type: Notification["type"], title: string, body: string, relatedId?: string) => {
-      const { data, error } = await supabase
-        .from("notifications")
-        .insert({ user_id: userId, type, title, body, related_id: relatedId ?? null })
-        .select()
-        .single();
+      try {
+        const insertPromise = supabase
+          .from("notifications")
+          .insert({ user_id: userId, type, title, body, related_id: relatedId ?? null })
+          .select()
+          .single();
+        // 8s Timeout: Notification darf NIEMALS die UI blockieren
+        const { data, error } = await Promise.race([
+          insertPromise,
+          new Promise<{ data: null; error: { message: string } }>((resolve) =>
+            setTimeout(() => resolve({ data: null, error: { message: "notification timeout (8s)" } }), 8_000)
+          ),
+        ]);
 
-      if (!error && data) {
-        // Nur in State laden wenn es die eigene Notification ist
-        if (userId === authUser?.id) {
+        if (error) {
+          console.warn("[createNotification]", error.message ?? error);
+          return;
+        }
+        if (data && userId === authUser?.id) {
           setNotifications((prev) => [...prev, mapNotification(data)]);
         }
+      } catch (err) {
+        console.warn("[createNotification] failed:", err);
       }
     },
     [authUser]
@@ -2275,18 +2290,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
             }
           }
 
-          // Zugangsdaten per E-Mail senden
-          await sendCredentialsEmail(app.email, app.name, tempPassword);
-          showSuccess("Account erstellt. Zugangsdaten wurden per E-Mail an den Mentor gesendet.");
+          // Zugangsdaten per E-Mail senden (fire-and-forget — blockiert nicht die UI)
+          sendCredentialsEmail(app.email, app.name, tempPassword).catch(() =>
+            console.warn("[approveApplication] E-Mail-Versand fehlgeschlagen")
+          );
+          showSuccess("Account erstellt. Zugangsdaten werden per E-Mail gesendet.");
 
-          // Notification an neuen Mentor: Bewerbung angenommen
+          // Notification an neuen Mentor (fire-and-forget)
           if (signUpData?.user) {
-            await createNotification(
+            createNotification(
               signUpData.user.id,
               "assignment",
               "Deine Bewerbung wurde angenommen!",
               "Willkommen als Mentor bei BNM. Du bist jetzt aktiv.",
-            );
+            ).catch(() => {});
           }
         }
       }
@@ -2338,15 +2355,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
         )
       );
 
-      // E-Mail an den Bewerber senden (kein Account → keine In-App-Notification möglich)
+      // E-Mail an den Bewerber senden (fire-and-forget — blockiert nicht die UI)
       if (app) {
         const isMenteeRegistration =
           app.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
-        await sendApplicationRejectionEmail(
+        sendApplicationRejectionEmail(
           app.email,
           app.name,
           isMenteeRegistration ? "mentee" : "mentor"
-        );
+        ).catch(() => console.warn("[rejectApplication] E-Mail fehlgeschlagen"));
       }
     },
     [applications, authUser]

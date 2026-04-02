@@ -17,11 +17,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { ContactPreference } from "../types";
-import { COLORS, RADIUS } from "../constants/Colors";
+import { RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { uploadAvatar } from "../lib/storage";
 import { useLanguage } from "../contexts/LanguageContext";
-import { useTheme, useThemeColors } from "../contexts/ThemeContext";
+import { useThemeColors } from "../contexts/ThemeContext";
 import { geocodePLZ } from "../lib/geocoding";
 
 export default function EditProfileScreen() {
@@ -30,7 +30,6 @@ export default function EditProfileScreen() {
   const { user, refreshUser } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { isDark } = useTheme();
   const { updateUser, refreshData } = useData();
 
   const CONTACT_OPTIONS: { key: ContactPreference; label: string }[] = [
@@ -170,13 +169,13 @@ export default function EditProfileScreen() {
             {avatarPreview ? (
               <Image
                 source={{ uri: avatarPreview }}
-                style={styles.avatarPreview}
+                style={[styles.avatarPreview, { borderColor: themeColors.border }]}
                 resizeMode="cover"
                 accessibilityLabel={`Profilbild von ${safeUser.name}`}
               />
             ) : (
-              <View style={styles.avatarPlaceholder}>
-                <Text style={styles.avatarInitials}>
+              <View style={[styles.avatarPlaceholder, { backgroundColor: themeColors.primary }]}>
+                <Text style={[styles.avatarInitials, { color: themeColors.accent }]}>
                   {safeUser.name
                     .split(" ")
                     .map((n) => n[0])
@@ -187,14 +186,14 @@ export default function EditProfileScreen() {
               </View>
             )}
             <BNMPressable
-              style={[styles.avatarButton, isUploadingAvatar && styles.avatarButtonDisabled]}
+              style={[styles.avatarButton, { borderColor: themeColors.border }, isUploadingAvatar && styles.avatarButtonDisabled]}
               onPress={handleAvatarPress}
               disabled={isUploadingAvatar}
               accessibilityRole="button"
               accessibilityLabel={isUploadingAvatar ? t("editProfile.uploading") : t("editProfile.changePicture")}
               accessibilityState={{ disabled: isUploadingAvatar }}
             >
-              <Text style={styles.avatarButtonText}>
+              <Text style={[styles.avatarButtonText, { color: themeColors.text }]}>
                 {isUploadingAvatar ? t("editProfile.uploading") : t("editProfile.changePicture")}
               </Text>
             </BNMPressable>
@@ -279,7 +278,7 @@ export default function EditProfileScreen() {
                 key={opt.key}
                 style={[
                   styles.contactChip,
-                  contactPref === opt.key ? styles.contactChipActive : [styles.contactChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                  contactPref === opt.key ? [styles.contactChipActive, { backgroundColor: themeColors.primary, borderColor: themeColors.primary }] : [styles.contactChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                 ]}
                 onPress={() => setContactPref(opt.key)}
                 accessibilityRole="radio"
@@ -300,18 +299,18 @@ export default function EditProfileScreen() {
           </View>
 
           {/* Unveränderliche Info */}
-          <View style={[styles.infoBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
-            <Text style={[styles.infoBoxTitle, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{t("editProfile.unchangeable")}</Text>
-            <Text style={[styles.infoBoxText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
+          <View style={[styles.infoBox, { backgroundColor: themeColors.infoLight, borderColor: themeColors.info + "40" }]}>
+            <Text style={[styles.infoBoxTitle, { color: themeColors.info }]}>{t("editProfile.unchangeable")}</Text>
+            <Text style={[styles.infoBoxText, { color: themeColors.info }]}>
               {t("editProfile.unchangeableText")}
             </Text>
-            <Text style={{ color: isDark ? "#60a5fa" : "#3b82f6", marginTop: 8, fontSize: 11, fontWeight: "600" }}>{t("editProfile.yourEmail")}</Text>
-            <Text style={[styles.infoBoxValue, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{safeUser.email}</Text>
+            <Text style={{ color: themeColors.info, marginTop: 8, fontSize: 11, fontWeight: "600" }}>{t("editProfile.yourEmail")}</Text>
+            <Text style={[styles.infoBoxValue, { color: themeColors.info }]}>{safeUser.email}</Text>
           </View>
 
           {/* Speichern */}
           <BNMPressable
-            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+            style={[styles.saveButton, { backgroundColor: themeColors.success }, isSaving && styles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={isSaving}
             hapticStyle="success"
@@ -367,12 +366,9 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
     borderWidth: 1,
   },
-  contactChipActive: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
+  contactChipActive: {},
   contactChipInactive: {},
-  contactChipTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
+  contactChipTextActive: { color: "#FFFFFF", fontWeight: "600", fontSize: 13 },
   contactChipTextInactive: { fontWeight: "500", fontSize: 13 },
   infoBox: {
     borderWidth: 1,
@@ -384,14 +380,13 @@ const styles = StyleSheet.create({
   infoBoxText: { fontSize: 13, lineHeight: 18, marginBottom: 6 },
   infoBoxValue: { fontSize: 13, fontWeight: "600" },
   saveButton: {
-    backgroundColor: COLORS.cta,
     borderRadius: RADIUS.md,
     paddingVertical: 9,
     alignItems: "center",
     marginBottom: 10,
   },
   saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+  saveButtonText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
     borderRadius: RADIUS.md,
@@ -409,29 +404,25 @@ const styles = StyleSheet.create({
     borderRadius: 36,
     marginBottom: 10,
     borderWidth: 2,
-    borderColor: COLORS.border,
   },
   avatarPlaceholder: {
     width: 72,
     height: 72,
     borderRadius: 36,
-    backgroundColor: COLORS.gradientStart,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 10,
   },
   avatarInitials: {
-    color: COLORS.gold,
     fontSize: 26,
     fontWeight: "800",
   },
   avatarButton: {
     borderWidth: 1,
-    borderColor: COLORS.border,
     borderRadius: RADIUS.md,
     paddingHorizontal: 16,
     paddingVertical: 7,
   },
   avatarButtonDisabled: { opacity: 0.5 },
-  avatarButtonText: { color: COLORS.primary, fontSize: 13, fontWeight: "500" },
+  avatarButtonText: { fontSize: 13, fontWeight: "500" },
 });

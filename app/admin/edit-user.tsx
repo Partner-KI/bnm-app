@@ -3,8 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
@@ -14,10 +12,12 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { RADIUS } from "../../constants/Colors";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
-import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
+import { BNMPressable } from "../../components/BNMPressable";
+import { BNMInput } from "../../components/BNMInput";
+import { useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
 import { sendCredentialsEmail } from "../../lib/emailService";
 import type { UserRole, Gender } from "../../types";
@@ -36,7 +36,6 @@ export default function EditUserScreen() {
   const { getUserById, updateUser, setUserActive } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { isDark } = useTheme();
 
   const target = getUserById(id);
 
@@ -69,7 +68,6 @@ function EditUserForm({ userId }: { userId: string }) {
   const { getUserById, updateUser, setUserActive } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
-  const { isDark } = useTheme();
 
   const target = getUserById(userId)!;
 
@@ -176,9 +174,9 @@ function EditUserForm({ userId }: { userId: string }) {
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <BNMPressable onPress={() => router.back()} style={styles.backBtn}>
             <Text style={[styles.backBtnText, { color: themeColors.text }]}>{t("editUser.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("editUser.title")}</Text>
           <View style={styles.headerRight} />
         </View>
@@ -187,14 +185,14 @@ function EditUserForm({ userId }: { userId: string }) {
 
           {/* Gesperrt-Badge */}
           {isBlocked && (
-            <View style={[styles.blockedBanner, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
-              <Text style={[styles.blockedBannerText, { color: isDark ? "#f87171" : "#b91c1c" }]}>⚠ {t("editUser.blocked")}</Text>
+            <View style={[styles.blockedBanner, { backgroundColor: themeColors.errorLight, borderColor: themeColors.error + "40" }]}>
+              <Text style={[styles.blockedBannerText, { color: themeColors.error }]}>⚠ {t("editUser.blocked")}</Text>
             </View>
           )}
 
           {/* Profil-Avatar */}
           <View style={[styles.avatarRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <View style={styles.avatarCircle}>
+            <View style={[styles.avatarCircle, { backgroundColor: themeColors.primary }]}>
               <Text style={styles.avatarText}>
                 {target.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
               </Text>
@@ -208,68 +206,35 @@ function EditUserForm({ userId }: { userId: string }) {
           {/* Formular */}
           <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("editUser.profileDataLabel")}</Text>
 
-          <FormField label={t("editUser.name")} error={errors.name}>
-            <TextInput
-              style={[styles.input, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }, errors.name ? styles.inputError : {}]}
-              value={name}
-              onChangeText={setName}
-              placeholder={t("editUser.namePlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
-            />
-          </FormField>
+          <BNMInput label={t("editUser.name")} value={name} onChangeText={setName} error={errors.name} />
 
-          <FormField label={t("editUser.city")} error={errors.city}>
-            <TextInput
-              style={[styles.input, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }, errors.city ? styles.inputError : {}]}
-              value={city}
-              onChangeText={setCity}
-              placeholder={t("editUser.cityPlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
-            />
-          </FormField>
+          <BNMInput label={t("editUser.city")} value={city} onChangeText={setCity} error={errors.city} />
 
-          <FormField label={t("editUser.age")} error={errors.age}>
-            <TextInput
-              style={[styles.input, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }, errors.age ? styles.inputError : {}]}
-              value={age}
-              onChangeText={setAge}
-              placeholder={t("editUser.agePlaceholder")}
-              placeholderTextColor={themeColors.textTertiary}
-              keyboardType="numeric"
-            />
-          </FormField>
+          <BNMInput label={t("editUser.age")} value={age} onChangeText={setAge} keyboardType="numeric" error={errors.age} />
 
-          <FormField label={t("editUser.phone")}>
-            <TextInput
-              style={[styles.input, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }]}
-              value={phone}
-              onChangeText={setPhone}
-              placeholder="+49 ..."
-              placeholderTextColor={themeColors.textTertiary}
-              keyboardType="phone-pad"
-            />
-          </FormField>
+          <BNMInput label={t("editUser.phone")} value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
 
           {/* Geschlecht */}
           <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("editUser.gender").toUpperCase()}</Text>
           <View style={styles.pillRow}>
             {(["male", "female"] as Gender[]).map((g) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={g}
+                accessibilityRole="radio"
                 style={[
                   styles.pill,
                   gender === g
                     ? g === "male"
-                      ? styles.pillActiveMale
-                      : styles.pillActiveFemale
+                      ? { backgroundColor: themeColors.primary, borderColor: themeColors.primary }
+                      : { backgroundColor: "#7e22ce", borderColor: "#7e22ce" }
                     : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                 ]}
                 onPress={() => setGender(g)}
               >
-                <Text style={[styles.pillText, gender === g ? styles.pillTextActive : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
+                <Text style={[styles.pillText, gender === g ? { color: "#FFFFFF" } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
                   {g === "male" ? t("editUser.male") : t("editUser.female")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </View>
 
@@ -277,58 +242,61 @@ function EditUserForm({ userId }: { userId: string }) {
           <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("editUser.role").toUpperCase()}</Text>
           <View style={styles.pillRow}>
             {ROLES.map(({ key, labelKey }) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={key}
+                accessibilityRole="radio"
                 style={[
                   styles.pill,
-                  role === key ? styles.pillActiveRole : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                  role === key ? { backgroundColor: themeColors.primary, borderColor: themeColors.primary } : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                 ]}
                 onPress={() => setRole(key)}
               >
-                <Text style={[styles.pillText, role === key ? styles.pillTextActive : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
+                <Text style={[styles.pillText, role === key ? { color: "#FFFFFF" } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
                   {t(labelKey)}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </View>
 
           {/* Speichern */}
-          <TouchableOpacity
-            style={[styles.saveButton, isSaving ? { opacity: 0.6 } : {}]}
+          <BNMPressable
+            hapticStyle="success"
+            style={[styles.saveButton, { backgroundColor: themeColors.success }, isSaving ? { opacity: 0.6 } : {}]}
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text style={styles.saveButtonText}>
+            <Text style={[styles.saveButtonText, { color: "#FFFFFF" }]}>
               {isSaving ? t("editUser.saving") : t("editUser.save")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
           {/* User sperren / entsperren */}
-          <TouchableOpacity
+          <BNMPressable
+            hapticStyle="warning"
             style={[
               styles.blockButton,
-              { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2", borderColor: isDark ? "#7a2a2a" : "#fecaca" },
-              isBlocked ? { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" } : {},
+              { backgroundColor: themeColors.errorLight, borderColor: themeColors.error + "40" },
+              isBlocked ? { backgroundColor: themeColors.successLight, borderColor: themeColors.success + "40" } : {},
               isBlocking ? { opacity: 0.6 } : {},
             ]}
             onPress={handleToggleBlock}
             disabled={isBlocking}
           >
-            <Text style={[styles.blockButtonText, { color: isDark ? "#f87171" : "#b91c1c" }, isBlocked ? { color: isDark ? "#4ade80" : "#15803d" } : {}]}>
+            <Text style={[styles.blockButtonText, { color: themeColors.error }, isBlocked ? { color: themeColors.success } : {}]}>
               {isBlocking ? "..." : isBlocked ? t("editUser.unblockUser") : t("editUser.blockUser")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
           {/* Passwort zurücksetzen — nur Admin */}
-          <TouchableOpacity
-            style={[styles.resetPwButton, { borderColor: isDark ? "#2d4a7a" : "#bfdbfe", backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }, isResetting ? { opacity: 0.6 } : {}]}
+          <BNMPressable
+            style={[styles.resetPwButton, { borderColor: themeColors.info + "40", backgroundColor: themeColors.infoLight }, isResetting ? { opacity: 0.6 } : {}]}
             onPress={handleResetPassword}
             disabled={isResetting}
           >
-            <Text style={[styles.resetPwButtonText, { color: isDark ? "#93c5fd" : "#1d4ed8" }]}>
+            <Text style={[styles.resetPwButtonText, { color: themeColors.info }]}>
               {isResetting ? t("editUser.resetting") : t("editUser.resetPassword")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -341,15 +309,15 @@ function EditUserForm({ userId }: { userId: string }) {
             <Text style={[styles.modalBody, { color: themeColors.textSecondary }]}>
               {t("editUser.resetPasswordDoneText")}
             </Text>
-            <View style={[styles.pwBox, { backgroundColor: isDark ? "#1a2a1a" : "#f0fdf4", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-              <Text style={[styles.pwValue, { color: isDark ? "#4ade80" : "#15803d" }]}>{resetTempPw}</Text>
+            <View style={[styles.pwBox, { backgroundColor: themeColors.successLight, borderColor: themeColors.success + "40" }]}>
+              <Text style={[styles.pwValue, { color: themeColors.success }]}>{resetTempPw}</Text>
             </View>
             <Text style={[styles.modalHint, { color: themeColors.textTertiary }]}>
               {t("editUser.resetPasswordEmailHint").replace("{0}", target.email)}
             </Text>
-            <TouchableOpacity style={styles.modalClose} onPress={() => setResetTempPw(null)}>
-              <Text style={styles.modalCloseText}>{t("common.ok")}</Text>
-            </TouchableOpacity>
+            <BNMPressable style={[styles.modalClose, { backgroundColor: themeColors.primary }]} onPress={() => setResetTempPw(null)}>
+              <Text style={[styles.modalCloseText, { color: "#FFFFFF" }]}>{t("common.ok")}</Text>
+            </BNMPressable>
           </View>
         </View>
       </Modal>
@@ -358,30 +326,6 @@ function EditUserForm({ userId }: { userId: string }) {
   );
 }
 
-function FormField({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
-  const themeColors = useThemeColors();
-  return (
-    <View style={fieldStyles.container}>
-      <Text style={[fieldStyles.label, { color: themeColors.textSecondary }]}>{label}</Text>
-      {children}
-      {error ? <Text style={fieldStyles.error}>{error}</Text> : null}
-    </View>
-  );
-}
-
-const fieldStyles = StyleSheet.create({
-  container: { marginBottom: 12 },
-  label: { fontSize: 13, fontWeight: "500", marginBottom: 4 },
-  error: { color: COLORS.error, fontSize: 12, marginTop: 4 },
-});
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
@@ -422,11 +366,10 @@ const styles = StyleSheet.create({
     width: 52,
     height: 52,
     borderRadius: 26,
-    backgroundColor: COLORS.gradientStart,
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { color: COLORS.white, fontWeight: "bold", fontSize: 18 },
+  avatarText: { color: "#FFFFFF", fontWeight: "bold", fontSize: 18 },
   avatarName: { fontWeight: "700", fontSize: 16 },
   avatarEmail: { fontSize: 12, marginTop: 2 },
   sectionLabel: {
@@ -436,14 +379,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     marginTop: 4,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: RADIUS.xs,
-    paddingHorizontal: 12,
-    paddingVertical: 9,
-    fontSize: 14,
-  },
-  inputError: { borderColor: COLORS.error },
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 16 },
   pill: {
     paddingHorizontal: 14,
@@ -451,22 +386,17 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.full,
     borderWidth: 1,
   },
-  pillActiveMale: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
-  pillActiveFemale: { backgroundColor: "#7e22ce", borderColor: "#7e22ce" },
-  pillActiveRole: { backgroundColor: COLORS.gradientStart, borderColor: COLORS.gradientStart },
   pillInactive: {},
   pillText: { fontSize: 13, fontWeight: "500" },
-  pillTextActive: { color: COLORS.white },
   pillTextInactive: {},
   saveButton: {
-    backgroundColor: COLORS.cta,
     borderRadius: RADIUS.xs,
     paddingVertical: 11,
     alignItems: "center",
     marginBottom: 12,
     marginTop: 8,
   },
-  saveButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 15 },
+  saveButtonText: { fontWeight: "700", fontSize: 15 },
   blockButton: {
     borderWidth: 1,
     borderRadius: RADIUS.xs,
@@ -474,8 +404,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   blockButtonText: { fontWeight: "600", fontSize: 14 },
-  unblockButton: {},
-  unblockButtonText: {},
   resetPwButton: {
     borderWidth: 1,
     borderRadius: RADIUS.xs,
@@ -509,10 +437,9 @@ const styles = StyleSheet.create({
   pwValue: { fontSize: 22, fontWeight: "800", letterSpacing: 2 },
   modalHint: { fontSize: 12, marginBottom: 20, lineHeight: 18 },
   modalClose: {
-    backgroundColor: COLORS.gradientStart,
     borderRadius: RADIUS.sm,
     paddingVertical: 10,
     alignItems: "center",
   },
-  modalCloseText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
+  modalCloseText: { fontWeight: "600", fontSize: 14 },
 });
