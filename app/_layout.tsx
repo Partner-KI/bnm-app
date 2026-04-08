@@ -87,8 +87,9 @@ function NavigationGuard() {
     if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
+    const inLegalGroup = segments[0] === "legal";
 
-    if (!user && !inAuthGroup) {
+    if (!user && !inAuthGroup && !inLegalGroup) {
       router.replace("/(auth)/login");
     } else if (user && inAuthGroup) {
       router.replace("/(tabs)");
