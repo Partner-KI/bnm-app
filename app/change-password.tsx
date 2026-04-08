@@ -55,22 +55,27 @@ export default function ChangePasswordScreen() {
 
     setIsSaving(true);
     try {
-      // SECURITY: Altes Passwort verifizieren bevor neues gesetzt wird.
-      // supabaseAnon (ohne Session-Persistenz) damit kein Auth-State-Change getriggert wird.
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
         showError(t("changePassword.errorFailed"));
         setIsSaving(false);
         return;
       }
-      const { error: signInError } = await supabaseAnon.auth.signInWithPassword({
-        email: user.email,
-        password: oldPassword,
-      });
-      if (signInError) {
-        showError(t("changePassword.errorCurrent"));
-        setIsSaving(false);
-        return;
+
+      // Bei erzwungener PW-Änderung: Altes PW nicht verifizieren (Admin hat es gerade gesetzt).
+      // Bei normaler PW-Änderung: Altes PW über separaten Client verifizieren.
+      if (!isForced) {
+        const verifyResult = await Promise.race([
+          supabaseAnon.auth.signInWithPassword({ email: user.email, password: oldPassword }),
+          new Promise<{ error: { message: string } }>((resolve) =>
+            setTimeout(() => resolve({ error: { message: "timeout" } }), 8000)
+          ),
+        ]);
+        if (verifyResult.error) {
+          showError(t("changePassword.errorCurrent"));
+          setIsSaving(false);
+          return;
+        }
       }
 
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
