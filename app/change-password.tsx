@@ -39,10 +39,10 @@ export default function ChangePasswordScreen() {
   const [showConfirm, setShowConfirm] = useState(false);
 
   function validate(): string | null {
-    if (!oldPassword.trim()) return t("changePassword.errorCurrent");
+    if (!isForced && !oldPassword.trim()) return t("changePassword.errorCurrent");
     if (newPassword.length < 8) return t("changePassword.errorTooShort");
     if (newPassword !== confirmPassword) return t("changePassword.errorMatch");
-    if (oldPassword === newPassword) return t("changePassword.errorSame");
+    if (!isForced && oldPassword === newPassword) return t("changePassword.errorSame");
     return null;
   }
 
@@ -128,18 +128,20 @@ export default function ChangePasswordScreen() {
             </Text>
           </View>
 
-          {/* Aktuelles Passwort */}
-          <BNMInput
-            label={t("changePassword.currentPassword")}
-            icon="lock-closed-outline"
-            value={oldPassword}
-            onChangeText={setOldPassword}
-            secureTextEntry={!showOld}
-            autoCapitalize="none"
-            autoCorrect={false}
-            rightIcon={showOld ? "eye-outline" : "eye-off-outline"}
-            onRightIconPress={() => setShowOld((v) => !v)}
-          />
+          {/* Aktuelles Passwort — nur bei normaler PW-Änderung, nicht bei Force-Change */}
+          {!isForced && (
+            <BNMInput
+              label={t("changePassword.currentPassword")}
+              icon="lock-closed-outline"
+              value={oldPassword}
+              onChangeText={setOldPassword}
+              secureTextEntry={!showOld}
+              autoCapitalize="none"
+              autoCorrect={false}
+              rightIcon={showOld ? "eye-outline" : "eye-off-outline"}
+              onRightIconPress={() => setShowOld((v) => !v)}
+            />
+          )}
 
           {/* Neues Passwort */}
           <BNMInput

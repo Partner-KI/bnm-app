@@ -38,7 +38,8 @@ export default function ResetPasswordScreen() {
       // Variante 1: Token + Email als Query-Parameter (von unserer Edge Function)
       if (params.token && params.email) {
         const { error } = await supabase.auth.verifyOtp({
-          token_hash: params.token,
+          email: params.email,
+          token: params.token,
           type: "recovery",
         });
         if (error) {
