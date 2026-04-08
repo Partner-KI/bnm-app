@@ -183,7 +183,12 @@ export function AdminSidebar() {
   const isAdminToolScreen =
     pathname.includes("/admin/session-types") ||
     pathname.includes("/admin/qa-management") ||
-    pathname.includes("/admin/hadithe-management");
+    pathname.includes("/admin/hadithe-management") ||
+    pathname.includes("/admin/message-templates") ||
+    pathname.includes("/admin/certificate-generator") ||
+    pathname.includes("/admin/csv-import") ||
+    pathname.includes("/admin/mentor-award") ||
+    pathname.includes("/admin/statistics");
 
   const role = user?.role;
   const isMentor = role === "mentor";

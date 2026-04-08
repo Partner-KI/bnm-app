@@ -173,7 +173,7 @@ export default function MessageTemplatesScreen() {
                 placeholder={t("templates.bodyPlaceholder")}
                 placeholderTextColor={themeColors.textTertiary}
                 multiline
-                numberOfLines={8}
+                numberOfLines={Platform.OS === "web" ? 16 : 8}
                 textAlignVertical="top"
               />
 
@@ -262,7 +262,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 14,
-    minHeight: 160,
+    minHeight: Platform.OS === "web" ? 300 : 160,
   },
   placeholderHint: { fontSize: 11, marginBottom: 6 },
   chipRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },

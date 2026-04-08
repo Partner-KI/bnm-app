@@ -91,8 +91,11 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
         { key: "/profile", label: t("tabs.profile"), icon: "person-circle-outline" as const, iconActive: "person-circle" as const, href: "/(tabs)/profile" },
       ];
 
+  const adminToolPaths = ["/admin/session-types", "/admin/qa-management", "/admin/hadithe-management", "/admin/message-templates", "/admin/certificate-generator", "/admin/csv-import", "/admin/mentor-award", "/admin/statistics"];
   function isActive(key: string) {
     if (key === "/") return pathname === "/" || pathname === "/index";
+    // Tools-Tab soll auch bei Admin-Unterseiten aktiv bleiben
+    if (key === "/tools") return pathname.includes("/tools") || adminToolPaths.some((p) => pathname.includes(p));
     return pathname === key || pathname.startsWith(key + "/");
   }
 
