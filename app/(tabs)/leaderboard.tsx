@@ -295,103 +295,94 @@ export default function LeaderboardScreen() {
           {/* ── Podium: Top 3 ───────────────────────────────────────────── */}
           {ranked.length > 0 && (
             <View style={styles.podiumContainer}>
-              <Text style={[styles.cardTitle, { color: themeColors.text, marginBottom: 16 }]}>{listTitle}</Text>
+              <Text style={[styles.cardTitle, { color: themeColors.text, marginBottom: 0 }]}>{listTitle}</Text>
 
-              {/* Podium-Zeile: Platz 2 | Platz 1 | Platz 3 */}
-              <View style={styles.podiumRow}>
-                {/* Platz 2 */}
-                {top3[1] ? (() => {
-                  const item = top3[1];
-                  const isMe = user?.role === "mentor" && item.mentorId === user.id;
-                  return (
-                    <TouchableOpacity
-                      key={item.mentorId}
-                      style={[
-                        styles.podiumCard,
-                        styles.podiumCard2,
-                        { backgroundColor: themeColors.card, borderColor: isMe ? COLORS.gold : MEDAL_COLORS[1] },
-                        isMe && styles.podiumCardMe,
-                      ]}
-                      onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Platz 2: ${item.name}, ${item.score} Punkte`}
-                    >
-                      <Text style={styles.podiumEmoji}>{MEDAL_EMOJIS[1]}</Text>
-                      <Text style={[styles.podiumName, { color: themeColors.text }]} numberOfLines={2}>{item.name}</Text>
-                      <Text style={[styles.podiumCity, { color: themeColors.textTertiary }]} numberOfLines={1}>{item.city}</Text>
-                      <Text style={[styles.podiumScore, { color: MEDAL_COLORS[1] }]}>{item.score}</Text>
-                      <Text style={[styles.podiumPts, { color: themeColors.textTertiary }]}>{t("leaderboard.points_short")}</Text>
-                      <Text style={[styles.podiumStat, { color: themeColors.textSecondary }]}>
-                        {item.completedCount} {t("leaderboard.completions")}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })() : top3.length > 1 ? <View style={styles.podiumCardEmpty} /> : null}
+              {/* Hero-Podium mit Gradient-Hintergrund */}
+              <View style={[styles.podiumHero, { backgroundColor: isDark ? "#1a1a3e" : COLORS.gradientStart }]}>
+                {/* Platz 2 | Platz 1 | Platz 3 */}
+                <View style={styles.podiumRow}>
+                  {/* Platz 2 */}
+                  {top3[1] ? (() => {
+                    const item = top3[1];
+                    return (
+                      <TouchableOpacity
+                        key={item.mentorId}
+                        style={styles.podiumSlot}
+                        onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Platz 2: ${item.name}, ${item.score} Punkte`}
+                      >
+                        <View style={[styles.podiumAvatar, styles.podiumAvatar2]}>
+                          <Text style={styles.podiumAvatarText}>{item.name.charAt(0)}</Text>
+                          <View style={[styles.podiumBadge, { backgroundColor: MEDAL_COLORS[1] }]}>
+                            <Text style={styles.podiumBadgeText}>2</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.podiumNameWhite} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.podiumCityWhite} numberOfLines={1}>{item.city}</Text>
+                        <View style={styles.podiumScorePill}>
+                          <Text style={styles.podiumScoreText}>{item.score} {t("leaderboard.points_short")}</Text>
+                        </View>
+                        <View style={[styles.podiumBar, styles.podiumBar2]} />
+                      </TouchableOpacity>
+                    );
+                  })() : <View style={styles.podiumSlot} />}
 
-                {/* Platz 1 (größte Karte, mittig) */}
-                {top3[0] ? (() => {
-                  const item = top3[0];
-                  const isMe = user?.role === "mentor" && item.mentorId === user.id;
-                  return (
-                    <TouchableOpacity
-                      key={item.mentorId}
-                      style={[
-                        styles.podiumCard,
-                        styles.podiumCard1,
-                        { backgroundColor: isDark ? "#1A1A2E" : "#FFF8E1", borderColor: isMe ? COLORS.gold : MEDAL_COLORS[0] },
-                        isMe && styles.podiumCardMe,
-                      ]}
-                      onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Platz 1: ${item.name}, ${item.score} Punkte`}
-                    >
-                      <Text style={styles.podiumCrown}>👑</Text>
-                      <Text style={styles.podiumEmoji1}>{MEDAL_EMOJIS[0]}</Text>
-                      <Text style={[styles.podiumName1, { color: themeColors.text }]} numberOfLines={2}>{item.name}</Text>
-                      <Text style={[styles.podiumCity, { color: themeColors.textTertiary }]} numberOfLines={1}>{item.city}</Text>
-                      <Text style={[styles.podiumScore1, { color: MEDAL_COLORS[0] }]}>{item.score}</Text>
-                      <Text style={[styles.podiumPts, { color: themeColors.textTertiary }]}>{t("leaderboard.points_short")}</Text>
-                      <View style={styles.podiumStats1Row}>
-                        <Text style={[styles.podiumStat, { color: themeColors.textSecondary }]}>
-                          {item.completedCount} {t("leaderboard.completions")}
-                        </Text>
-                        <Text style={[styles.podiumStatSep, { color: themeColors.border }]}>·</Text>
-                        <Text style={[styles.podiumStat, { color: themeColors.textSecondary }]}>
-                          {item.sessionCount} {t("leaderboard.sessions")}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })() : null}
+                  {/* Platz 1 */}
+                  {top3[0] ? (() => {
+                    const item = top3[0];
+                    return (
+                      <TouchableOpacity
+                        key={item.mentorId}
+                        style={styles.podiumSlot}
+                        onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Platz 1: ${item.name}, ${item.score} Punkte`}
+                      >
+                        <Text style={styles.podiumCrown}>👑</Text>
+                        <View style={[styles.podiumAvatar, styles.podiumAvatar1]}>
+                          <Text style={styles.podiumAvatarText1}>{item.name.charAt(0)}</Text>
+                          <View style={[styles.podiumBadge, { backgroundColor: MEDAL_COLORS[0] }]}>
+                            <Text style={styles.podiumBadgeText}>1</Text>
+                          </View>
+                        </View>
+                        <Text style={[styles.podiumNameWhite, { fontSize: 15, fontWeight: "800" }]} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.podiumCityWhite} numberOfLines={1}>{item.city}</Text>
+                        <View style={[styles.podiumScorePill, styles.podiumScorePill1]}>
+                          <Text style={[styles.podiumScoreText, { color: COLORS.gradientStart }]}>{item.score} {t("leaderboard.points_short")}</Text>
+                        </View>
+                        <View style={[styles.podiumBar, styles.podiumBar1]} />
+                      </TouchableOpacity>
+                    );
+                  })() : null}
 
-                {/* Platz 3 */}
-                {top3[2] ? (() => {
-                  const item = top3[2];
-                  const isMe = user?.role === "mentor" && item.mentorId === user.id;
-                  return (
-                    <TouchableOpacity
-                      key={item.mentorId}
-                      style={[
-                        styles.podiumCard,
-                        styles.podiumCard3,
-                        { backgroundColor: themeColors.card, borderColor: isMe ? COLORS.gold : MEDAL_COLORS[2] },
-                        isMe && styles.podiumCardMe,
-                      ]}
-                      onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Platz 3: ${item.name}, ${item.score} Punkte`}
-                    >
-                      <Text style={styles.podiumEmoji}>{MEDAL_EMOJIS[2]}</Text>
-                      <Text style={[styles.podiumName, { color: themeColors.text }]} numberOfLines={2}>{item.name}</Text>
-                      <Text style={[styles.podiumCity, { color: themeColors.textTertiary }]} numberOfLines={1}>{item.city}</Text>
-                      <Text style={[styles.podiumScore, { color: MEDAL_COLORS[2] }]}>{item.score}</Text>
-                      <Text style={[styles.podiumPts, { color: themeColors.textTertiary }]}>{t("leaderboard.points_short")}</Text>
-                      <Text style={[styles.podiumStat, { color: themeColors.textSecondary }]}>
-                        {item.completedCount} {t("leaderboard.completions")}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })() : top3.length > 2 ? <View style={styles.podiumCardEmpty} /> : null}
+                  {/* Platz 3 */}
+                  {top3[2] ? (() => {
+                    const item = top3[2];
+                    return (
+                      <TouchableOpacity
+                        key={item.mentorId}
+                        style={styles.podiumSlot}
+                        onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Platz 3: ${item.name}, ${item.score} Punkte`}
+                      >
+                        <View style={[styles.podiumAvatar, styles.podiumAvatar3]}>
+                          <Text style={styles.podiumAvatarText}>{item.name.charAt(0)}</Text>
+                          <View style={[styles.podiumBadge, { backgroundColor: MEDAL_COLORS[2] }]}>
+                            <Text style={styles.podiumBadgeText}>3</Text>
+                          </View>
+                        </View>
+                        <Text style={styles.podiumNameWhite} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.podiumCityWhite} numberOfLines={1}>{item.city}</Text>
+                        <View style={styles.podiumScorePill}>
+                          <Text style={styles.podiumScoreText}>{item.score} {t("leaderboard.points_short")}</Text>
+                        </View>
+                        <View style={[styles.podiumBar, styles.podiumBar3]} />
+                      </TouchableOpacity>
+                    );
+                  })() : <View style={styles.podiumSlot} />}
+                </View>
               </View>
 
               {/* ── Restliche Plätze (ab Platz 4) ──────────────────────── */}
@@ -406,7 +397,7 @@ export default function LeaderboardScreen() {
                         style={[
                           styles.rankRow,
                           idx < rest.length - 1 ? [styles.rankRowBorder, { borderBottomColor: themeColors.border }] : {},
-                          isMe ? [styles.rankRowHighlight, { borderWidth: 2, borderColor: COLORS.gold, borderRadius: RADIUS.xs }] : {},
+                          isMe ? [styles.rankRowHighlight, { borderWidth: 2, borderColor: COLORS.gold, borderRadius: RADIUS.sm }] : {},
                         ]}
                         onPress={() =>
                           router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })
@@ -414,10 +405,14 @@ export default function LeaderboardScreen() {
                         accessibilityRole="button"
                         accessibilityLabel={`Platz ${index + 1}: ${item.name}, ${item.score} Punkte`}
                       >
-                        <View style={[styles.rankBadge, { backgroundColor: themeColors.background }]}>
-                          <Text style={[styles.rankBadgeTextDark, { color: isMe ? COLORS.gold : themeColors.textSecondary }]}>
+                        <View style={[styles.rankNumberCircle, { backgroundColor: themeColors.background }]}>
+                          <Text style={[styles.rankNumberText, { color: isMe ? COLORS.gold : themeColors.textSecondary }]}>
                             {index + 1}
                           </Text>
+                        </View>
+
+                        <View style={[styles.rankAvatarSmall, { backgroundColor: isDark ? "#2a2a4e" : "#e8e0f0" }]}>
+                          <Text style={[styles.rankAvatarLetter, { color: isDark ? "#a0a0d0" : COLORS.gradientStart }]}>{item.name.charAt(0)}</Text>
                         </View>
 
                         <View style={styles.rankInfo}>
@@ -430,9 +425,6 @@ export default function LeaderboardScreen() {
                             )}
                           </View>
                           <Text style={[styles.rankSub, { color: themeColors.textTertiary }]}>
-                            {item.city} · {item.gender === "male" ? t("leaderboard.brother") : t("leaderboard.sister")}
-                          </Text>
-                          <Text style={[styles.rankDetail, { color: themeColors.textSecondary }]}>
                             {item.completedCount} {t("leaderboard.completions")} · {item.sessionCount} {t("leaderboard.sessions")}
                           </Text>
                         </View>
@@ -533,64 +525,74 @@ const styles = StyleSheet.create({
   myPositionStatVal: { fontSize: 20, fontWeight: "800" },
   myPositionStatLbl: { fontSize: 10, fontWeight: "500", marginTop: 2 },
 
-  // Podium — echtes Podium-Design mit unterschiedlichen Höhen
+  // Podium — Hero-Design mit farbigem Hintergrund
   podiumContainer: { marginBottom: 20 },
+  podiumHero: {
+    borderRadius: RADIUS.lg,
+    paddingTop: 24,
+    paddingBottom: 0,
+    marginTop: 12,
+    marginBottom: 16,
+    overflow: "hidden",
+  },
   podiumRow: {
     flexDirection: "row",
     alignItems: "flex-end",
-    justifyContent: "stretch",
-    gap: 8,
-    marginBottom: 16,
+    justifyContent: "center",
+    paddingHorizontal: 8,
   },
-  podiumCard: {
-    borderRadius: RADIUS.md,
-    borderWidth: 2,
-    paddingVertical: 12,
-    paddingHorizontal: 10,
-    alignItems: "center",
+  podiumSlot: {
     flex: 1,
+    alignItems: "center",
     minWidth: 0,
   },
-  podiumCard1: {
-    // Platz 1: größte Karte — steht am höchsten, horizontal betont
-    paddingVertical: 16,
-    paddingHorizontal: 16,
-    marginBottom: 0,
-    shadowColor: "#EEA71B",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.30,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  podiumCard2: {
-    // Platz 2: mittel
-    marginBottom: 16,
-  },
-  podiumCard3: {
-    // Platz 3: etwas tiefer
-    marginBottom: 24,
-  },
-  podiumCardEmpty: { flex: 1 },
-  podiumCardMe: {
+  podiumCrown: { fontSize: 22, marginBottom: 4 },
+  podiumAvatar: {
+    borderRadius: 100,
+    alignItems: "center",
+    justifyContent: "center",
     borderWidth: 3,
-    shadowColor: COLORS.gold,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 6,
+    borderColor: "rgba(255,255,255,0.3)",
+    marginBottom: 8,
   },
-  podiumCrown: { fontSize: 20, marginBottom: 2 },
-  podiumEmoji: { fontSize: 24, marginBottom: 4 },
-  podiumEmoji1: { fontSize: 30, marginBottom: 6 },
-  podiumName: { fontSize: 12, fontWeight: "600", textAlign: "center", marginBottom: 2 },
-  podiumName1: { fontSize: 14, fontWeight: "800", textAlign: "center", marginBottom: 3 },
-  podiumCity: { fontSize: 10, textAlign: "center", marginBottom: 6 },
-  podiumScore: { fontSize: 22, fontWeight: "800" },
-  podiumScore1: { fontSize: 28, fontWeight: "800", letterSpacing: -0.5 },
-  podiumPts: { fontSize: 10, marginBottom: 4, fontWeight: "500" },
-  podiumStats1Row: { flexDirection: "row", alignItems: "center", gap: 4, flexWrap: "wrap", justifyContent: "center" },
-  podiumStatSep: { fontSize: 10 },
-  podiumStat: { fontSize: 10, textAlign: "center" },
+  podiumAvatar1: { width: 72, height: 72, backgroundColor: "rgba(255,255,255,0.2)" },
+  podiumAvatar2: { width: 56, height: 56, backgroundColor: "rgba(255,255,255,0.15)" },
+  podiumAvatar3: { width: 56, height: 56, backgroundColor: "rgba(255,255,255,0.15)" },
+  podiumAvatarText: { color: "#fff", fontSize: 20, fontWeight: "700" },
+  podiumAvatarText1: { color: "#fff", fontSize: 26, fontWeight: "800" },
+  podiumBadge: {
+    position: "absolute",
+    bottom: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  podiumBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800" },
+  podiumNameWhite: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center", marginBottom: 2 },
+  podiumCityWhite: { color: "rgba(255,255,255,0.6)", fontSize: 11, textAlign: "center", marginBottom: 6 },
+  podiumScorePill: {
+    backgroundColor: "rgba(255,255,255,0.2)",
+    borderRadius: RADIUS.full,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    marginBottom: 12,
+  },
+  podiumScorePill1: {
+    backgroundColor: "#fff",
+  },
+  podiumScoreText: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  podiumBar: {
+    width: "80%",
+    borderTopLeftRadius: RADIUS.sm,
+    borderTopRightRadius: RADIUS.sm,
+  },
+  podiumBar1: { height: 60, backgroundColor: "rgba(255,255,255,0.25)" },
+  podiumBar2: { height: 40, backgroundColor: "rgba(255,255,255,0.15)" },
+  podiumBar3: { height: 28, backgroundColor: "rgba(255,255,255,0.12)" },
 
   // Rest-Liste (ab Platz 4)
   restList: {
@@ -665,7 +667,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    gap: 12,
+    paddingHorizontal: 8,
+    gap: 10,
   },
   rankRowBorder: { borderBottomWidth: 1 },
   rankRowHighlight: {
@@ -674,16 +677,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
 
-  rankBadge: {
-    width: 40,
-    height: 40,
-    borderRadius: RADIUS.sm,
+  rankNumberCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,
   },
-  rankBadgeTextWhite: { fontSize: 20 },
-  rankBadgeTextDark: { fontWeight: "700", fontSize: 14 },
+  rankNumberText: { fontWeight: "700", fontSize: 14 },
+  rankAvatarSmall: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+  rankAvatarLetter: { fontSize: 16, fontWeight: "700" },
 
   rankInfo: { flex: 1 },
   rankNameRow: { flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 },

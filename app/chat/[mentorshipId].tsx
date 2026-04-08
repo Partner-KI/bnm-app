@@ -220,11 +220,9 @@ export default function ChatScreen() {
                   {/* Timestamp-Separator */}
                   {showTimeSeparator && (
                     <View style={styles.timeSeparator}>
-                      <View style={[styles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
-                      <Text style={[styles.timeSeparatorText, { color: themeColors.textTertiary, backgroundColor: themeColors.background }]}>
+                      <Text style={[styles.timeSeparatorText, { color: themeColors.textTertiary }]}>
                         {dateSepLabel}
                       </Text>
-                      <View style={[styles.timeSeparatorLine, { backgroundColor: themeColors.border }]} />
                     </View>
                   )}
                   <View
@@ -343,19 +341,14 @@ const styles = StyleSheet.create({
   },
   messageText: { fontSize: TYPOGRAPHY.size.base, lineHeight: TYPOGRAPHY.lineHeight.relaxed },
   timeSeparator: {
-    flexDirection: "row",
     alignItems: "center",
     marginVertical: 16,
-    gap: 10,
-  },
-  timeSeparatorLine: {
-    flex: 1,
-    height: 1,
   },
   timeSeparatorText: {
     fontSize: TYPOGRAPHY.size.xs,
     fontWeight: TYPOGRAPHY.weight.medium,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
   },
   scrollFab: {
     position: "absolute",
