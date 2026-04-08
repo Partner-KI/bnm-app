@@ -421,21 +421,21 @@ function TabsLayout() {
 function AdminSidebarLayout() {
   const themeColors = useThemeColors();
 
+  // Alle Screens registrieren — Navigation erfolgt über die Sidebar,
+  // daher müssen alle Screens verfügbar sein (auch für Mentor/Mentee)
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
         headerShown: false,
-        // Lazy loading deaktivieren damit Tabs sofort verfügbar sind
-        // und kein Flash zum Default-Tab entsteht
         lazy: false,
       }}
     >
       <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
       <Tabs.Screen name="mentees" options={{ title: "Mentees" }} />
       <Tabs.Screen name="chats" options={{ title: "Chats" }} />
-      <Tabs.Screen name="leaderboard" options={{ href: null }} />
-      <Tabs.Screen name="faq" options={{ href: null }} />
+      <Tabs.Screen name="leaderboard" options={{ title: "Ranking" }} />
+      <Tabs.Screen name="faq" options={{ title: "FAQ" }} />
       <Tabs.Screen name="mentors" options={{ title: "Mentoren" }} />
       <Tabs.Screen name="applications" options={{ title: "Bewerbungen" }} />
       <Tabs.Screen name="tools" options={{ title: "Tools" }} />
@@ -484,8 +484,8 @@ function AdminMobileLayout() {
         <Tabs.Screen name="index" options={{ title: t("tabs.dashboard") }} />
         <Tabs.Screen name="mentees" options={{ title: t("tabs.mentees") }} />
         <Tabs.Screen name="chats" options={{ title: t("tabs.chats"), href: isOffice ? null : undefined }} />
-        <Tabs.Screen name="leaderboard" options={{ href: null }} />
-        <Tabs.Screen name="faq" options={{ href: null }} />
+        <Tabs.Screen name="leaderboard" options={{ title: t("tabs.ranking") }} />
+        <Tabs.Screen name="faq" options={{ title: t("tabs.faq") }} />
         <Tabs.Screen name="mentors" options={{ title: t("sidebar.mentors") }} />
         <Tabs.Screen name="applications" options={{ title: t("sidebar.applications") }} />
         <Tabs.Screen name="tools" options={{ title: "Tools" }} />
