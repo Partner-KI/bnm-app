@@ -6,14 +6,19 @@ import {
   TouchableOpacity,
   StyleSheet,
   Platform,
+  LayoutAnimation,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { EmptyState } from "../../components/EmptyState";
+import { BNMPressable } from "../../components/BNMPressable";
+import { QUESTIONNAIRE_SECTIONS, isConditionMet } from "../../lib/questionnaireConfig";
+import type { Feedback, QuestionnaireAnswers } from "../../types";
 
 type FeedbackFilter = "all" | "positive" | "negative";
 
@@ -30,6 +35,60 @@ function StarRating({ rating }: { rating: number }) {
   );
 }
 
+// ─── Expandable Questionnaire Detail ─────────────────────────────────────────
+
+function QuestionnaireDetail({ answers }: { answers: QuestionnaireAnswers }) {
+  const themeColors = useThemeColors();
+  const { t } = useLanguage();
+
+  return (
+    <View style={styles.detailContainer}>
+      {QUESTIONNAIRE_SECTIONS.map((sec) => {
+        const visibleQuestions = sec.questions.filter((q) => {
+          if (!isConditionMet(q, answers as any)) return false;
+          const val = (answers as any)[q.id];
+          return val !== undefined && val !== null && val !== "" && !(Array.isArray(val) && val.length === 0);
+        });
+        if (visibleQuestions.length === 0) return null;
+
+        return (
+          <View key={sec.id} style={styles.detailSection}>
+            <Text style={[styles.detailSectionTitle, { color: themeColors.primary }]}>
+              {t(sec.titleKey)}
+            </Text>
+            {visibleQuestions.map((q) => {
+              const val = (answers as any)[q.id];
+              let display = "";
+              if (q.type === "rating") {
+                display = "★".repeat(val) + "☆".repeat(5 - val);
+              } else if (q.type === "text") {
+                display = String(val);
+              } else if ((q.type === "multiselect" || q.type === "singleselect") && q.options) {
+                const keys = Array.isArray(val) ? val : [val];
+                display = keys.map((k: string) => {
+                  const opt = q.options!.find((o) => o.key === k);
+                  return opt ? t(opt.translationKey) : k;
+                }).join(", ");
+              }
+
+              return (
+                <View key={q.id} style={styles.detailRow}>
+                  <Text style={[styles.detailQuestion, { color: themeColors.textTertiary }]}>
+                    {t(q.translationKey)}
+                  </Text>
+                  <Text style={[styles.detailAnswer, { color: themeColors.text }]}>
+                    {display}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        );
+      })}
+    </View>
+  );
+}
+
 export default function FeedbackTabScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -37,6 +96,7 @@ export default function FeedbackTabScreen() {
   const { isDark } = useTheme();
   const { getFeedbacks, users, mentorships } = useData();
   const [filter, setFilter] = useState<FeedbackFilter>("all");
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
 
   const allFeedbacks = getFeedbacks();
 
@@ -67,9 +127,9 @@ export default function FeedbackTabScreen() {
 
           {/* Frühwarnung bei negativem Feedback */}
           {hasNegative && (
-            <View style={[styles.warningBanner, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
-              <Text style={[styles.warningTitle, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("feedbackOverview.warningTitle")}</Text>
-              <Text style={[styles.warningText, { color: isDark ? "#fca5a5" : "#dc2626" }]}>
+            <View style={[styles.warningBanner, { backgroundColor: sem(SEMANTIC.redBg, isDark), borderColor: sem(SEMANTIC.redBorder, isDark) }]}>
+              <Text style={[styles.warningTitle, { color: sem(SEMANTIC.redTextDark, isDark) }]}>{t("feedbackOverview.warningTitle")}</Text>
+              <Text style={[styles.warningText, { color: sem(SEMANTIC.redText, isDark) }]}>
                 {t("feedbackOverview.warningText")}
               </Text>
             </View>
@@ -140,7 +200,7 @@ export default function FeedbackTabScreen() {
                   style={[
                     styles.feedbackCard,
                     { backgroundColor: themeColors.card, borderColor: themeColors.border },
-                    isNegative ? { borderColor: isDark ? "#7a2a2a" : "#fca5a5", backgroundColor: isDark ? "#2a1a1a" : "#fff5f5" } : {},
+                    isNegative ? { borderColor: sem(SEMANTIC.redBorder, isDark), backgroundColor: sem(SEMANTIC.redBg, isDark) } : {},
                   ]}
                 >
                   <View style={styles.feedbackHeader}>
@@ -171,9 +231,36 @@ export default function FeedbackTabScreen() {
                   )}
 
                   {isNegative && (
-                    <View style={[styles.negativeBadge, { backgroundColor: isDark ? "#3a1a1a" : "#fee2e2" }]}>
-                      <Text style={[styles.negativeBadgeText, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("feedbackOverview.actionNeeded")}</Text>
+                    <View style={[styles.negativeBadge, { backgroundColor: sem(SEMANTIC.redBg, isDark) }]}>
+                      <Text style={[styles.negativeBadgeText, { color: sem(SEMANTIC.redTextDark, isDark) }]}>{t("feedbackOverview.actionNeeded")}</Text>
                     </View>
+                  )}
+
+                  {/* Expandierbare Fragebogen-Details */}
+                  {fb.answers && (
+                    <>
+                      <BNMPressable
+                        style={styles.detailToggle}
+                        onPress={() => {
+                          LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+                          setExpandedIds((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(fb.id)) next.delete(fb.id); else next.add(fb.id);
+                            return next;
+                          });
+                        }}
+                      >
+                        <Ionicons
+                          name={expandedIds.has(fb.id) ? "chevron-up" : "chevron-down"}
+                          size={16}
+                          color={themeColors.textTertiary}
+                        />
+                        <Text style={[styles.detailToggleText, { color: themeColors.textTertiary }]}>
+                          {expandedIds.has(fb.id) ? t("questionnaire.hideDetails") : t("questionnaire.showDetails")}
+                        </Text>
+                      </BNMPressable>
+                      {expandedIds.has(fb.id) && <QuestionnaireDetail answers={fb.answers} />}
+                    </>
                   )}
                 </View>
               );
@@ -271,4 +358,23 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   negativeBadgeText: { fontSize: 11, fontWeight: "700" },
+
+  // Detail toggle
+  detailToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    paddingVertical: 8,
+    marginTop: 4,
+  },
+  detailToggleText: { fontSize: 12, fontWeight: "600" },
+
+  // Questionnaire detail
+  detailContainer: { marginTop: 8 },
+  detailSection: { marginBottom: 12 },
+  detailSectionTitle: { fontWeight: "700", fontSize: 13, marginBottom: 6 },
+  detailRow: { marginBottom: 8 },
+  detailQuestion: { fontSize: 11, marginBottom: 2 },
+  detailAnswer: { fontSize: 13, fontWeight: "500" },
 });

@@ -647,6 +647,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           submitted_by: row.submitted_by as string,
           rating: row.rating as number,
           comments: (row.comments as string) ?? undefined,
+          answers: (row as any).answers ?? undefined,
           created_at: row.created_at as string,
         }));
         setFeedback(fb);
@@ -859,6 +860,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
               submitted_by: row.submitted_by as string,
               rating: row.rating as number,
               comments: (row.comments as string) ?? undefined,
+              answers: (row as any).answers ?? undefined,
               created_at: row.created_at as string,
             }))
           : [];
@@ -2038,6 +2040,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           submitted_by: feedbackData.submitted_by,
           rating: feedbackData.rating,
           comments: feedbackData.comments ?? "",
+          answers: feedbackData.answers ?? null,
         })
         .select()
         .single();
@@ -2052,6 +2055,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         submitted_by: data.submitted_by,
         rating: data.rating,
         comments: data.comments ?? undefined,
+        answers: data.answers ?? undefined,
         created_at: data.created_at,
       };
       setFeedback((prev) => [...prev, newFeedback]);

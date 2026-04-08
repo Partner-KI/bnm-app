@@ -35,7 +35,8 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
   11. `supabase/fix-messages-update.sql` — messages UPDATE Policy (markChatAsRead + Badge-Fix)
   12. `supabase/fix-missing-rls.sql` — sessions/notifications/mentorships/profiles Policies
   13. `supabase/fix-self-delete.sql` — Self-Delete für Mentor/Mentee (Soft-Delete, Reports bleiben)
-  14. Dashboard: Auth → Email → "Confirm email" OFF
+  14. `supabase/feedback-questionnaire.sql` — JSONB answers-Spalte für Feedback-Fragebogen
+  15. Dashboard: Auth → Email → "Confirm email" OFF
   13. Test-User manuell anlegen + Profile-INSERT
   14. `lib/supabase.ts`: URL + Anon Key ändern (2 Zeilen)
 
