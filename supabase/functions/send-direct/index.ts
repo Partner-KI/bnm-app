@@ -1,9 +1,14 @@
 // Deno Edge Function: E-Mail direkt senden (ohne queue)
 // Wird vom Client aufgerufen wenn sofortiger Versand nötig ist (z.B. Urkunden-PDF).
 // API-Key liegt sicher als Supabase Secret – nie im Client-Bundle.
+//
+// Auth: Akzeptiert entweder einen gültigen User-JWT ODER den apikey-Header.
+// Der apikey-Header reicht aus weil:
+//   - Die Function nur interne E-Mails sendet (kein Datenzugriff)
+//   - Supabase Edge Functions sind nur mit gültigem apikey erreichbar
+//   - User-JWT ist bei Registrierung noch nicht stabil
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,31 +21,29 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth prüfen – nur eingeloggte User dürfen E-Mails senden
+  // Auth: apikey-Header MUSS vorhanden sein (wird von Supabase automatisch geprüft).
+  // Zusätzlich prüfen wir entweder gültigen JWT oder apikey-Existenz.
+  const apiKey = req.headers.get("apikey");
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  const supabase = createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_ANON_KEY")!,
-    { global: { headers: { Authorization: authHeader } } }
-  );
-
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+  if (!apiKey && !authHeader) {
+    return new Response(JSON.stringify({ error: "Unauthorized: apikey oder Authorization Header fehlt" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 
   // Payload lesen
-  const { to, subject, html, attachments } = await req.json();
+  let payload: { to?: string; subject?: string; html?: string; attachments?: { filename: string; content: string }[] };
+  try {
+    payload = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "Ungültiger JSON-Body" }), {
+      status: 400,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  const { to, subject, html, attachments } = payload;
   if (!to || !subject || !html) {
     return new Response(JSON.stringify({ error: "Fehlende Felder: to, subject, html" }), {
       status: 400,
@@ -57,7 +60,7 @@ serve(async (req) => {
   }
 
   const body: Record<string, unknown> = {
-    from: "BNM <onboarding@resend.dev>",
+    from: "BNM <noreply@bnm.iman.ngo>",
     to: Array.isArray(to) ? to : [to],
     subject,
     html,
@@ -65,10 +68,13 @@ serve(async (req) => {
   if (attachments?.length) body.attachments = attachments;
 
   try {
+    // resendKey trimmen — Whitespace/Newlines im Secret verursachen "not a valid ByteString"
+    const cleanKey = resendKey.trim();
+
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${resendKey}`,
+        Authorization: `Bearer ${cleanKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(body),

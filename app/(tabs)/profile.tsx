@@ -9,7 +9,6 @@ import {
   StyleSheet,
   Alert,
   Platform,
-  Linking,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BNMPressable } from "../../components/BNMPressable";
@@ -32,8 +31,6 @@ export default function ProfileScreen() {
   const { mode, setMode, isDark } = useTheme();
   const themeColors = useThemeColors();
   const [refreshing, setRefreshing] = useState(false);
-  const [showPrivacy, setShowPrivacy] = useState(false);
-  const [showImprint, setShowImprint] = useState(false);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -346,47 +343,21 @@ export default function ProfileScreen() {
         Ein iERA Projekt in Kooperation mit IMAN
       </Text>
       <View style={styles.footerLinks}>
-        <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/datenschutzerklaerung/")} accessibilityRole="link" accessibilityLabel={t("footer.privacy")}>
+        <BNMPressable onPress={() => router.push("/legal/datenschutz")} accessibilityRole="link" accessibilityLabel={t("footer.privacy")}>
           <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.privacy")}</Text>
         </BNMPressable>
         <Text style={[styles.footerSep, { color: themeColors.textTertiary }]}>·</Text>
-        <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/impressum/")} accessibilityRole="link" accessibilityLabel={t("footer.imprint")}>
+        <BNMPressable onPress={() => router.push("/legal/impressum")} accessibilityRole="link" accessibilityLabel={t("footer.imprint")}>
           <Text style={[styles.footerLink, { color: themeColors.link }]}>{t("footer.imprint")}</Text>
         </BNMPressable>
         <Text style={[styles.footerSep, { color: themeColors.textTertiary }]}>·</Text>
-        <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/agbs/")} accessibilityRole="link" accessibilityLabel="Allgemeine Geschäftsbedingungen">
+        <BNMPressable onPress={() => router.push("/legal/agb")} accessibilityRole="link" accessibilityLabel="Allgemeine Geschäftsbedingungen">
           <Text style={[styles.footerLink, { color: themeColors.link }]}>AGB</Text>
         </BNMPressable>
       </View>
     </View>
   );
 
-  const modals = (
-    <>
-      {showPrivacy && (
-        <View style={styles.overlay}>
-          <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.privacyTitle")}</Text>
-            <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.privacyText")}</Text>
-            <BNMPressable style={[styles.overlayClose, { backgroundColor: themeColors.primary }]} onPress={() => setShowPrivacy(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
-              <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
-            </BNMPressable>
-          </View>
-        </View>
-      )}
-      {showImprint && (
-        <View style={styles.overlay}>
-          <View style={[styles.overlayCard, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.overlayTitle, { color: themeColors.text }]}>{t("footer.imprintTitle")}</Text>
-            <Text style={[styles.overlayText, { color: themeColors.textSecondary }]}>{t("footer.imprintText")}</Text>
-            <BNMPressable style={[styles.overlayClose, { backgroundColor: themeColors.primary }]} onPress={() => setShowImprint(false)} accessibilityRole="button" accessibilityLabel={t("common.back")}>
-              <Text style={styles.overlayCloseText}>{t("common.back")}</Text>
-            </BNMPressable>
-          </View>
-        </View>
-      )}
-    </>
-  );
 
   return (
     <Container>
@@ -403,7 +374,7 @@ export default function ProfileScreen() {
         {statsBlock}
         {logoutBlock}
         {footerBlock}
-        {modals}
+
       </View>
     </ScrollView>
     </Container>
@@ -658,30 +629,4 @@ const styles = StyleSheet.create({
   footerLink: { fontSize: 12 },
   footerSep: { fontSize: 12 },
 
-  // --- Overlays ---
-  overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 100,
-    padding: 32,
-  },
-  overlayCard: {
-    borderRadius: RADIUS.md,
-    padding: 24,
-    width: "100%",
-  },
-  overlayTitle: { fontWeight: "800", fontSize: 17, marginBottom: 12 },
-  overlayText: { fontSize: 14, lineHeight: 22, marginBottom: 20 },
-  overlayClose: {
-    borderRadius: RADIUS.sm,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  overlayCloseText: { color: COLORS.white, fontWeight: "600" },
 });

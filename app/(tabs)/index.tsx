@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
+
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
@@ -76,11 +76,8 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // Kein auto-refresh bei Tab-Focus — Realtime-Subscriptions halten Daten aktuell.
+  // Pull-to-Refresh (onRefresh) bleibt für manuelles Aktualisieren.
 
   const allMentors = users.filter((u) => u.role === "mentor");
   const allMentees = users.filter((u) => u.role === "mentee");
@@ -713,11 +710,8 @@ function MentorDashboard() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // Kein auto-refresh bei Tab-Focus — Realtime-Subscriptions halten Daten aktuell.
+  // Pull-to-Refresh (onRefresh) bleibt für manuelles Aktualisieren.
 
   const myMentorships = user ? getMentorshipsByMentorId(user.id) : [];
   const activeMentorships = myMentorships.filter((m) => m.status === "active");
@@ -1239,11 +1233,8 @@ function MenteeDashboard() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // Kein auto-refresh bei Tab-Focus — Realtime-Subscriptions halten Daten aktuell.
+  // Pull-to-Refresh (onRefresh) bleibt für manuelles Aktualisieren.
 
   if (!user) return null;
 
@@ -1300,7 +1291,7 @@ function MenteeDashboard() {
         <View style={[styles.mentorGreetingRow, { justifyContent: "center", alignItems: "center" }]}>
           <View style={{ alignItems: "center" }}>
             <Text style={[styles.mentorGreetingLabel, { color: isDark ? COLORS.gold : COLORS.gradientStart, textAlign: "center" }]}>
-              SALAM ALEIKUM
+              HALLO
             </Text>
             <Text style={[styles.mentorGreetingName, { color: themeColors.text, textAlign: "center" }]}>{user.name}</Text>
           </View>

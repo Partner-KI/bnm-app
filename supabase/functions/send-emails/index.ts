@@ -45,10 +45,10 @@ serve(async (_req) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "BNM <onboarding@resend.dev>",
+          from: "BNM <noreply@bnm.iman.ngo>",
           to: [recipient],
           subject: email.subject,
-          html: email.body,
+          html: email.html_body,
         }),
       });
 
@@ -67,7 +67,7 @@ serve(async (_req) => {
           .from("email_queue")
           .update({
             status: "failed",
-            error_message: errBody.slice(0, 500),
+            error: errBody.slice(0, 500),
           })
           .eq("id", email.id);
       }
@@ -76,7 +76,7 @@ serve(async (_req) => {
         .from("email_queue")
         .update({
           status: "failed",
-          error_message: err instanceof Error ? err.message : "Unbekannter Fehler",
+          error: err instanceof Error ? err.message : "Unbekannter Fehler",
         })
         .eq("id", email.id);
     }

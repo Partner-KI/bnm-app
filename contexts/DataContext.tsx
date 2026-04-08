@@ -23,6 +23,7 @@ import type {
   UserAchievement,
   ThankEntry,
   StreakData,
+  MessageTemplate,
 } from "../types";
 import { XP_VALUES, ACHIEVEMENTS, getLevelForXP } from "../lib/gamification";
 import { supabase } from "../lib/supabase";
@@ -35,7 +36,6 @@ import {
   sendCredentialsEmail,
   sendMenteeAssignedNotification,
   sendFeedbackRequestEmail,
-  sendApplicationRejectionEmail,
 } from "../lib/emailService";
 import { sendLocalNotification, notifyNewMessage, notifyMentorAssigned, notifyMenteeAssigned, notifyMentorshipCompleted, notifyFeedbackRequested } from "../lib/notificationService";
 
@@ -82,6 +82,7 @@ export interface DataContextValue {
   notifications: Notification[];
   hadithe: Hadith[];
   qaEntries: QAEntry[];
+  messageTemplates: MessageTemplate[];
 
   // Gamification
   xpLog: XPEntry[];
@@ -144,7 +145,7 @@ export interface DataContextValue {
 
   // Application actions
   approveApplication: (applicationId: string) => Promise<void>;
-  rejectApplication: (applicationId: string) => Promise<void>;
+  rejectApplication: (applicationId: string, rejectionReason?: string) => Promise<void>;
   submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => Promise<void>;
 
   // User actions
@@ -260,6 +261,7 @@ interface CachePayload {
   feedback: Feedback[];
   hadithe: Hadith[];
   qaEntries: QAEntry[];
+  messageTemplates: MessageTemplate[];
   appSettings: Record<string, string>;
   mentorOfMonthVisible: boolean;
   timestamp: number;
@@ -353,6 +355,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [applications, setApplications] = useState<MentorApplication[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [messageTemplates, setMessageTemplates] = useState<MessageTemplate[]>([]);
   const [mentorOfMonthVisible, setMentorOfMonthVisible] = useState<boolean>(true);
   const [hadithe, setHadithe] = useState<Hadith[]>([]);
   const [qaEntries, setQAEntries] = useState<QAEntry[]>([]);
@@ -557,6 +560,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         messagesRes,
         haditheRes,
         qaEntriesRes,
+        messageTemplatesRes,
         adminMsgsRes,
         xpRes,
         achievementsRes,
@@ -574,6 +578,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         safe(supabase.from("messages").select("*")),
         safe(supabase.from("hadithe").select("*").order("sort_order", { ascending: true })),
         safe(supabase.from("qa_entries").select("*").order("created_at", { ascending: true })),
+        safe(supabase.from("message_templates").select("*").eq("is_active", true).order("sort_order", { ascending: true })),
         safe(isAdminOrOffice
           ? supabase.from("admin_messages").select("*").order("created_at", { ascending: true })
           : supabase.from("admin_messages").select("*").eq("user_id", authUser!.id).order("created_at", { ascending: true })),
@@ -775,6 +780,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
           updated_at: row.updated_at as string,
         }));
         setQAEntries(entries);
+      }
+
+      // Message Templates
+      if (messageTemplatesRes.error) console.warn("[DataContext] message_templates error:", messageTemplatesRes.error.message);
+      if (messageTemplatesRes.data) {
+        setMessageTemplates(messageTemplatesRes.data.map((row: any) => ({
+          id: row.id,
+          title: row.title,
+          category: row.category ?? "general",
+          body: row.body,
+          sort_order: row.sort_order ?? 0,
+          is_active: row.is_active ?? true,
+        })));
       }
 
       // ─── Admin-Messages verarbeiten (Query läuft parallel im Promise.all oben) ──
@@ -2373,15 +2391,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const rejectApplication = useCallback(
-    async (applicationId: string) => {
-      const app = applications.find((a) => a.id === applicationId);
-
+    async (applicationId: string, rejectionReason?: string) => {
       const { error } = await supabase
         .from("mentor_applications")
         .update({
           status: "rejected",
           reviewed_by: authUser?.id ?? null,
           reviewed_at: new Date().toISOString(),
+          rejection_reason: rejectionReason ?? null,
         })
         .eq("id", applicationId);
 
@@ -2394,17 +2411,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
           a.id === applicationId ? { ...a, status: "rejected" as ApplicationStatus } : a
         )
       );
-
-      // E-Mail an den Bewerber senden (fire-and-forget — blockiert nicht die UI)
-      if (app) {
-        const isMenteeRegistration =
-          app.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
-        sendApplicationRejectionEmail(
-          app.email,
-          app.name,
-          isMenteeRegistration ? "mentee" : "mentor"
-        ).catch(() => console.warn("[rejectApplication] E-Mail fehlgeschlagen"));
-      }
     },
     [applications, authUser]
   );
@@ -3109,6 +3115,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         reorderHadithe,
         bulkInsertHadithe,
         qaEntries,
+        messageTemplates,
         loadQAEntries,
         addQAEntry,
         updateQAEntry,

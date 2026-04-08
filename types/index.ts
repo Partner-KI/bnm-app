@@ -90,6 +90,15 @@ export interface Feedback {
   created_at: string;
 }
 
+export interface MessageTemplate {
+  id: string;
+  title: string;
+  category: string;
+  body: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export interface Message {
   id: string;
   mentorship_id: string;

@@ -21,14 +21,8 @@ BEGIN
     RETURN FALSE;
   END IF;
 
-  -- 1. Completed Mentorships: eigene Referenz auf NULL setzen (bleibt zählbar)
-  IF caller_role = 'mentor' THEN
-    UPDATE mentorships SET mentor_id = NULL
-      WHERE mentor_id = my_id AND status = 'completed';
-  ELSE
-    UPDATE mentorships SET mentee_id = NULL
-      WHERE mentee_id = my_id AND status = 'completed';
-  END IF;
+  -- 1. Completed Mentorships bleiben unverändert (Profil wird nur anonymisiert,
+  --    nicht gelöscht → FK-Referenz bleibt gültig auf '[Gelöscht]'-Profil)
 
   -- 2. Aktive/Pending Mentorships: zugehörige Daten löschen
   DELETE FROM sessions
@@ -63,7 +57,7 @@ BEGIN
     avatar_url = NULL,
     is_active  = FALSE,
     city       = '',
-    age        = NULL
+    age        = 0
   WHERE id = my_id;
 
   -- 5. Auth-User sperren (KEIN DELETE → kein CASCADE!)

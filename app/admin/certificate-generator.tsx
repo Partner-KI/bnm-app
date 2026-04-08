@@ -16,6 +16,7 @@ import {
   FlatList,
 } from "react-native";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -41,6 +42,7 @@ function getMonthName(month: number, lang: string): string {
 
 export default function CertificateGeneratorScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const { user: authUser } = useAuth();
   const themeColors = useThemeColors();
@@ -147,7 +149,7 @@ export default function CertificateGeneratorScreen() {
   return (
     <Container fullWidth={Platform.OS === "web"}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
-        <View style={styles.page}>
+        <View style={[styles.page, { paddingTop: insets.top + 16 }]}>
 
           {/* Header */}
           <View style={styles.header}>

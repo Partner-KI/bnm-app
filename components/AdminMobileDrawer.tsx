@@ -16,6 +16,7 @@ import { useData } from "../contexts/DataContext";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useThemeColors } from "../contexts/ThemeContext";
 import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
+import { BNMLogo } from "./BNMLogo";
 
 const DRAWER_WIDTH = 280;
 
@@ -117,11 +118,14 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
       >
         {/* Header */}
         <View style={[styles.drawerHeader, { borderBottomColor: themeColors.border }]}>
-          <View>
-            <Text style={styles.drawerBrand}>BNM</Text>
-            <Text style={[styles.drawerRole, { color: themeColors.textSecondary }]}>
-              {role === "admin" ? t("profile.roleAdmin") : role === "office" ? t("profile.roleOffice") : role === "mentor" ? t("profile.roleMentor") : t("profile.roleMentee")}
-            </Text>
+          <View style={styles.drawerBrandRow}>
+            <BNMLogo size={36} />
+            <View>
+              <Text style={styles.drawerBrand}>BNM</Text>
+              <Text style={[styles.drawerRole, { color: themeColors.textSecondary }]}>
+                {role === "admin" ? t("profile.roleAdmin") : role === "office" ? t("profile.roleOffice") : role === "mentor" ? t("profile.roleMentor") : t("profile.roleMentee")}
+              </Text>
+            </View>
           </View>
           <TouchableOpacity
             onPress={onClose}
@@ -214,6 +218,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomWidth: 1,
     marginBottom: 8,
+  },
+  drawerBrandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
   drawerBrand: {
     fontSize: 22,

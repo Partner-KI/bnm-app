@@ -97,8 +97,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
 export function useTheme(): ThemeContextType {
   const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme muss innerhalb eines ThemeProviders verwendet werden");
+  // Fallback für Hermes-Timing: falls Context noch nicht verfügbar ist,
+  // sichere Defaults zurückgeben statt ReferenceError zu werfen
+  if (!context || typeof context.isDark === "undefined") {
+    return { mode: "light", isDark: false, setMode: () => {}, colors: LIGHT_COLORS };
   }
   return context;
 }

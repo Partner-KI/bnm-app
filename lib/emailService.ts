@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase";
 
 // ============================================================
 // E-Mail Service — schreibt in die email_queue (Audit-Trail)
@@ -6,7 +6,8 @@ import { supabase } from "./supabase";
 // Der Resend API-Key liegt serverseitig als Supabase Secret.
 // ============================================================
 
-const OVERRIDE_RECIPIENT = "hasan.sevenler@partner.ki";
+// Admin-E-Mail für Benachrichtigungen (Feedback, neue Anmeldungen, etc.)
+const ADMIN_EMAIL = "hasan.sevenler@partner.ki";
 
 // Resend-Versand über Supabase Edge Function (kein API-Key im Client).
 async function sendViaResend(
@@ -16,11 +17,38 @@ async function sendViaResend(
   attachments?: { filename: string; content: string }[]
 ): Promise<boolean> {
   try {
-    const { error } = await supabase.functions.invoke("send-direct", {
-      body: { to, subject, html: htmlBody, attachments },
-    });
-    return !error;
-  } catch {
+    // 10s Timeout damit die UI nie hängen bleibt
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
+    const res = await fetch(
+      `${SUPABASE_URL}/functions/v1/send-direct`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ to, subject, html: htmlBody, attachments }),
+        signal: controller.signal,
+      }
+    );
+    clearTimeout(timeout);
+
+    const responseText = await res.text();
+    if (!res.ok) {
+      console.error(`[emailService] send-direct ${res.status}:`, responseText);
+      return false;
+    }
+    console.log("[emailService] send-direct OK:", to, responseText);
+    return true;
+  } catch (err: any) {
+    if (err?.name === "AbortError") {
+      console.error("[emailService] send-direct timeout (10s)");
+    } else {
+      console.error("[emailService] send-direct exception:", err);
+    }
     return false;
   }
 }
@@ -45,8 +73,7 @@ export async function sendEmail(
     const insertPromise = supabase.from("email_queue").insert({
       to_email: to,
       subject,
-      body,
-      override_to: OVERRIDE_RECIPIENT,
+      html_body: body,
       status: "pending",
       sent_at: null,
     });
@@ -59,8 +86,10 @@ export async function sendEmail(
 
     if (error) console.warn("[emailService] email_queue insert:", error.message ?? error);
 
-    // 2) Direkt versenden — fire-and-forget
-    sendViaResend(OVERRIDE_RECIPIENT, subject, body).catch(() => {});
+    // 2) Direkt versenden
+    sendViaResend(to, subject, body).catch((err) =>
+      console.error("[emailService] sendViaResend failed:", err)
+    );
 
     return !error;
   } catch (err) {
@@ -112,7 +141,7 @@ export async function sendNewFeedbackNotification(
 <p>Bitte im Admin-Dashboard einsehen.</p>
 <hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
   `.trim();
-  return sendEmail(OVERRIDE_RECIPIENT, subject, body);
+  return sendEmail(ADMIN_EMAIL, subject, body);
 }
 
 export async function sendNewMenteeRegistrationNotification(
@@ -133,7 +162,7 @@ export async function sendNewMenteeRegistrationNotification(
 <p>Bitte im Admin-Dashboard unter "Anmeldungen" prüfen.</p>
 <hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
   `.trim();
-  return sendEmail(OVERRIDE_RECIPIENT, subject, body);
+  return sendEmail(ADMIN_EMAIL, subject, body);
 }
 
 export async function sendNewMentorApplicationNotification(
@@ -154,7 +183,7 @@ export async function sendNewMentorApplicationNotification(
 <p>Bitte im Admin-Dashboard unter "Bewerbungen" prüfen.</p>
 <hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
   `.trim();
-  return sendEmail(OVERRIDE_RECIPIENT, subject, body);
+  return sendEmail(ADMIN_EMAIL, subject, body);
 }
 
 export async function sendMenteeAssignedNotification(
@@ -180,11 +209,12 @@ export async function sendMenteeAssignedNotification(
 }
 
 export async function sendMentorshipStatusChangeNotification(
-  adminEmail: string,
+  _adminEmail: string,
   mentorName: string,
   menteeName: string,
   newStatus: "completed" | "cancelled"
 ) {
+  // Immer an ADMIN_EMAIL senden (Parameter wird ignoriert — war oft leer)
   const statusLabel =
     newStatus === "completed" ? "abgeschlossen" : "abgebrochen";
   const subject = `[BNM] Betreuung ${statusLabel}: ${menteeName} & ${mentorName}`;
@@ -198,7 +228,7 @@ export async function sendMentorshipStatusChangeNotification(
 <p>Details im Admin-Dashboard einsehen.</p>
 <hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
   `.trim();
-  return sendEmail(adminEmail, subject, body);
+  return sendEmail(ADMIN_EMAIL, subject, body);
 }
 
 export async function sendApplicationRejectionEmail(

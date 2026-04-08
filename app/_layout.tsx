@@ -225,6 +225,7 @@ function RootLayoutInner() {
               <Stack.Screen name="admin/mentor-award" options={{ headerShown: false }} />
               <Stack.Screen name="admin/message-templates" options={{ headerShown: false }} />
               <Stack.Screen name="admin/certificate-generator" options={{ headerShown: false }} />
+              <Stack.Screen name="legal" options={{ headerShown: false }} />
             </Stack>
           </View>
         </View>
@@ -407,6 +408,12 @@ function RootLayoutInner() {
         />
         <Stack.Screen
           name="admin/certificate-generator"
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen
+          name="legal"
           options={{
             headerShown: false,
           }}

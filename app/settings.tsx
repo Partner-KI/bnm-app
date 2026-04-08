@@ -53,6 +53,7 @@ export default function SettingsScreen() {
       if (data === false) throw new Error("Nicht berechtigt");
       showSuccess(t("settings.accountDeleted"), logout);
     } catch (e: any) {
+      console.error("deleteAccount error:", e?.message || e);
       showError(t("settings.deleteError"));
     } finally {
       setDeleting(false);

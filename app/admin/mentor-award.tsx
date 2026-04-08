@@ -16,6 +16,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -55,6 +56,7 @@ function getMonthName(month: number, lang: string): string {
 
 export default function MentorAwardScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ mentorId?: string }>();
   const { t } = useLanguage();
   const { user: authUser } = useAuth();
@@ -236,7 +238,7 @@ export default function MentorAwardScreen() {
   return (
     <Container fullWidth={Platform.OS === "web"}>
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
-        <View style={styles.page}>
+        <View style={[styles.page, { paddingTop: insets.top + 16 }]}>
 
           {/* Header */}
           <View style={styles.header}>

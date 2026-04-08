@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Linking,
   useWindowDimensions,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
@@ -155,15 +154,15 @@ export default function LoginScreen() {
                 Ein iERA Projekt in Kooperation mit IMAN
               </Text>
               <View style={styles.loginFooterLinks}>
-                <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/datenschutzerklaerung/")} accessibilityRole="link" accessibilityLabel="Datenschutzerklärung">
+                <BNMPressable onPress={() => router.push("/legal/datenschutz")} accessibilityRole="link" accessibilityLabel="Datenschutzerklärung">
                   <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>Datenschutz</Text>
                 </BNMPressable>
                 <Text style={[styles.loginFooterSep, { color: themeColors.textTertiary }]}>·</Text>
-                <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/impressum/")} accessibilityRole="link" accessibilityLabel="Impressum">
+                <BNMPressable onPress={() => router.push("/legal/impressum")} accessibilityRole="link" accessibilityLabel="Impressum">
                   <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>Impressum</Text>
                 </BNMPressable>
                 <Text style={[styles.loginFooterSep, { color: themeColors.textTertiary }]}>·</Text>
-                <BNMPressable onPress={() => Linking.openURL("https://iman.ngo/agbs/")} accessibilityRole="link" accessibilityLabel="Allgemeine Geschäftsbedingungen">
+                <BNMPressable onPress={() => router.push("/legal/agb")} accessibilityRole="link" accessibilityLabel="Allgemeine Geschäftsbedingungen">
                   <Text style={[styles.loginFooterLink, { color: themeColors.link }]}>AGB</Text>
                 </BNMPressable>
               </View>

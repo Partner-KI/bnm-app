@@ -145,11 +145,12 @@ export default function ApplicationsTabScreen() {
 
     setIsRejecting(true);
     try {
-      await rejectApplication(rejectModalApp.id);
+      await rejectApplication(rejectModalApp.id, reasonText);
+      const appType = rejectModalApp.motivation === PUBLIC_REGISTRATION_MARKER ? "mentee" : "mentor";
       await sendApplicationRejectionEmail(
         rejectModalApp.email,
         rejectModalApp.name,
-        "mentor",
+        appType,
         reasonText
       );
       closeRejectModal();

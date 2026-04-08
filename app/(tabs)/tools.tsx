@@ -16,7 +16,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
-import { useThemeColors } from "../../contexts/ThemeContext";
+import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { geocodeAllUsers } from "../../lib/geocoding";
 
 export default function ToolsTabScreen() {
@@ -24,6 +24,7 @@ export default function ToolsTabScreen() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const themeColors = useThemeColors();
+  const { isDark } = useTheme();
   const { width } = useWindowDimensions();
   const [isGeocoding, setIsGeocoding] = useState(false);
   // Auf Mobile: 2-Spalten-Grid; auf Web/Desktop: flexibles Layout
@@ -109,6 +110,17 @@ export default function ToolsTabScreen() {
                 <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.hadithDesc")}</Text>
               </TouchableOpacity>
             )}
+
+            <TouchableOpacity
+              style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
+              onPress={() => router.push("/admin/message-templates" as never)}
+            >
+              <View style={[styles.toolIconBg, { backgroundColor: isDark ? "#2A2518" : "#FFF8E6" }]}>
+                <Ionicons name="document-text-outline" size={24} color={COLORS.gold} />
+              </View>
+              <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("templates.manage")}</Text>
+              <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("templates.manageDesc")}</Text>
+            </TouchableOpacity>
 
             <TouchableOpacity
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}

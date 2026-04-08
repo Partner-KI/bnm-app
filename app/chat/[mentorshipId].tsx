@@ -11,6 +11,8 @@ import {
   Animated,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Modal,
+  LayoutAnimation,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
@@ -37,11 +39,13 @@ export default function ChatScreen() {
     sendMessage,
     deleteMessage,
     markChatAsRead,
+    messageTemplates,
     isLoading: dataLoading,
   } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
 
   const [inputText, setInputText] = useState("");
+  const [showTemplates, setShowTemplates] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
@@ -285,8 +289,18 @@ export default function ChatScreen() {
       {/* Input-Bereich — Admin/Office dürfen schreiben (als Beobachter/Moderator) */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
+          {/* Vorlagen-Button */}
+          {messageTemplates.length > 0 && (user?.role === "mentor" || user?.role === "admin" || user?.role === "office") && (
+            <TouchableOpacity
+              style={styles.templateButton}
+              onPress={() => setShowTemplates(true)}
+              accessibilityLabel={t("chat.templates")}
+            >
+              <Ionicons name="document-text-outline" size={22} color={themeColors.textSecondary} />
+            </TouchableOpacity>
+          )}
           <TextInput
-            style={[styles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
+            style={[styles.textInput, styles.textInputWithTemplate, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
             value={inputText}
             onChangeText={setInputText}
             placeholder={t("chat.placeholder")}
@@ -312,6 +326,46 @@ export default function ChatScreen() {
           </Text>
         </View>
       )}
+      {/* Vorlagen-Modal */}
+      <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
+        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)}>
+          <View style={[styles.modalSheet, { backgroundColor: themeColors.card }]} onStartShouldSetResponder={() => true}>
+            <View style={[styles.modalHandle, { backgroundColor: themeColors.border }]} />
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>{t("chat.templates")}</Text>
+            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
+              {messageTemplates.map((tmpl) => {
+                const menteeName = mentorship?.mentee?.name?.split(" ")[0] ?? "";
+                const menteeGender = mentorship?.mentee?.gender;
+                const anrede = menteeGender === "male" ? t("chat.templateBrother") : t("chat.templateSister");
+                const mentorName = user?.name ?? "";
+
+                return (
+                  <BNMPressable
+                    key={tmpl.id}
+                    style={[styles.templateCard, { borderColor: themeColors.border }]}
+                    onPress={() => {
+                      const text = tmpl.body
+                        .replace(/\{\{NAME\}\}/g, menteeName)
+                        .replace(/\{\{ANREDE\}\}/g, anrede)
+                        .replace(/\{\{MENTOR_NAME\}\}/g, mentorName);
+                      setInputText(text);
+                      setShowTemplates(false);
+                    }}
+                  >
+                    <View style={styles.templateCardHeader}>
+                      <Text style={[styles.templateCardTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
+                      <Text style={[styles.templateCardCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
+                    </View>
+                    <Text style={[styles.templateCardPreview, { color: themeColors.textSecondary }]} numberOfLines={3}>
+                      {tmpl.body.replace(/\{\{NAME\}\}/g, menteeName).replace(/\{\{ANREDE\}\}/g, anrede).replace(/\{\{MENTOR_NAME\}\}/g, mentorName)}
+                    </Text>
+                  </BNMPressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -391,4 +445,68 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
+
+  // Template Button
+  templateButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  textInputWithTemplate: {},
+
+  // Template Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    borderTopLeftRadius: RADIUS.xl,
+    borderTopRightRadius: RADIUS.xl,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    maxHeight: "70%",
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    alignSelf: "center",
+    marginTop: 12,
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontWeight: "800",
+    fontSize: 18,
+    marginBottom: 16,
+  },
+  modalScroll: {
+    flex: 1,
+  },
+  templateCard: {
+    borderWidth: 1,
+    borderRadius: RADIUS.md,
+    padding: 14,
+    marginBottom: 10,
+  },
+  templateCardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 6,
+  },
+  templateCardTitle: {
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  templateCardCategory: {
+    fontSize: 11,
+    fontWeight: "500",
+    textTransform: "capitalize",
+  },
+  templateCardPreview: {
+    fontSize: 12,
+    lineHeight: 18,
+  },
 });

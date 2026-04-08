@@ -638,6 +638,26 @@ const de = {
 
   // Chat
   "chat.placeholder": "Nachricht schreiben...",
+  "chat.templates": "Vorlagen",
+  "chat.templateBrother": "Bruder",
+  "chat.templateSister": "Schwester",
+
+  // Message Templates Admin
+  "templates.manage": "Nachrichtenvorlagen",
+  "templates.manageDesc": "Vorlagen für Mentoren im Chat",
+  "templates.hint": "Platzhalter: {{NAME}}, {{ANREDE}} (Bruder/Schwester), {{MENTOR_NAME}}",
+  "templates.titleLabel": "Titel",
+  "templates.titlePlaceholder": "z.B. Kontaktaufnahme",
+  "templates.categoryLabel": "Kategorie",
+  "templates.bodyLabel": "Nachrichtentext",
+  "templates.bodyPlaceholder": "Vorlagetext eingeben...",
+  "templates.placeholderHint": "Verwende {{NAME}}, {{ANREDE}}, {{MENTOR_NAME}} als Platzhalter",
+  "templates.saved": "Vorlage gespeichert.",
+  "templates.deleted": "Vorlage gelöscht.",
+  "templates.errorEmpty": "Titel und Text dürfen nicht leer sein.",
+  "templates.deleteTitle": "Vorlage löschen",
+  "templates.deleteConfirm": "Möchtest du diese Vorlage wirklich löschen?",
+  "templates.empty": "Noch keine Vorlagen vorhanden.",
   "chat.send": "→",
   "chat.noMessages": "Noch keine Nachrichten.\nSchreibe die erste Nachricht!",
   "chat.mentorship": "Betreuung",

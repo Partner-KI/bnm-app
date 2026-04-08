@@ -216,13 +216,13 @@ export default function RegisterPublicScreen() {
           .eq("id", newUserId);
       }
 
-      // E-Mail-Benachrichtigung an Admin
-      await sendNewMenteeRegistrationNotification(
+      // E-Mail-Benachrichtigung an Admin (fire-and-forget — Registrierung nie blockieren)
+      sendNewMenteeRegistrationNotification(
         fullName,
         emailLower,
         city.trim(),
         gender ?? "male"
-      );
+      ).catch((err) => console.warn("[register] E-Mail-Benachrichtigung fehlgeschlagen:", err));
 
       setStep("success");
     } catch {
@@ -586,7 +586,7 @@ export default function RegisterPublicScreen() {
                     style={{ color: "#3b82f6", textDecorationLine: "underline" }}
                     onPress={(e) => {
                       e.stopPropagation?.();
-                      Linking.openURL("https://iman.ngo/datenschutzerklaerung/");
+                      router.push("/legal/datenschutz");
                     }}
                   >
                     {t("register.confirmPrivacyLink1")}
@@ -596,7 +596,7 @@ export default function RegisterPublicScreen() {
                     style={{ color: "#3b82f6", textDecorationLine: "underline" }}
                     onPress={(e) => {
                       e.stopPropagation?.();
-                      Linking.openURL("https://iman.ngo/agbs/");
+                      router.push("/legal/agb");
                     }}
                   >
                     {t("register.confirmPrivacyLink2")}
