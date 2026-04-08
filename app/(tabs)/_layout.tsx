@@ -263,7 +263,7 @@ const glassStyles = StyleSheet.create({
 
 // ─── Tab Layout (Mobile + Web Non-Admin) ────────────────────────────────────
 
-function TabsLayout({ hiddenTabBar }: { hiddenTabBar?: boolean } = {}) {
+function TabsLayout() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
@@ -290,11 +290,10 @@ function TabsLayout({ hiddenTabBar }: { hiddenTabBar?: boolean } = {}) {
 
   return (
     <Tabs
-      tabBar={hiddenTabBar ? () => null : (props) => <GlassTabBar {...props} />}
+      tabBar={(props) => <GlassTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: themeColors.tabIconActive,
         tabBarInactiveTintColor: themeColors.tabIconInactive,
-        headerShown: hiddenTabBar ? false : undefined,
         headerStyle: {
           backgroundColor: themeColors.headerBackground,
         },
@@ -419,6 +418,34 @@ function TabsLayout({ hiddenTabBar }: { hiddenTabBar?: boolean } = {}) {
 // ─── Admin Sidebar Layout (Web only) ────────────────────────────────────────
 // Sidebar wird vom Root-Layout (_layout.tsx) gerendert — hier nur Tabs ohne TabBar
 
+function AdminSidebarLayout() {
+  const themeColors = useThemeColors();
+
+  return (
+    <Tabs
+      screenOptions={{
+        tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
+        headerShown: false,
+        // Lazy loading deaktivieren damit Tabs sofort verfügbar sind
+        // und kein Flash zum Default-Tab entsteht
+        lazy: false,
+      }}
+    >
+      <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
+      <Tabs.Screen name="mentees" options={{ title: "Mentees" }} />
+      <Tabs.Screen name="chats" options={{ title: "Chats" }} />
+      <Tabs.Screen name="leaderboard" options={{ href: null }} />
+      <Tabs.Screen name="faq" options={{ href: null }} />
+      <Tabs.Screen name="mentors" options={{ title: "Mentoren" }} />
+      <Tabs.Screen name="applications" options={{ title: "Bewerbungen" }} />
+      <Tabs.Screen name="tools" options={{ title: "Tools" }} />
+      <Tabs.Screen name="reports" options={{ title: "Berichte" }} />
+      <Tabs.Screen name="feedback" options={{ title: "Feedback" }} />
+      <Tabs.Screen name="profile" options={{ title: "Profil" }} />
+    </Tabs>
+  );
+}
+
 // ─── Admin Mobile Layout (Hamburger-Menü, kein TabBar) ──────────────────────
 
 function AdminMobileLayout() {
@@ -451,13 +478,14 @@ function AdminMobileLayout() {
           headerTintColor: themeColors.headerText,
           headerLeft,
           headerRight,
+          lazy: false,
         }}
       >
         <Tabs.Screen name="index" options={{ title: t("tabs.dashboard") }} />
         <Tabs.Screen name="mentees" options={{ title: t("tabs.mentees") }} />
         <Tabs.Screen name="chats" options={{ title: t("tabs.chats"), href: isOffice ? null : undefined }} />
-        <Tabs.Screen name="leaderboard" options={{ title: t("tabs.ranking") }} />
-        <Tabs.Screen name="faq" options={{ title: t("tabs.faq") }} />
+        <Tabs.Screen name="leaderboard" options={{ href: null }} />
+        <Tabs.Screen name="faq" options={{ href: null }} />
         <Tabs.Screen name="mentors" options={{ title: t("sidebar.mentors") }} />
         <Tabs.Screen name="applications" options={{ title: t("sidebar.applications") }} />
         <Tabs.Screen name="tools" options={{ title: "Tools" }} />
@@ -489,17 +517,13 @@ export default function TabLayout() {
   // Admin/Office auf Mobile: Hamburger-Menü statt TabBar
   const useMobileAdminDrawer = hasMounted && isMobile && isAdminOrOffice;
 
-  // Web: Alle Rollen mit Sidebar → TabBar ausblenden (Root-Sidebar navigiert)
-  const hideTabBarForSidebar = hasMounted && isWeb && !!user && width >= 768;
-
   if (useSidebar) {
-    return <TabsLayout hiddenTabBar />;
+    return <AdminSidebarLayout />;
   }
 
   if (useMobileAdminDrawer) {
     return <AdminMobileLayout />;
   }
 
-  // Web Mobile + Native: Bottom-Tabs (ggf. mit hidden TabBar wenn Root-Sidebar aktiv)
-  return <TabsLayout hiddenTabBar={hideTabBarForSidebar} />;
+  return <TabsLayout />;
 }
