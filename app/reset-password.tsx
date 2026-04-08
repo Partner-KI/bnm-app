@@ -43,7 +43,16 @@ export default function ResetPasswordScreen() {
         });
         if (error) {
           setVerifyError(true);
+          setIsVerifying(false);
+          return;
         }
+        // Session wurde gesetzt → force_password_change setzen damit
+        // NavigationGuard zu /change-password weiterleitet (statt Dashboard)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await supabase.from("profiles").update({ force_password_change: true }).eq("id", user.id);
+        }
+        // NavigationGuard übernimmt die Weiterleitung zu /change-password
         setIsVerifying(false);
         return;
       }

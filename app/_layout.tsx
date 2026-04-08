@@ -89,8 +89,9 @@ function NavigationGuard() {
     const inAuthGroup = segments[0] === "(auth)";
     const inLegalGroup = segments[0] === "legal";
     const isChangePassword = segments[0] === "change-password";
+    const isResetPassword = segments[0] === "reset-password";
 
-    if (!user && !inAuthGroup && !inLegalGroup) {
+    if (!user && !inAuthGroup && !inLegalGroup && !isResetPassword) {
       router.replace("/(auth)/login");
     } else if (user && inAuthGroup) {
       // Nach Login: Prüfen ob PW-Änderung erzwungen wird (Admin-Reset)
@@ -99,7 +100,7 @@ function NavigationGuard() {
       } else {
         router.replace("/(tabs)");
       }
-    } else if (user?.force_password_change && !isChangePassword) {
+    } else if (user?.force_password_change && !isChangePassword && !isResetPassword) {
       // User hat temporäres PW — immer zu change-password weiterleiten
       router.replace("/change-password");
     }
