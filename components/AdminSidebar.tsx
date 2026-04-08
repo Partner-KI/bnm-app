@@ -1,5 +1,5 @@
 /**
- * AppSidebar — Einklappbar (Collapsed/Expanded), scrollbar bei Zoom,
+ * AdminSidebar — Einklappbar (Collapsed/Expanded), scrollbar bei Zoom,
  * rollenabhängige Navigation für alle User auf Web.
  */
 import React, { useState, useEffect } from "react";
@@ -146,9 +146,9 @@ function SidebarItem({
   );
 }
 
-// ─── AppSidebar ──────────────────────────────────────────────────────────────
+// ─── AdminSidebar ────────────────────────────────────────────────────────────
 
-export function AppSidebar() {
+export function AdminSidebar() {
   const router = useRouter();
   const pathname = usePathname();
   const themeColors = useThemeColors();
@@ -534,5 +534,3 @@ const styles = StyleSheet.create({
   },
 });
 
-/** @deprecated Nutze AppSidebar */
-export { AppSidebar as AdminSidebar };
