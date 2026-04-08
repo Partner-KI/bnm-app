@@ -263,7 +263,7 @@ const glassStyles = StyleSheet.create({
 
 // ─── Tab Layout (Mobile + Web Non-Admin) ────────────────────────────────────
 
-function TabsLayout() {
+function TabsLayout({ hiddenTabBar }: { hiddenTabBar?: boolean } = {}) {
   const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
@@ -290,10 +290,11 @@ function TabsLayout() {
 
   return (
     <Tabs
-      tabBar={(props) => <GlassTabBar {...props} />}
+      tabBar={hiddenTabBar ? () => null : (props) => <GlassTabBar {...props} />}
       screenOptions={{
         tabBarActiveTintColor: themeColors.tabIconActive,
         tabBarInactiveTintColor: themeColors.tabIconInactive,
+        headerShown: hiddenTabBar ? false : undefined,
         headerStyle: {
           backgroundColor: themeColors.headerBackground,
         },
@@ -418,29 +419,6 @@ function TabsLayout() {
 // ─── Admin Sidebar Layout (Web only) ────────────────────────────────────────
 // Sidebar wird vom Root-Layout (_layout.tsx) gerendert — hier nur Tabs ohne TabBar
 
-function AdminSidebarLayout() {
-  return (
-    <Tabs
-      screenOptions={{
-        tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
-        headerShown: false,
-      }}
-    >
-      <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-      <Tabs.Screen name="mentees" options={{ title: "Mentees" }} />
-      <Tabs.Screen name="chats" options={{ title: "Chats" }} />
-      <Tabs.Screen name="leaderboard" options={{ title: "Ranking" }} />
-      <Tabs.Screen name="faq" options={{ title: "FAQ" }} />
-      <Tabs.Screen name="mentors" options={{ title: "Mentoren" }} />
-      <Tabs.Screen name="applications" options={{ title: "Bewerbungen" }} />
-      <Tabs.Screen name="tools" options={{ title: "Tools" }} />
-      <Tabs.Screen name="reports" options={{ title: "Berichte" }} />
-      <Tabs.Screen name="feedback" options={{ title: "Feedback" }} />
-      <Tabs.Screen name="profile" options={{ title: "Profil" }} />
-    </Tabs>
-  );
-}
-
 // ─── Admin Mobile Layout (Hamburger-Menü, kein TabBar) ──────────────────────
 
 function AdminMobileLayout() {
@@ -505,17 +483,19 @@ export default function TabLayout() {
   const isWeb = Platform.OS === "web";
   const isMobile = Platform.OS !== "web";
 
-  // Web Desktop (>= 768px): Sidebar für ALLE eingeloggten User
-  const useSidebar = hasMounted && isWeb && !!user && width >= 768;
+  // Web Desktop (>= 768px): Sidebar-Layout (TabBar hidden, Navigation via Root-Sidebar)
+  // Für ALLE Rollen auf Web — die Root-Layout Sidebar übernimmt die Navigation
+  const useSidebarLayout = hasMounted && isWeb && !!user && width >= 768;
 
-  // Web Mobile (< 768px): Hamburger-Drawer für ALLE eingeloggten User
+  // Web Mobile (< 768px): Hamburger-Drawer für ALLE auf Web
   const useWebMobileDrawer = hasMounted && isWeb && !!user && width < 768;
 
   // Native Mobile: Hamburger nur für Admin/Office
   const useMobileAdminDrawer = hasMounted && isMobile && isAdminOrOffice;
 
-  if (useSidebar) {
-    return <AdminSidebarLayout />;
+  if (useSidebarLayout) {
+    // TabBar ausblenden — Root-Layout zeigt die Sidebar
+    return <TabsLayout hiddenTabBar />;
   }
 
   if (useWebMobileDrawer || useMobileAdminDrawer) {
