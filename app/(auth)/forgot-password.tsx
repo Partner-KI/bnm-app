@@ -12,7 +12,7 @@ import {
 import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
-import { supabase } from "../../lib/supabase";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "../../lib/supabase";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 
@@ -39,12 +39,23 @@ export default function ForgotPasswordScreen() {
     setErrorMsg("");
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: undefined,
-      });
-
-      if (error) {
-        setErrorMsg(error.message);
+      // Reset-E-Mail über eigene Edge Function senden (statt Supabase Built-in Mailer,
+      // der auf 3 E-Mails/Stunde limitiert ist im Free Plan).
+      const res = await fetch(
+        `${SUPABASE_URL}/functions/v1/reset-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({ email: email.trim() }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setErrorMsg(data.error ?? t("forgotPassword.errorUnexpected"));
       } else {
         setSent(true);
       }
