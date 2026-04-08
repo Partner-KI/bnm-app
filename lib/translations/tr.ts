@@ -1221,6 +1221,7 @@ const tr: Record<TranslationKeys, string> = {
   "editUser.resetPasswordTitle": "Şifreyi sıfırla",
   "editUser.resetPasswordChoose": "Bu kullanıcı için yeni bir şifre seçin. Öneriyi kullanabilir veya kendi şifrenizi girebilirsiniz.",
   "editUser.resetPasswordConfirm": "Sıfırla",
+  "editUser.forcePasswordChange": "Kullanıcı giriş yaptıktan sonra şifresini değiştirmeli",
   "editUser.resetPasswordTooShort": "Şifre en az 6 karakter olmalıdır.",
   "editUser.resetPasswordText": "{0} için yeni bir geçici şifre oluşturulacak. Kişi bir sonraki girişte şifresini değiştirmelidir.",
   "editUser.resetPasswordError": "Şifre sıfırlanırken hata oluştu",

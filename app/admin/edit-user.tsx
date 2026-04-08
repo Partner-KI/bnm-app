@@ -84,6 +84,7 @@ function EditUserForm({ userId }: { userId: string }) {
   const [resetTempPw, setResetTempPw] = useState<string | null>(null);
   const [showResetModal, setShowResetModal] = useState(false);
   const [customPassword, setCustomPassword] = useState("");
+  const [forceChange, setForceChange] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const isBlocked = target.is_active === false;
@@ -161,8 +162,8 @@ function EditUserForm({ userId }: { userId: string }) {
         showError(t("editUser.resetPasswordError") + ": " + error.message);
         return;
       }
-      // Flag setzen damit User nach Login zum PW-Ändern aufgefordert wird
-      await supabase.from("profiles").update({ force_password_change: true }).eq("id", userId);
+      // Flag setzen damit User nach Login zum PW-Ändern aufgefordert wird (nur wenn Häkchen gesetzt)
+      await supabase.from("profiles").update({ force_password_change: forceChange }).eq("id", userId);
       // E-Mail mit neuem Passwort senden
       await sendCredentialsEmail(target.email, target.name, customPassword);
       // PW im Modal anzeigen (Fallback falls E-Mail fehlschlägt)
@@ -326,6 +327,16 @@ function EditUserForm({ userId }: { userId: string }) {
               autoCapitalize="none"
               autoCorrect={false}
             />
+            <BNMPressable
+              style={{ flexDirection: "row", alignItems: "center", gap: 10, marginTop: 14 }}
+              onPress={() => setForceChange((v) => !v)}
+              disableHover
+            >
+              <View style={{ width: 22, height: 22, borderRadius: 4, borderWidth: 2, borderColor: forceChange ? themeColors.primary : themeColors.border, backgroundColor: forceChange ? themeColors.primary : "transparent", alignItems: "center", justifyContent: "center" }}>
+                {forceChange && <Text style={{ color: COLORS.white, fontSize: 14, fontWeight: "700" }}>✓</Text>}
+              </View>
+              <Text style={{ color: themeColors.text, fontSize: 13, flex: 1 }}>{t("editUser.forcePasswordChange")}</Text>
+            </BNMPressable>
             <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
               <BNMPressable style={[styles.modalClose, { flex: 1, backgroundColor: themeColors.background, borderWidth: 1, borderColor: themeColors.border }]} onPress={() => setShowResetModal(false)}>
                 <Text style={[styles.modalCloseText, { color: themeColors.textSecondary }]}>{t("common.cancel")}</Text>

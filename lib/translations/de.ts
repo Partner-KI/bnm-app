@@ -1227,6 +1227,7 @@ const de = {
   "editUser.resetPasswordTitle": "Passwort zurücksetzen",
   "editUser.resetPasswordChoose": "Wähle ein neues Passwort für diesen Benutzer. Du kannst den Vorschlag übernehmen oder ein eigenes eingeben.",
   "editUser.resetPasswordConfirm": "Zurücksetzen",
+  "editUser.forcePasswordChange": "Benutzer muss Passwort nach dem Login ändern",
   "editUser.resetPasswordTooShort": "Passwort muss mindestens 6 Zeichen haben.",
   "editUser.resetPasswordText": "Ein neues temporäres Passwort wird für {0} generiert. Die Person muss es beim nächsten Login ändern.",
   "editUser.resetPasswordError": "Fehler beim Zurücksetzen des Passworts",

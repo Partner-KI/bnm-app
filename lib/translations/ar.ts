@@ -1221,6 +1221,7 @@ const ar: Record<TranslationKeys, string> = {
   "editUser.resetPasswordTitle": "إعادة تعيين كلمة المرور",
   "editUser.resetPasswordChoose": "اختر كلمة مرور جديدة لهذا المستخدم. يمكنك استخدام الاقتراح أو إدخال كلمة مرور خاصة.",
   "editUser.resetPasswordConfirm": "إعادة تعيين",
+  "editUser.forcePasswordChange": "يجب على المستخدم تغيير كلمة المرور بعد تسجيل الدخول",
   "editUser.resetPasswordTooShort": "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
   "editUser.resetPasswordText": "سيتم إنشاء كلمة مرور مؤقتة جديدة لـ {0}. يجب على الشخص تغييرها عند تسجيل الدخول القادم.",
   "editUser.resetPasswordError": "خطأ في إعادة تعيين كلمة المرور",
