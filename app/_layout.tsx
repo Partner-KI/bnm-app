@@ -88,11 +88,20 @@ function NavigationGuard() {
 
     const inAuthGroup = segments[0] === "(auth)";
     const inLegalGroup = segments[0] === "legal";
+    const isChangePassword = segments[0] === "change-password";
 
     if (!user && !inAuthGroup && !inLegalGroup) {
       router.replace("/(auth)/login");
     } else if (user && inAuthGroup) {
-      router.replace("/(tabs)");
+      // Nach Login: Prüfen ob PW-Änderung erzwungen wird (Admin-Reset)
+      if (user.force_password_change) {
+        router.replace("/change-password");
+      } else {
+        router.replace("/(tabs)");
+      }
+    } else if (user?.force_password_change && !isChangePassword) {
+      // User hat temporäres PW — immer zu change-password weiterleiten
+      router.replace("/change-password");
     }
   }, [user, isLoading, segments]);
 

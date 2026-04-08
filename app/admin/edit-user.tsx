@@ -155,6 +155,8 @@ function EditUserForm({ userId }: { userId: string }) {
         showError(t("editUser.resetPasswordError") + ": " + error.message);
         return;
       }
+      // Flag setzen damit User nach Login zum PW-Ändern aufgefordert wird
+      await supabase.from("profiles").update({ force_password_change: true }).eq("id", userId);
       // E-Mail mit neuem Passwort senden (geht an Override-Adresse)
       await sendCredentialsEmail(target.email, target.name, tempPassword);
       // Temp-PW im Modal anzeigen (Fallback falls E-Mail fehlschlägt)

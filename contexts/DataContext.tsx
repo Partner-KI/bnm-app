@@ -220,6 +220,7 @@ function mapProfile(row: Record<string, unknown>): User {
     mentor_level: (row.mentor_level as string) ?? "bronze",
     lat: (row.lat as number) ?? undefined,
     lng: (row.lng as number) ?? undefined,
+    force_password_change: (row.force_password_change as boolean) ?? false,
   };
 }
 

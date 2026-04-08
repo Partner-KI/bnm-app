@@ -36,6 +36,7 @@ async function loadProfile(userId: string): Promise<User | null> {
     avatar_url: data.avatar_url ?? undefined,
     created_at: data.created_at,
     is_active: data.is_active ?? true,
+    force_password_change: data.force_password_change ?? false,
   };
 }
 

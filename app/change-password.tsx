@@ -17,6 +17,7 @@ import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
+import { supabaseAnon } from "../lib/supabaseAnon";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
@@ -51,13 +52,14 @@ export default function ChangePasswordScreen() {
 
     setIsSaving(true);
     try {
-      // SECURITY: Altes Passwort verifizieren bevor neues gesetzt wird
+      // SECURITY: Altes Passwort verifizieren bevor neues gesetzt wird.
+      // supabaseAnon (ohne Session-Persistenz) damit kein Auth-State-Change getriggert wird.
       const { data: { user } } = await supabase.auth.getUser();
       if (!user?.email) {
         showError(t("changePassword.errorFailed"));
         return;
       }
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { error: signInError } = await supabaseAnon.auth.signInWithPassword({
         email: user.email,
         password: oldPassword,
       });
@@ -71,7 +73,9 @@ export default function ChangePasswordScreen() {
       if (updateError) {
         showError(updateError.message);
       } else {
-        showSuccess(t("changePassword.successMsg"), () => router.back());
+        // force_password_change Flag zurücksetzen
+        await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
+        showSuccess(t("changePassword.successMsg"), () => router.replace("/(tabs)"));
       }
     } catch (e: unknown) {
       showError(t("changePassword.errorFailed"));

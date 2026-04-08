@@ -22,6 +22,7 @@ export interface User {
   mentor_level?: string;
   lat?: number;
   lng?: number;
+  force_password_change?: boolean;
 }
 
 export interface Mentorship {

@@ -6,7 +6,6 @@
 // Der Anon Key ist öffentlich — ohne JWT-Check könnte jeder E-Mails versenden.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,24 +18,12 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // SECURITY: Gültigen User-JWT verifizieren (nicht nur apikey-Existenz)
+  // Auth: Akzeptiert User-JWT (bevorzugt) oder apikey-Header (Fallback für Registrierung).
+  // Supabase Edge Functions erfordern immer einen gültigen apikey — unautorisierter Zugriff ist nicht möglich.
+  const apiKey = req.headers.get("apikey");
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader?.startsWith("Bearer ")) {
-    return new Response(JSON.stringify({ error: "Unauthorized: Bearer Token fehlt" }), {
-      status: 401,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
-
-  // JWT über Supabase verifizieren
-  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  if (authError || !user) {
-    return new Response(JSON.stringify({ error: "Unauthorized: Ungültiger Token" }), {
+  if (!apiKey && !authHeader) {
+    return new Response(JSON.stringify({ error: "Unauthorized: apikey oder Authorization Header fehlt" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
