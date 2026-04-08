@@ -1,5 +1,4 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -38,11 +37,7 @@ export default function ProfileScreen() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   const ROLE_LABELS: Record<UserRole, string> = {
     admin: t("profile.roleAdmin"),

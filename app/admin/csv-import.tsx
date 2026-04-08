@@ -3,20 +3,20 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { supabaseAnon } from "../../lib/supabaseAnon";
-import { sendCredentialsEmail } from "../../lib/emailService";
+// sendCredentialsEmail wird nicht direkt importiert — Versand läuft über DataContext.approveApplication
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import {
   parseCSV,
@@ -277,12 +277,15 @@ export default function CSVImportScreen() {
       setProgressTotal(0);
     }
 
-    // Admin-Session im Hintergrund wiederherstellen
+    // Admin-Session wiederherstellen und dann Daten neu laden
     if (adminRefreshToken) {
-      supabase.auth.refreshSession({ refresh_token: adminRefreshToken }).catch(() => {});
+      try {
+        await supabase.auth.refreshSession({ refresh_token: adminRefreshToken });
+      } catch {
+        console.warn("[csv-import] Admin-Session konnte nicht wiederhergestellt werden");
+      }
     }
-    // Daten im Hintergrund neu laden (3s Delay damit Auth-Session wiederhergestellt ist)
-    setTimeout(() => refreshData().catch(() => {}), 3000);
+    await refreshData().catch(() => {});
   }, [previewRows, activeTab, refreshData]);
 
   // ─── Render ─────────────────────────────────────────────────────────────────
@@ -296,15 +299,15 @@ export default function CSVImportScreen() {
       <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <BNMPressable onPress={() => router.back()} style={styles.backBtn}>
             <Text style={[styles.backBtnText, { color: themeColors.text }]}>‹</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
         </View>
 
         {/* Tabs */}
         <View style={[styles.tabRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.tab, activeTab === "mentees" && styles.tabActive]}
             onPress={() => handleTabChange("mentees")}
           >
@@ -313,8 +316,8 @@ export default function CSVImportScreen() {
             >
               {t("csvImport.tabMentees")}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+          </BNMPressable>
+          <BNMPressable
             style={[styles.tab, activeTab === "mentors" && styles.tabActive]}
             onPress={() => handleTabChange("mentors")}
           >
@@ -323,7 +326,7 @@ export default function CSVImportScreen() {
             >
               {t("csvImport.tabMentors")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         {/* Aktionsbereich */}
@@ -331,7 +334,7 @@ export default function CSVImportScreen() {
           {Platform.OS === "web" ? (
             <>
               <View style={styles.actionRow}>
-                <TouchableOpacity
+                <BNMPressable
                   style={styles.uploadButton}
                   onPress={handleFileUpload}
                   disabled={isImporting}
@@ -339,8 +342,8 @@ export default function CSVImportScreen() {
                   <Text style={styles.uploadButtonText}>
                     ↑ {t("csvImport.upload")}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </BNMPressable>
+                <BNMPressable
                   style={[styles.templateButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                   onPress={handleDownloadTemplate}
                   disabled={isImporting}
@@ -348,7 +351,7 @@ export default function CSVImportScreen() {
                   <Text style={[styles.templateButtonText, { color: themeColors.textSecondary }]}>
                     ↓ {t("csvImport.downloadTemplate")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </View>
               <Text style={[styles.uploadHint, { color: themeColors.textTertiary }]}>{t("csvImport.uploadHint")}</Text>
             </>
@@ -424,7 +427,7 @@ export default function CSVImportScreen() {
               <View style={styles.previewStats}>
                 {validCount > 0 && (
                   <View style={[styles.statBadgeGreen, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
-                    <Text style={[styles.statBadgeText, { color: isDark ? "#4ade80" : "#15803d" }]}>{validCount} OK</Text>
+                    <Text style={[styles.statBadgeText, { color: sem(SEMANTIC.greenText, isDark) }]}>{validCount} OK</Text>
                   </View>
                 )}
                 {duplicateCount > 0 && (
@@ -466,7 +469,7 @@ export default function CSVImportScreen() {
                     <Text
                       style={[
                         styles.statusBadgeText,
-                        row.status === "valid" && { color: isDark ? "#4ade80" : "#15803d" },
+                        row.status === "valid" && { color: sem(SEMANTIC.greenText, isDark) },
                         row.status === "error" && { color: isDark ? "#f87171" : "#b91c1c" },
                         row.status === "duplicate" && { color: isDark ? "#fbbf24" : "#b45309" },
                       ]}
@@ -497,7 +500,7 @@ export default function CSVImportScreen() {
 
             {/* Import-Button */}
             {validCount > 0 && (
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.importButton}
                 onPress={handleImport}
                 disabled={isImporting}
@@ -505,7 +508,7 @@ export default function CSVImportScreen() {
                 <Text style={styles.importButtonText}>
                   {t("csvImport.import")} ({validCount})
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
           </View>
         )}

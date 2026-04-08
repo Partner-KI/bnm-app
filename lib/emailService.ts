@@ -10,6 +10,7 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase";
 const ADMIN_EMAIL = "hasan.sevenler@partner.ki";
 
 // Resend-Versand über Supabase Edge Function (kein API-Key im Client).
+// SECURITY: Sendet den User-JWT für Authentifizierung (nicht nur Anon Key).
 async function sendViaResend(
   to: string,
   subject: string,
@@ -17,6 +18,10 @@ async function sendViaResend(
   attachments?: { filename: string; content: string }[]
 ): Promise<boolean> {
   try {
+    // Aktuellen User-JWT holen für authentifizierten Aufruf
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token ?? SUPABASE_ANON_KEY;
+
     // 10s Timeout damit die UI nie hängen bleibt
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -28,7 +33,7 @@ async function sendViaResend(
         headers: {
           "Content-Type": "application/json",
           apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ to, subject, html: htmlBody, attachments }),
         signal: controller.signal,
@@ -61,6 +66,11 @@ function escapeHtml(str: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
+}
+
+/** Subject-Zeile bereinigen — Zeilenumbrüche und Sonderzeichen entfernen (Header-Injection) */
+function sanitizeSubject(str: string): string {
+  return str.replace(/[\r\n\t]/g, " ").trim().slice(0, 200);
 }
 
 export async function sendEmail(
@@ -129,7 +139,7 @@ export async function sendNewFeedbackNotification(
   rating: number,
   comment?: string
 ) {
-  const subject = `[BNM] Neues Feedback von ${menteeName}`;
+  const subject = sanitizeSubject(`[BNM] Neues Feedback von ${menteeName}`);
   const body = `
 <p>Es wurde ein neues Feedback eingegangen.</p>
 <ul>
@@ -150,7 +160,7 @@ export async function sendNewMenteeRegistrationNotification(
   city: string,
   gender: string
 ) {
-  const subject = `[BNM] Neue Mentee-Anmeldung: ${menteeName}`;
+  const subject = sanitizeSubject(`[BNM] Neue Mentee-Anmeldung: ${menteeName}`);
   const body = `
 <p>Eine neue Mentee-Anmeldung wurde eingereicht.</p>
 <ul>
@@ -171,7 +181,7 @@ export async function sendNewMentorApplicationNotification(
   city: string,
   gender: string
 ) {
-  const subject = `[BNM] Neue Mentor-Bewerbung: ${applicantName}`;
+  const subject = sanitizeSubject(`[BNM] Neue Mentor-Bewerbung: ${applicantName}`);
   const body = `
 <p>Eine neue Mentor-Bewerbung wurde eingereicht.</p>
 <ul>
@@ -192,7 +202,7 @@ export async function sendMenteeAssignedNotification(
   menteeName: string,
   menteeCity: string
 ) {
-  const subject = `[BNM] Dir wurde ein Mentee zugewiesen: ${menteeName}`;
+  const subject = sanitizeSubject(`[BNM] Dir wurde ein Mentee zugewiesen: ${menteeName}`);
   const body = `
 <p>Salam Aleikum ${escapeHtml(mentorName)},</p>
 <p>dir wurde ein neuer Mentee zugewiesen.</p>
@@ -217,7 +227,7 @@ export async function sendMentorshipStatusChangeNotification(
   // Immer an ADMIN_EMAIL senden (Parameter wird ignoriert — war oft leer)
   const statusLabel =
     newStatus === "completed" ? "abgeschlossen" : "abgebrochen";
-  const subject = `[BNM] Betreuung ${statusLabel}: ${menteeName} & ${mentorName}`;
+  const subject = sanitizeSubject(`[BNM] Betreuung ${statusLabel}: ${menteeName} & ${mentorName}`);
   const body = `
 <p>Eine Betreuung wurde als <strong>${statusLabel}</strong> markiert.</p>
 <ul>
@@ -299,7 +309,7 @@ export async function sendCertificateEmail(
   period: string,
   pdfBytes: Uint8Array
 ): Promise<boolean> {
-  const subject = `BNM – Urkunde: ${mentorName} – ${period}`;
+  const subject = sanitizeSubject(`BNM – Urkunde: ${mentorName} – ${period}`);
   const html = `
 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto">
   <div style="background:#0A3A5A;padding:24px;text-align:center">

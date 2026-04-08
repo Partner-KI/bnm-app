@@ -3,13 +3,13 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   ActivityIndicator,
   Alert,
   useWindowDimensions,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
@@ -75,7 +75,7 @@ export default function ToolsTabScreen() {
 
           <View style={styles.toolGrid}>
             {showSystemSettings && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
                 onPress={() => router.push("/admin/session-types")}
               >
@@ -84,10 +84,10 @@ export default function ToolsTabScreen() {
                 </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("dashboard.sessionTypes")}</Text>
                 <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.sessionTypesDesc")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/qa-management" as never)}
             >
@@ -96,10 +96,10 @@ export default function ToolsTabScreen() {
               </View>
               <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("qa.manage")}</Text>
               <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.qaDesc")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
             {showSystemSettings && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
                 onPress={() => router.push("/admin/hadithe-management" as never)}
               >
@@ -108,10 +108,10 @@ export default function ToolsTabScreen() {
                 </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
                 <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("tools.hadithDesc")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/message-templates" as never)}
             >
@@ -120,9 +120,9 @@ export default function ToolsTabScreen() {
               </View>
               <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("templates.manage")}</Text>
               <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("templates.manageDesc")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/certificate-generator" as never)}
             >
@@ -131,10 +131,10 @@ export default function ToolsTabScreen() {
               </View>
               <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("certGen.toolTitle")}</Text>
               <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("certGen.toolDesc")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
             {showSystemSettings && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth, opacity: isGeocoding ? 0.6 : 1 }]}
                 onPress={handleGeocodeAllUsers}
                 disabled={isGeocoding}
@@ -152,7 +152,7 @@ export default function ToolsTabScreen() {
                 <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>
                   Fehlende lat/lng für alle User setzen
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
           </View>
         </View>

@@ -4,11 +4,11 @@ import {
   Text,
   TextInput,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   Modal,
 } from "react-native";
+import { BNMPressable } from "./BNMPressable";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
@@ -374,14 +374,14 @@ function CommandPaletteInner() {
       statusBarTranslucent
     >
       {/* Overlay — tap outside to close */}
-      <TouchableOpacity
+      <BNMPressable
         style={styles.overlay}
         activeOpacity={1}
         onPress={close}
         accessible={false}
       >
         {/* Card — stop tap propagation */}
-        <TouchableOpacity
+        <BNMPressable
           style={styles.card}
           activeOpacity={1}
           onPress={() => {/* do nothing – prevent overlay close */}}
@@ -407,7 +407,7 @@ function CommandPaletteInner() {
               onSubmitEditing={confirmSelected}
             />
             {query.length > 0 && (
-              <TouchableOpacity
+              <BNMPressable
                 onPress={() => setQuery("")}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
@@ -416,7 +416,7 @@ function CommandPaletteInner() {
                   size={16}
                   color={themeColors.textTertiary}
                 />
-              </TouchableOpacity>
+              </BNMPressable>
             )}
           </View>
 
@@ -452,7 +452,7 @@ function CommandPaletteInner() {
                     key={route.id}
                     ref={(el) => { itemRefs.current[index] = el; }}
                   >
-                    <TouchableOpacity
+                    <BNMPressable
                       style={[
                         styles.resultItem,
                         isSelected && styles.resultItemSelected,
@@ -460,7 +460,7 @@ function CommandPaletteInner() {
                       onPress={() => navigateTo(route.path)}
                       // @ts-ignore — Web-only hover prop
                       onMouseEnter={() => setSelectedIndex(index)}
-                      activeOpacity={0.7}
+
                     >
                       <View
                         style={[
@@ -507,7 +507,7 @@ function CommandPaletteInner() {
                           style={styles.enterHint}
                         />
                       )}
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 );
               })
@@ -544,8 +544,8 @@ function CommandPaletteInner() {
               </Text>
             </View>
           </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
+        </BNMPressable>
+      </BNMPressable>
     </Modal>
   );
 }

@@ -3,10 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
@@ -55,9 +55,9 @@ export default function MenteeDetailScreen() {
       <Container fullWidth={Platform.OS === "web"}>
         <View style={[styles.root, { backgroundColor: themeColors.background }]}>
           <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BNMPressable onPress={() => router.back()} style={styles.backButton}>
               <Text style={[styles.backText, { color: themeColors.text }]}>{t("menteeDetail.back")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
             <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("menteeDetail.headerTitle")}</Text>
             <View style={styles.headerRight} />
           </View>
@@ -98,9 +98,9 @@ export default function MenteeDetailScreen() {
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton}>
             <Text style={[styles.backText, { color: themeColors.text }]}>{t("menteeDetail.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("menteeDetail.title")}</Text>
           <View style={styles.headerRight} />
         </View>
@@ -149,12 +149,12 @@ export default function MenteeDetailScreen() {
                       {mentor.city} · {mentor.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
                     </Text>
                   </View>
-                  <TouchableOpacity
+                  <BNMPressable
                     style={[styles.mentorDetailButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                     onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: mentor.id } })}
                   >
                     <Text style={[styles.mentorDetailText, { color: themeColors.text }]}>{t("menteeDetail.mentorProfile")}</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
               </View>
             </>
@@ -240,37 +240,37 @@ export default function MenteeDetailScreen() {
           <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("menteeDetail.actions")}</Text>
           <View style={styles.actionsCard}>
             {isAdminOrOffice && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
                 onPress={() =>
                   router.push({ pathname: "/admin/edit-user", params: { id: mentee.id } })
                 }
               >
                 <Text style={styles.actionButtonText}>{t("editUser.editProfile")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
             {!mentorship && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.actionButton, { backgroundColor: COLORS.primary }]}
                 onPress={() =>
                   router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
                 }
               >
                 <Text style={styles.actionButtonText}>{t("menteeDetail.assignMentor")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
             {mentorship && mentorship.status === "active" && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.actionButton, { backgroundColor: COLORS.cta }]}
                 onPress={() =>
                   navigateToChat(router, mentorship.id)
                 }
               >
                 <Text style={styles.actionButtonText}>{t("menteeDetail.sendMessage")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
             {mentorship && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.actionButton, { backgroundColor: themeColors.background, borderWidth: 1, borderColor: themeColors.border }]}
                 onPress={() =>
                   router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
@@ -279,7 +279,7 @@ export default function MenteeDetailScreen() {
                 <Text style={[styles.actionButtonText, { color: themeColors.text }]}>
                   {t("menteeDetail.viewMentorship")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
           </View>
 

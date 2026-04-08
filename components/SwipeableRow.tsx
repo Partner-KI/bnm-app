@@ -20,7 +20,7 @@ import {
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { RADIUS, TYPOGRAPHY } from "../constants/Colors";
+import { COLORS, RADIUS, TYPOGRAPHY } from "../constants/Colors";
 
 // Auf Web kein Swipe – nur Mobile
 const isNative = Platform.OS !== "web";
@@ -90,14 +90,14 @@ export function SwipeableRow({ children, leftAction, rightAction }: SwipeableRow
       {/* Linke Aktion (Swipe-Right) */}
       {leftAction && (
         <View style={[styles.actionBg, styles.leftBg, { backgroundColor: leftAction.color }]}>
-          <Ionicons name={leftAction.icon as any} size={22} color="#FFFFFF" />
+          <Ionicons name={leftAction.icon as any} size={22} color={COLORS.white} />
           <Text style={styles.actionLabel}>{leftAction.label}</Text>
         </View>
       )}
       {/* Rechte Aktion (Swipe-Left) */}
       {rightAction && (
         <View style={[styles.actionBg, styles.rightBg, { backgroundColor: rightAction.color }]}>
-          <Ionicons name={rightAction.icon as any} size={22} color="#FFFFFF" />
+          <Ionicons name={rightAction.icon as any} size={22} color={COLORS.white} />
           <Text style={styles.actionLabel}>{rightAction.label}</Text>
         </View>
       )}
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: RADIUS.md,
   },
   actionLabel: {
-    color: "#FFFFFF",
+    color: COLORS.white,
     fontSize: TYPOGRAPHY.size.xs,
     fontWeight: TYPOGRAPHY.weight.semibold,
   },

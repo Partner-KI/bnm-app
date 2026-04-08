@@ -3,18 +3,18 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   TextInput,
   Modal,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { navigateToChat } from "../../lib/chatNavigation";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
+import { COLORS, SHADOWS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { supabase } from "../../lib/supabase";
@@ -83,17 +83,17 @@ export default function MentorshipDetailScreen() {
     return (
       <View style={[styles.centerContainer, { backgroundColor: themeColors.background }]}>
         <Text style={[styles.boldTitle, { color: themeColors.text }]}>{t("mentorship.notFound")}</Text>
-        <TouchableOpacity
+        <BNMPressable
           style={[styles.primaryButton, { marginTop: 16 }]}
           onPress={() => router.back()}
         >
           <Text style={styles.primaryButtonText}>{t("mentorship.back")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     );
   }
 
-  const progress = Math.round((completedStepIds.length / sessionTypes.length) * 100);
+  const progress = sessionTypes.length > 0 ? Math.round((completedStepIds.length / sessionTypes.length) * 100) : 0;
   const mentorshipId = mentorship.id;
 
   const canDocumentSession =
@@ -118,16 +118,7 @@ export default function MentorshipDetailScreen() {
     setIsUpdatingStatus(true);
     try {
       await updateMentorshipStatus(mentorshipId, "completed");
-      // Notification an Mentee senden dass Feedback gewünscht wird
-      if (mentorship?.mentee_id) {
-        await supabase.from("notifications").insert({
-          user_id: mentorship?.mentee_id,
-          type: "feedback",
-          title: t("mentorship.feedbackRequestTitle"),
-          body: t("mentorship.feedbackRequestBody"),
-          related_id: mentorshipId,
-        });
-      }
+      // Notification wird bereits in DataContext.updateMentorshipStatus() erstellt
       showSuccess(t("mentorship.completeSuccess"), () => router.back());
     } catch {
       showError(t("mentorship.completeError"));
@@ -149,15 +140,7 @@ export default function MentorshipDetailScreen() {
     setIsCancelling(true);
     try {
       await cancelMentorship(mentorshipId, cancelReason.trim());
-      if (mentorship?.mentee_id) {
-        await supabase.from("notifications").insert({
-          user_id: mentorship?.mentee_id,
-          type: "feedback",
-          title: t("mentorship.feedbackRequestTitle"),
-          body: t("mentorship.feedbackRequestBody"),
-          related_id: mentorshipId,
-        });
-      }
+      // Notifications werden bereits in DataContext.cancelMentorship() erstellt
       setShowCancelModal(false);
       // Mentor geht zurück — nur der Mentee bekommt die Feedback-Anfrage per Notification
       showSuccess(t("cancel.cancelled"), () => router.back());
@@ -249,8 +232,8 @@ export default function MentorshipDetailScreen() {
 
         {/* Diskrepanz-Warnung: Mentee hat bestätigt, Mentor noch nicht dokumentiert */}
         {(user?.role === "admin" || user?.role === "office" || user?.id === mentorship.mentor_id) && discrepancyStepIds.length > 0 && (
-          <View style={[styles.discrepancyBanner, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#6b4e1a" : "#fde68a" }]}>
-            <Text style={[styles.discrepancyTitle, { color: isDark ? "#fbbf24" : "#92400e" }]}>⚠ {t("menteeProgress.discrepancy")}</Text>
+          <View style={[styles.discrepancyBanner, { backgroundColor: sem(SEMANTIC.amberBg, isDark), borderColor: sem(SEMANTIC.amberBorder, isDark) }]}>
+            <Text style={[styles.discrepancyTitle, { color: sem(SEMANTIC.amberText, isDark) }]}>⚠ {t("menteeProgress.discrepancy")}</Text>
             {discrepancyStepIds.map((sid) => {
               const step = sessionTypes.find((st) => st.id === sid);
               if (!step) return null;
@@ -342,12 +325,12 @@ export default function MentorshipDetailScreen() {
                       )}
                       {user?.role === "admin" && (
                         <View style={styles.sessionActionRow}>
-                          <TouchableOpacity
+                          <BNMPressable
                             style={[styles.sessionDeleteButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
                             onPress={() => handleDeleteSession(session.id)}
                           >
                             <Text style={[styles.sessionDeleteText, { color: isDark ? "#f87171" : "#dc2626" }]}>🗑 {t("sessionEdit.delete")}</Text>
-                          </TouchableOpacity>
+                          </BNMPressable>
                         </View>
                       )}
                     </>
@@ -366,16 +349,16 @@ export default function MentorshipDetailScreen() {
 
         {/* Abschluss-Banner wenn alle Steps erledigt */}
         {mentorship.status === "active" && completedStepIds.length === sessionTypes.length && canChangeStatus && (
-          <View style={[styles.allDoneBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: isDark ? "#2d6a4a" : "#86efac" }]}>
-            <Text style={[styles.allDoneBannerTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>✓ {t("mentorship.allStepsComplete")}</Text>
-            <TouchableOpacity
+          <View style={[styles.allDoneBanner, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7", borderColor: sem(SEMANTIC.greenBorder, isDark) }]}>
+            <Text style={[styles.allDoneBannerTitle, { color: sem(SEMANTIC.greenText, isDark) }]}>✓ {t("mentorship.allStepsComplete")}</Text>
+            <BNMPressable
               style={[styles.allDoneButton, { backgroundColor: isDark ? "#2d6a4a" : "#15803d" }]}
               onPress={handleComplete}
             >
               <Text style={styles.allDoneButtonText}>
                 {t("mentorship.completeNow")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
             <Text style={[styles.allDoneBannerHint, { color: isDark ? "#4ade80" : "#16a34a" }]}>{t("mentorship.completeHint")}</Text>
           </View>
         )}
@@ -384,28 +367,28 @@ export default function MentorshipDetailScreen() {
         {mentorship.status === "active" && (
           <View style={{ gap: 12, marginBottom: 16 }}>
             {canDocumentSession && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.primaryButton, { backgroundColor: COLORS.cta }]}
                 onPress={() =>
                   router.push({ pathname: "/document-session", params: { mentorshipId: mentorship.id } })
                 }
               >
                 <Text style={styles.primaryButtonText}>{t("mentorship.documentSession")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.primaryButton, { backgroundColor: COLORS.primary }]}
               onPress={() =>
                 navigateToChat(router, mentorship.id)
               }
             >
               <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
             {canChangeStatus && (
               <View style={{ flexDirection: "row", gap: 12 }}>
-                <TouchableOpacity
+                <BNMPressable
                   style={[
                     styles.completeButton,
                     { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2d6a4a" : "#bbf7d0" },
@@ -414,11 +397,11 @@ export default function MentorshipDetailScreen() {
                   onPress={handleComplete}
                   disabled={isUpdatingStatus}
                 >
-                  <Text style={[styles.completeButtonText, { color: isDark ? "#4ade80" : "#15803d" }]}>
+                  <Text style={[styles.completeButtonText, { color: sem(SEMANTIC.greenText, isDark) }]}>
                     {isUpdatingStatus ? "..." : t("mentorship.complete")}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </BNMPressable>
+                <BNMPressable
                   style={[styles.cancelButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }, isUpdatingStatus ? { opacity: 0.5 } : {}]}
                   onPress={handleCancel}
                   disabled={isUpdatingStatus}
@@ -426,21 +409,21 @@ export default function MentorshipDetailScreen() {
                   <Text style={[styles.cancelButtonText, { color: isDark ? "#f87171" : "#dc2626" }]}>
                     {isUpdatingStatus ? "..." : t("mentorship.cancel")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </View>
             )}
           </View>
         )}
 
         {mentorship.status !== "active" && (
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.primaryButton, { backgroundColor: COLORS.primary, marginBottom: 16 }]}
             onPress={() =>
               navigateToChat(router, mentorship.id)
             }
           >
             <Text style={styles.primaryButtonText}>{t("mentorship.openChat")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         )}
 
         {mentorship.completed_at && (
@@ -465,7 +448,7 @@ export default function MentorshipDetailScreen() {
               multiline
               numberOfLines={4}
             />
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.notesSaveButton, isSavingNotes ? { opacity: 0.6 } : {}]}
               onPress={handleSaveNotes}
               disabled={isSavingNotes}
@@ -473,7 +456,7 @@ export default function MentorshipDetailScreen() {
               <Text style={styles.notesSaveButtonText}>
                 {isSavingNotes ? t("notes.saving") : t("notes.save")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
         )}
       </View>
@@ -503,14 +486,14 @@ export default function MentorshipDetailScreen() {
             autoFocus
           />
           <View style={styles.modalButtonRow}>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.modalCancelButton, { borderColor: themeColors.border }]}
               onPress={() => { setShowCancelModal(false); setCancelReason(""); }}
               disabled={isCancelling}
             >
               <Text style={[styles.modalCancelText, { color: themeColors.textSecondary }]}>{t("common.back")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </BNMPressable>
+            <BNMPressable
               style={[styles.modalConfirmButton, isCancelling ? { opacity: 0.6 } : {}]}
               onPress={handleCancelConfirm}
               disabled={isCancelling}
@@ -518,7 +501,7 @@ export default function MentorshipDetailScreen() {
               <Text style={styles.modalConfirmText}>
                 {isCancelling ? "..." : t("cancel.title")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
         </View>
       </View>
@@ -621,7 +604,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     width: "100%",
   },
-  allDoneButtonText: { color: "#ffffff", fontWeight: "800", fontSize: 15 },
+  allDoneButtonText: { color: COLORS.white, fontWeight: "800", fontSize: 15 },
   allDoneBannerHint: { fontSize: 12, textAlign: "center" },
   notesCard: {
     borderRadius: RADIUS.lg,

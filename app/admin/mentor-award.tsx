@@ -10,11 +10,11 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -242,9 +242,9 @@ export default function MentorAwardScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BNMPressable onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={22} color={themeColors.text} />
-            </TouchableOpacity>
+            </BNMPressable>
             <View style={{ flex: 1 }}>
               <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("mentorAward.title")}</Text>
               <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("mentorAward.subtitle")}</Text>
@@ -260,7 +260,7 @@ export default function MentorAwardScreen() {
                 <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.month")}</Text>
                 <View style={styles.monthGrid}>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={m}
                       style={[
                         styles.monthBtn,
@@ -273,7 +273,7 @@ export default function MentorAwardScreen() {
                       <Text style={[styles.monthBtnText, { color: selectedMonth === m ? "#0E0E14" : themeColors.textSecondary }]}>
                         {String(m).padStart(2, "0")}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
               </View>
@@ -282,7 +282,7 @@ export default function MentorAwardScreen() {
                 <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.year")}</Text>
                 <View style={styles.yearRow}>
                   {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={y}
                       style={[
                         styles.yearBtn,
@@ -293,7 +293,7 @@ export default function MentorAwardScreen() {
                       onPress={() => { setSelectedYear(y); setViewingPastAward(null); }}
                     >
                       <Text style={[styles.yearBtnText, { color: selectedYear === y ? "#0E0E14" : themeColors.textSecondary }]}>{y}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
               </View>
@@ -369,7 +369,7 @@ export default function MentorAwardScreen() {
           {/* Aktions-Buttons */}
           <View style={styles.actionsRow}>
             {Platform.OS === "web" && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.actionBtn, styles.actionBtnPrint, !canCreateCertificate && { opacity: 0.35 }]}
                 onPress={handleDownloadPDF}
                 disabled={!canCreateCertificate}
@@ -377,9 +377,9 @@ export default function MentorAwardScreen() {
               >
                 <Ionicons name="download-outline" size={18} color="#0E0E14" />
                 <Text style={styles.actionBtnPrintText}>{t("mentorAward.download")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.actionBtn, styles.actionBtnSave, (isSaving || !canCreateCertificate) && { opacity: 0.35 }]}
               onPress={handleSave}
               disabled={isSaving || !canCreateCertificate}
@@ -393,7 +393,7 @@ export default function MentorAwardScreen() {
                   <Text style={styles.actionBtnSaveText}>{t("mentorAward.save")}</Text>
                 </>
               )}
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
           {noAwardForPeriod && (
             <Text style={[styles.monthNotEndedHint, { color: themeColors.textTertiary }]}>
@@ -411,7 +411,7 @@ export default function MentorAwardScreen() {
             <View style={[styles.pastCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
               <Text style={[styles.pastTitle, { color: themeColors.text }]}>{t("mentorAward.pastAwards")}</Text>
               {pastAwards.map((award, idx) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={award.id}
                   style={[
                     styles.pastRow,
@@ -434,7 +434,7 @@ export default function MentorAwardScreen() {
                     style={{ marginLeft: 8 }}
                   />
                   {Platform.OS === "web" && (
-                    <TouchableOpacity
+                    <BNMPressable
                       onPress={(e) => { e.stopPropagation?.(); handleDownloadPastPDF(award); }}
                       style={[styles.pastPdfBtn, downloadingId === award.id && { opacity: 0.5 }]}
                       disabled={downloadingId === award.id}
@@ -446,9 +446,9 @@ export default function MentorAwardScreen() {
                         size={16}
                         color={COLORS.gradientStart}
                       />
-                    </TouchableOpacity>
+                    </BNMPressable>
                   )}
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
           )}
@@ -486,7 +486,7 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     overflow: "hidden",
     marginBottom: 20,
-    backgroundColor: "#FFFDF5",
+    backgroundColor: "#FFFDF5",  // Award-Card off-white, kein COLORS-Mapping
     // Dezenter Schatten
     shadowColor: COLORS.gold,
     shadowOffset: { width: 0, height: 4 },
@@ -495,7 +495,7 @@ const styles = StyleSheet.create({
     elevation: 6,
   },
   awardHeader: {
-    backgroundColor: "#101828",
+    backgroundColor: COLORS.primary,
     alignItems: "center",
     paddingVertical: 32,
     paddingHorizontal: 24,
@@ -526,7 +526,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 10,
     fontWeight: "700",
-    color: "#9CA3AF",
+    color: COLORS.tertiary,
     letterSpacing: 4,
     marginTop: 10,
     marginBottom: 16,
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 28,
     fontWeight: "900",
-    color: "#101828",
+    color: COLORS.primary,
     letterSpacing: 0.5,
     flexShrink: 1,
   },
@@ -575,8 +575,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   awardStatItem: { alignItems: "center", flex: 1 },
-  awardStatValue: { fontSize: 30, fontWeight: "800", color: "#101828" },
-  awardStatLabel: { fontSize: 10, color: "#9CA3AF", marginTop: 4, textAlign: "center", letterSpacing: 0.5, fontWeight: "600" as const },
+  awardStatValue: { fontSize: 30, fontWeight: "800", color: COLORS.primary },
+  awardStatLabel: { fontSize: 10, color: COLORS.tertiary, marginTop: 4, textAlign: "center", letterSpacing: 0.5, fontWeight: "600" as const },
   awardStatDivider: { width: 1, height: 44, backgroundColor: "#E5E7EB" },
   awardFooterWrapper: {
     alignItems: "center",
@@ -594,7 +594,7 @@ const styles = StyleSheet.create({
   awardFooter: {
     textAlign: "center",
     fontSize: 11,
-    color: "#9CA3AF",
+    color: COLORS.tertiary,
     letterSpacing: 1.2,
     fontStyle: "italic" as const,
   },

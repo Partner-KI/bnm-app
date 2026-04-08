@@ -267,7 +267,6 @@ CREATE POLICY "mentorships_select" ON mentorships FOR SELECT USING (
 
 CREATE POLICY "mentorships_insert" ON mentorships FOR INSERT WITH CHECK (
   get_user_role() IN ('admin', 'office')
-  OR mentor_id = auth.uid()
 );
 
 CREATE POLICY "mentorships_update" ON mentorships FOR UPDATE USING (

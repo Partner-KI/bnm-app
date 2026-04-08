@@ -1,9 +1,9 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import {
   View,
   Text,
+  FlatList,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -12,8 +12,8 @@ import {
   NativeSyntheticEvent,
   NativeScrollEvent,
   Modal,
-  LayoutAnimation,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -25,7 +25,6 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { SkeletonChatMessages } from "../../components/Skeleton";
 import { usePageTitle } from "../../hooks/usePageTitle";
-import { BNMPressable } from "../../components/BNMPressable";
 import { EmptyState } from "../../components/EmptyState";
 
 export default function ChatScreen() {
@@ -46,15 +45,15 @@ export default function ChatScreen() {
 
   const [inputText, setInputText] = useState("");
   const [showTemplates, setShowTemplates] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
+  const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
 
-  // Scroll-Position tracken für FAB
+  // Für inverted FlatList: offset > 150 bedeutet der User hat nach oben gescrollt (= ältere Nachrichten)
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
-    const distFromBottom = contentSize.height - layoutMeasurement.height - contentOffset.y;
-    const shouldShow = distFromBottom > 150;
+    const { contentOffset } = event.nativeEvent;
+    // In einer inverted FlatList ist offset 0 = unten (neueste). Größerer offset = weiter oben (ältere).
+    const shouldShow = contentOffset.y > 150;
     if (shouldShow !== showScrollFab) {
       setShowScrollFab(shouldShow);
       Animated.timing(fabOpacity, {
@@ -79,15 +78,7 @@ export default function ChatScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mentorshipId, markChatAsRead, messages.length]);
 
-  // iOS initial scroll: onContentSizeChange feuert manchmal zu früh, bevor das
-  // Layout vollständig gerendert wurde. Deshalb nochmal nach 300ms scrollen.
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      scrollViewRef.current?.scrollToEnd({ animated: false });
-    }, 300);
-    return () => clearTimeout(timer);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Kein initialer Scroll nötig: inverted FlatList zeigt neueste Nachrichten automatisch unten.
 
   async function handleSend() {
     if (!inputText.trim() || !user || !mentorshipId) return;
@@ -95,8 +86,9 @@ export default function ChatScreen() {
     setInputText("");
     try {
       await sendMessage(mentorshipId, user.id, content);
+      // Bei inverted FlatList: offset 0 = neueste Nachrichten (unten)
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
+        flatListRef.current?.scrollToOffset({ offset: 0, animated: true });
       }, 100);
     } catch {
       setInputText(content); // Text wiederherstellen bei Fehler
@@ -104,7 +96,7 @@ export default function ChatScreen() {
     }
   }
 
-  async function handleLongPress(messageId: string, isOwn: boolean) {
+  const handleLongPress = useCallback(async (messageId: string, isOwn: boolean) => {
     if (!isOwn) return; // Nur eigene Nachrichten löschbar
 
     const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
@@ -115,7 +107,7 @@ export default function ChatScreen() {
     } catch {
       showError(t("chat.deleteError"));
     }
-  }
+  }, [t, deleteMessage]);
 
   const chatPartnerName = user
     ? (user.id === mentorship?.mentor_id
@@ -124,6 +116,114 @@ export default function ChatScreen() {
     : undefined;
 
   usePageTitle(chatPartnerName ? `Chat – ${chatPartnerName}` : "Chat");
+
+  // Messages für inverted FlatList umkehren (neueste zuerst)
+  const reversedMessages = useMemo(() => [...messages].reverse(), [messages]);
+
+  // renderItem für FlatList — Logik aus dem alten .map() extrahiert
+  const renderItem = useCallback(({ item: msg, index }: { item: typeof messages[0]; index: number }) => {
+    if (!user) return null;
+    const isOwn = msg.sender_id === user.id;
+    const sender =
+      msg.sender ??
+      (isOwn ? { name: user.name } : { name: chatPartnerName ?? "?" });
+
+    const senderRole = (msg.sender as any)?.role;
+    const isThirdParty = !isOwn
+      && msg.sender_id !== mentorship?.mentor_id
+      && msg.sender_id !== mentorship?.mentee_id;
+    const displayName =
+      senderRole === "admin" ? "Admin" :
+      senderRole === "office" ? "Office" :
+      isThirdParty ? "Admin" :
+      sender.name ?? chatPartnerName ?? "?";
+
+    const msgDate = new Date(msg.created_at);
+    const timeStr = msgDate.toLocaleTimeString("de-DE", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+
+    // In der reversed Liste: das "nächste" Element (index+1) ist die chronologisch VORHERIGE Nachricht.
+    // Wir brauchen die chronologisch nächste (= index-1 in reversed = die Nachricht DANACH in der Zeit).
+    // Für Timestamp-Separator: Prüfen ob zwischen dieser und der vorherigen Nachricht (chronologisch) >15 Min liegen.
+    // In reversed: die chronologisch vorherige Nachricht ist bei index+1.
+    const prevInTime = index < reversedMessages.length - 1 ? reversedMessages[index + 1] : null;
+    const prevDate = prevInTime ? new Date(prevInTime.created_at) : null;
+    const showTimeSeparator = !prevDate
+      || (msgDate.getTime() - prevDate.getTime() > 15 * 60 * 1000)
+      || msgDate.toDateString() !== prevDate.toDateString();
+
+    // Nachrichtengruppe: Aufeinanderfolgende Nachrichten desselben Senders
+    const isContinuation = prevInTime
+      && prevInTime.sender_id === msg.sender_id
+      && !showTimeSeparator;
+
+    // Datum-Separator formatieren
+    const dateSepLabel = showTimeSeparator ? (() => {
+      const today = new Date();
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      if (msgDate.toDateString() === today.toDateString()) return timeStr;
+      if (msgDate.toDateString() === yesterday.toDateString()) return `Gestern, ${timeStr}`;
+      return `${msgDate.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}, ${timeStr}`;
+    })() : null;
+
+    return (
+      <React.Fragment>
+        {/* Nachricht */}
+        <View
+          style={[
+            styles.messageBubbleWrapper,
+            isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
+            isContinuation && { marginTop: -6 },
+          ]}
+        >
+          {/* Sender-Name nur bei erstem in der Gruppe */}
+          {!isOwn && !isContinuation && (
+            <Text style={[styles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
+          )}
+          <BNMPressable
+            activeOpacity={0.8}
+            onLongPress={() => handleLongPress(msg.id, isOwn)}
+            delayLongPress={500}
+          >
+            <View
+              style={[
+                styles.messageBubble,
+                isOwn
+                  ? styles.ownBubble
+                  : [styles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                isContinuation && isOwn && { borderTopRightRadius: RADIUS.lg },
+                isContinuation && !isOwn && { borderTopLeftRadius: RADIUS.lg },
+              ]}
+            >
+              <Text
+                style={[
+                  styles.messageText,
+                  isOwn ? { color: COLORS.white } : { color: themeColors.text },
+                ]}
+              >
+                {msg.content}
+              </Text>
+            </View>
+          </BNMPressable>
+        </View>
+        {/* Timestamp-Separator: wird ÜBER der Nachricht angezeigt.
+            In inverted FlatList kommt "über" = nach dem Item im Array,
+            also rendern wir den Separator NACH der Bubble. */}
+        {showTimeSeparator && (
+          <View style={styles.timeSeparator}>
+            <Text style={[styles.timeSeparatorText, { color: themeColors.textTertiary }]}>
+              {dateSepLabel}
+            </Text>
+          </View>
+        )}
+      </React.Fragment>
+    );
+  }, [user, chatPartnerName, mentorship, reversedMessages, themeColors, handleLongPress]);
+
+  const keyExtractor = useCallback((item: typeof messages[0]) => item.id, []);
 
   if (!user) return null;
 
@@ -154,130 +254,38 @@ export default function ChatScreen() {
 
       {/* Nachrichten */}
       <View style={{ flex: 1 }}>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messagesScroll}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
-          onContentSizeChange={() =>
-            scrollViewRef.current?.scrollToEnd({ animated: false })
-          }
-          onScroll={handleScroll}
-          scrollEventThrottle={100}
-        >
-          {dataLoading ? (
+        {dataLoading ? (
+          <View style={[styles.messagesScroll, { paddingHorizontal: 16, paddingVertical: 12 }]}>
             <SkeletonChatMessages count={6} />
-          ) : messages.length === 0 ? (
-            <EmptyState
-              icon="chatbubble-ellipses-outline"
-              title={t("chat.noMessages")}
-              description="Starte die Konversation mit einer Nachricht."
-              compact
-            />
-          ) : (
-            messages.map((msg, idx) => {
-              const isOwn = msg.sender_id === user.id;
-              const sender =
-                msg.sender ??
-                (isOwn ? { name: user.name } : { name: chatPartnerName ?? "?" });
-
-              const senderRole = (msg.sender as any)?.role;
-              const isThirdParty = !isOwn
-                && msg.sender_id !== mentorship?.mentor_id
-                && msg.sender_id !== mentorship?.mentee_id;
-              const displayName =
-                senderRole === "admin" ? "Admin" :
-                senderRole === "office" ? "Office" :
-                isThirdParty ? "Admin" :
-                sender.name ?? chatPartnerName ?? "?";
-
-              const msgDate = new Date(msg.created_at);
-              const timeStr = msgDate.toLocaleTimeString("de-DE", {
-                hour: "2-digit",
-                minute: "2-digit",
-              });
-
-              // Timestamp-Gruppierung: Nur anzeigen wenn >15 Min seit letzter Nachricht
-              // oder Datumswechsel oder erste Nachricht
-              const prevMsg = idx > 0 ? messages[idx - 1] : null;
-              const prevDate = prevMsg ? new Date(prevMsg.created_at) : null;
-              const showTimeSeparator = !prevDate
-                || (msgDate.getTime() - prevDate.getTime() > 15 * 60 * 1000)
-                || msgDate.toDateString() !== prevDate.toDateString();
-
-              // Nachrichtengruppe: Aufeinanderfolgende Nachrichten desselben Senders
-              const isContinuation = prevMsg
-                && prevMsg.sender_id === msg.sender_id
-                && !showTimeSeparator;
-
-              // Datum-Separator formatieren
-              const dateSepLabel = showTimeSeparator ? (() => {
-                const today = new Date();
-                const yesterday = new Date(today);
-                yesterday.setDate(yesterday.getDate() - 1);
-                if (msgDate.toDateString() === today.toDateString()) return timeStr;
-                if (msgDate.toDateString() === yesterday.toDateString()) return `Gestern, ${timeStr}`;
-                return `${msgDate.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}, ${timeStr}`;
-              })() : null;
-
-              return (
-                <React.Fragment key={msg.id}>
-                  {/* Timestamp-Separator */}
-                  {showTimeSeparator && (
-                    <View style={styles.timeSeparator}>
-                      <Text style={[styles.timeSeparatorText, { color: themeColors.textTertiary }]}>
-                        {dateSepLabel}
-                      </Text>
-                    </View>
-                  )}
-                  <View
-                    style={[
-                      styles.messageBubbleWrapper,
-                      isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
-                      isContinuation && { marginTop: -6 },
-                    ]}
-                  >
-                    {/* Sender-Name nur bei erstem in der Gruppe */}
-                    {!isOwn && !isContinuation && (
-                      <Text style={[styles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
-                    )}
-                    <TouchableOpacity
-                      activeOpacity={0.8}
-                      onLongPress={() => handleLongPress(msg.id, isOwn)}
-                      delayLongPress={500}
-                    >
-                      <View
-                        style={[
-                          styles.messageBubble,
-                          isOwn
-                            ? styles.ownBubble
-                            : [styles.otherBubble, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
-                          isContinuation && isOwn && { borderTopRightRadius: RADIUS.lg },
-                          isContinuation && !isOwn && { borderTopLeftRadius: RADIUS.lg },
-                        ]}
-                      >
-                        <Text
-                          style={[
-                            styles.messageText,
-                            isOwn ? { color: COLORS.white } : { color: themeColors.text },
-                          ]}
-                        >
-                          {msg.content}
-                        </Text>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                </React.Fragment>
-              );
-            })
-          )}
-          <View style={{ height: 16 }} />
-        </ScrollView>
+          </View>
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={reversedMessages}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            inverted={true}
+            removeClippedSubviews={true}
+            style={styles.messagesScroll}
+            contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 12 }}
+            onScroll={handleScroll}
+            scrollEventThrottle={100}
+            ListEmptyComponent={
+              <EmptyState
+                icon="chatbubble-ellipses-outline"
+                title={t("chat.noMessages")}
+                description="Starte die Konversation mit einer Nachricht."
+                compact
+              />
+            }
+          />
+        )}
 
         {/* Scroll-to-Bottom FAB */}
         {showScrollFab && (
           <Animated.View style={[styles.scrollFab, { opacity: fabOpacity }]}>
             <BNMPressable
-              onPress={() => scrollViewRef.current?.scrollToEnd({ animated: true })}
+              onPress={() => flatListRef.current?.scrollToOffset({ offset: 0, animated: true })}
               style={[styles.scrollFabBtn, { backgroundColor: themeColors.card, ...SHADOWS.md }]}
             >
               <Ionicons name="chevron-down" size={20} color={themeColors.text} />
@@ -291,13 +299,13 @@ export default function ChatScreen() {
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
           {/* Vorlagen-Button */}
           {messageTemplates.length > 0 && (user?.role === "mentor" || user?.role === "admin" || user?.role === "office") && (
-            <TouchableOpacity
+            <BNMPressable
               style={styles.templateButton}
               onPress={() => setShowTemplates(true)}
               accessibilityLabel={t("chat.templates")}
             >
               <Ionicons name="document-text-outline" size={22} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </BNMPressable>
           )}
           <TextInput
             style={[styles.textInput, styles.textInputWithTemplate, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
@@ -308,7 +316,7 @@ export default function ChatScreen() {
             multiline
             returnKeyType="default"
           />
-          <TouchableOpacity
+          <BNMPressable
             style={[
               styles.sendButton,
               { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
@@ -317,7 +325,7 @@ export default function ChatScreen() {
             disabled={!inputText.trim()}
           >
             <Ionicons name="send" size={18} color={COLORS.white} />
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       ) : (
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
@@ -328,7 +336,7 @@ export default function ChatScreen() {
       )}
       {/* Vorlagen-Modal */}
       <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-        <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)}>
+        <BNMPressable style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)}>
           <View style={[styles.modalSheet, { backgroundColor: themeColors.card }]} onStartShouldSetResponder={() => true}>
             <View style={[styles.modalHandle, { backgroundColor: themeColors.border }]} />
             <Text style={[styles.modalTitle, { color: themeColors.text }]}>{t("chat.templates")}</Text>
@@ -364,7 +372,7 @@ export default function ChatScreen() {
               })}
             </ScrollView>
           </View>
-        </TouchableOpacity>
+        </BNMPressable>
       </Modal>
     </KeyboardAvoidingView>
   );

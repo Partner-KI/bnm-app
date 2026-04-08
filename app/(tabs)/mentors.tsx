@@ -111,6 +111,21 @@ export default function MentorsTabScreen() {
     );
   }, [allMentors, search]);
 
+  // Vorberechnete Mentor-Stats (vermeidet O(n*m) in der Render-Loop)
+  const mentorStats = useMemo(() => {
+    const stats = new Map<string, { active: number; completed: number; totalSessions: number; avgRating: number | null }>();
+    for (const mentor of allMentors) {
+      const myMs = mentorships.filter((m) => m.mentor_id === mentor.id);
+      const active = myMs.filter((m) => m.status === "active").length;
+      const completed = myMs.filter((m) => m.status === "completed").length;
+      const totalSessions = sessions.filter((s) => myMs.some((m) => m.id === s.mentorship_id)).length;
+      const mFeedback = feedback.filter((f) => myMs.some((m) => m.id === f.mentorship_id));
+      const avgRating = mFeedback.length > 0 ? mFeedback.reduce((sum, f) => sum + f.rating, 0) / mFeedback.length : null;
+      stats.set(mentor.id, { active, completed, totalSessions, avgRating });
+    }
+    return stats;
+  }, [allMentors, mentorships, sessions, feedback]);
+
   function handleExportCsv() {
     try {
       const header = t("adminMentors.csvHeaderRow");
@@ -310,20 +325,8 @@ export default function MentorsTabScreen() {
           />
         ) : (
           filtered.map((mentor) => {
-            const myMentorships = mentorships.filter((m) => m.mentor_id === mentor.id);
-            const active = myMentorships.filter((m) => m.status === "active").length;
-            const completed = myMentorships.filter((m) => m.status === "completed").length;
-            const totalSessions = sessions.filter((s) =>
-              myMentorships.some((m) => m.id === s.mentorship_id)
-            ).length;
-
-            // Feedback-Durchschnitt berechnen (Mentee bewertet Mentor)
-            const mentorFeedback = feedback.filter((f) =>
-              myMentorships.some((m) => m.id === f.mentorship_id)
-            );
-            const avgRating = mentorFeedback.length > 0
-              ? mentorFeedback.reduce((sum, f) => sum + f.rating, 0) / mentorFeedback.length
-              : null;
+            const stats = mentorStats.get(mentor.id) ?? { active: 0, completed: 0, totalSessions: 0, avgRating: null };
+            const { active, completed, totalSessions, avgRating } = stats;
 
             const initials = mentor.name
               .split(" ")

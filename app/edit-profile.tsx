@@ -17,7 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
 import type { ContactPreference } from "../types";
-import { RADIUS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { uploadAvatar } from "../lib/storage";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -130,21 +130,26 @@ export default function EditProfileScreen() {
     setFieldErrors({});
 
     setIsSaving(true);
-    const plzChanged = plz.trim() !== (safeUser.plz ?? "");
-    const coords = plzChanged ? await geocodePLZ(plz.trim()) : null;
-    await updateUser(safeUser.id, {
-      name: name.trim(),
-      city: city.trim(),
-      plz: plz.trim(),
-      age: parseInt(age, 10),
-      phone: phone.trim() || undefined,
-      contact_preference: contactPref,
-      ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
-    });
-    // AuthContext + DataContext aktualisieren
-    await Promise.all([refreshUser(), refreshData()]);
-    setIsSaving(false);
-    showSuccess(t("editProfile.successMsg"), () => router.back());
+    try {
+      const plzChanged = plz.trim() !== (safeUser.plz ?? "");
+      const coords = plzChanged ? await geocodePLZ(plz.trim()) : null;
+      await updateUser(safeUser.id, {
+        name: name.trim(),
+        city: city.trim(),
+        plz: plz.trim(),
+        age: parseInt(age, 10),
+        phone: phone.trim() || undefined,
+        contact_preference: contactPref,
+        ...(coords ? { lat: coords.lat, lng: coords.lng } : {}),
+      });
+      // AuthContext + DataContext aktualisieren
+      await Promise.all([refreshUser(), refreshData()]);
+      showSuccess(t("editProfile.successMsg"), () => router.back());
+    } catch {
+      showError(t("common.error"));
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -368,7 +373,7 @@ const styles = StyleSheet.create({
   },
   contactChipActive: {},
   contactChipInactive: {},
-  contactChipTextActive: { color: "#FFFFFF", fontWeight: "600", fontSize: 13 },
+  contactChipTextActive: { color: COLORS.white, fontWeight: "600", fontSize: 13 },
   contactChipTextInactive: { fontWeight: "500", fontSize: 13 },
   infoBox: {
     borderWidth: 1,
@@ -386,7 +391,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
+  saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
     borderRadius: RADIUS.md,

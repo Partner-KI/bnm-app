@@ -4,12 +4,12 @@ import {
   Platform,
   TouchableWithoutFeedback,
   View,
-  TouchableOpacity,
   Text,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
 } from "react-native";
+import { BNMPressable } from "./BNMPressable";
 import { useThemeColors, useTheme } from "../contexts/ThemeContext";
 import { RADIUS } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -85,9 +85,9 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
           ) : (
             <View />
           )}
-          <TouchableOpacity onPress={onClose} style={[styles.closeButton, { backgroundColor: themeColors.elevated }]} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={t("common.close")}>
+          <BNMPressable onPress={onClose} style={[styles.closeButton, { backgroundColor: themeColors.elevated }]} accessibilityRole="button" accessibilityLabel={t("common.close")}>
             <Text style={[styles.closeButtonText, { color: themeColors.textSecondary }]}>✕</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         {/* Content */}
@@ -101,7 +101,7 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
 
         {/* Footer: Schließen Button */}
         <View style={[styles.modalFooter, { borderTopColor: goldBorder }]}>
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.closeFooterButton, { backgroundColor: themeColors.accent }]}
             onPress={onClose}
             activeOpacity={0.8}
@@ -109,7 +109,7 @@ export function SlideOverPanel({ visible, onClose, children, title }: SlideOverP
             accessibilityLabel={t("common.close")}
           >
             <Text style={[styles.closeFooterText, { color: themeColors.black }]}>{t("common.close")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </Animated.View>
     </View>

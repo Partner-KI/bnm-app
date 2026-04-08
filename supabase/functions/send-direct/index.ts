@@ -2,13 +2,11 @@
 // Wird vom Client aufgerufen wenn sofortiger Versand nötig ist (z.B. Urkunden-PDF).
 // API-Key liegt sicher als Supabase Secret – nie im Client-Bundle.
 //
-// Auth: Akzeptiert entweder einen gültigen User-JWT ODER den apikey-Header.
-// Der apikey-Header reicht aus weil:
-//   - Die Function nur interne E-Mails sendet (kein Datenzugriff)
-//   - Supabase Edge Functions sind nur mit gültigem apikey erreichbar
-//   - User-JWT ist bei Registrierung noch nicht stabil
+// SECURITY: Erfordert einen gültigen User-JWT (nicht nur Anon Key).
+// Der Anon Key ist öffentlich — ohne JWT-Check könnte jeder E-Mails versenden.
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,12 +19,24 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // Auth: apikey-Header MUSS vorhanden sein (wird von Supabase automatisch geprüft).
-  // Zusätzlich prüfen wir entweder gültigen JWT oder apikey-Existenz.
-  const apiKey = req.headers.get("apikey");
+  // SECURITY: Gültigen User-JWT verifizieren (nicht nur apikey-Existenz)
   const authHeader = req.headers.get("Authorization");
-  if (!apiKey && !authHeader) {
-    return new Response(JSON.stringify({ error: "Unauthorized: apikey oder Authorization Header fehlt" }), {
+  if (!authHeader?.startsWith("Bearer ")) {
+    return new Response(JSON.stringify({ error: "Unauthorized: Bearer Token fehlt" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
+  // JWT über Supabase verifizieren
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+  const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
+  const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) {
+    return new Response(JSON.stringify({ error: "Unauthorized: Ungültiger Token" }), {
       status: 401,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

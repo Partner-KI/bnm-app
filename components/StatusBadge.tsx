@@ -8,8 +8,8 @@
  */
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { RADIUS, TYPOGRAPHY, SPACING } from "../constants/Colors";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { RADIUS, TYPOGRAPHY } from "../constants/Colors";
+import { useThemeColors, useTheme } from "../contexts/ThemeContext";
 
 type BadgeStatus = "active" | "pending" | "completed" | "cancelled" | "none" | "warning" | "info";
 
@@ -32,7 +32,7 @@ const STATUS_COLORS: Record<BadgeStatus, { light: { fg: string; bg: string }; da
 
 export function StatusBadge({ status, label, compact }: StatusBadgeProps) {
   const themeColors = useThemeColors();
-  const isDark = themeColors.background === "#0B0F18";
+  const { isDark } = useTheme();
   const colors = STATUS_COLORS[status] ?? STATUS_COLORS.none;
   const { fg, bg } = isDark ? colors.dark : colors.light;
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { Animated, Platform, StyleSheet, View, ViewStyle } from "react-native";
-import { COLORS, RADIUS } from "../constants/Colors";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { RADIUS } from "../constants/Colors";
+import { useThemeColors, useTheme } from "../contexts/ThemeContext";
 
 const isWeb = Platform.OS === "web";
 
@@ -53,7 +53,7 @@ function SkeletonBase({ style }: { style?: ViewStyle }) {
   const shimmerX = useShimmer();
   const pulseOpacity = usePulse();
   const themeColors = useThemeColors();
-  const isDark = themeColors.background === "#0B0F18";
+  const { isDark } = useTheme();
 
   const baseColor = isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)";
   const shimmerColor = isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.11)";

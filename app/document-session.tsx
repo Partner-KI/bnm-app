@@ -3,17 +3,17 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { showError, showSuccess, showConfirm } from "../lib/errorHandler";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { COLORS, RADIUS } from "../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { Container } from "../components/Container";
@@ -365,9 +365,9 @@ export default function DocumentSessionScreen() {
         <Text style={[styles.centerSubText, { color: themeColors.textSecondary }]}>
           {isAdmin ? t("docSession.noMentorshipsAdmin") : t("docSession.noMentorshipsText")}
         </Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <BNMPressable style={styles.backButton} onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Zurück">
           <Text style={styles.backButtonText}>{t("docSession.back")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     );
   }
@@ -388,7 +388,7 @@ export default function DocumentSessionScreen() {
             </Text>
             <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
               {myMentorships.map((m, idx) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={m.id}
                   style={[
                     styles.listItem,
@@ -399,6 +399,8 @@ export default function DocumentSessionScreen() {
                     setSelectedMentorshipId(m.id);
                     setAdminSelectedTypeId("");
                   }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Betreuung ${m.mentee?.name} auswählen`}
                 >
                   <View
                     style={[
@@ -418,7 +420,7 @@ export default function DocumentSessionScreen() {
                       {m.mentor?.name} · {m.status === "completed" ? t("docSession.completed") : t("docSession.active")}
                     </Text>
                   </View>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
           </>
@@ -428,7 +430,7 @@ export default function DocumentSessionScreen() {
           <>
             {isCompleted && (
               <View style={[styles.nachbetreuungBox, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2a6a4a" : "#bbf7d0" }]}>
-                <Text style={[styles.nachbetreuungLabel, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("docSession.aftercare")}</Text>
+                <Text style={[styles.nachbetreuungLabel, { color: sem(SEMANTIC.greenText, isDark) }]}>{t("docSession.aftercare")}</Text>
                 <Text style={[styles.nachbetreuungText, { color: isDark ? "#4ade80" : "#16a34a" }]}>
                   {t("docSession.aftercareText")}
                 </Text>
@@ -470,7 +472,7 @@ export default function DocumentSessionScreen() {
                 <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("docSession.chooseType")}</Text>
                 <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                   {sortedSessionTypes.map((st, idx) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={st.id}
                       style={[
                         styles.listItem,
@@ -478,6 +480,8 @@ export default function DocumentSessionScreen() {
                         adminSelectedTypeId === st.id ? [styles.listItemSelected, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }] : {},
                       ]}
                       onPress={() => setAdminSelectedTypeId(st.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Sitzungstyp ${st.name} auswählen`}
                     >
                       <View
                         style={[
@@ -495,18 +499,18 @@ export default function DocumentSessionScreen() {
                       </View>
                       {completedStepIds.includes(st.id) && (
                         <View style={[styles.doneChip, { backgroundColor: isDark ? "#1a3a2a" : "#dcfce7" }]}>
-                          <Text style={[styles.doneChipText, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("docSession.done")}</Text>
+                          <Text style={[styles.doneChipText, { color: sem(SEMANTIC.greenText, isDark) }]}>{t("docSession.done")}</Text>
                         </View>
                       )}
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
               </>
             )}
 
             {!isAdmin && !isCompleted && nextStep && (
-              <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
-                <Text style={[styles.amberLabel, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("docSession.nextStep")}</Text>
+              <View style={[styles.amberBox, { backgroundColor: sem(SEMANTIC.amberBg, isDark), borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+                <Text style={[styles.amberLabel, { color: sem(SEMANTIC.amberText, isDark) }]}>{t("docSession.nextStep")}</Text>
                 <Text style={[styles.amberStepName, { color: isDark ? "#fde68a" : "#78350f" }]}>
                   {nextStep.sort_order}. {nextStep.name}
                 </Text>
@@ -546,7 +550,7 @@ export default function DocumentSessionScreen() {
                     <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>{t("docSession.deliveryType")}</Text>
                     <View style={styles.toggleRow}>
                       {BNM_BOX_DELIVERY_OPTIONS.map((opt) => (
-                        <TouchableOpacity
+                        <BNMPressable
                           key={opt.key}
                           style={[
                             styles.toggleButton,
@@ -555,6 +559,8 @@ export default function DocumentSessionScreen() {
                               : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                           ]}
                           onPress={() => setBnmBoxDelivery(opt.key)}
+                          accessibilityRole="button"
+                          accessibilityLabel={`Übergabeart: ${opt.label}`}
                         >
                           <Text
                             style={
@@ -563,7 +569,7 @@ export default function DocumentSessionScreen() {
                           >
                             {opt.label}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
                       ))}
                     </View>
                   </View>
@@ -599,9 +605,11 @@ export default function DocumentSessionScreen() {
                       {/* 3-Spalten Mobile DatePicker */}
                       <View style={styles.datePickerRow}>
                         {/* Tag */}
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.datePickerCol, { borderColor: themeColors.border, backgroundColor: themeColors.background }]}
                           onPress={() => setOpenPickerCol(openPickerCol === "day" ? null : "day")}
+                          accessibilityRole="button"
+                          accessibilityLabel="Tag auswählen"
                         >
                           <Text style={[styles.datePickerColLabel, { color: themeColors.textTertiary }]}>
                             {t("datePicker.labelDay")}
@@ -609,12 +617,14 @@ export default function DocumentSessionScreen() {
                           <Text style={[styles.datePickerColValue, { color: themeColors.text }]}>
                             {String(pickerDay).padStart(2, "0")}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
 
                         {/* Monat */}
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.datePickerCol, styles.datePickerColMiddle, { borderColor: themeColors.border, backgroundColor: themeColors.background }]}
                           onPress={() => setOpenPickerCol(openPickerCol === "month" ? null : "month")}
+                          accessibilityRole="button"
+                          accessibilityLabel="Monat auswählen"
                         >
                           <Text style={[styles.datePickerColLabel, { color: themeColors.textTertiary }]}>
                             {t("datePicker.labelMonth")}
@@ -622,12 +632,14 @@ export default function DocumentSessionScreen() {
                           <Text style={[styles.datePickerColValue, { color: themeColors.text }]}>
                             {t(`datePicker.month.${pickerMonth}` as Parameters<typeof t>[0])}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
 
                         {/* Jahr */}
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.datePickerCol, { borderColor: themeColors.border, backgroundColor: themeColors.background }]}
                           onPress={() => setOpenPickerCol(openPickerCol === "year" ? null : "year")}
+                          accessibilityRole="button"
+                          accessibilityLabel="Jahr auswählen"
                         >
                           <Text style={[styles.datePickerColLabel, { color: themeColors.textTertiary }]}>
                             {t("datePicker.labelYear")}
@@ -635,7 +647,7 @@ export default function DocumentSessionScreen() {
                           <Text style={[styles.datePickerColValue, { color: themeColors.text }]}>
                             {pickerYear}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
                       </View>
 
                       {/* Dropdown für Tag */}
@@ -646,7 +658,7 @@ export default function DocumentSessionScreen() {
                               const isFuture = isPickerDateFuture(item, pickerMonth, pickerYear);
                               const isSelected = item === pickerDay;
                               return (
-                                <TouchableOpacity
+                                <BNMPressable
                                   key={item}
                                   style={[
                                     styles.datePickerItem,
@@ -668,7 +680,7 @@ export default function DocumentSessionScreen() {
                                   ]}>
                                     {String(item).padStart(2, "0")}
                                   </Text>
-                                </TouchableOpacity>
+                                </BNMPressable>
                               );
                             })}
                           </ScrollView>
@@ -683,7 +695,7 @@ export default function DocumentSessionScreen() {
                               const isFuture = isPickerDateFuture(pickerDay, item, pickerYear);
                               const isSelected = item === pickerMonth;
                               return (
-                                <TouchableOpacity
+                                <BNMPressable
                                   key={item}
                                   style={[
                                     styles.datePickerItem,
@@ -707,7 +719,7 @@ export default function DocumentSessionScreen() {
                                   ]}>
                                     {t(`datePicker.month.${item}` as Parameters<typeof t>[0])}
                                   </Text>
-                                </TouchableOpacity>
+                                </BNMPressable>
                               );
                             })}
                           </ScrollView>
@@ -722,7 +734,7 @@ export default function DocumentSessionScreen() {
                               const isFuture = isPickerDateFuture(pickerDay, pickerMonth, item);
                               const isSelected = item === pickerYear;
                               return (
-                                <TouchableOpacity
+                                <BNMPressable
                                   key={item}
                                   style={[
                                     styles.datePickerItem,
@@ -746,7 +758,7 @@ export default function DocumentSessionScreen() {
                                   ]}>
                                     {item}
                                   </Text>
-                                </TouchableOpacity>
+                                </BNMPressable>
                               );
                             })}
                           </ScrollView>
@@ -762,7 +774,7 @@ export default function DocumentSessionScreen() {
                 <View style={[styles.formCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                   <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>{t("docSession.execution")}</Text>
                   <View style={styles.toggleRow}>
-                    <TouchableOpacity
+                    <BNMPressable
                       style={[
                         styles.toggleButton,
                         !isOnline
@@ -770,12 +782,14 @@ export default function DocumentSessionScreen() {
                           : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setIsOnline(false)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Vor Ort"
                     >
                       <Text style={!isOnline ? styles.toggleTextActive : [styles.toggleTextInactive, { color: themeColors.textSecondary }]}>
                         {t("docSession.inPerson")}
                       </Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </BNMPressable>
+                    <BNMPressable
                       style={[
                         styles.toggleButton,
                         isOnline
@@ -783,11 +797,13 @@ export default function DocumentSessionScreen() {
                           : [styles.toggleButtonInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
                       ]}
                       onPress={() => setIsOnline(true)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Online"
                     >
                       <Text style={isOnline ? styles.toggleTextActive : [styles.toggleTextInactive, { color: themeColors.textSecondary }]}>
                         {t("docSession.online")}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 </View>
 
@@ -821,13 +837,15 @@ export default function DocumentSessionScreen() {
                   <Text style={[styles.attemptHint, { color: themeColors.textTertiary }]}>{t("docSession.durationHint")}</Text>
                 </View>
 
-                <TouchableOpacity
+                <BNMPressable
                   style={[
                     styles.saveButton,
                     { backgroundColor: isSaving ? COLORS.border : COLORS.cta },
                   ]}
                   onPress={handleSave}
                   disabled={isSaving}
+                  accessibilityRole="button"
+                  accessibilityLabel={editingSessionId ? "Sitzung aktualisieren" : "Sitzung speichern"}
                 >
                   <Text style={styles.saveButtonText}>
                     {isSaving
@@ -838,12 +856,14 @@ export default function DocumentSessionScreen() {
                       ? t("docSession.historyUpdateSave")
                       : t("docSession.save")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
 
                 {editingSessionId && (
                   <>
-                    <TouchableOpacity
+                    <BNMPressable
                       style={styles.cancelEditButton}
+                      accessibilityRole="button"
+                      accessibilityLabel="Bearbeitung abbrechen"
                       onPress={() => {
                         setEditingSessionId(null);
                         setDate(todayIso);
@@ -854,10 +874,12 @@ export default function DocumentSessionScreen() {
                       }}
                     >
                       <Text style={styles.cancelEditButtonText}>{t("docSession.cancelMore")}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                     {isAdmin && (
-                      <TouchableOpacity
+                      <BNMPressable
                         style={styles.deleteSessionButton}
+                        accessibilityRole="button"
+                        accessibilityLabel="Sitzung löschen"
                         onPress={async () => {
                           const ok = await showConfirm(t("sessionEdit.delete"), t("sessionEdit.confirmDelete"));
                           if (!ok) return;
@@ -871,7 +893,7 @@ export default function DocumentSessionScreen() {
                         }}
                       >
                         <Text style={styles.deleteSessionButtonText}>{t("sessionEdit.delete")}</Text>
-                      </TouchableOpacity>
+                      </BNMPressable>
                     )}
                   </>
                 )}
@@ -897,8 +919,10 @@ export default function DocumentSessionScreen() {
                         ) : null}
                       </View>
                       {isAdmin && (
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.historyEditButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={`${stName} bearbeiten`}
                           onPress={() => {
                             // Felder vorausfüllen
                             const isoDateStr = s.date
@@ -913,7 +937,7 @@ export default function DocumentSessionScreen() {
                           }}
                         >
                           <Text style={[styles.historyEditText, { color: themeColors.textSecondary }]}>{t("docSession.historyEdit")} ✏️</Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
                       )}
                     </View>
                   );
@@ -924,35 +948,41 @@ export default function DocumentSessionScreen() {
             {/* Alle Schritte abgeschlossen (10/10) */}
             {!isAdmin && !isCompleted && !nextStep && (
               <View style={[styles.completedBox, { backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4", borderColor: isDark ? "#2a6a4a" : "#bbf7d0" }]}>
-                <Text style={[styles.completedTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("sessions.allComplete")}</Text>
+                <Text style={[styles.completedTitle, { color: sem(SEMANTIC.greenText, isDark) }]}>{t("sessions.allComplete")}</Text>
                 <Text style={[styles.completedText, { color: isDark ? "#4ade80" : "#16a34a" }]}>
                   {t("docSession.allDoneText")}
                 </Text>
-                <TouchableOpacity
+                <BNMPressable
                   style={styles.backToMentorshipButton}
                   onPress={() => router.back()}
+                  accessibilityRole="button"
+                  accessibilityLabel="Zurück zur Betreuung"
                 >
                   <Text style={styles.backToMentorshipText}>{t("sessions.backToMentorship")}</Text>
-                </TouchableOpacity>
+                </BNMPressable>
                 {completedAllowsMultipleSteps.length > 0 && (
-                  <TouchableOpacity
+                  <BNMPressable
                     style={styles.aftercareLink}
                     onPress={() => setShowRepeatSection(!showRepeatSection)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Nachbetreuung dokumentieren"
                   >
                     <Text style={styles.aftercareLinkText}>{t("sessions.documentAftercare")}</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 )}
               </View>
             )}
 
             {/* "Bereits erledigten Schritt wiederholen?" Link (nur sichtbar wenn nextStep vorhanden) */}
             {!isAdmin && !isCompleted && nextStep && completedAllowsMultipleSteps.length > 0 && !forceNewSession && !showRepeatSection && (
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.repeatStepLink}
                 onPress={() => setShowRepeatSection(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Schritt wiederholen"
               >
                 <Text style={styles.repeatStepLinkText}>{t("sessions.repeatStep")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
             {/* Wiederholbare Schritte — nur auf Anfrage sichtbar */}
@@ -960,9 +990,9 @@ export default function DocumentSessionScreen() {
               <View style={[styles.moreSessionBox, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                 <View style={styles.moreSessionHeader}>
                   <Text style={[styles.moreSessionTitle, { color: themeColors.text }]}>{t("docSession.moreSessionTitle")}</Text>
-                  <TouchableOpacity onPress={() => { setShowRepeatSection(false); setAdditionalStepId(""); }}>
+                  <BNMPressable onPress={() => { setShowRepeatSection(false); setAdditionalStepId(""); }} accessibilityRole="button" accessibilityLabel="Schließen">
                     <Text style={[styles.moreSessionClose, { color: themeColors.textTertiary }]}>✕</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
                 <Text style={[styles.moreSessionSub, { color: themeColors.textSecondary }]}>
                   {t("docSession.moreSessionSub")}
@@ -971,7 +1001,7 @@ export default function DocumentSessionScreen() {
                   {completedAllowsMultipleSteps.map((st, idx) => {
                     const count = allSessions.filter((s) => s.session_type_id === st.id).length;
                     return (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={st.id}
                         style={[
                           styles.listItem,
@@ -979,6 +1009,8 @@ export default function DocumentSessionScreen() {
                           additionalStepId === st.id ? [styles.listItemSelected, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff" }] : {},
                         ]}
                         onPress={() => setAdditionalStepId(st.id)}
+                        accessibilityRole="button"
+                        accessibilityLabel={`Schritt ${st.name} wiederholen`}
                       >
                         <View
                           style={[
@@ -996,27 +1028,29 @@ export default function DocumentSessionScreen() {
                               : t("docSession.sessionCount").replace("{0}", String(count))}
                           </Text>
                         </View>
-                      </TouchableOpacity>
+                      </BNMPressable>
                     );
                   })}
                 </View>
                 {additionalStepId ? (
-                  <TouchableOpacity
+                  <BNMPressable
                     style={styles.addMoreButton}
                     onPress={() => setForceNewSession(true)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Weitere Sitzung dokumentieren"
                   >
                     <Text style={styles.addMoreButtonText}>
                       {t("docSession.moreSessionButton")}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ) : null}
               </View>
             )}
 
             {forceNewSession && (
               <>
-                <View style={[styles.amberBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
-                  <Text style={[styles.amberLabel, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("docSession.furtherSession")}</Text>
+                <View style={[styles.amberBox, { backgroundColor: sem(SEMANTIC.amberBg, isDark), borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+                  <Text style={[styles.amberLabel, { color: sem(SEMANTIC.amberText, isDark) }]}>{t("docSession.furtherSession")}</Text>
                   <Text style={[styles.amberStepName, { color: isDark ? "#fde68a" : "#78350f" }]}>
                     {additionalStepId
                       ? sortedSessionTypes.find((st) => st.id === additionalStepId)?.name ?? ""
@@ -1026,12 +1060,14 @@ export default function DocumentSessionScreen() {
                     {t("docSession.unlimited").replace("{0}", String(activeStepSessionCount + 1))}
                   </Text>
                 </View>
-                <TouchableOpacity
+                <BNMPressable
                   style={styles.cancelMoreButton}
                   onPress={() => { setForceNewSession(false); setAdditionalStepId(""); setShowRepeatSection(false); }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Abbrechen"
                 >
                   <Text style={styles.cancelMoreButtonText}>{t("docSession.cancelMore")}</Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </>
             )}
           </>
@@ -1112,8 +1148,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 14,
   },
-  textInputError: { borderColor: "#EF4444" },
-  fieldError: { color: "#EF4444", fontSize: 12, marginTop: 6, marginBottom: 0 },
+  textInputError: { borderColor: COLORS.error },
+  fieldError: { color: COLORS.error, fontSize: 12, marginTop: 6, marginBottom: 0 },
   attemptHint: { fontSize: 12, marginTop: 6 },
   toggleRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   toggleButton: { flex: 1, paddingVertical: 9, borderRadius: RADIUS.md, borderWidth: 1, alignItems: "center", minWidth: 80 },

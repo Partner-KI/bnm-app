@@ -1,5 +1,7 @@
 -- Fix: handle_new_user Trigger liest jetzt alle Felder aus raw_user_meta_data
 -- Behebt Bug 4 (Alter nicht übernommen) und Bug 1 (Gender immer 'male')
+-- SECURITY FIX: Rolle wird IMMER auf 'mentee' gesetzt — NIEMALS aus Metadaten übernommen!
+-- Rollenänderungen nur über Admin-Workflow (approveApplication, editUser).
 -- Diese Datei in Supabase SQL Editor ausführen
 
 CREATE OR REPLACE FUNCTION handle_new_user()
@@ -13,7 +15,7 @@ BEGIN
     NEW.id,
     COALESCE(NEW.email, ''),
     COALESCE(NEW.raw_user_meta_data->>'name', 'Neuer Benutzer'),
-    COALESCE(NEW.raw_user_meta_data->>'role', 'mentee')::user_role,
+    'mentee'::user_role,  -- SICHERHEIT: Immer 'mentee', nie aus Metadaten!
     COALESCE(NEW.raw_user_meta_data->>'gender', 'male')::gender_type,
     COALESCE(NEW.raw_user_meta_data->>'city', ''),
     COALESCE(NEW.raw_user_meta_data->>'plz', ''),

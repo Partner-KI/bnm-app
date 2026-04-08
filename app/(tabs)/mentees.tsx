@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -77,11 +76,7 @@ function AdminMenteesView() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   function toggleSelectMode() {
     setSelectMode((prev) => !prev);
@@ -584,11 +579,7 @@ function MentorMenteesView() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   if (!user) return null;
 
@@ -871,11 +862,7 @@ function MenteeProgressView() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   if (!user) return null;
 
@@ -1273,7 +1260,7 @@ const styles = StyleSheet.create({
   stepIndicator: {
     width: 36,
     height: 36,
-    borderRadius: 18,
+    borderRadius: RADIUS.lg,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,

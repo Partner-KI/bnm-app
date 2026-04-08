@@ -4,13 +4,13 @@ import {
   Text,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   RefreshControl,
   Share,
   Platform,
   useWindowDimensions,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useData } from "../../contexts/DataContext";
@@ -122,7 +122,7 @@ export default function FAQScreen() {
                 </Text>
               ) : null}
               <View style={styles.hadithActions}>
-                <TouchableOpacity
+                <BNMPressable
                   style={[styles.hadithNextBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6", borderColor: isDark ? themeColors.border : "#c5cae9" }]}
                   onPress={() => setHadithOffset((prev) => prev + 1)}
                   accessibilityRole="button"
@@ -132,8 +132,8 @@ export default function FAQScreen() {
                   <Text style={[styles.hadithNextText, { color: isDark ? COLORS.gold : "#3949ab" }]}>
                     {t("motivation.next")}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </BNMPressable>
+                <BNMPressable
                   style={[styles.hadithShareBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6" }]}
                   accessibilityRole="button"
                   accessibilityLabel="Hadith teilen"
@@ -145,8 +145,8 @@ export default function FAQScreen() {
                   }}
                 >
                   <Ionicons name="share-outline" size={16} color={COLORS.gold} />
-                </TouchableOpacity>
-                <TouchableOpacity
+                </BNMPressable>
+                <BNMPressable
                   style={[styles.hadithAllBtn, { borderColor: isDark ? "#3A3A5C" : "#c5cae9" }]}
                   onPress={() => router.push("/hadithe")}
                   accessibilityRole="button"
@@ -155,7 +155,7 @@ export default function FAQScreen() {
                   <Text style={[styles.hadithAllText, { color: isDark ? COLORS.gold : "#3949ab" }]}>
                     {t("faq.viewAllHadithe")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </View>
             </View>
           )}
@@ -179,13 +179,13 @@ export default function FAQScreen() {
               accessibilityLabel="FAQ durchsuchen"
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity
+              <BNMPressable
                 onPress={() => setSearchQuery("")}
                 accessibilityRole="button"
                 accessibilityLabel="Suche löschen"
               >
                 <Ionicons name="close-circle" size={16} color={themeColors.textSecondary} />
-              </TouchableOpacity>
+              </BNMPressable>
             )}
           </View>
 
@@ -196,7 +196,7 @@ export default function FAQScreen() {
             style={styles.categoryScroll}
             contentContainerStyle={styles.categoryContent}
           >
-            <TouchableOpacity
+            <BNMPressable
               style={[
                 styles.chip,
                 activeCategory === null
@@ -211,9 +211,9 @@ export default function FAQScreen() {
               <Text style={[styles.chipText, activeCategory === null ? { color: COLORS.white } : { color: themeColors.text }]}>
                 {t("qa.allCategories")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
             {CATEGORIES.map((cat) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={cat}
                 style={[
                   styles.chip,
@@ -229,7 +229,7 @@ export default function FAQScreen() {
                 <Text style={[styles.chipText, activeCategory === cat ? { color: COLORS.white } : { color: themeColors.text }]}>
                   {cat}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </ScrollView>
 
@@ -255,11 +255,10 @@ export default function FAQScreen() {
                       !isLast && styles.accordionItemMargin,
                     ]}
                   >
-                    <TouchableOpacity
+                    <BNMPressable
                       style={styles.accordionHeader}
                       onPress={() => setExpandedId(isExpanded ? null : entry.id)}
-                      activeOpacity={0.7}
-                      accessibilityRole="button"
+                                           accessibilityRole="button"
                       accessibilityLabel={entry.question}
                       accessibilityState={{ expanded: isExpanded }}
                     >
@@ -279,25 +278,24 @@ export default function FAQScreen() {
                       <Text style={[styles.chevron, { color: isExpanded ? COLORS.gradientStart : themeColors.textSecondary }]}>
                         {isExpanded ? "▲" : "▼"}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
 
                     {isExpanded && (
                       <View style={[styles.accordionBody, { borderTopColor: themeColors.border }]}>
                         <Text style={[styles.answerText, { color: themeColors.textSecondary }]}>
                           {entry.answer}
                         </Text>
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.shareBtn, { backgroundColor: themeColors.background }]}
                           onPress={() => shareAnswer(entry.question, entry.answer, t("share.suffix"))}
-                          activeOpacity={0.7}
-                          accessibilityRole="button"
+                                                   accessibilityRole="button"
                           accessibilityLabel="Antwort teilen"
                         >
                           <Ionicons name="share-outline" size={15} color={themeColors.textSecondary} />
                           <Text style={[styles.shareBtnText, { color: themeColors.textSecondary }]}>
                             {t("share.answer")}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
                         {entry.tags.length > 0 && (
                           <View style={styles.tagsRow}>
                             {entry.tags.map((tag) => (

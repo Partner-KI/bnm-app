@@ -4,12 +4,12 @@ import {
   Text,
   ScrollView,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   RefreshControl,
   Share,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -81,11 +81,11 @@ export default function QAScreen() {
       >
         <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
           {/* Header */}
-          <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
+          <BNMPressable style={styles.backRow} onPress={() => router.back()}>
             <Text style={[styles.backText, { color: themeColors.textSecondary }]}>
               {t("qa.back")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("qa.title")}</Text>
           <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
             {t("qa.subtitle")}
@@ -114,7 +114,7 @@ export default function QAScreen() {
             style={styles.categoryScroll}
             contentContainerStyle={styles.categoryContent}
           >
-            <TouchableOpacity
+            <BNMPressable
               style={[
                 styles.chip,
                 activeCategory === null
@@ -131,9 +131,9 @@ export default function QAScreen() {
               >
                 {t("qa.allCategories")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
             {CATEGORIES.map((cat) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={cat}
                 style={[
                   styles.chip,
@@ -151,7 +151,7 @@ export default function QAScreen() {
                 >
                   {cat}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </ScrollView>
 
@@ -188,10 +188,10 @@ export default function QAScreen() {
                       !isLast && styles.accordionItemMargin,
                     ]}
                   >
-                    <TouchableOpacity
+                    <BNMPressable
                       style={styles.accordionHeader}
                       onPress={() => setExpandedId(isExpanded ? null : entry.id)}
-                      activeOpacity={0.7}
+
                     >
                       <View style={styles.accordionHeaderLeft}>
                         <View
@@ -219,7 +219,7 @@ export default function QAScreen() {
                       >
                         {isExpanded ? "▲" : "▼"}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
 
                     {isExpanded && (
                       <View
@@ -232,16 +232,16 @@ export default function QAScreen() {
                           {entry.answer}
                         </Text>
                         {/* Share-Button */}
-                        <TouchableOpacity
+                        <BNMPressable
                           style={[styles.shareBtn, { backgroundColor: themeColors.background }]}
                           onPress={() => shareAnswer(entry.question, entry.answer, t("share.suffix"))}
-                          activeOpacity={0.7}
+    
                         >
                           <Ionicons name="share-outline" size={15} color={themeColors.textSecondary} />
                           <Text style={[styles.shareBtnText, { color: themeColors.textSecondary }]}>
                             {t("share.answer")}
                           </Text>
-                        </TouchableOpacity>
+                        </BNMPressable>
                         {entry.tags.length > 0 && (
                           <View style={styles.tagsRow}>
                             {entry.tags.map((tag) => (

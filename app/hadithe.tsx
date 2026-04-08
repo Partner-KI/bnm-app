@@ -3,12 +3,12 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   Share,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { COLORS, SHADOWS, RADIUS } from "../constants/Colors";
@@ -52,10 +52,10 @@ export default function HaditheScreen() {
     <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
       <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
         {/* Header */}
-        <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
+        <BNMPressable style={styles.backRow} onPress={() => router.back()}>
           <Text style={[styles.backArrow, { color: themeColors.text }]}>‹</Text>
           <Text style={[styles.backText, { color: themeColors.text }]}>{t("hadithe.back")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
 
         <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("hadithe.title")}</Text>
         <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
@@ -89,12 +89,12 @@ export default function HaditheScreen() {
             {todayHadith.source && (
               <Text style={styles.todayQuelle}>— {todayHadith.source}</Text>
             )}
-            <TouchableOpacity
+            <BNMPressable
               style={styles.shareButton}
               onPress={() => handleShare(todayHadith.text_de, todayHadith.source ?? "")}
             >
               <Text style={styles.shareButtonText}>{t("hadithe.share")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
         )}
 
@@ -109,12 +109,12 @@ export default function HaditheScreen() {
                   <Text style={[styles.hadithQuelle, { color: themeColors.textTertiary }]}>
                     {hadith.source ? `— ${hadith.source}` : ""}
                   </Text>
-                  <TouchableOpacity
+                  <BNMPressable
                     style={[styles.hadithShareButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                     onPress={() => handleShare(hadith.text_de, hadith.source ?? "")}
                   >
                     <Text style={[styles.hadithShareText, { color: themeColors.textSecondary }]}>{t("hadithe.share")}</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
               </View>
             ))}

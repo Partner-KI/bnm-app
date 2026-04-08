@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
       // @ts-ignore
       boxShadow: `0 0 0 3px rgba(10, 58, 90, 0.12)`,
     } : {
-      shadowColor: "#0A3A5A",
+      shadowColor: COLORS.gradientStart,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.12,
       shadowRadius: 6,
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
       // @ts-ignore
       boxShadow: `0 0 0 3px rgba(220, 38, 38, 0.12)`,
     } : {
-      shadowColor: "#DC2626",
+      shadowColor: COLORS.error,
       shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.12,
       shadowRadius: 6,

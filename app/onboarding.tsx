@@ -3,16 +3,16 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
   NativeSyntheticEvent,
   NativeScrollEvent,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS, SPACING } from "../constants/Colors";
+import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS, SPACING, SEMANTIC, sem } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { BNMLogo } from "../components/BNMLogo";
 import { useLanguage } from "../contexts/LanguageContext";
@@ -210,7 +210,7 @@ export default function OnboardingScreen() {
             ))}
           </View>
 
-          <View style={[styles.noteBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+          <View style={[styles.noteBox, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
             <Text style={[styles.noteText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
               {t("onboarding.slide2Note")}
             </Text>
@@ -349,7 +349,7 @@ export default function OnboardingScreen() {
             ))}
           </View>
 
-          <View style={[styles.noteBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+          <View style={[styles.noteBox, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
             <Text style={[styles.noteText, { color: isDark ? "#93c5fd" : "#1e40af" }]}>
               {t("onboarding.mentee.slide2Note")}
             </Text>
@@ -503,9 +503,9 @@ export default function OnboardingScreen() {
     <Container fullWidth={Platform.OS === "web"}>
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Überspringen-Link */}
-        <TouchableOpacity style={[styles.skipButton, { top: insets.top + 12 }]} onPress={handleSkip}>
+        <BNMPressable style={[styles.skipButton, { top: insets.top + 12 }]} onPress={handleSkip} accessibilityRole="button" accessibilityLabel="Überspringen">
           <Text style={[styles.skipText, { color: themeColors.textSecondary }]}>{t("onboarding.skip")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
 
         {/* Slides */}
         <ScrollView
@@ -536,11 +536,11 @@ export default function OnboardingScreen() {
 
         {/* CTA Button */}
         <View style={styles.ctaContainer}>
-          <TouchableOpacity style={styles.ctaButton} onPress={goToNext}>
+          <BNMPressable style={styles.ctaButton} onPress={goToNext} accessibilityRole="button" accessibilityLabel={currentPage < totalPages - 1 ? "Weiter" : "Dashboard öffnen"}>
             <Text style={styles.ctaText}>
               {currentPage < totalPages - 1 ? t("onboarding.next") : t("onboarding.openDashboard")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </View>
     </Container>

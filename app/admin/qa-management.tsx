@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   Switch,
   StyleSheet,
@@ -11,6 +10,7 @@ import {
   RefreshControl,
   KeyboardAvoidingView,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -172,11 +172,11 @@ export default function QAManagementScreen() {
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.page}>
-              <TouchableOpacity style={styles.backRow} onPress={closeForm}>
+              <BNMPressable style={styles.backRow} onPress={closeForm} accessibilityRole="link" accessibilityLabel="Zurück">
                 <Text style={[styles.backText, { color: themeColors.textSecondary }]}>
                   {t("qa.back")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
               <Text style={[styles.pageTitle, { color: themeColors.text }]}>
                 {editingEntry ? t("qa.editTitle") : t("qa.addTitle")}
               </Text>
@@ -221,7 +221,7 @@ export default function QAManagementScreen() {
                 contentContainerStyle={styles.categoryContent}
               >
                 {CATEGORIES.map((cat) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={cat}
                     style={[
                       styles.chip,
@@ -230,6 +230,8 @@ export default function QAManagementScreen() {
                         : { backgroundColor: themeColors.card, borderWidth: 1, borderColor: themeColors.border },
                     ]}
                     onPress={() => setForm((f) => ({ ...f, category: cat }))}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Kategorie ${cat} auswählen`}
                   >
                     <Text
                       style={[
@@ -239,7 +241,7 @@ export default function QAManagementScreen() {
                     >
                       {cat}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </ScrollView>
 
@@ -271,24 +273,28 @@ export default function QAManagementScreen() {
 
               {/* Buttons */}
               <View style={styles.formButtonRow}>
-                <TouchableOpacity
+                <BNMPressable
                   style={[styles.cancelButton, { borderColor: themeColors.border }]}
                   onPress={closeForm}
                   disabled={saving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Abbrechen"
                 >
                   <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>
                     {t("qa.cancel")}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </BNMPressable>
+                <BNMPressable
                   style={[styles.saveButton, { backgroundColor: COLORS.gradientStart }]}
                   onPress={handleSave}
                   disabled={saving}
+                  accessibilityRole="button"
+                  accessibilityLabel="Speichern"
                 >
                   <Text style={styles.saveButtonText}>
                     {saving ? t("qa.saving") : t("qa.save")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </View>
             </View>
           </ScrollView>
@@ -307,11 +313,11 @@ export default function QAManagementScreen() {
       >
         <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
           {/* Header */}
-          <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
+          <BNMPressable style={styles.backRow} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backText, { color: themeColors.textSecondary }]}>
               {t("qa.back")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <View style={styles.headerRow}>
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("qa.manage")}</Text>
             <Text style={[styles.countBadge, { color: themeColors.textSecondary }]}>
@@ -320,12 +326,14 @@ export default function QAManagementScreen() {
           </View>
 
           {/* Neue Frage Button */}
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.addButton, { backgroundColor: COLORS.gradientStart }]}
             onPress={openAddForm}
+            accessibilityRole="button"
+            accessibilityLabel="Neue Frage hinzufügen"
           >
             <Text style={styles.addButtonText}>{t("qa.addNew")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
           {/* Einträge-Liste */}
           {qaEntries.length === 0 ? (
@@ -398,18 +406,22 @@ export default function QAManagementScreen() {
                 )}
 
                 <View style={[styles.entryActions, { borderTopColor: themeColors.border }]}>
-                  <TouchableOpacity
+                  <BNMPressable
                     style={[styles.actionButton, styles.editButton]}
                     onPress={() => openEditForm(entry)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Frage bearbeiten"
                   >
                     <Text style={styles.editButtonText}>{t("qa.edit")}</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </BNMPressable>
+                  <BNMPressable
                     style={[styles.actionButton, styles.deleteButton]}
                     onPress={() => handleDelete(entry)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Frage löschen"
                   >
                     <Text style={styles.deleteButtonText}>{t("qa.delete")}</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
               </View>
             ))
@@ -489,7 +501,7 @@ const styles = StyleSheet.create({
   editButton: { backgroundColor: "rgba(39,174,96,0.1)", borderWidth: 1, borderColor: "rgba(39,174,96,0.3)" },
   editButtonText: { color: COLORS.cta, fontWeight: "600", fontSize: 13 },
   deleteButton: { backgroundColor: "rgba(239,68,68,0.1)", borderWidth: 1, borderColor: "rgba(239,68,68,0.3)" },
-  deleteButtonText: { color: "#ef4444", fontWeight: "600", fontSize: 13 },
+  deleteButtonText: { color: COLORS.error, fontWeight: "600", fontSize: 13 },
   accessDeniedBox: { flex: 1, justifyContent: "center", alignItems: "center", padding: 20 },
   accessDeniedText: { fontSize: 16, textAlign: "center" },
 

@@ -4,10 +4,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../contexts/DataContext";
@@ -199,9 +199,9 @@ export default function DonorReportScreen() {
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.reportHeader, { paddingTop: insets.top + 28 }]}>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <BNMPressable style={styles.backButton} onPress={() => router.back()}>
             <Text style={styles.backButtonText}>{t("donorReport.backToReports")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <View style={styles.logoBadge}>
             <Text style={styles.logoText}>BNM</Text>
           </View>
@@ -216,7 +216,7 @@ export default function DonorReportScreen() {
             <Text style={[styles.cardLabel, { color: themeColors.textTertiary }]}>{t("donorReport.period")}</Text>
             <View style={styles.modeRow}>
               {(["quarter", "year"] as const).map((m) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={m}
                   style={[styles.modeBtn, periodMode === m ? styles.modeBtnActive : [styles.modeBtnInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }]]}
                   onPress={() => setPeriodMode(m)}
@@ -224,12 +224,12 @@ export default function DonorReportScreen() {
                   <Text style={periodMode === m ? styles.modeBtnTextActive : [styles.modeBtnTextInactive, { color: themeColors.textSecondary }]}>
                     {m === "quarter" ? t("donorReport.quarter") : t("donorReport.year")}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
             <View style={styles.yearRow}>
               {years.map((y) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={y}
                   style={[styles.yearBtn, selectedYear === y ? styles.yearBtnActive : [styles.yearBtnInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }]]}
                   onPress={() => setSelectedYear(y)}
@@ -237,13 +237,13 @@ export default function DonorReportScreen() {
                   <Text style={selectedYear === y ? styles.yearBtnTextActive : [styles.yearBtnTextInactive, { color: themeColors.textSecondary }]}>
                     {y}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
             {periodMode === "quarter" && (
               <View style={styles.quarterRow}>
                 {QUARTERS.map((q, idx) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={q.short}
                     style={[styles.quarterBtn, selectedQuarter === idx ? styles.quarterBtnActive : [styles.quarterBtnInactive, { backgroundColor: themeColors.background, borderColor: themeColors.border }]]}
                     onPress={() => setSelectedQuarter(idx)}
@@ -251,7 +251,7 @@ export default function DonorReportScreen() {
                     <Text style={selectedQuarter === idx ? styles.quarterBtnTextActive : [styles.quarterBtnTextInactive, { color: themeColors.textSecondary }]}>
                       {q.short}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </View>
             )}
@@ -459,7 +459,7 @@ export default function DonorReportScreen() {
 
           {/* Buttons */}
           {Platform.OS === "web" && (
-            <TouchableOpacity
+            <BNMPressable
               style={styles.printButton}
               onPress={() => {
                 if (typeof window !== "undefined") {
@@ -468,12 +468,12 @@ export default function DonorReportScreen() {
               }}
             >
               <Text style={styles.printButtonText}>🖨 {t("donorReport.print")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           )}
 
-          <TouchableOpacity style={[styles.backBtn, { borderColor: themeColors.border }]} onPress={() => router.back()}>
+          <BNMPressable style={[styles.backBtn, { borderColor: themeColors.border }]} onPress={() => router.back()}>
             <Text style={[styles.backBtnText, { color: themeColors.textSecondary }]}>{t("donorReport.backToReports")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </ScrollView>
     </View>

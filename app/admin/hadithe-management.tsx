@@ -3,13 +3,13 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   StyleSheet,
   RefreshControl,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
@@ -225,26 +225,30 @@ export default function HaditheManagementScreen() {
         <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
           {/* Header */}
           <View style={styles.headerRow}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
               <Text style={[styles.backText, { color: themeColors.textSecondary }]}>‹ Zurück</Text>
-            </TouchableOpacity>
+            </BNMPressable>
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("haditheMgmt.title")}</Text>
           </View>
 
           {/* Aktionsbuttons */}
           <View style={styles.actionRow}>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.addButton, showForm && !editingHadith ? styles.addButtonActive : {}]}
               onPress={openAddForm}
+              accessibilityRole="button"
+              accessibilityLabel="Neuen Hadith hinzufügen"
             >
               <Text style={styles.addButtonText}>+ {t("haditheMgmt.addNew")}</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </BNMPressable>
+            <BNMPressable
               style={[styles.csvButton, showCSVImport ? styles.csvButtonActive : {}]}
               onPress={openCSVImport}
+              accessibilityRole="button"
+              accessibilityLabel="CSV importieren"
             >
               <Text style={styles.csvButtonText}>{t("haditheMgmt.csvImport")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
 
           {/* Inline-Formular: Neuer / Bearbeiteter Hadith */}
@@ -289,12 +293,12 @@ export default function HaditheManagementScreen() {
               />
 
               <View style={styles.formButtons}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={cancelForm}>
+                <BNMPressable style={styles.cancelBtn} onPress={cancelForm} accessibilityRole="button" accessibilityLabel="Abbrechen">
                   <Text style={[styles.cancelBtnText, { color: themeColors.textSecondary }]}>{t("haditheMgmt.cancel")}</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.saveBtn} onPress={handleSave} disabled={saving}>
+                </BNMPressable>
+                <BNMPressable style={styles.saveBtn} onPress={handleSave} disabled={saving} accessibilityRole="button" accessibilityLabel="Speichern">
                   <Text style={styles.saveBtnText}>{saving ? "…" : t("haditheMgmt.save")}</Text>
-                </TouchableOpacity>
+                </BNMPressable>
               </View>
             </View>
           )}
@@ -307,20 +311,22 @@ export default function HaditheManagementScreen() {
 
               {/* Web: File-Picker Button */}
               {Platform.OS === "web" && (
-                <TouchableOpacity style={styles.filePickerBtn} onPress={handleWebFileSelect}>
+                <BNMPressable style={styles.filePickerBtn} onPress={handleWebFileSelect} accessibilityRole="button" accessibilityLabel="CSV-Datei auswählen">
                   <Text style={styles.filePickerText}>Datei auswählen (.csv)</Text>
-                </TouchableOpacity>
+                </BNMPressable>
               )}
 
               {/* CSV Text-Eingabe (immer verfügbar, auch auf Native) */}
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.csvToggleBtn, { borderColor: themeColors.border }]}
                 onPress={() => setShowCSVText((v) => !v)}
+                accessibilityRole="button"
+                accessibilityLabel={showCSVText ? "CSV-Text ausblenden" : "CSV-Text einfügen"}
               >
                 <Text style={[styles.csvToggleBtnText, { color: themeColors.textSecondary }]}>
                   {showCSVText ? "Text ausblenden" : "CSV-Text einfügen"}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
 
               {showCSVText && (
                 <TextInput
@@ -359,13 +365,13 @@ export default function HaditheManagementScreen() {
               )}
 
               <View style={styles.formButtons}>
-                <TouchableOpacity style={styles.cancelBtn} onPress={() => setShowCSVImport(false)}>
+                <BNMPressable style={styles.cancelBtn} onPress={() => setShowCSVImport(false)} accessibilityRole="button" accessibilityLabel="Abbrechen">
                   <Text style={[styles.cancelBtnText, { color: themeColors.textSecondary }]}>{t("haditheMgmt.cancel")}</Text>
-                </TouchableOpacity>
+                </BNMPressable>
                 {csvPreview.length > 0 && (
-                  <TouchableOpacity style={styles.saveBtn} onPress={handleImport} disabled={importing}>
+                  <BNMPressable style={styles.saveBtn} onPress={handleImport} disabled={importing} accessibilityRole="button" accessibilityLabel="Importieren">
                     <Text style={styles.saveBtnText}>{importing ? "…" : t("haditheMgmt.importButton")}</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 )}
               </View>
             </View>
@@ -395,20 +401,24 @@ export default function HaditheManagementScreen() {
                 >
                   {/* Sortier-Buttons */}
                   <View style={styles.orderButtons}>
-                    <TouchableOpacity
+                    <BNMPressable
                       style={[styles.orderBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                       onPress={() => handleReorder(h.id, "up")}
                       disabled={idx === 0}
+                      accessibilityRole="button"
+                      accessibilityLabel="Nach oben verschieben"
                     >
                       <Text style={[styles.orderBtnText, { color: idx === 0 ? themeColors.border : themeColors.text }]}>↑</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </BNMPressable>
+                    <BNMPressable
                       style={[styles.orderBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                       onPress={() => handleReorder(h.id, "down")}
                       disabled={idx === sortedHadithe.length - 1}
+                      accessibilityRole="button"
+                      accessibilityLabel="Nach unten verschieben"
                     >
                       <Text style={[styles.orderBtnText, { color: idx === sortedHadithe.length - 1 ? themeColors.border : themeColors.text }]}>↓</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
 
                   {/* Text-Inhalt */}
@@ -428,18 +438,22 @@ export default function HaditheManagementScreen() {
 
                   {/* Aktionen */}
                   <View style={styles.hadithActions}>
-                    <TouchableOpacity
+                    <BNMPressable
                       style={[styles.editBtn, { borderColor: themeColors.border }]}
                       onPress={() => openEditForm(h)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Hadith bearbeiten"
                     >
                       <Text style={[styles.editBtnText, { color: themeColors.textSecondary }]}>{t("haditheMgmt.edit")}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </BNMPressable>
+                    <BNMPressable
                       style={styles.deleteBtn}
                       onPress={() => handleDelete(h)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Hadith löschen"
                     >
                       <Text style={styles.deleteBtnText}>{t("haditheMgmt.delete")}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 </View>
               ))
@@ -612,5 +626,5 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     alignItems: "center",
   },
-  deleteBtnText: { color: "#ef4444", fontSize: 12, fontWeight: "600" },
+  deleteBtnText: { color: COLORS.error, fontSize: 12, fontWeight: "600" },
 });

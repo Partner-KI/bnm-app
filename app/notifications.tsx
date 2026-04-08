@@ -3,10 +3,10 @@ import {
   View,
   Text,
   FlatList,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -79,7 +79,7 @@ export default function NotificationsScreen() {
     markAsRead(notification.id);
     if (notification.type === "feedback" && notification.related_id) {
       router.push({ pathname: "/feedback", params: { mentorshipId: notification.related_id } });
-    } else if (notification.type === "assignment" && notification.related_id) {
+    } else if ((notification.type === "assignment" || notification.type === "progress" || notification.type === "message") && notification.related_id) {
       router.push({ pathname: "/mentorship/[id]", params: { id: notification.related_id } });
     }
   }
@@ -87,7 +87,7 @@ export default function NotificationsScreen() {
   const renderNotification = useCallback(({ item: notification }: { item: Notification }) => {
     const config = TYPE_CONFIG[notification.type];
     return (
-      <TouchableOpacity
+      <BNMPressable
         style={[
           styles.notifCard,
           { backgroundColor: themeColors.card, borderColor: themeColors.border },
@@ -97,6 +97,8 @@ export default function NotificationsScreen() {
           }],
         ]}
         onPress={() => handlePress(notification)}
+        accessibilityRole="button"
+        accessibilityLabel={`${notification.title}: ${notification.body}`}
       >
         {/* Unread dot */}
         {!notification.read && <View style={styles.unreadDot} />}
@@ -123,7 +125,7 @@ export default function NotificationsScreen() {
             </Text>
           </View>
         </View>
-      </TouchableOpacity>
+      </BNMPressable>
     );
   }, [TYPE_CONFIG, themeColors, isDark]);
 
@@ -132,29 +134,31 @@ export default function NotificationsScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 12 }]}>
         <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backText, { color: themeColors.text }]}>‹ {t("common.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
         <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("notifications.title")}</Text>
         <View style={styles.headerRight}>
           {unreadCount > 0 && (
-            <TouchableOpacity onPress={markAllAsRead}>
+            <BNMPressable onPress={markAllAsRead} accessibilityRole="button" accessibilityLabel="Alle als gelesen markieren">
               <Text style={[styles.markAllText, { color: themeColors.link }]}>{t("notifications.markAll")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           )}
         </View>
       </View>
 
       {Platform.OS !== "web" && (
-        <TouchableOpacity
+        <BNMPressable
           style={[styles.settingsLink, { borderBottomColor: themeColors.border }]}
           onPress={() => router.push("/notification-settings")}
+          accessibilityRole="link"
+          accessibilityLabel="Benachrichtigungseinstellungen"
         >
           <Ionicons name="settings-outline" size={16} color={themeColors.textSecondary} />
           <Text style={[styles.settingsLinkText, { color: themeColors.textSecondary }]}>{t("notifSettings.title")}</Text>
           <Text style={{ color: themeColors.textTertiary }}>›</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       )}
 
       {unreadCount > 0 && (

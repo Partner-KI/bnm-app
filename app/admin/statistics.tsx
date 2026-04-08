@@ -3,10 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
@@ -124,9 +124,9 @@ function StatisticsContent() {
       <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+          <BNMPressable onPress={() => router.back()} style={styles.backBtn} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backBtnText, { color: themeColors.text }]}>{t("statistics.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <View style={{ flex: 1 }}>
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("statistics.title")}</Text>
           </View>

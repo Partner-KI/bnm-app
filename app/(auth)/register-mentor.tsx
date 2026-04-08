@@ -2,12 +2,12 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { BNMInput } from "../../components/BNMInput";
 import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -227,14 +227,14 @@ export default function RegisterMentorScreen() {
         <Text style={[styles.successText, { color: themeColors.textSecondary }]}>
           {t("registerMentor.successMsg")}
         </Text>
-        <TouchableOpacity
+        <BNMPressable
           style={styles.successButton}
           onPress={() => router.replace("/(auth)/login")}
           accessibilityRole="button"
           accessibilityLabel={t("login.submit")}
         >
           <Text style={styles.successButtonText}>{t("login.submit")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     );
   }
@@ -523,7 +523,7 @@ export default function RegisterMentorScreen() {
           />
 
           {/* Submit */}
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.submitButton, isSubmitting ? { opacity: 0.6 } : {}]}
             onPress={handleSubmit}
             disabled={isSubmitting}
@@ -534,7 +534,7 @@ export default function RegisterMentorScreen() {
             <Text style={styles.submitButtonText}>
               {isSubmitting ? t("registerMentor.submitting") : t("registerMentor.submitNew")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -568,7 +568,7 @@ function PillGroup<T extends string,>({
         {options.map((opt) => {
           const active = value === opt.value;
           return (
-            <TouchableOpacity
+            <BNMPressable
               key={opt.value}
               style={[
                 styles.pill,
@@ -591,7 +591,7 @@ function PillGroup<T extends string,>({
               >
                 {opt.label}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           );
         })}
       </View>
@@ -623,7 +623,7 @@ function FieldLabel({
       <Text style={{ color: themeColors.textSecondary, fontSize: 13, fontWeight: "500", flex: 1 }}>
         {label}
       </Text>
-      {error ? <Text style={{ color: "#ef4444", fontSize: 12, marginLeft: 8 }}>{error}</Text> : null}
+      {error ? <Text style={{ color: COLORS.error, fontSize: 12, marginLeft: 8 }}>{error}</Text> : null}
     </View>
   );
 }
@@ -707,7 +707,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   errorText: {
-    color: "#ef4444",
+    color: COLORS.error,
     fontSize: 12,
     marginTop: -8,
     marginBottom: 8,

@@ -2,9 +2,9 @@ import React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { BNMPressable } from "./BNMPressable";
 
 // Hilfsfunktion: Sterne-Anzeige (1-5, mit halben Sternen)
 function StarDisplay({ rating }: { rating: number }) {
@@ -162,7 +162,7 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
               const isLast = idx === activeMentorships.length - 1;
 
               return (
-                <TouchableOpacity
+                <BNMPressable
                   key={mentorship.id}
                   style={[styles.menteeRow, !isLast && [styles.menteeRowBorder, { borderBottomColor: themeColors.border }]]}
                   onPress={() =>
@@ -197,7 +197,7 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
                     </View>
                   </View>
                   <Text style={[styles.arrowText, { color: themeColors.textTertiary }]}>›</Text>
-                </TouchableOpacity>
+                </BNMPressable>
               );
             })}
           </View>
@@ -256,14 +256,14 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
 
       {/* Admin-Aktionen */}
       {isAdminOrOffice && (
-        <TouchableOpacity
+        <BNMPressable
           style={styles.editProfileButton}
           onPress={() =>
             router.push({ pathname: "/admin/edit-user", params: { id: mentor.id } })
           }
         >
           <Text style={styles.editProfileButtonText}>{t("editUser.editProfile")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       )}
 
     </View>

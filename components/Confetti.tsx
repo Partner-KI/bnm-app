@@ -6,13 +6,13 @@
  *   const [showConfetti, setShowConfetti] = useState(false);
  *   {showConfetti && <Confetti onComplete={() => setShowConfetti(false)} />}
  */
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import { View, Animated, StyleSheet, Dimensions } from "react-native";
 import { COLORS } from "../constants/Colors";
 
 const PARTICLE_COUNT = 30;
 const DURATION = 2000;
-const COLORS_POOL = [COLORS.gold, "#EF4444", "#3B82F6", "#10B981", "#8B5CF6", "#F59E0B", COLORS.gradientStart];
+const COLORS_POOL = [COLORS.gold, COLORS.error, "#3B82F6", COLORS.progressGreen, "#8B5CF6", "#F59E0B", COLORS.gradientStart];
 
 interface ConfettiProps {
   onComplete?: () => void;

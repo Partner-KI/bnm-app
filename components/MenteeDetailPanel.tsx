@@ -2,9 +2,9 @@ import React from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
 } from "react-native";
+import { BNMPressable } from "./BNMPressable";
 import { useRouter } from "expo-router";
 import { useData } from "../contexts/DataContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -138,12 +138,12 @@ export function MenteeDetailPanel({ id }: MenteeDetailPanelProps) {
                   {mentor.city} · {mentor.gender === "male" ? t("menteeDetail.brother") : t("menteeDetail.sister")}
                 </Text>
               </View>
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.mentorDetailButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                 onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: mentor.id } })}
               >
                 <Text style={[styles.mentorDetailText, { color: themeColors.text }]}>{t("menteeDetail.mentorProfile")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         </>
@@ -229,35 +229,35 @@ export function MenteeDetailPanel({ id }: MenteeDetailPanelProps) {
       <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("menteeDetail.actions")}</Text>
       <View style={styles.actionsCard}>
         {isAdminOrOffice && (
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.actionButton, { backgroundColor: COLORS.gradientStart }]}
             onPress={() =>
               router.push({ pathname: "/admin/edit-user", params: { id: mentee.id } })
             }
           >
             <Text style={styles.actionButtonText}>{t("editUser.editProfile")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         )}
         {!mentorship && (
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.actionButton, { backgroundColor: COLORS.primary }]}
             onPress={() =>
               router.push({ pathname: "/assign", params: { menteeId: mentee.id } })
             }
           >
             <Text style={styles.actionButtonText}>{t("menteeDetail.assignMentor")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         )}
         {mentorship && mentorship.status === "active" && (
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.actionButton, { backgroundColor: COLORS.cta }]}
             onPress={() => navigateToChat(router, mentorship.id)}
           >
             <Text style={styles.actionButtonText}>{t("menteeDetail.sendMessage")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         )}
         {mentorship && (
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.actionButton, { backgroundColor: themeColors.background, borderWidth: 1, borderColor: themeColors.border }]}
             onPress={() =>
               router.push({ pathname: "/mentorship/[id]", params: { id: mentorship.id } })
@@ -266,7 +266,7 @@ export function MenteeDetailPanel({ id }: MenteeDetailPanelProps) {
             <Text style={[styles.actionButtonText, { color: themeColors.text }]}>
               {t("menteeDetail.viewMentorship")}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
         )}
       </View>
 

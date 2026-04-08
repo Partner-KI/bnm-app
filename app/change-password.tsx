@@ -12,7 +12,7 @@ import { BNMPressable } from "../components/BNMPressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useRouter } from "expo-router";
-import { RADIUS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -51,6 +51,21 @@ export default function ChangePasswordScreen() {
 
     setIsSaving(true);
     try {
+      // SECURITY: Altes Passwort verifizieren bevor neues gesetzt wird
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user?.email) {
+        showError(t("changePassword.errorFailed"));
+        return;
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: oldPassword,
+      });
+      if (signInError) {
+        showError(t("changePassword.errorCurrent"));
+        return;
+      }
+
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
 
       if (updateError) {
@@ -58,9 +73,8 @@ export default function ChangePasswordScreen() {
       } else {
         showSuccess(t("changePassword.successMsg"), () => router.back());
       }
-    } catch (e: any) {
-      // Timeout/Netzwerkfehler — PW wurde wahrscheinlich trotzdem geändert
-      showSuccess(t("changePassword.successMsg"), () => router.back());
+    } catch (e: unknown) {
+      showError(t("changePassword.errorFailed"));
     } finally {
       setIsSaving(false);
     }
@@ -255,7 +269,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButtonDisabled: { opacity: 0.6 },
-  saveButtonText: { color: "#FFFFFF", fontWeight: "600", fontSize: 14 },
+  saveButtonText: { color: COLORS.white, fontWeight: "600", fontSize: 14 },
   cancelButton: {
     borderWidth: 1,
     borderRadius: RADIUS.md,

@@ -12,7 +12,7 @@ import { View, Text, StyleSheet, Animated, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS } from "../constants/Colors";
-import { useThemeColors } from "../contexts/ThemeContext";
+import { useThemeColors, useTheme } from "../contexts/ThemeContext";
 import { BNMPressable } from "./BNMPressable";
 import { setGlobalToast } from "../lib/errorHandler";
 
@@ -38,15 +38,15 @@ const TOAST_DURATION = 3000;
 const ANIMATION_DURATION = 250;
 
 const TOAST_CONFIG: Record<ToastType, { icon: string; color: string; lightBg: string; darkBg: string }> = {
-  success: { icon: "checkmark-circle", color: "#0D9C6E", lightBg: "#ECFDF5", darkBg: "#052E16" },
-  error:   { icon: "close-circle",     color: "#DC2626", lightBg: "#FEF2F2", darkBg: "#2D0808" },
+  success: { icon: "checkmark-circle", color: COLORS.cta, lightBg: "#ECFDF5", darkBg: "#052E16" },
+  error:   { icon: "close-circle",     color: COLORS.error, lightBg: "#FEF2F2", darkBg: "#2D0808" },
   warning: { icon: "warning",          color: "#D97706", lightBg: "#FFFBEB", darkBg: "#1C1300" },
   info:    { icon: "information-circle",color: "#0284C7", lightBg: "#F0F9FF", darkBg: "#0C1F2E" },
 };
 
 function ToastView({ item, onDismiss }: { item: ToastItem; onDismiss: (id: number) => void }) {
   const themeColors = useThemeColors();
-  const isDark = themeColors.background === "#0B0F18";
+  const { isDark } = useTheme();
   const config = TOAST_CONFIG[item.type];
   const translateY = useRef(new Animated.Value(-80)).current;
   const opacity = useRef(new Animated.Value(0)).current;

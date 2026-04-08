@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
@@ -15,7 +14,7 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { COLORS, RADIUS, SHADOWS } from "../constants/Colors";
+import { COLORS, RADIUS } from "../constants/Colors";
 import { sendNewFeedbackNotification } from "../lib/emailService";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -58,13 +57,13 @@ function StarRatingInput({
     <View>
       <View style={styles.starsRow}>
         {[1, 2, 3, 4, 5].map((star) => (
-          <TouchableOpacity key={star} onPress={() => onChange(star)} style={styles.starButton}>
+          <BNMPressable key={star} onPress={() => onChange(star)} style={styles.starButton}>
             <Ionicons
               name={star <= value ? "star" : "star-outline"}
               size={32}
               color={star <= value ? COLORS.gold : themeColors.border}
             />
-          </TouchableOpacity>
+          </BNMPressable>
         ))}
       </View>
       {value > 0 && (
@@ -266,10 +265,8 @@ export default function FeedbackScreen() {
         ).catch(() => {});
       }
 
-      showSuccess(t("feedback.successMsg"), () => router.replace("/(tabs)"));
-      if (Platform.OS !== "web") {
-        setTimeout(() => router.replace("/(tabs)"), 1500);
-      }
+      showSuccess(t("feedback.successMsg"));
+      setTimeout(() => router.replace("/(tabs)"), 1500);
     } catch {
       showError(t("feedback.errorMissing"));
     } finally {
@@ -494,9 +491,9 @@ export default function FeedbackScreen() {
             </View>
 
             {/* Skip */}
-            <TouchableOpacity style={styles.skipButton} onPress={() => router.replace("/(tabs)")}>
+            <BNMPressable style={styles.skipButton} onPress={() => router.replace("/(tabs)")}>
               <Text style={[styles.skipText, { color: themeColors.textTertiary }]}>{t("feedback.skip")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>

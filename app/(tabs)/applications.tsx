@@ -13,7 +13,7 @@ import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { MentorApplication } from "../../types";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { sendApplicationRejectionEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
@@ -519,7 +519,7 @@ function ApplicationCard({
           {isPending && (
             <View style={styles.actionRow}>
               <BNMPressable
-                style={[styles.rejectButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
+                style={[styles.rejectButton, { backgroundColor: sem(SEMANTIC.redBg, isDark), borderColor: sem(SEMANTIC.redBorder, isDark) }]}
                 onPress={onReject}
                 accessibilityRole="button"
                 accessibilityLabel={`${application.name} ${t("applications.reject")}`}

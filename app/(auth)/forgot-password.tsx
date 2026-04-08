@@ -3,15 +3,15 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   ActivityIndicator,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { supabase } from "../../lib/supabase";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -79,20 +79,20 @@ export default function ForgotPasswordScreen() {
           {sent ? (
             /* Erfolgs-State */
             <View style={[styles.successBox, {
-              backgroundColor: isDark ? "#1a3a2a" : "#f0fdf4",
+              backgroundColor: sem(SEMANTIC.greenBg, isDark),
               borderColor: isDark ? "#2d6a4a" : "#bbf7d0",
             }]}>
               <Text style={styles.successIcon}>✓</Text>
-              <Text style={[styles.successTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("forgotPassword.successTitle")}</Text>
+              <Text style={[styles.successTitle, { color: sem(SEMANTIC.greenText, isDark) }]}>{t("forgotPassword.successTitle")}</Text>
               <Text style={[styles.successText, { color: isDark ? "#6ee7b7" : "#166534" }]}>
                 {t("forgotPassword.successText").replace("{0}", email.trim())}
               </Text>
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.backButton}
                 onPress={() => router.replace("/(auth)/login")}
               >
                 <Text style={styles.backButtonText}>{t("forgotPassword.backToLogin")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           ) : (
             /* Formular */
@@ -118,7 +118,7 @@ export default function ForgotPasswordScreen() {
                 </View>
               ) : null}
 
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.submitButton, isLoading && { opacity: 0.6 }]}
                 onPress={handleReset}
                 disabled={isLoading}
@@ -128,14 +128,14 @@ export default function ForgotPasswordScreen() {
                 ) : (
                   <Text style={styles.submitButtonText}>{t("forgotPassword.submit")}</Text>
                 )}
-              </TouchableOpacity>
+              </BNMPressable>
 
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.cancelButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
                 onPress={() => router.back()}
               >
                 <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>{t("forgotPassword.backToLogin")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </>
           )}
         </View>
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 12,
   },
-  errorText: { color: "#dc2626", fontSize: 13 },
+  errorText: { color: COLORS.error, fontSize: 13 },
   submitButton: {
     backgroundColor: COLORS.gradientStart,
     borderRadius: RADIUS.md,

@@ -149,6 +149,7 @@ const en: Record<TranslationKeys, string> = {
   "common.confirm": "Confirm",
   "common.back": "Back",
   "common.error": "Error",
+  "common.noAccess": "No access.",
   "common.success": "Success",
   "common.loading": "Loading...",
   "common.noData": "No data available.",
@@ -712,6 +713,7 @@ const en: Record<TranslationKeys, string> = {
   "changePassword.errorTooShort": "The new password must be at least 8 characters long.",
   "changePassword.errorMatch": "Passwords do not match.",
   "changePassword.errorSame": "The new password must differ from the old one.",
+  "changePassword.errorFailed": "Password change failed. Please try again.",
   "changePassword.errorTimeout": "Request timed out – please try again.",
   "changePassword.successMsg": "Your password has been successfully changed.",
 

@@ -10,7 +10,7 @@
  */
 import React from "react";
 import { View, Text, StyleSheet, Platform } from "react-native";
-import { COLORS, RADIUS, TYPOGRAPHY } from "../constants/Colors";
+import { COLORS, TYPOGRAPHY } from "../constants/Colors";
 import { useThemeColors } from "../contexts/ThemeContext";
 
 interface AvatarProps {
@@ -58,7 +58,7 @@ export function Avatar({ name, size = 44, color, showOnline, online }: AvatarPro
             borderRadius: dotSize / 2,
             borderWidth,
             borderColor: themeColors.card,
-            backgroundColor: online ? "#22C55E" : "#9CA3AF",
+            backgroundColor: online ? "#22C55E" : COLORS.tertiary,
             bottom: -1,
             right: -1,
           },
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   initials: {
-    color: "#FFFFFF",
+    color: COLORS.white,
     fontWeight: TYPOGRAPHY.weight.bold,
     textAlign: "center",
   },

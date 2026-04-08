@@ -3,10 +3,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
@@ -59,9 +59,9 @@ export default function MentorDetailScreen() {
       <Container fullWidth={Platform.OS === "web"}>
         <View style={[styles.root, { backgroundColor: themeColors.background }]}>
           <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BNMPressable onPress={() => router.back()} style={styles.backButton}>
               <Text style={[styles.backText, { color: themeColors.text }]}>{t("mentorDetail.back")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
             <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("mentorDetail.title")}</Text>
             <View style={styles.headerRight} />
           </View>
@@ -85,9 +85,9 @@ export default function MentorDetailScreen() {
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton}>
             <Text style={[styles.backText, { color: themeColors.text }]}>{t("mentorDetail.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("mentorDetail.title")}</Text>
           <View style={styles.headerRight} />
         </View>
@@ -153,7 +153,7 @@ export default function MentorDetailScreen() {
                   const isLast = idx === activeMentorships.length - 1;
 
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={mentorship.id}
                       style={[styles.menteeRow, !isLast && [styles.menteeRowBorder, { borderBottomColor: themeColors.border }]]}
                       onPress={() =>
@@ -190,7 +190,7 @@ export default function MentorDetailScreen() {
                         </View>
                       </View>
                       <Text style={[styles.arrowText, { color: themeColors.textTertiary }]}>›</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </View>
@@ -249,14 +249,14 @@ export default function MentorDetailScreen() {
 
           {/* Admin-Aktionen */}
           {isAdminOrOffice && (
-            <TouchableOpacity
+            <BNMPressable
               style={styles.editProfileButton}
               onPress={() =>
                 router.push({ pathname: "/admin/edit-user", params: { id: mentor.id } })
               }
             >
               <Text style={styles.editProfileButtonText}>{t("editUser.editProfile")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           )}
 
         </ScrollView>

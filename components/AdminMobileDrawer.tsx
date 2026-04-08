@@ -6,9 +6,9 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
 } from "react-native";
+import { BNMPressable } from "./BNMPressable";
 import { useRouter, usePathname } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
@@ -127,14 +127,14 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
               </Text>
             </View>
           </View>
-          <TouchableOpacity
+          <BNMPressable
             onPress={onClose}
             style={styles.closeBtn}
             accessibilityRole="button"
             accessibilityLabel="Menü schließen"
           >
             <Ionicons name="close" size={22} color={themeColors.textSecondary} />
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         {/* Navigation */}
@@ -142,7 +142,7 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
           {navItems.map((item) => {
             const active = isActive(item.key);
             return (
-              <TouchableOpacity
+              <BNMPressable
                 key={item.key}
                 style={[
                   styles.navItem,
@@ -176,21 +176,21 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
                   </View>
                 )}
                 {active && <View style={styles.activeBar} />}
-              </TouchableOpacity>
+              </BNMPressable>
             );
           })}
         </ScrollView>
 
         {/* Logout */}
-        <TouchableOpacity
+        <BNMPressable
           style={[styles.logoutBtn, { borderTopColor: themeColors.border }]}
           onPress={logout}
           accessibilityRole="button"
           accessibilityLabel={t("sidebar.logout")}
         >
-          <Ionicons name="log-out-outline" size={18} color="#EF5350" />
+          <Ionicons name="log-out-outline" size={18} color=COLORS.error />
           <Text style={styles.logoutLabel}>{t("sidebar.logout")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </Animated.View>
     </Modal>
   );
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
   },
   logoutLabel: {
-    color: "#EF5350",
+    color: COLORS.error,
     fontWeight: "600",
     fontSize: 14,
   },

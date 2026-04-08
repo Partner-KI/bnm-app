@@ -3,19 +3,19 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   StyleSheet,
   Platform,
   KeyboardAvoidingView,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { showError, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import type { SessionType } from "../../types";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { EmptyState } from "../../components/EmptyState";
@@ -102,7 +102,7 @@ export default function SessionTypesScreen() {
         </Text>
 
         {/* Hinweis */}
-        <View style={[styles.blueBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+        <View style={[styles.blueBox, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
           <Text style={[styles.blueTitle, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{t("sessionTypes.infoTitle")}</Text>
           <Text style={[styles.blueText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
             {t("sessionTypes.infoText")}
@@ -153,16 +153,18 @@ export default function SessionTypesScreen() {
               {isAdminRole && (
                 <View style={styles.actionsRow}>
                   {/* Hoch */}
-                  <TouchableOpacity
+                  <BNMPressable
                     style={[styles.arrowButton, { backgroundColor: themeColors.background }, idx === 0 ? { opacity: 0.3 } : {}]}
                     onPress={() => moveUp(idx)}
                     disabled={idx === 0}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${st.name} nach oben verschieben`}
                   >
                     <Text style={[styles.arrowText, { color: themeColors.textSecondary }]}>▲</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
 
                   {/* Runter */}
-                  <TouchableOpacity
+                  <BNMPressable
                     style={[
                       styles.arrowButton,
                       { backgroundColor: themeColors.background },
@@ -170,18 +172,22 @@ export default function SessionTypesScreen() {
                     ]}
                     onPress={() => moveDown(idx)}
                     disabled={idx === sortedTypes.length - 1}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${st.name} nach unten verschieben`}
                   >
                     <Text style={[styles.arrowText, { color: themeColors.textSecondary }]}>▼</Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
 
                   {/* Löschen (nur custom) */}
                   {!st.is_default && (
-                    <TouchableOpacity
+                    <BNMPressable
                       style={styles.deleteButton}
                       onPress={() => handleDelete(st)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`${st.name} löschen`}
                     >
                       <Text style={styles.deleteButtonText}>✕</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   )}
                 </View>
               )}
@@ -217,28 +223,32 @@ export default function SessionTypesScreen() {
             />
 
             <View style={styles.formButtonRow}>
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.cancelFormButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                 onPress={() => {
                   setShowAddForm(false);
                   setNewName("");
                   setNewDescription("");
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="Abbrechen"
               >
                 <Text style={[styles.cancelFormButtonText, { color: themeColors.textSecondary }]}>{t("sessionTypes.cancel")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.addButton} onPress={handleAdd}>
+              </BNMPressable>
+              <BNMPressable style={styles.addButton} onPress={handleAdd} accessibilityRole="button" accessibilityLabel="Hinzufügen">
                 <Text style={styles.addButtonText}>{t("sessionTypes.add")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         ) : isAdminRole ? (
-          <TouchableOpacity
+          <BNMPressable
             style={styles.primaryButton}
             onPress={() => setShowAddForm(true)}
+            accessibilityRole="button"
+            accessibilityLabel="Neuen Sitzungstyp hinzufügen"
           >
             <Text style={styles.primaryButtonText}>{t("sessionTypes.addNew")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         ) : null}
       </View>
     </ScrollView>
@@ -305,7 +315,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: 4,
   },
-  deleteButtonText: { color: "#ef4444", fontSize: 14, fontWeight: "bold" },
+  deleteButtonText: { color: COLORS.error, fontSize: 14, fontWeight: "bold" },
   addFormCard: {
     borderRadius: RADIUS.sm,
     borderWidth: 1,

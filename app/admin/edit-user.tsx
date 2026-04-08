@@ -12,7 +12,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { RADIUS } from "../../constants/Colors";
+import { COLORS, RADIUS } from "../../constants/Colors";
 import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 import { BNMPressable } from "../../components/BNMPressable";
@@ -111,7 +111,7 @@ function EditUserForm({ userId }: { userId: string }) {
       });
       showSuccess(t("editUser.successMsg"), () => router.back());
     } catch {
-      showError(t("editUser.errorName"));
+      showError(t("common.error"));
     } finally {
       setIsSaving(false);
     }
@@ -231,7 +231,7 @@ function EditUserForm({ userId }: { userId: string }) {
                 ]}
                 onPress={() => setGender(g)}
               >
-                <Text style={[styles.pillText, gender === g ? { color: "#FFFFFF" } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
+                <Text style={[styles.pillText, gender === g ? { color: COLORS.white } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
                   {g === "male" ? t("editUser.male") : t("editUser.female")}
                 </Text>
               </BNMPressable>
@@ -251,7 +251,7 @@ function EditUserForm({ userId }: { userId: string }) {
                 ]}
                 onPress={() => setRole(key)}
               >
-                <Text style={[styles.pillText, role === key ? { color: "#FFFFFF" } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
+                <Text style={[styles.pillText, role === key ? { color: COLORS.white } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
                   {t(labelKey)}
                 </Text>
               </BNMPressable>
@@ -265,7 +265,7 @@ function EditUserForm({ userId }: { userId: string }) {
             onPress={handleSave}
             disabled={isSaving}
           >
-            <Text style={[styles.saveButtonText, { color: "#FFFFFF" }]}>
+            <Text style={[styles.saveButtonText, { color: COLORS.white }]}>
               {isSaving ? t("editUser.saving") : t("editUser.save")}
             </Text>
           </BNMPressable>
@@ -316,7 +316,7 @@ function EditUserForm({ userId }: { userId: string }) {
               {t("editUser.resetPasswordEmailHint").replace("{0}", target.email)}
             </Text>
             <BNMPressable style={[styles.modalClose, { backgroundColor: themeColors.primary }]} onPress={() => setResetTempPw(null)}>
-              <Text style={[styles.modalCloseText, { color: "#FFFFFF" }]}>{t("common.ok")}</Text>
+              <Text style={[styles.modalCloseText, { color: COLORS.white }]}>{t("common.ok")}</Text>
             </BNMPressable>
           </View>
         </View>
@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  avatarText: { color: "#FFFFFF", fontWeight: "bold", fontSize: 18 },
+  avatarText: { color: COLORS.white, fontWeight: "bold", fontSize: 18 },
   avatarName: { fontWeight: "700", fontSize: 16 },
   avatarEmail: { fontSize: 12, marginTop: 2 },
   sectionLabel: {

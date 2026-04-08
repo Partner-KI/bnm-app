@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  TouchableOpacity,
   View,
   Text,
   StyleSheet,
   Platform,
   useWindowDimensions,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { Tabs, useRouter } from "expo-router";
 import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import { SymbolView } from "expo-symbols";
@@ -34,7 +34,7 @@ function BellButton() {
   const unreadCount = getUnreadCount();
 
   return (
-    <TouchableOpacity
+    <BNMPressable
       onPress={() => router.push("/notifications")}
       style={tabStyles.bellWrapper}
       accessibilityRole="button"
@@ -48,7 +48,7 @@ function BellButton() {
           </Text>
         </View>
       )}
-    </TouchableOpacity>
+    </BNMPressable>
   );
 }
 
@@ -209,7 +209,7 @@ function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
         const color = isFocused ? themeColors.tabIconActive : themeColors.tabIconInactive;
 
         return (
-          <TouchableOpacity
+          <BNMPressable
             key={route.key}
             onPress={onPress}
             accessibilityRole="button"
@@ -225,7 +225,7 @@ function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
             ]}>
               {options.title ?? route.name}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
         );
       })}
     </Wrapper>
@@ -456,14 +456,14 @@ function AdminMobileLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const headerLeft = useCallback(() => (
-    <TouchableOpacity
+    <BNMPressable
       onPress={() => setDrawerOpen(true)}
       style={{ paddingLeft: 16, paddingRight: 8, width: 44, height: 44, alignItems: "center", justifyContent: "center" }}
       accessibilityRole="button"
       accessibilityLabel="Menü öffnen"
     >
       <Ionicons name="menu" size={26} color={COLORS.gold} />
-    </TouchableOpacity>
+    </BNMPressable>
   ), []);
 
   const headerRight = useCallback(() => <BellButton />, []);

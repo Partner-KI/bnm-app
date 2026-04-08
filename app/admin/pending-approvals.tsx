@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   RefreshControl,
   StyleSheet,
   Modal,
@@ -11,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -111,9 +111,9 @@ export default function PendingApprovalsScreen() {
         }
       >
         <View style={styles.page}>
-          <TouchableOpacity style={styles.backLink} onPress={() => router.back()}>
+          <BNMPressable style={styles.backLink} onPress={() => router.back()}>
             <Text style={[styles.backLinkText, { color: themeColors.link }]}>‹ {t("common.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
 
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("pendingApprovals.title")}</Text>
 
@@ -145,22 +145,22 @@ export default function PendingApprovalsScreen() {
                 </View>
 
                 <View style={styles.actionRow}>
-                  <TouchableOpacity
+                  <BNMPressable
                     style={styles.approveButton}
                     onPress={() => handleApprove(m.id)}
                   >
                     <Text style={styles.approveButtonText}>
                       ✓ {t("pendingApprovals.approve")}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
+                  </BNMPressable>
+                  <BNMPressable
                     style={[styles.rejectButton, { borderColor: COLORS.error }]}
                     onPress={() => handleReject(m.id)}
                   >
                     <Text style={styles.rejectButtonText}>
                       ✕ {t("pendingApprovals.reject")}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
               </View>
             ))
@@ -198,7 +198,7 @@ export default function PendingApprovalsScreen() {
               autoFocus
             />
             <View style={styles.modalButtonRow}>
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.modalCancelBtn, { borderColor: themeColors.border }]}
                 onPress={() => {
                   setRejectModalVisible(false);
@@ -209,15 +209,15 @@ export default function PendingApprovalsScreen() {
                 <Text style={[styles.modalCancelText, { color: themeColors.textSecondary }]}>
                   {t("pendingApprovals.rejectCancel")}
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </BNMPressable>
+              <BNMPressable
                 style={[styles.modalConfirmBtn, { backgroundColor: COLORS.error }]}
                 onPress={confirmReject}
               >
                 <Text style={styles.modalConfirmText}>
                   {t("pendingApprovals.rejectConfirm")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         </KeyboardAvoidingView>

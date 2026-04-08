@@ -3,13 +3,13 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Switch,
   StyleSheet,
   Linking,
   Platform,
   ActivityIndicator,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { showSuccess, showConfirm, showError } from "../lib/errorHandler";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "expo-router";
@@ -77,9 +77,9 @@ export default function SettingsScreen() {
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backText, { color: themeColors.text }]}>‹ {t("common.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("settings.title")}</Text>
           <View style={styles.headerRight} />
         </View>
@@ -111,7 +111,7 @@ export default function SettingsScreen() {
           <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("settings.language")}</Text>
           <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
             {LANGUAGES.map((lang, idx) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={lang.key}
                 style={[
                   styles.languageRow,
@@ -119,7 +119,8 @@ export default function SettingsScreen() {
                   language === lang.key && styles.languageRowActive,
                 ]}
                 onPress={() => handleLanguageSelect(lang.key)}
-                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={`Sprache ${lang.native} auswählen`}
               >
                 <View style={styles.languageLabelGroup}>
                   <Text style={[
@@ -139,7 +140,7 @@ export default function SettingsScreen() {
                     <Text style={styles.checkMarkText}>✓</Text>
                   </View>
                 )}
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </View>
 
@@ -150,24 +151,28 @@ export default function SettingsScreen() {
               <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{t("settings.version")}</Text>
               <Text style={[styles.infoValue, { color: themeColors.text }]}>1.0.0</Text>
             </View>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.infoRow, styles.rowBorder, { borderBottomColor: themeColors.border }]}
               onPress={handleSupportMail}
+              accessibilityRole="link"
+              accessibilityLabel="Support kontaktieren"
             >
               <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{t("settings.support")}</Text>
               <Text style={[styles.infoValue, { color: themeColors.link }]}>
                 support@iman.ngo
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </BNMPressable>
+            <BNMPressable
               style={styles.infoRow}
               onPress={handleWebsite}
+              accessibilityRole="link"
+              accessibilityLabel="Webseite öffnen"
             >
               <Text style={[styles.infoLabel, { color: themeColors.textSecondary }]}>{t("settings.website")}</Text>
               <Text style={[styles.infoValue, { color: themeColors.link }]}>
                 iman.ngo ↗
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
 
           {/* Sektion: Datenschutz */}
@@ -182,18 +187,19 @@ export default function SettingsScreen() {
           {canDeleteAccount && (
             <>
               <Text style={[styles.sectionLabel, { color: COLORS.error, marginTop: 20 }]}>{t("settings.dangerZone")}</Text>
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.deleteButton, { borderColor: COLORS.error }]}
                 onPress={handleDeleteAccount}
                 disabled={deleting}
-                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel="Konto löschen"
               >
                 {deleting ? (
                   <ActivityIndicator size="small" color={COLORS.error} />
                 ) : (
                   <Text style={styles.deleteButtonText}>{t("settings.deleteAccount")}</Text>
                 )}
-              </TouchableOpacity>
+              </BNMPressable>
             </>
           )}
 

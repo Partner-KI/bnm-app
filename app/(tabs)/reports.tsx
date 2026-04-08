@@ -1,16 +1,15 @@
 import React, { useState, useMemo, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Platform,
   RefreshControl,
   StyleSheet,
   Share,
 } from "react-native";
-import { showSuccess, showError } from "../../lib/errorHandler";
+import { BNMPressable } from "../../components/BNMPressable";
+import { showError } from "../../lib/errorHandler";
 import { Ionicons } from "@expo/vector-icons";
 import type { ReportData } from "../../lib/pdfGenerator";
 import { useRouter } from "expo-router";
@@ -51,11 +50,7 @@ export default function ReportsScreen() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   // Translated month names
   const MONTHS = [
@@ -448,30 +443,30 @@ export default function ReportsScreen() {
           {/* PDF-Buttons – direkt oben, nebeneinander */}
           {Platform.OS === "web" && (
             <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
-              <TouchableOpacity
+              <BNMPressable
                 style={{ flex: 1, backgroundColor: dynamicPrimaryBg, borderRadius: RADIUS.sm, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
                 onPress={handleDownloadPDF}
                 activeOpacity={0.8}
               >
                 <Ionicons name="download-outline" size={16} color={dynamicPrimaryText} />
                 <Text style={{ color: dynamicPrimaryText, fontWeight: "600", fontSize: 14 }}>Bericht PDF</Text>
-              </TouchableOpacity>
+              </BNMPressable>
               {user?.role === "admin" && (
-                <TouchableOpacity
+                <BNMPressable
                   style={{ flex: 1, backgroundColor: COLORS.gold, borderRadius: RADIUS.sm, paddingVertical: 12, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 }}
                   onPress={handleDownloadDonorPDF}
                   activeOpacity={0.8}
                 >
                   <Ionicons name="download-outline" size={16} color="#0E0E14" />
                   <Text style={{ color: "#0E0E14", fontWeight: "600", fontSize: 14 }}>Spenderbericht PDF</Text>
-                </TouchableOpacity>
+                </BNMPressable>
               )}
             </View>
           )}
 
           {/* Tab-Switcher: Monatsbericht | Spenderbericht */}
           <View style={[styles.tabSwitcherRow, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.tabSwitcherBtn, reportTab === "monthly" && { backgroundColor: dynamicPrimaryBg }]}
               onPress={() => setReportTab("monthly")}
               activeOpacity={0.8}
@@ -479,8 +474,8 @@ export default function ReportsScreen() {
               <Text style={[styles.tabSwitcherText, { color: reportTab === "monthly" ? dynamicPrimaryText : themeColors.textSecondary }]}>
                 Monatsbericht
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </BNMPressable>
+            <BNMPressable
               style={[styles.tabSwitcherBtn, reportTab === "donor" && { backgroundColor: COLORS.gold }]}
               onPress={() => setReportTab("donor")}
               activeOpacity={0.8}
@@ -488,7 +483,7 @@ export default function ReportsScreen() {
               <Text style={[styles.tabSwitcherText, { color: reportTab === "donor" ? "#0E0E14" : themeColors.textSecondary }]}>
                 Spenderbericht
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
 
           {/* Zeitraum-Auswahl */}
@@ -506,7 +501,7 @@ export default function ReportsScreen() {
                   { key: "custom" as QuickPeriod, label: t("reports.quickCustom") },
                 ]
               ).map((opt) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={opt.key}
                   style={[
                     styles.quickFilterBtn,
@@ -525,7 +520,7 @@ export default function ReportsScreen() {
                   >
                     {opt.label}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
 
@@ -541,7 +536,7 @@ export default function ReportsScreen() {
                       { key: "year", label: t("reports.year") },
                     ] as const
                   ).map((opt) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={opt.key}
                       style={[
                         styles.modeButton,
@@ -560,14 +555,14 @@ export default function ReportsScreen() {
                       >
                         {opt.label}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
 
                 {/* Jahr-Auswahl */}
                 <View style={styles.yearRow}>
                   {years.map((year) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={year}
                       style={[
                         styles.yearButton,
@@ -586,7 +581,7 @@ export default function ReportsScreen() {
                       >
                         {year}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
 
@@ -594,7 +589,7 @@ export default function ReportsScreen() {
                 {periodMode === "month" && (
                   <View style={styles.monthRow}>
                     {MONTHS.map((month, idx) => (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={month}
                         style={[
                           styles.monthChip,
@@ -609,7 +604,7 @@ export default function ReportsScreen() {
                         >
                           {month.slice(0, 3)}
                         </Text>
-                      </TouchableOpacity>
+                      </BNMPressable>
                     ))}
                   </View>
                 )}
@@ -618,7 +613,7 @@ export default function ReportsScreen() {
                 {periodMode === "quarter" && (
                   <View style={styles.quarterRow}>
                     {QUARTERS.map((q, idx) => (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={q.label}
                         style={[
                           styles.quarterChip,
@@ -633,7 +628,7 @@ export default function ReportsScreen() {
                         >
                           {q.label}
                         </Text>
-                      </TouchableOpacity>
+                      </BNMPressable>
                     ))}
                   </View>
                 )}

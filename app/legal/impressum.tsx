@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useThemeColors } from "../../contexts/ThemeContext";
 import { useLanguage } from "../../contexts/LanguageContext";
-import { COLORS, RADIUS } from "../../constants/Colors";
+import { RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { BNMPressable } from "../../components/BNMPressable";
 

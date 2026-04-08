@@ -1,11 +1,9 @@
 import React, { useMemo, useCallback, useState, useRef, useEffect } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
   ScrollView,
   FlatList,
-  TouchableOpacity,
   RefreshControl,
   StyleSheet,
   Platform,
@@ -235,7 +233,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
                     {!isOwn && !isContinuation && (
                       <Text style={[panelStyles.senderName, { color: themeColors.textTertiary }]}>{displayName}</Text>
                     )}
-                    <TouchableOpacity
+                    <BNMPressable
                       activeOpacity={0.8}
                       onLongPress={() => handleLongPress(msg.id, isOwn)}
                       delayLongPress={500}
@@ -259,7 +257,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
                           {msg.content}
                         </Text>
                       </View>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 </React.Fragment>
               );
@@ -285,13 +283,13 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
         <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
           {/* Vorlagen-Button */}
           {messageTemplates.length > 0 && (user?.role === "mentor" || user?.role === "admin" || user?.role === "office") && (
-            <TouchableOpacity
+            <BNMPressable
               style={panelStyles.templateButton}
               onPress={() => setShowTemplates(true)}
               accessibilityLabel={t("chat.templates")}
             >
               <Ionicons name="document-text-outline" size={22} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </BNMPressable>
           )}
           <TextInput
             style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
@@ -302,7 +300,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
             multiline
             returnKeyType="default"
           />
-          <TouchableOpacity
+          <BNMPressable
             style={[
               panelStyles.sendButton,
               { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
@@ -311,7 +309,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
             disabled={!inputText.trim()}
           >
             <Ionicons name="send" size={18} color={COLORS.white} />
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       ) : (
         <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
@@ -323,7 +321,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       {/* Vorlagen-Modal */}
       {showTemplates && (
         <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-          <TouchableOpacity style={panelStyles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)}>
+          <BNMPressable style={panelStyles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)}>
             <View style={[panelStyles.modalSheet, { backgroundColor: themeColors.card }]} onStartShouldSetResponder={() => true}>
               <View style={[panelStyles.modalHandle, { backgroundColor: themeColors.border }]} />
               <Text style={[panelStyles.modalTitle, { color: themeColors.text }]}>{t("chat.templates")}</Text>
@@ -334,7 +332,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
                   const anrede = menteeGender === "male" ? t("chat.templateBrother") : t("chat.templateSister");
                   const mentorName = user?.name ?? "";
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={tmpl.id}
                       style={[panelStyles.templateCard, { borderColor: themeColors.border }]}
                       onPress={() => {
@@ -350,12 +348,12 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
                       <Text style={[panelStyles.templateCardPreview, { color: themeColors.textSecondary }]} numberOfLines={3}>
                         {tmpl.body.replace(/\{\{NAME\}\}/g, menteeName).replace(/\{\{ANREDE\}\}/g, anrede).replace(/\{\{MENTOR_NAME\}\}/g, mentorName)}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </ScrollView>
             </View>
-          </TouchableOpacity>
+          </BNMPressable>
         </Modal>
       )}
     </KeyboardAvoidingView>
@@ -625,7 +623,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
           multiline
           returnKeyType="default"
         />
-        <TouchableOpacity
+        <BNMPressable
           style={[
             panelStyles.sendButton,
             { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
@@ -634,7 +632,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
           disabled={!inputText.trim()}
         >
           <Ionicons name="send" size={18} color={COLORS.white} />
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     </KeyboardAvoidingView>
   );
@@ -699,11 +697,8 @@ export default function ChatsScreen() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime-Subscriptions reichen für Live-Updates.
+  // Pull-to-Refresh ist als manueller Fallback vorhanden.
 
   // Relevante Mentorships für den eingeloggten User
   const relevantMentorships = useMemo(() => {
@@ -827,22 +822,22 @@ export default function ChatsScreen() {
     if (!isAdmin) return null;
     return (
       <View style={[styles.tabBar, { borderBottomColor: themeColors.border }]}>
-        <TouchableOpacity
+        <BNMPressable
           style={[styles.tab, chatTab === "admin" && styles.tabActive, chatTab === "admin" && { borderBottomColor: themeColors.primary }]}
           onPress={() => { setChatTab("admin"); setSelectedChatId(null); }}
         >
           <Text style={[styles.tabText, { color: chatTab === "admin" ? themeColors.primary : themeColors.textSecondary }]}>
             {t("chats.adminChats") ?? "Admin-Chats"}
           </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
+        </BNMPressable>
+        <BNMPressable
           style={[styles.tab, chatTab === "mentorship" && styles.tabActive, chatTab === "mentorship" && { borderBottomColor: themeColors.primary }]}
           onPress={() => { setChatTab("mentorship"); setSelectedAdminUserId(null); }}
         >
           <Text style={[styles.tabText, { color: chatTab === "mentorship" ? themeColors.primary : themeColors.textSecondary }]}>
             {t("chats.mentorshipChats") ?? "Betreuungs-Chats"}
           </Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     );
   }
@@ -879,7 +874,7 @@ export default function ChatsScreen() {
                         const label = f === "all" ? "Alle" : f === "mentor" ? "Mentoren" : "Mentees";
                         const isActiveFilter = adminFilter === f;
                         return (
-                          <TouchableOpacity
+                          <BNMPressable
                             key={f}
                             style={[
                               styles.filterChip,
@@ -890,26 +885,26 @@ export default function ChatsScreen() {
                             <Text style={{ color: isActiveFilter ? COLORS.white : themeColors.textSecondary, fontSize: 13, fontWeight: "600" }}>
                               {label}
                             </Text>
-                          </TouchableOpacity>
+                          </BNMPressable>
                         );
                       })}
                     </View>
-                    <TouchableOpacity
+                    <BNMPressable
                       style={[styles.newChatButton, { backgroundColor: themeColors.primary }]}
                       onPress={() => setShowNewChatModal(true)}
                     >
                       <Ionicons name="add" size={18} color={COLORS.white} />
                       <Text style={styles.newChatButtonText}>{t("chats.newAdminChat") ?? "Neuer Chat"}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                     {showNewChatModal && (
                       <View style={[styles.newChatModal, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                         <View style={styles.newChatModalHeader}>
                           <Text style={[styles.newChatModalTitle, { color: themeColors.text }]}>
                             {t("chats.selectUser") ?? "User auswaehlen"}
                           </Text>
-                          <TouchableOpacity onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
+                          <BNMPressable onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
                             <Ionicons name="close" size={20} color={themeColors.textTertiary} />
-                          </TouchableOpacity>
+                          </BNMPressable>
                         </View>
                         <TextInput
                           style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
@@ -920,7 +915,7 @@ export default function ChatsScreen() {
                         />
                         <ScrollView style={{ maxHeight: 200 }}>
                           {newChatUserList.map((u) => (
-                            <TouchableOpacity
+                            <BNMPressable
                               key={u.id}
                               style={[styles.chatRow, { borderBottomWidth: 1, borderBottomColor: themeColors.border }]}
                               onPress={() => {
@@ -936,7 +931,7 @@ export default function ChatsScreen() {
                                 <Text style={[styles.chatName, { color: themeColors.text }]}>{u.name}</Text>
                                 <Text style={[styles.chatSub, { color: themeColors.textSecondary }]}>{u.role}</Text>
                               </View>
-                            </TouchableOpacity>
+                            </BNMPressable>
                           ))}
                           {newChatUserList.length === 0 && (
                             <Text style={[{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 12, fontSize: 13 }]}>
@@ -957,7 +952,7 @@ export default function ChatsScreen() {
                         {adminChatList.map((item, idx) => {
                           const isSelectedItem = selectedAdminUserId === item.userId;
                           return (
-                            <TouchableOpacity
+                            <BNMPressable
                               key={item.userId}
                               style={[
                                 styles.chatRow,
@@ -990,7 +985,7 @@ export default function ChatsScreen() {
                               <View style={[styles.adminBadge, { backgroundColor: COLORS.gold }]}>
                                 <Text style={styles.adminBadgeText}>Admin</Text>
                               </View>
-                            </TouchableOpacity>
+                            </BNMPressable>
                           );
                         })}
                       </View>
@@ -1005,9 +1000,9 @@ export default function ChatsScreen() {
                         placeholderTextColor={themeColors.textTertiary}
                       />
                       {searchQuery.length > 0 && (
-                        <TouchableOpacity onPress={() => setSearchQuery("")}>
+                        <BNMPressable onPress={() => setSearchQuery("")}>
                           <Ionicons name="close-circle" size={16} color={themeColors.textTertiary} />
-                        </TouchableOpacity>
+                        </BNMPressable>
                       )}
                     </View>
                     <View style={styles.counters}>
@@ -1096,7 +1091,7 @@ export default function ChatsScreen() {
     return (
       <Container fullWidth={Platform.OS === "web"}>
         <View style={{ flex: 1 }}>
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.backButton, { backgroundColor: themeColors.card }]}
             onPress={() => setSelectedAdminUserId(null)}
           >
@@ -1104,7 +1099,7 @@ export default function ChatsScreen() {
             <Text style={[{ color: themeColors.text, marginLeft: 8, fontSize: 15, fontWeight: "600" }]}>
               {t("chats.back") ?? "Zurueck"}
             </Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <AdminChatPanel
             userId={selectedAdminUserId}
             adminId={isAdmin ? undefined : adminChatList[0]?.adminId}
@@ -1119,7 +1114,7 @@ export default function ChatsScreen() {
     const isActive = m.status === "active";
     const isSelected = isWideWeb && selectedChatId === m.id;
     return (
-      <TouchableOpacity
+      <BNMPressable
         style={[
           styles.chatRow,
           index < filteredChatList.length - 1 ? { borderBottomWidth: 1, borderBottomColor: isDark ? "#2A2A35" : themeColors.border } : {},
@@ -1174,7 +1169,7 @@ export default function ChatsScreen() {
             )}
           </View>
         </View>
-      </TouchableOpacity>
+      </BNMPressable>
     );
   }
 
@@ -1182,7 +1177,7 @@ export default function ChatsScreen() {
     const isSelected = isWideWeb && selectedAdminUserId === item.userId;
     const partner = allUsers.find((u) => u.id === item.userId);
     return (
-      <TouchableOpacity
+      <BNMPressable
         style={[
           styles.chatRow,
           index < filteredAdminChatList.length - 1 ? { borderBottomWidth: 1, borderBottomColor: isDark ? "#2A2A35" : themeColors.border } : {},
@@ -1215,7 +1210,7 @@ export default function ChatsScreen() {
             {item.lastMsg?.content ?? (t("chats.adminDM") ?? "Direktnachricht")}
           </Text>
         </View>
-      </TouchableOpacity>
+      </BNMPressable>
     );
   }
 
@@ -1239,7 +1234,7 @@ export default function ChatsScreen() {
                 const label = f === "all" ? "Alle" : f === "mentor" ? "Mentoren" : "Mentees";
                 const isActiveFilter = adminFilter === f;
                 return (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={f}
                     style={[
                       styles.filterChip,
@@ -1250,19 +1245,19 @@ export default function ChatsScreen() {
                     <Text style={{ color: isActiveFilter ? COLORS.white : themeColors.textSecondary, fontSize: 13, fontWeight: "600" }}>
                       {label}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 );
               })}
             </View>
 
             {/* Neuer Chat Button */}
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.newChatButton, { backgroundColor: themeColors.primary }]}
               onPress={() => setShowNewChatModal(true)}
             >
               <Ionicons name="add" size={18} color={COLORS.white} />
               <Text style={styles.newChatButtonText}>{t("chats.newAdminChat") ?? "Neuer Chat"}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
             {/* Neue-Chat Modal */}
             {showNewChatModal && (
@@ -1271,9 +1266,9 @@ export default function ChatsScreen() {
                   <Text style={[styles.newChatModalTitle, { color: themeColors.text }]}>
                     {t("chats.selectUser") ?? "User auswaehlen"}
                   </Text>
-                  <TouchableOpacity onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
+                  <BNMPressable onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
                     <Ionicons name="close" size={20} color={themeColors.textTertiary} />
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
                 <TextInput
                   style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
@@ -1284,7 +1279,7 @@ export default function ChatsScreen() {
                 />
                 <ScrollView style={{ maxHeight: 200 }}>
                   {newChatUserList.map((u) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={u.id}
                       style={[styles.chatRow, { borderBottomWidth: 1, borderBottomColor: themeColors.border }]}
                       onPress={() => {
@@ -1300,7 +1295,7 @@ export default function ChatsScreen() {
                         <Text style={[styles.chatName, { color: themeColors.text }]}>{u.name}</Text>
                         <Text style={[styles.chatSub, { color: themeColors.textSecondary }]}>{u.role}</Text>
                       </View>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                   {newChatUserList.length === 0 && (
                     <Text style={[{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 12, fontSize: 13 }]}>
@@ -1322,7 +1317,7 @@ export default function ChatsScreen() {
                 {adminChatList.map((item, idx) => {
                   const isSelected = isWideWeb && selectedAdminUserId === item.userId;
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={item.userId}
                       style={[
                         styles.chatRow,
@@ -1359,7 +1354,7 @@ export default function ChatsScreen() {
                       <View style={[styles.adminBadge, { backgroundColor: COLORS.gold }]}>
                         <Text style={styles.adminBadgeText}>Admin</Text>
                       </View>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </View>
@@ -1376,9 +1371,9 @@ export default function ChatsScreen() {
                 placeholderTextColor={themeColors.textTertiary}
               />
               {searchQuery.length > 0 && (
-                <TouchableOpacity onPress={() => setSearchQuery("")}>
+                <BNMPressable onPress={() => setSearchQuery("")}>
                   <Ionicons name="close-circle" size={16} color={themeColors.textTertiary} />
-                </TouchableOpacity>
+                </BNMPressable>
               )}
             </View>
 

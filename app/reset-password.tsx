@@ -3,14 +3,14 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { supabase } from "../lib/supabase";
-import { COLORS, RADIUS } from "../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../constants/Colors";
 import { useLanguage } from "../contexts/LanguageContext";
 import { showError, showSuccess } from "../lib/errorHandler";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -91,9 +91,9 @@ export default function ResetPasswordScreen() {
 
         {isDone ? (
           <View style={[styles.successBox, {
-            backgroundColor: isDark ? "#1a3a2a" : "#dcfce7",
+            backgroundColor: sem(SEMANTIC.greenBg, isDark),
           }]}>
-            <Text style={[styles.successTitle, { color: isDark ? "#4ade80" : "#15803d" }]}>{t("resetPassword.successTitle")}</Text>
+            <Text style={[styles.successTitle, { color: sem(SEMANTIC.greenText, isDark) }]}>{t("resetPassword.successTitle")}</Text>
             <Text style={[styles.successText, { color: isDark ? "#6ee7b7" : "#166534" }]}>{t("resetPassword.successText")}</Text>
           </View>
         ) : (
@@ -110,14 +110,14 @@ export default function ResetPasswordScreen() {
                 secureTextEntry={!showNew}
                 autoCapitalize="none"
               />
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.eyeButton}
                 onPress={() => setShowNew((v) => !v)}
               >
                 <Text style={[styles.eyeText, { color: themeColors.link }]}>
                   {showNew ? t("resetPassword.hide") : t("resetPassword.show")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
 
             {/* Passwort bestätigen */}
@@ -132,14 +132,14 @@ export default function ResetPasswordScreen() {
                 secureTextEntry={!showConfirm}
                 autoCapitalize="none"
               />
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.eyeButton}
                 onPress={() => setShowConfirm((v) => !v)}
               >
                 <Text style={[styles.eyeText, { color: themeColors.link }]}>
                   {showConfirm ? t("resetPassword.hide") : t("resetPassword.show")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
 
             {/* Passwort-Match-Indikator */}
@@ -158,7 +158,7 @@ export default function ResetPasswordScreen() {
               </Text>
             )}
 
-            <TouchableOpacity
+            <BNMPressable
               style={[
                 styles.submitButton,
                 isSubmitting ? styles.submitButtonDisabled : {},
@@ -171,16 +171,16 @@ export default function ResetPasswordScreen() {
                   ? t("resetPassword.submitting")
                   : t("resetPassword.submit")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </>
         )}
 
-        <TouchableOpacity
+        <BNMPressable
           style={styles.backLink}
           onPress={() => router.replace("/(auth)/login")}
         >
           <Text style={[styles.backLinkText, { color: themeColors.link }]}>{t("resetPassword.backToLogin")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     </ScrollView>
   );

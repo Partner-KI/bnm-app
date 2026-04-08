@@ -58,14 +58,20 @@ CREATE POLICY "xp_select" ON xp_log FOR SELECT USING (
   user_id = auth.uid() OR
   (SELECT role FROM profiles WHERE id = auth.uid()) IN ('admin', 'office')
 );
-CREATE POLICY "xp_insert" ON xp_log FOR INSERT WITH CHECK (true);
+CREATE POLICY "xp_insert" ON xp_log FOR INSERT WITH CHECK (
+  user_id = auth.uid() OR
+  (SELECT role FROM profiles WHERE id = auth.uid()) IN ('admin', 'office')
+);
 
 -- Achievements: Jeder kann eigene sehen, Admin alle
 CREATE POLICY "achievements_select" ON achievements FOR SELECT USING (
   user_id = auth.uid() OR
   (SELECT role FROM profiles WHERE id = auth.uid()) IN ('admin', 'office')
 );
-CREATE POLICY "achievements_insert" ON achievements FOR INSERT WITH CHECK (true);
+CREATE POLICY "achievements_insert" ON achievements FOR INSERT WITH CHECK (
+  user_id = auth.uid() OR
+  (SELECT role FROM profiles WHERE id = auth.uid()) IN ('admin', 'office')
+);
 
 -- Thanks: Mentee kann senden, Mentor + Admin kann sehen
 CREATE POLICY "thanks_select" ON thanks FOR SELECT USING (

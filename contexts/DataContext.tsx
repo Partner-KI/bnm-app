@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
   useRef,
   ReactNode,
 } from "react";
@@ -25,7 +26,7 @@ import type {
   StreakData,
   MessageTemplate,
 } from "../types";
-import { XP_VALUES, ACHIEVEMENTS, getLevelForXP } from "../lib/gamification";
+import { XP_VALUES, getLevelForXP } from "../lib/gamification";
 import { supabase } from "../lib/supabase";
 import { supabaseAnon } from "../lib/supabaseAnon";
 import { useAuth } from "./AuthContext";
@@ -533,7 +534,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const empty = Promise.resolve({ data: null, error: null });
 
       // Timeout: 5s — verhindert dauerhaftes isLoading bei hängender Verbindung
-      const withTimeout = <T>(p: Promise<T>): Promise<T> =>
+      const withTimeout = <T,>(p: Promise<T>): Promise<T> =>
         Promise.race([
           p,
           new Promise<T>((_, reject) =>
@@ -542,7 +543,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         ]);
 
       // Jede Query einzeln mit Timeout wrappen — eine hängende Query blockiert nicht alle anderen
-      const safe = <T>(p: Promise<T>): Promise<T> =>
+      const safe = <T,>(p: Promise<T>): Promise<T> =>
         withTimeout(p).catch((err) => {
           console.warn("[DataContext] Query failed:", err?.message);
           return { data: null, error: err } as unknown as T;
@@ -2037,7 +2038,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !data) {
-        return;
+        throw new Error(error?.message ?? "Session-Typ konnte nicht erstellt werden");
       }
 
       setSessionTypes((prev) => [...prev, mapSessionType(data)]);
@@ -2067,7 +2068,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       .eq("id", id);
 
     if (error) {
-      return;
+      throw new Error(error.message ?? "Session-Typ konnte nicht gelöscht werden");
     }
 
     setSessionTypes((prev) => prev.filter((st) => st.id !== id));
@@ -2090,7 +2091,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .single();
 
       if (error || !data) {
-        return;
+        throw new Error(error?.message ?? "Feedback konnte nicht gespeichert werden");
       }
 
       const newFeedback: Feedback = {
@@ -3089,94 +3090,116 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   // ─── Render ───────────────────────────────────────────────────────────────────
 
+  const contextValue = useMemo(() => ({
+    users,
+    mentorships,
+    sessions,
+    sessionTypes,
+    feedback,
+    messages,
+    applications,
+    notifications,
+    hadithe,
+    xpLog,
+    userAchievements,
+    thanks,
+    streak,
+    awardXP,
+    sendThanks,
+    checkAndUnlockAchievements,
+    updateStreak,
+    addHadith,
+    updateHadith,
+    deleteHadith,
+    reorderHadithe,
+    bulkInsertHadithe,
+    qaEntries,
+    messageTemplates,
+    loadQAEntries,
+    addQAEntry,
+    updateQAEntry,
+    deleteQAEntry,
+    getSetting,
+    mentorOfMonthVisible,
+    toggleMentorOfMonth,
+    addUser,
+    assignMentorship,
+    updateMentorshipStatus,
+    approveMentorship,
+    rejectMentorship,
+    getPendingApprovalsCount,
+    addSession,
+    updateSession,
+    deleteSession,
+    cancelMentorship,
+    addSessionType,
+    updateSessionTypeOrder,
+    deleteSessionType,
+    addFeedback,
+    getFeedbacks,
+    sendMessage,
+    deleteMessage,
+    markAsRead,
+    markAllAsRead,
+    getUnreadCount,
+    sendAdminDirectMessage,
+    adminMessages,
+    sendAdminMessage,
+    replyToAdmin,
+    getAdminMessagesByUserId,
+    getAdminChatPartners,
+    approveApplication,
+    rejectApplication,
+    submitApplication,
+    updateUser,
+    setUserActive,
+    deleteUser,
+    bulkDeleteUsers,
+    updateMentorshipNotes,
+    confirmStepAsMentee,
+    unconfirmStepAsMentee,
+    getMentorshipsByMentorId,
+    getMentorshipByMenteeId,
+    getMentorshipById,
+    getSessionsByMentorshipId,
+    getCompletedStepIds,
+    getMessagesByMentorshipId,
+    getUserById,
+    getUnassignedMentees,
+    getPendingApplicationsCount,
+    getUnreadMessagesCount,
+    getTotalUnreadMessages,
+    getTotalUnreadAdminMessages,
+    markChatAsRead,
+    markAdminChatAsRead,
+    refreshData,
+    isLoading,
+  }), [
+    users, mentorships, sessions, sessionTypes, feedback, messages, applications,
+    notifications, hadithe, xpLog, userAchievements, thanks, streak, qaEntries,
+    messageTemplates, adminMessages, mentorOfMonthVisible, isLoading,
+    awardXP, sendThanks, checkAndUnlockAchievements, updateStreak,
+    addHadith, updateHadith, deleteHadith, reorderHadithe, bulkInsertHadithe,
+    loadQAEntries, addQAEntry, updateQAEntry, deleteQAEntry,
+    getSetting, toggleMentorOfMonth, addUser, assignMentorship,
+    updateMentorshipStatus, approveMentorship, rejectMentorship, getPendingApprovalsCount,
+    addSession, updateSession, deleteSession, cancelMentorship,
+    addSessionType, updateSessionTypeOrder, deleteSessionType, addFeedback, getFeedbacks,
+    sendMessage, deleteMessage, markAsRead, markAllAsRead, getUnreadCount,
+    sendAdminDirectMessage, sendAdminMessage, replyToAdmin,
+    getAdminMessagesByUserId, getAdminChatPartners,
+    approveApplication, rejectApplication, submitApplication,
+    updateUser, setUserActive, deleteUser, bulkDeleteUsers,
+    updateMentorshipNotes, confirmStepAsMentee, unconfirmStepAsMentee,
+    getMentorshipsByMentorId, getMentorshipByMenteeId, getMentorshipById,
+    getSessionsByMentorshipId, getCompletedStepIds, getMessagesByMentorshipId,
+    getUserById, getUnassignedMentees, getPendingApplicationsCount,
+    getUnreadMessagesCount, getTotalUnreadMessages, getTotalUnreadAdminMessages,
+    markChatAsRead, markAdminChatAsRead, refreshData,
+  ]);
+
   return (
-    <DataContext.Provider
-      value={{
-        users,
-        mentorships,
-        sessions,
-        sessionTypes,
-        feedback,
-        messages,
-        applications,
-        notifications,
-        hadithe,
-        xpLog,
-        userAchievements,
-        thanks,
-        streak,
-        awardXP,
-        sendThanks,
-        checkAndUnlockAchievements,
-        updateStreak,
-        addHadith,
-        updateHadith,
-        deleteHadith,
-        reorderHadithe,
-        bulkInsertHadithe,
-        qaEntries,
-        messageTemplates,
-        loadQAEntries,
-        addQAEntry,
-        updateQAEntry,
-        deleteQAEntry,
-        getSetting,
-        mentorOfMonthVisible,
-        toggleMentorOfMonth,
-        addUser,
-        assignMentorship,
-        updateMentorshipStatus,
-        approveMentorship,
-        rejectMentorship,
-        getPendingApprovalsCount,
-        addSession,
-        updateSession,
-        deleteSession,
-        cancelMentorship,
-        addSessionType,
-        updateSessionTypeOrder,
-        deleteSessionType,
-        addFeedback,
-        getFeedbacks,
-        sendMessage,
-        deleteMessage,
-        markAsRead,
-        markAllAsRead,
-        getUnreadCount,
-        sendAdminDirectMessage,
-        adminMessages,
-        sendAdminMessage,
-        replyToAdmin,
-        getAdminMessagesByUserId,
-        getAdminChatPartners,
-        approveApplication,
-        rejectApplication,
-        submitApplication,
-        updateUser,
-        setUserActive,
-        deleteUser,
-        bulkDeleteUsers,
-        updateMentorshipNotes,
-        confirmStepAsMentee,
-        unconfirmStepAsMentee,
-        getMentorshipsByMentorId,
-        getMentorshipByMenteeId,
-        getMentorshipById,
-        getSessionsByMentorshipId,
-        getCompletedStepIds,
-        getMessagesByMentorshipId,
-        getUserById,
-        getUnassignedMentees,
-        getPendingApplicationsCount,
-        getUnreadMessagesCount,
-        getTotalUnreadMessages,
-        getTotalUnreadAdminMessages,
-        markChatAsRead,
-        markAdminChatAsRead,
-        refreshData,
-        isLoading,
-      }}
-    >
+    <DataContext.Provider value={contextValue}>
       {children}
     </DataContext.Provider>
   );

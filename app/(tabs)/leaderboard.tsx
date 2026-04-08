@@ -1,15 +1,14 @@
 import React, { useMemo, useState, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   RefreshControl,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -31,7 +30,7 @@ interface MentorScore {
   score: number;
 }
 
-const MEDAL_COLORS = ["#EEA71B", "#9CA3AF", "#CD7F32"] as const;
+const MEDAL_COLORS = [COLORS.gold, COLORS.tertiary, "#CD7F32"] as const;
 const MEDAL_EMOJIS = ["🥇", "🥈", "🥉"] as const;
 
 type GenderFilter = "all" | "male" | "female";
@@ -63,11 +62,7 @@ export default function LeaderboardScreen() {
     setRefreshing(false);
   }, [refreshData]);
 
-  useFocusEffect(
-    useCallback(() => {
-      refreshData();
-    }, [refreshData])
-  );
+  // useFocusEffect refreshData entfernt — Realtime reicht, Pull-to-Refresh als Fallback
 
   // Monatsnamen aus i18n
   const monthName = t(`datePicker.month.${selectedMonth}` as TranslationKeys);
@@ -214,7 +209,7 @@ export default function LeaderboardScreen() {
 
           {/* Monats-Picker */}
           <View style={[styles.monthPickerRow, { backgroundColor: themeColors.card }]}>
-            <TouchableOpacity
+            <BNMPressable
               onPress={goToPrevMonth}
               style={styles.monthPickerBtn}
               accessibilityRole="button"
@@ -223,11 +218,11 @@ export default function LeaderboardScreen() {
               <Text style={[styles.monthPickerArrow, { color: themeColors.text }]}>
                 {t("leaderboard.monthPicker.prev")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
             <Text style={[styles.monthPickerLabel, { color: themeColors.text }]}>
               {monthName} {selectedYear}
             </Text>
-            <TouchableOpacity
+            <BNMPressable
               onPress={goToNextMonth}
               style={[styles.monthPickerBtn, isCurrentMonth && styles.monthPickerBtnDisabled]}
               disabled={isCurrentMonth}
@@ -238,7 +233,7 @@ export default function LeaderboardScreen() {
               <Text style={[styles.monthPickerArrow, { color: isCurrentMonth ? themeColors.textTertiary : themeColors.text }]}>
                 {t("leaderboard.monthPicker.next")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
 
           {/* Suche — nur für Admin */}
@@ -265,7 +260,7 @@ export default function LeaderboardScreen() {
                     { key: "female", label: t("leaderboard.sisters") },
                   ] as const
                 ).map((opt) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={opt.key}
                     style={[
                       styles.filterChip,
@@ -285,7 +280,7 @@ export default function LeaderboardScreen() {
                     >
                       {opt.label}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </View>
             </View>
@@ -305,7 +300,7 @@ export default function LeaderboardScreen() {
                   {top3[1] ? (() => {
                     const item = top3[1];
                     return (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={item.mentorId}
                         style={styles.podiumSlot}
                         onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
@@ -324,7 +319,7 @@ export default function LeaderboardScreen() {
                           <Text style={styles.podiumScoreText}>{item.score} {t("leaderboard.points_short")}</Text>
                         </View>
                         <View style={[styles.podiumBar, styles.podiumBar2]} />
-                      </TouchableOpacity>
+                      </BNMPressable>
                     );
                   })() : <View style={styles.podiumSlot} />}
 
@@ -332,7 +327,7 @@ export default function LeaderboardScreen() {
                   {top3[0] ? (() => {
                     const item = top3[0];
                     return (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={item.mentorId}
                         style={styles.podiumSlot}
                         onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
@@ -352,7 +347,7 @@ export default function LeaderboardScreen() {
                           <Text style={[styles.podiumScoreText, { color: COLORS.gradientStart }]}>{item.score} {t("leaderboard.points_short")}</Text>
                         </View>
                         <View style={[styles.podiumBar, styles.podiumBar1]} />
-                      </TouchableOpacity>
+                      </BNMPressable>
                     );
                   })() : null}
 
@@ -360,7 +355,7 @@ export default function LeaderboardScreen() {
                   {top3[2] ? (() => {
                     const item = top3[2];
                     return (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={item.mentorId}
                         style={styles.podiumSlot}
                         onPress={() => router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })}
@@ -379,7 +374,7 @@ export default function LeaderboardScreen() {
                           <Text style={styles.podiumScoreText}>{item.score} {t("leaderboard.points_short")}</Text>
                         </View>
                         <View style={[styles.podiumBar, styles.podiumBar3]} />
-                      </TouchableOpacity>
+                      </BNMPressable>
                     );
                   })() : <View style={styles.podiumSlot} />}
                 </View>
@@ -392,7 +387,7 @@ export default function LeaderboardScreen() {
                     const index = idx + 3;
                     const isMe = user?.role === "mentor" && item.mentorId === user.id;
                     return (
-                      <TouchableOpacity
+                      <BNMPressable
                         key={item.mentorId}
                         style={[
                           styles.rankRow,
@@ -435,7 +430,7 @@ export default function LeaderboardScreen() {
                           </Text>
                           <Text style={[styles.scoreLabel, { color: themeColors.textTertiary }]}>{t("leaderboard.points_short")}</Text>
                         </View>
-                      </TouchableOpacity>
+                      </BNMPressable>
                     );
                   })}
                 </View>
@@ -548,7 +543,7 @@ const styles = StyleSheet.create({
   },
   podiumCrown: { fontSize: 22, marginBottom: 4 },
   podiumAvatar: {
-    borderRadius: 100,
+    borderRadius: RADIUS.full,
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 3,
@@ -558,8 +553,8 @@ const styles = StyleSheet.create({
   podiumAvatar1: { width: 72, height: 72, backgroundColor: "rgba(255,255,255,0.2)" },
   podiumAvatar2: { width: 56, height: 56, backgroundColor: "rgba(255,255,255,0.15)" },
   podiumAvatar3: { width: 56, height: 56, backgroundColor: "rgba(255,255,255,0.15)" },
-  podiumAvatarText: { color: "#fff", fontSize: 20, fontWeight: "700" },
-  podiumAvatarText1: { color: "#fff", fontSize: 26, fontWeight: "800" },
+  podiumAvatarText: { color: COLORS.white, fontSize: 20, fontWeight: "700" },
+  podiumAvatarText1: { color: COLORS.white, fontSize: 26, fontWeight: "800" },
   podiumBadge: {
     position: "absolute",
     bottom: -4,
@@ -569,10 +564,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: COLORS.white,
   },
-  podiumBadgeText: { color: "#fff", fontSize: 11, fontWeight: "800" },
-  podiumNameWhite: { color: "#fff", fontSize: 13, fontWeight: "600", textAlign: "center", marginBottom: 2 },
+  podiumBadgeText: { color: COLORS.white, fontSize: 11, fontWeight: "800" },
+  podiumNameWhite: { color: COLORS.white, fontSize: 13, fontWeight: "600", textAlign: "center", marginBottom: 2 },
   podiumCityWhite: { color: "rgba(255,255,255,0.6)", fontSize: 11, textAlign: "center", marginBottom: 6 },
   podiumScorePill: {
     backgroundColor: "rgba(255,255,255,0.2)",
@@ -582,9 +577,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   podiumScorePill1: {
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
-  podiumScoreText: { color: "#fff", fontSize: 12, fontWeight: "700" },
+  podiumScoreText: { color: COLORS.white, fontSize: 12, fontWeight: "700" },
   podiumBar: {
     width: "80%",
     borderTopLeftRadius: RADIUS.sm,

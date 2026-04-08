@@ -149,6 +149,7 @@ const tr: Record<TranslationKeys, string> = {
   "common.confirm": "Onayla",
   "common.back": "Geri",
   "common.error": "Hata",
+  "common.noAccess": "Erişim yok.",
   "common.success": "Başarılı",
   "common.loading": "Yükleniyor...",
   "common.noData": "Veri mevcut değil.",
@@ -712,6 +713,7 @@ const tr: Record<TranslationKeys, string> = {
   "changePassword.errorTooShort": "Yeni şifre en az 8 karakter olmalıdır.",
   "changePassword.errorMatch": "Şifreler eşleşmiyor.",
   "changePassword.errorSame": "Yeni şifre eskisinden farklı olmalıdır.",
+  "changePassword.errorFailed": "Şifre değiştirme başarısız oldu. Lütfen tekrar deneyin.",
   "changePassword.errorTimeout": "İstek zaman aşımına uğradı – lütfen tekrar deneyin.",
   "changePassword.successMsg": "Şifren başarıyla değiştirildi.",
 

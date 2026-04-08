@@ -30,6 +30,5 @@ BEGIN
 END;
 $$;
 
--- Anon darf die Funktion aufrufen
-GRANT EXECUTE ON FUNCTION check_duplicate_registration TO anon;
+-- SECURITY: Nur authentifizierte User dürfen Duplikate prüfen (verhindert E-Mail-Enumeration)
 GRANT EXECUTE ON FUNCTION check_duplicate_registration TO authenticated;

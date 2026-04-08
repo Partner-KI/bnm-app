@@ -4,10 +4,10 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useData } from "../../contexts/DataContext";
@@ -38,7 +38,7 @@ const SESSION_COLORS = [
   COLORS.cta,
   "#7c3aed",
   "#0891b2",
-  "#dc2626",
+  COLORS.error,
   "#d97706",
   "#65a30d",
   "#0284c7",
@@ -576,9 +576,9 @@ export default function AdminDonorReportScreen() {
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]} showsVerticalScrollIndicator={false}>
         {/* Back-Button (nicht im Druck) */}
         <View style={{ paddingTop: insets.top + 24, paddingHorizontal: 24 }}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
+          <BNMPressable style={styles.backBtn} onPress={() => router.back()}>
             <Text style={styles.backBtnText}>{t("donorDashboard.backToReports")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         {/* ── Druckbarer Bereich ── */}
@@ -609,7 +609,7 @@ export default function AdminDonorReportScreen() {
                   { key: "custom" as QuickPeriodDonor, label: t("reports.quickCustom") },
                 ]
               ).map((opt) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={opt.key}
                   style={[
                     styles.quickFilterBtn,
@@ -628,7 +628,7 @@ export default function AdminDonorReportScreen() {
                   >
                     {opt.label}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
 
@@ -645,7 +645,7 @@ export default function AdminDonorReportScreen() {
                   { key: "year" as const, label: t("donorDashboard.periodYear") },
                 ] as const
               ).map((opt) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={opt.key}
                   style={[
                     styles.modeBtn,
@@ -660,7 +660,7 @@ export default function AdminDonorReportScreen() {
                   >
                     {opt.label}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
 
@@ -668,7 +668,7 @@ export default function AdminDonorReportScreen() {
             {periodMode !== "all" && (
               <View style={styles.yearRow}>
                 {YEARS.map((y) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={y}
                     style={[
                       styles.yearBtn,
@@ -683,7 +683,7 @@ export default function AdminDonorReportScreen() {
                     >
                       {y}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </View>
             )}
@@ -692,7 +692,7 @@ export default function AdminDonorReportScreen() {
             {periodMode === "quarter" && (
               <View style={styles.chipRow}>
                 {QUARTERS.map((q, idx) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={q.label}
                     style={[
                       styles.chip,
@@ -707,7 +707,7 @@ export default function AdminDonorReportScreen() {
                     >
                       {q.label}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </View>
             )}
@@ -716,7 +716,7 @@ export default function AdminDonorReportScreen() {
             {periodMode === "month" && (
               <View style={styles.chipRow}>
                 {MONTHS_SHORT.map((m, idx) => (
-                  <TouchableOpacity
+                  <BNMPressable
                     key={m}
                     style={[
                       styles.chip,
@@ -731,7 +731,7 @@ export default function AdminDonorReportScreen() {
                     >
                       {m}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 ))}
               </View>
             )}
@@ -905,14 +905,14 @@ export default function AdminDonorReportScreen() {
 
           {/* ── Export-Buttons (nicht im Druck) ── */}
           {Platform.OS === "web" && (
-            <TouchableOpacity style={styles.exportBtnPrimary} onPress={handleOpenReport}>
+            <BNMPressable style={styles.exportBtnPrimary} onPress={handleOpenReport}>
               <Text style={styles.exportBtnText}>{t("donorDashboard.printPdf")}</Text>
-            </TouchableOpacity>
+            </BNMPressable>
           )}
 
-          <TouchableOpacity style={[styles.backBtnBottom, { borderColor: themeColors.border }]} onPress={() => router.back()}>
+          <BNMPressable style={[styles.backBtnBottom, { borderColor: themeColors.border }]} onPress={() => router.back()}>
             <Text style={[styles.backBtnBottomText, { color: themeColors.textTertiary }]}>{t("donorDashboard.backToReports")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </ScrollView>
     </View>

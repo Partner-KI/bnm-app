@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
   LayoutAnimation,
@@ -146,7 +145,7 @@ export default function FeedbackTabScreen() {
                   { key: "negative" as FeedbackFilter, label: t("feedbackOverview.negative") },
                 ]
               ).map((opt) => (
-                <TouchableOpacity
+                <BNMPressable
                   key={opt.key}
                   style={[
                     styles.filterChip,
@@ -168,7 +167,7 @@ export default function FeedbackTabScreen() {
                   >
                     {opt.label}
                   </Text>
-                </TouchableOpacity>
+                </BNMPressable>
               ))}
             </View>
           </View>

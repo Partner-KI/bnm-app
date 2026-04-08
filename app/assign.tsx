@@ -3,17 +3,17 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { useAuth } from "../contexts/AuthContext";
 import type { TranslationKeys } from "../lib/translations/de";
 import { useData } from "../contexts/DataContext";
 import { showSuccess, showError, showConfirm } from "../lib/errorHandler";
 import type { User } from "../types";
-import { COLORS, RADIUS } from "../constants/Colors";
+import { COLORS, RADIUS, SEMANTIC, sem } from "../constants/Colors";
 import { sendMenteeAssignedNotification } from "../lib/emailService";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
@@ -230,9 +230,9 @@ export default function AssignScreen() {
             ? t("assign.noMenteesMentorText")
             : t("assign.noMenteesText")}
         </Text>
-        <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <BNMPressable style={styles.backButton} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück">
           <Text style={styles.backButtonText}>{t("common.back")}</Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     );
   }
@@ -243,7 +243,7 @@ export default function AssignScreen() {
       <View style={styles.page}>
         {/* Mentor-Modus Banner */}
         {isMentor && (
-          <View style={[styles.mentorModeBox, { backgroundColor: isDark ? "#1e2d4a" : "#eff6ff", borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
+          <View style={[styles.mentorModeBox, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
             <Text style={[styles.mentorModeTitle, { color: isDark ? "#93c5fd" : "#1e40af" }]}>{t("assign.takeMenteeTitle")}</Text>
             <Text style={[styles.mentorModeText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
               {t("assign.takeMenteeText").replace("{0}", user?.gender === "male" ? t("assign.brother") : t("assign.sister"))}
@@ -255,7 +255,7 @@ export default function AssignScreen() {
         <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("assign.selectMentee")}</Text>
         <View style={[styles.listCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
           {unassignedMentees.map((mentee, idx) => (
-            <TouchableOpacity
+            <BNMPressable
               key={mentee.id}
               style={[
                 styles.listItem,
@@ -266,6 +266,8 @@ export default function AssignScreen() {
                 setSelectedMenteeId(mentee.id);
                 if (!isMentor) setSelectedMentorId("");
               }}
+              accessibilityRole="button"
+              accessibilityLabel={`Mentee ${mentee.name} auswählen`}
             >
               <View
                 style={[
@@ -286,7 +288,7 @@ export default function AssignScreen() {
                   {mentee.gender === "male" ? t("assign.brother") : t("assign.sister")}
                 </Text>
               </View>
-            </TouchableOpacity>
+            </BNMPressable>
           ))}
         </View>
 
@@ -299,7 +301,7 @@ export default function AssignScreen() {
             </Text>
 
             {matchedMentors.length === 0 ? (
-              <View style={[styles.errorBox, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}>
+              <View style={[styles.errorBox, { backgroundColor: sem(SEMANTIC.redBg, isDark), borderColor: sem(SEMANTIC.redBorder, isDark) }]}>
                 <Text style={[styles.errorTitle, { color: isDark ? "#f87171" : "#b91c1c" }]}>{t("assign.noMentorFound")}</Text>
                 <Text style={[styles.errorText, { color: isDark ? "#f87171" : "#dc2626" }]}>
                   {t("assign.noMentorFoundText")}
@@ -321,7 +323,7 @@ export default function AssignScreen() {
                       : COLORS.secondary;
 
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={match.mentor.id}
                       style={[
                         styles.mentorCard,
@@ -330,6 +332,8 @@ export default function AssignScreen() {
                           : [styles.mentorCardDefault, { borderColor: themeColors.border, backgroundColor: themeColors.card }],
                       ]}
                       onPress={() => setSelectedMentorId(match.mentor.id)}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Mentor ${match.mentor.name} auswählen, ${percentage}% Übereinstimmung`}
                     >
                       <View style={styles.mentorCardHeader}>
                         <View style={{ flex: 1 }}>
@@ -378,7 +382,7 @@ export default function AssignScreen() {
                           <Text style={[styles.selectedIndicatorText, { color: themeColors.text }]}>{t("assign.selected")}</Text>
                         </View>
                       )}
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </View>
@@ -388,13 +392,13 @@ export default function AssignScreen() {
 
         {/* Hinweis für Mentor: Zuweisung braucht Admin-Bestätigung */}
         {isMentor && (
-          <View style={[styles.pendingHintBox, { backgroundColor: isDark ? "#3a2e1a" : "#fffbeb", borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
-            <Text style={[styles.pendingHintText, { color: isDark ? "#fbbf24" : "#92400e" }]}>{t("assign.pendingApprovalNote")}</Text>
+          <View style={[styles.pendingHintBox, { backgroundColor: sem(SEMANTIC.amberBg, isDark), borderColor: isDark ? "#7a5c1a" : "#fde68a" }]}>
+            <Text style={[styles.pendingHintText, { color: sem(SEMANTIC.amberText, isDark) }]}>{t("assign.pendingApprovalNote")}</Text>
           </View>
         )}
 
         {/* Zuweisen / Übernehmen Button */}
-        <TouchableOpacity
+        <BNMPressable
           style={[
             styles.assignButton,
             (isMentor ? selectedMenteeId : selectedMenteeId && selectedMentorId) && !isAssigning
@@ -403,6 +407,8 @@ export default function AssignScreen() {
           ]}
           onPress={handleAssign}
           disabled={isAssigning || (isMentor ? !selectedMenteeId : !selectedMenteeId || !selectedMentorId)}
+          accessibilityRole="button"
+          accessibilityLabel={isMentor ? "Mentee übernehmen" : "Zuweisung bestätigen"}
         >
           <Text
             style={[
@@ -414,7 +420,7 @@ export default function AssignScreen() {
           >
             {isAssigning ? "..." : isMentor ? t("assign.pendingApprovalButton") : t("assign.assignButton")}
           </Text>
-        </TouchableOpacity>
+        </BNMPressable>
       </View>
     </ScrollView>
     </Container>

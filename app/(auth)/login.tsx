@@ -123,7 +123,7 @@ export default function LoginScreen() {
               accessibilityState={{ disabled: loggingIn }}
             >
               {loggingIn ? (
-                <ActivityIndicator color="#FFFFFF" />
+                <ActivityIndicator color={COLORS.white} />
               ) : (
                 <Text style={styles.loginButtonText}>{t("login.submit")}</Text>
               )}

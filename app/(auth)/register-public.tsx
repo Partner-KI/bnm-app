@@ -3,13 +3,13 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
   Linking,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { BNMInput } from "../../components/BNMInput";
 import { showError } from "../../lib/errorHandler";
 import { useRouter } from "expo-router";
@@ -248,14 +248,14 @@ export default function RegisterPublicScreen() {
           <Text style={[styles.successSub, { color: themeColors.textTertiary }]}>
             {t("register.successSub")}
           </Text>
-          <TouchableOpacity
+          <BNMPressable
             style={styles.backToLoginButton}
             onPress={() => router.replace("/(tabs)")}
             accessibilityRole="button"
             accessibilityLabel={t("register.toDashboard")}
           >
             <Text style={styles.backToLoginText}>{t("register.toDashboard")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </Container>
     );
@@ -292,7 +292,7 @@ export default function RegisterPublicScreen() {
               : themeColors.border;
             const textColor = active ? activeTextColor : themeColors.textSecondary;
             return (
-              <TouchableOpacity
+              <BNMPressable
                 key={opt.value}
                 style={[styles.pill, { backgroundColor: bgColor, borderColor }]}
                 onPress={() => onSelect(opt.value)}
@@ -303,7 +303,7 @@ export default function RegisterPublicScreen() {
                 <Text style={[styles.pillText, { color: textColor, fontWeight: active ? "600" : "500" }]}>
                   {opt.label}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             );
           })}
         </View>
@@ -325,7 +325,7 @@ export default function RegisterPublicScreen() {
   }) {
     return (
       <View style={styles.checkboxWrapper}>
-        <TouchableOpacity
+        <BNMPressable
           style={styles.checkboxRow}
           onPress={onToggle}
           activeOpacity={0.7}
@@ -338,7 +338,7 @@ export default function RegisterPublicScreen() {
               styles.checkbox,
               {
                 backgroundColor: checked ? activeColor : themeColors.card,
-                borderColor: checked ? activeColor : (error ? "#ef4444" : themeColors.border),
+                borderColor: checked ? activeColor : (error ? COLORS.error : themeColors.border),
               },
             ]}
           >
@@ -349,7 +349,7 @@ export default function RegisterPublicScreen() {
           <Text style={[styles.checkboxLabel, { color: themeColors.textSecondary }]}>
             {label}
           </Text>
-        </TouchableOpacity>
+        </BNMPressable>
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
       </View>
     );
@@ -559,7 +559,7 @@ export default function RegisterPublicScreen() {
             />
             {/* Datenschutz-Checkbox mit klickbaren Links */}
             <View style={styles.checkboxWrapper}>
-              <TouchableOpacity
+              <BNMPressable
                 style={styles.checkboxRow}
                 onPress={() => setConfirmPrivacy((v) => !v)}
                 activeOpacity={0.7}
@@ -572,7 +572,7 @@ export default function RegisterPublicScreen() {
                     styles.checkbox,
                     {
                       backgroundColor: confirmPrivacy ? activeColor : themeColors.card,
-                      borderColor: confirmPrivacy ? activeColor : (errors.confirmPrivacy ? "#ef4444" : themeColors.border),
+                      borderColor: confirmPrivacy ? activeColor : (errors.confirmPrivacy ? COLORS.error : themeColors.border),
                     },
                   ]}
                 >
@@ -613,7 +613,7 @@ export default function RegisterPublicScreen() {
                   </Text>
                   {" "}{t("register.confirmPrivacySuffix")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
               {errors.confirmPrivacy ? <Text style={styles.errorText}>{errors.confirmPrivacy}</Text> : null}
             </View>
 
@@ -670,7 +670,7 @@ export default function RegisterPublicScreen() {
             </View>
 
             {/* Submit */}
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.submitButton, isSubmitting ? { opacity: 0.6 } : {}]}
               onPress={handleSubmit}
               disabled={isSubmitting}
@@ -681,14 +681,14 @@ export default function RegisterPublicScreen() {
               <Text style={styles.submitButtonText}>
                 {isSubmitting ? t("register.submitting") : t("register.submit")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
 
             {/* Link zum Login */}
             <View style={styles.loginLinkRow}>
               <Text style={[styles.loginLinkText, { color: themeColors.textSecondary }]}>
                 {t("register.alreadyRegistered")}{" "}
               </Text>
-              <TouchableOpacity
+              <BNMPressable
                 onPress={() => router.replace("/(auth)/login")}
                 accessibilityRole="link"
                 accessibilityLabel={t("register.loginLink")}
@@ -696,7 +696,7 @@ export default function RegisterPublicScreen() {
                 <Text style={[styles.loginLink, { color: themeColors.link }]}>
                   {t("register.loginLink")}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         </ScrollView>
@@ -851,7 +851,7 @@ const styles = StyleSheet.create({
   },
   pillText: { fontSize: 13 },
   errorText: {
-    color: "#ef4444",
+    color: COLORS.error,
     fontSize: 12,
     marginBottom: 8,
   },

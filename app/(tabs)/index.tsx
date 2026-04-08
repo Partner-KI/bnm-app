@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput } from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useRouter } from "expo-router";
@@ -283,14 +284,13 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("dashboard.admin")}</Text>
             <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("dashboard.subtitle")}</Text>
           </View>
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.refreshButton, { backgroundColor: "transparent", borderColor: isDark ? themeColors.accent : themeColors.border }]}
             onPress={() => refreshData(true)}
-            activeOpacity={0.7}
-          >
+                     >
             <Ionicons name="reload-outline" size={16} color={isDark ? themeColors.accent : themeColors.textSecondary} />
             <Text style={[styles.refreshButtonText, { color: isDark ? themeColors.accent : themeColors.textSecondary }]}>{t("dashboard.refresh")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         {/* ── Zeitraum-Bar ────────────────────────────────────────────────── */}
@@ -301,7 +301,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </View>
           <View style={styles.periodBarButtons}>
             {(["thisMonth", "lastMonth", "thisQuarter", "thisYear"] as const).map((p) => (
-              <TouchableOpacity
+              <BNMPressable
                 key={p}
                 style={[
                   styles.periodBtn,
@@ -317,7 +317,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 ]}>
                   {t(`dashboard.period${p.charAt(0).toUpperCase() + p.slice(1)}` as any)}
                 </Text>
-              </TouchableOpacity>
+              </BNMPressable>
             ))}
           </View>
         </View>
@@ -367,9 +367,9 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                         {mentee.city} · {mentee.gender === "male" ? t("dashboard.brother") : t("dashboard.sister")}
                       </Text>
                     </View>
-                    <TouchableOpacity style={styles.assignButton} onPress={() => router.push({ pathname: "/assign", params: { menteeId: mentee.id } })}>
+                    <BNMPressable style={styles.assignButton} onPress={() => router.push({ pathname: "/assign", params: { menteeId: mentee.id } })}>
                       <Text style={styles.assignButtonText}>{t("dashboard.assign")}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 ))}
               </View>
@@ -377,7 +377,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
 
             {/* ── Pending Approvals (volle Breite) ── */}
             {pendingApprovalsCount > 0 && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.pendingApprovalsButton, { backgroundColor: sem(SEMANTIC.amberBg, isDark), borderColor: sem(SEMANTIC.amberBorder, isDark) }]}
                 onPress={() => router.push("/admin/pending-approvals")}
               >
@@ -389,12 +389,12 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 </View>
                 <View style={styles.applicationsBadge}><Text style={styles.applicationsBadgeText}>{pendingApprovalsCount}</Text></View>
                 <Text style={[styles.applicationsArrow, { color: sem(SEMANTIC.amberTextAlt, isDark) }]}>›</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
             {/* ── Offene Mentor-Bewerbungen ── */}
             {pendingMentorAppsCount > 0 && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.pendingApprovalsButton, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: sem(SEMANTIC.blueBorder, isDark) }]}
                 onPress={() => router.push("/(tabs)/applications")}
               >
@@ -410,7 +410,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <Text style={styles.applicationsBadgeText}>{pendingMentorAppsCount}</Text>
                 </View>
                 <Text style={[styles.applicationsArrow, { color: sem(SEMANTIC.blueText, isDark) }]}>›</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
             {/* ── Mentor des Monats (volle Breite) ── */}
@@ -431,7 +431,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               </View>
             )}
             {mentorOfMonthVisible && topMentor && (
-              <TouchableOpacity style={styles.momAdminCard} onPress={() => { if (Platform.OS === "web") { setSelectedMentorId(topMentor.mentor.id); } else { router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } }); } }}>
+              <BNMPressable style={styles.momAdminCard} onPress={() => { if (Platform.OS === "web") { setSelectedMentorId(topMentor.mentor.id); } else { router.push({ pathname: "/mentor/[id]", params: { id: topMentor.mentor.id } }); } }}>
                 <View style={styles.momAdminHeader}>
                   <Text style={styles.momAdminStar}>★</Text>
                   <Text style={[styles.momAdminTitle, { color: themeColors.textSecondary }]}>
@@ -445,10 +445,10 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                   <View style={[styles.momAdminStat, { backgroundColor: themeColors.card }]}><Text style={styles.momAdminStatValue}>{topMentor.sessionCount}</Text><Text style={[styles.momAdminStatLabel, { color: themeColors.textSecondary }]}>{t("leaderboard.sessions")}</Text></View>
                 </View>
                 <Text style={styles.momAdminArrow}>{t("dashboard.viewProfile")} ›</Text>
-                <TouchableOpacity style={[styles.momAwardButton, { marginTop: 10 }]} onPress={(e) => { e.stopPropagation && e.stopPropagation(); router.push({ pathname: "/admin/mentor-award" as any, params: { mentorId: topMentor.mentor.id } }); }} activeOpacity={0.8}>
+                <BNMPressable style={[styles.momAwardButton, { marginTop: 10 }]} onPress={(e) => { e.stopPropagation && e.stopPropagation(); router.push({ pathname: "/admin/mentor-award" as any, params: { mentorId: topMentor.mentor.id } }); }} activeOpacity={0.8}>
                   <Text style={styles.momAwardButtonText}>{t("dashboard.createAward")} ›</Text>
-                </TouchableOpacity>
-              </TouchableOpacity>
+                </BNMPressable>
+              </BNMPressable>
             )}
 
             {/* ── Betreuungs-Warnungen (volle Breite) ── */}
@@ -460,26 +460,26 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
                 </View>
                 {allWarnings.map((w, idx) => {
                   const typeLabel = w.type === "feedback" ? t("earlyWarning.negativeFeedback") : w.type === "discrepancy" ? t("earlyWarning.discrepancy") : t("earlyWarning.inactive");
-                  const dotColor = w.type === "feedback" ? "#ef4444" : w.type === "discrepancy" ? "#f59e0b" : "#3b82f6";
+                  const dotColor = w.type === "feedback" ? COLORS.error : w.type === "discrepancy" ? "#f59e0b" : "#3b82f6";
                   const isInactive = w.type === "inactive";
                   const isSending = sendingReminderFor === w.mentorshipId;
                   const isSent = hasSentReminder(w.mentorshipId);
                   const isLast = idx === allWarnings.length - 1;
                   return (
-                    <TouchableOpacity key={`${w.type}-${w.mentorshipId}-${idx}`} style={[styles.warningRow, !isLast && [styles.warningRowBorder, { borderBottomColor: isDark ? "#2a2a3a" : "#fed7aa" }]]} onPress={() => { if (w.mentorshipId) router.push({ pathname: "/mentorship/[id]", params: { id: w.mentorshipId } }); }}>
+                    <BNMPressable key={`${w.type}-${w.mentorshipId}-${idx}`} style={[styles.warningRow, !isLast && [styles.warningRowBorder, { borderBottomColor: isDark ? "#2a2a3a" : "#fed7aa" }]]} onPress={() => { if (w.mentorshipId) router.push({ pathname: "/mentorship/[id]", params: { id: w.mentorshipId } }); }}>
                       <View style={[styles.warningDot, { backgroundColor: dotColor }]} />
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.warningLabel, { color: isDark ? (dotColor === "#3b82f6" ? "#93c5fd" : dotColor === "#ef4444" ? "#fca5a5" : "#fcd34d") : dotColor }]}>{typeLabel}</Text>
+                        <Text style={[styles.warningLabel, { color: isDark ? (dotColor === "#3b82f6" ? "#93c5fd" : dotColor === COLORS.error ? "#fca5a5" : "#fcd34d") : dotColor }]}>{typeLabel}</Text>
                         <Text style={[styles.warningName, { color: themeColors.text }]}>{w.label}</Text>
                       </View>
                       {w.daysSince !== undefined && <Text style={[styles.warningDays, { color: themeColors.textSecondary }]}>{t("earlyWarning.daysAgo").replace("{0}", String(w.daysSince))}</Text>}
                       {isInactive && (
-                        <TouchableOpacity style={[styles.reminderBtn, (isSending || isSent) ? { opacity: 0.5, backgroundColor: "#6B7280" } : {}]} onPress={(e) => { e.stopPropagation && e.stopPropagation(); if (!isSent) handleSendReminder(w.mentorshipId, w.mentorName, w.menteeName); }} disabled={isSending || isSent} activeOpacity={0.7}>
+                        <BNMPressable style={[styles.reminderBtn, (isSending || isSent) ? { opacity: 0.5, backgroundColor: "#6B7280" } : {}]} onPress={(e) => { e.stopPropagation && e.stopPropagation(); if (!isSent) handleSendReminder(w.mentorshipId, w.mentorName, w.menteeName); }} disabled={isSending || isSent} activeOpacity={0.7}>
                           <Ionicons name={isSent ? "checkmark-outline" : "notifications-outline"} size={13} color={COLORS.white} />
-                        </TouchableOpacity>
+                        </BNMPressable>
                       )}
                       {!isInactive && <Text style={[styles.warningArrow, { color: themeColors.textSecondary }]}>›</Text>}
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </View>
@@ -491,11 +491,11 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
                 <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
                 {allSortedSessions.length > 5 && (
-                  <TouchableOpacity onPress={() => setShowAllActivities((v) => !v)} activeOpacity={0.7}>
+                  <BNMPressable onPress={() => setShowAllActivities((v) => !v)} activeOpacity={0.7}>
                     <Text style={{ color: themeColors.accent, fontSize: 13, fontWeight: "600" }}>
                       {showAllActivities ? t("dashboard.showLessActivities") : t("dashboard.showAllActivities").replace("{0}", String(allSortedSessions.length))}
                     </Text>
-                  </TouchableOpacity>
+                  </BNMPressable>
                 )}
               </View>
               <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
@@ -900,12 +900,12 @@ function MentorDashboard() {
               <Text style={[styles.hadithCardQuelle, { color: themeColors.textTertiary }]}>{t("motivation.source")}: {todayHadith.source}</Text>
             ) : null}
             <View style={styles.motivationActionsRow}>
-              <TouchableOpacity style={styles.motivationNextBtn} onPress={() => setHadithOffset((prev) => prev + 1)}>
+              <BNMPressable style={styles.motivationNextBtn} onPress={() => setHadithOffset((prev) => prev + 1)}>
                 <Text style={styles.motivationNextText}>{t("motivation.next")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
+              </BNMPressable>
+              <BNMPressable style={styles.motivationShareBtn} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
                 <Ionicons name="share-outline" size={18} color={COLORS.gold} />
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         )}
@@ -946,7 +946,7 @@ function MentorDashboard() {
                     ? t("mentor.neglectedUrgent").replace("{0}", menteeName).replace("{1}", String(item.daysSince))
                     : t("mentor.neglectedWarning").replace("{0}", menteeName).replace("{1}", String(item.daysSince));
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={item.mentorship.id}
                       style={[
                         styles.neglectedRow,
@@ -963,7 +963,7 @@ function MentorDashboard() {
                       />
                       <Text style={[styles.neglectedText, { color: textColor, flex: 1, fontSize: 12 }]}>{message}</Text>
                       <Text style={[styles.neglectedArrow, { color: textColor }]}>›</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
                 </View>
@@ -1029,7 +1029,7 @@ function MentorDashboard() {
                 {ACHIEVEMENTS.map((ach) => {
                   const isUnlocked = userAchievements.some((a) => a.achievement_key === ach.key);
                   return (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={ach.key}
                       style={[
                         styles.achievementChip,
@@ -1044,8 +1044,7 @@ function MentorDashboard() {
                         },
                       ]}
                       onPress={() => setShowAchievementTooltip(showAchievementTooltip === ach.key ? null : ach.key)}
-                      activeOpacity={0.7}
-                    >
+                                         >
                       <Text style={styles.achievementIcon}>{ach.icon}</Text>
                       <Text style={{ fontSize: 9, fontWeight: "600", color: isUnlocked ? (isDark ? COLORS.gold : "#92400e") : themeColors.textTertiary, marginTop: 4, textAlign: "center" }} numberOfLines={1}>{ach.label}</Text>
                       {showAchievementTooltip === ach.key && (
@@ -1059,7 +1058,7 @@ function MentorDashboard() {
                           )}
                         </View>
                       )}
-                    </TouchableOpacity>
+                    </BNMPressable>
                   );
                 })}
               </View>
@@ -1167,15 +1166,14 @@ function MentorRatingsSection({
             const stars = "★".repeat(f.rating) + "☆".repeat(5 - f.rating);
             const isLast = idx === displayed.length - 1;
             return (
-              <TouchableOpacity
+              <BNMPressable
                 key={f.id}
                 style={[
                   styles.feedbackRow,
                   !isLast && [styles.feedbackRowBorder, { borderBottomColor: sem(SEMANTIC.goldBorder, isDark) }],
                 ]}
                 onPress={() => ms && router.push({ pathname: "/mentorship/[id]", params: { id: ms.id } })}
-                activeOpacity={0.7}
-              >
+                             >
                 <View style={styles.feedbackStarsRow}>
                   <Text style={[styles.feedbackStars, { color: COLORS.gold }]}>{stars}</Text>
                   <Text style={[styles.feedbackDate, { color: themeColors.textTertiary }]}>{dateStr}</Text>
@@ -1186,19 +1184,18 @@ function MentorRatingsSection({
                   </Text>
                 ) : null}
                 <Text style={[styles.feedbackMentee, { color: themeColors.textTertiary }]}>{menteeName}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             );
           })}
           {feedbacks.length > 3 && (
-            <TouchableOpacity
+            <BNMPressable
               style={styles.showMoreBtn}
               onPress={() => setShowAll((v) => !v)}
-              activeOpacity={0.7}
-            >
+                         >
               <Text style={[styles.showMoreText, { color: isDark ? COLORS.gold : COLORS.gradientStart }]}>
                 {showAll ? "Weniger anzeigen" : t("mentor.showMoreFeedback")}
               </Text>
-            </TouchableOpacity>
+            </BNMPressable>
           )}
         </>
       )}
@@ -1312,12 +1309,12 @@ function MenteeDashboard() {
               <Text style={[styles.hadithCardQuelle, { color: COLORS.gold, marginTop: 10 }]}>{t("motivation.source")}: {todayHadith.source}</Text>
             ) : null}
             <View style={[styles.motivationActionsRow, { marginTop: 16 }]}>
-              <TouchableOpacity style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
+              <BNMPressable style={[styles.motivationNextBtn, { paddingHorizontal: 20, paddingVertical: 10 }]} onPress={() => setHadithOffset((prev) => prev + 1)}>
                 <Text style={[styles.motivationNextText, { fontSize: 14 }]}>{t("motivation.next")}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.motivationShareBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6", padding: 12, borderRadius: RADIUS.sm }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
+              </BNMPressable>
+              <BNMPressable style={[styles.motivationShareBtn, { backgroundColor: isDark ? themeColors.elevated : "#e8eaf6", padding: 12, borderRadius: RADIUS.sm }]} onPress={() => { const shareText = todayHadith.text_ar ? `${todayHadith.text_ar}\n\n${todayHadith.text_de}` : todayHadith.text_de; const shareSuffix = todayHadith.source ? `— ${t("motivation.source")}: ${todayHadith.source} | BNM` : t("share.suffix"); shareHadith(shareText, shareSuffix); }}>
                 <Ionicons name="share-outline" size={20} color={COLORS.gold} />
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           </View>
         )}
@@ -1368,7 +1365,7 @@ function MenteeDashboard() {
                       borderWidth: 1,
                       borderColor: done ? (isDark ? COLORS.cta + "40" : "#86efac") : (isDark ? "#2A2A35" : themeColors.border),
                     }}>
-                      <Text style={{ fontSize: 11, fontWeight: "600", color: done ? (isDark ? "#4ade80" : "#15803d") : themeColors.textTertiary }}>
+                      <Text style={{ fontSize: 11, fontWeight: "600", color: done ? sem(SEMANTIC.greenText, isDark) : themeColors.textTertiary }}>
                         {done ? "✓ " : ""}{st.name}
                       </Text>
                     </View>
@@ -1379,13 +1376,12 @@ function MenteeDashboard() {
 
             {/* ── Danke sagen ── */}
             {mentorship.status === "active" && mentorship.mentor_id && (
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.thankButton, { backgroundColor: sem(SEMANTIC.greenBg, isDark), borderColor: sem(SEMANTIC.greenBorder, isDark) }]}
                 onPress={() => setShowThanksModal(true)}
-                activeOpacity={0.7}
-              >
+                             >
                 <Text style={styles.thankButtonText}>{t("gamification.thankButton")}</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             )}
 
             {/* ── Glückwunsch-Banner + Confetti (ganz unten) ── */}
@@ -1408,12 +1404,12 @@ function MenteeDashboard() {
                   <Text style={[styles.modalBody, { color: themeColors.textSecondary }]}>{t("gamification.thankMessage")}</Text>
                   <TextInput style={[styles.thankInput, { color: themeColors.text, borderColor: sem(SEMANTIC.goldBorder, isDark), backgroundColor: isDark ? "#1A1A24" : themeColors.background }]} placeholder={t("gamification.thankMessagePlaceholder")} placeholderTextColor={themeColors.textTertiary} value={thanksMessage} onChangeText={setThanksMessage} multiline numberOfLines={3} />
                   <View style={styles.modalButtonRow}>
-                    <TouchableOpacity style={[styles.modalCancelBtn, { borderColor: sem(SEMANTIC.goldBorder, isDark) }]} onPress={() => { setShowThanksModal(false); setThanksMessage(""); }}>
+                    <BNMPressable style={[styles.modalCancelBtn, { borderColor: sem(SEMANTIC.goldBorder, isDark) }]} onPress={() => { setShowThanksModal(false); setThanksMessage(""); }}>
                       <Text style={[styles.modalCancelText, { color: themeColors.textSecondary }]}>{t("gamification.thankCancel")}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity style={[styles.modalConfirmBtn, { opacity: sendingThanks ? 0.6 : 1 }]} onPress={handleSendThanks} disabled={sendingThanks}>
+                    </BNMPressable>
+                    <BNMPressable style={[styles.modalConfirmBtn, { opacity: sendingThanks ? 0.6 : 1 }]} onPress={handleSendThanks} disabled={sendingThanks}>
                       <Text style={styles.modalConfirmText}>{t("gamification.thankSend")}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   </View>
                 </View>
               </View>

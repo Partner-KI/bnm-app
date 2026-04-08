@@ -3,11 +3,11 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   Switch,
   StyleSheet,
   Platform,
 } from "react-native";
+import { BNMPressable } from "../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../contexts/AuthContext";
@@ -143,9 +143,9 @@ export default function NotificationSettingsScreen() {
         <View
           style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 8 }]}
         >
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton}>
             <Text style={[styles.backText, { color: themeColors.text }]}>‹ {t("notifSettings.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("notifSettings.title")}</Text>
         </View>
 
@@ -183,13 +183,13 @@ export default function NotificationSettingsScreen() {
             ))}
           </View>
 
-          <TouchableOpacity
+          <BNMPressable
             style={[styles.saveButton, { backgroundColor: COLORS.gradientStart }]}
             onPress={handleSave}
             activeOpacity={0.8}
           >
             <Text style={styles.saveButtonText}>{t("common.save")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
       </ScrollView>
     </Container>

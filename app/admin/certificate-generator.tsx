@@ -7,7 +7,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   StyleSheet,
   Platform,
@@ -15,6 +14,7 @@ import {
   Modal,
   FlatList,
 } from "react-native";
+import { BNMPressable } from "../../components/BNMPressable";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -153,9 +153,9 @@ export default function CertificateGeneratorScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <BNMPressable onPress={() => router.back()} style={styles.backButton}>
               <Ionicons name="arrow-back" size={22} color={themeColors.text} />
-            </TouchableOpacity>
+            </BNMPressable>
             <View style={{ flex: 1 }}>
               <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("certGen.title")}</Text>
               <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>{t("certGen.subtitle")}</Text>
@@ -165,7 +165,7 @@ export default function CertificateGeneratorScreen() {
           {/* Mentor-Auswahl */}
           <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
             <Text style={[styles.cardLabel, { color: themeColors.textSecondary }]}>{t("certGen.selectMentor")}</Text>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.pickerBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
               onPress={() => setMentorPickerOpen(true)}
             >
@@ -173,7 +173,7 @@ export default function CertificateGeneratorScreen() {
                 {selectedMentor?.name ?? t("certGen.noMentorSelected")}
               </Text>
               <Ionicons name="chevron-down" size={16} color={themeColors.textSecondary} />
-            </TouchableOpacity>
+            </BNMPressable>
 
             {/* Stats des gewählten Mentors */}
             {selectedMentor && (
@@ -202,7 +202,7 @@ export default function CertificateGeneratorScreen() {
                 <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.month")}</Text>
                 <View style={styles.monthGrid}>
                   {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={m}
                       style={[
                         styles.monthBtn,
@@ -215,7 +215,7 @@ export default function CertificateGeneratorScreen() {
                       <Text style={[styles.monthBtnText, { color: selectedMonth === m ? "#0E0E14" : themeColors.textSecondary }]}>
                         {String(m).padStart(2, "0")}
                       </Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
               </View>
@@ -223,7 +223,7 @@ export default function CertificateGeneratorScreen() {
                 <Text style={[styles.periodLabel, { color: themeColors.textTertiary }]}>{t("mentorAward.year")}</Text>
                 <View style={styles.yearRow}>
                   {[now.getFullYear() - 1, now.getFullYear()].map((y) => (
-                    <TouchableOpacity
+                    <BNMPressable
                       key={y}
                       style={[
                         styles.yearBtn,
@@ -234,7 +234,7 @@ export default function CertificateGeneratorScreen() {
                       onPress={() => setSelectedYear(y)}
                     >
                       <Text style={[styles.yearBtnText, { color: selectedYear === y ? "#0E0E14" : themeColors.textSecondary }]}>{y}</Text>
-                    </TouchableOpacity>
+                    </BNMPressable>
                   ))}
                 </View>
               </View>
@@ -289,22 +289,22 @@ export default function CertificateGeneratorScreen() {
           {/* Download-Aktionen (nur Web) */}
           {Platform.OS === "web" && (
             <View style={styles.downloadRow}>
-              <TouchableOpacity
+              <BNMPressable
                 style={[styles.dlBtn, styles.dlBtnPDF, isGeneratingPDF && { opacity: 0.5 }]}
                 onPress={handleDownloadPDF}
                 disabled={isGeneratingPDF || !selectedMentor}
               >
                 {isGeneratingPDF ? <ActivityIndicator size="small" color="#0E0E14" /> : <Ionicons name="document-outline" size={16} color="#0E0E14" />}
                 <Text style={styles.dlBtnPDFText}>PDF</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
+              </BNMPressable>
+              <BNMPressable
                 style={[styles.dlBtn, styles.dlBtnPNG, isGeneratingPNG && { opacity: 0.5 }]}
                 onPress={handleDownloadPNG}
                 disabled={isGeneratingPNG || !selectedMentor}
               >
                 {isGeneratingPNG ? <ActivityIndicator size="small" color="#0E0E14" /> : <Ionicons name="image-outline" size={16} color="#0E0E14" />}
                 <Text style={styles.dlBtnPNGText}>PNG</Text>
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
           )}
 
@@ -323,7 +323,7 @@ export default function CertificateGeneratorScreen() {
                 autoCapitalize="none"
               />
             </View>
-            <TouchableOpacity
+            <BNMPressable
               style={[styles.sendBtn, (isSendingEmail || !selectedMentor || !emailTo.trim()) && { opacity: 0.4 }]}
               onPress={handleSendEmail}
               disabled={isSendingEmail || !selectedMentor || !emailTo.trim()}
@@ -332,7 +332,7 @@ export default function CertificateGeneratorScreen() {
                 ? <ActivityIndicator size="small" color={COLORS.white} />
                 : <><Ionicons name="send-outline" size={16} color={COLORS.white} /><Text style={styles.sendBtnText}>{t("certGen.sendEmailBtn")}</Text></>
               }
-            </TouchableOpacity>
+            </BNMPressable>
           </View>
 
         </View>
@@ -344,15 +344,15 @@ export default function CertificateGeneratorScreen() {
           <View style={[styles.modalSheet, { backgroundColor: themeColors.card }]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: themeColors.text }]}>{t("certGen.selectMentor")}</Text>
-              <TouchableOpacity onPress={() => setMentorPickerOpen(false)}>
+              <BNMPressable onPress={() => setMentorPickerOpen(false)}>
                 <Ionicons name="close" size={22} color={themeColors.textSecondary} />
-              </TouchableOpacity>
+              </BNMPressable>
             </View>
             <FlatList
               data={mentors}
               keyExtractor={(item) => item.id}
               renderItem={({ item }) => (
-                <TouchableOpacity
+                <BNMPressable
                   style={[
                     styles.mentorRow,
                     { borderBottomColor: themeColors.border },
@@ -362,7 +362,7 @@ export default function CertificateGeneratorScreen() {
                 >
                   <Text style={[styles.mentorRowName, { color: themeColors.text }]}>{item.name}</Text>
                   {item.id === selectedMentorId && <Ionicons name="checkmark" size={18} color={COLORS.gold} />}
-                </TouchableOpacity>
+                </BNMPressable>
               )}
             />
           </View>
@@ -414,32 +414,32 @@ const styles = StyleSheet.create({
   // Award-Card
   awardCard: {
     borderWidth: 3, borderRadius: RADIUS.lg, overflow: "hidden", marginBottom: 16,
-    backgroundColor: "#FFFDF5",
+    backgroundColor: "#FFFDF5",  // Award-Card off-white, kein COLORS-Mapping
     shadowColor: COLORS.gold, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.18, shadowRadius: 12, elevation: 6,
   },
-  awardHeader: { backgroundColor: "#101828", alignItems: "center", paddingVertical: 28, paddingHorizontal: 24, gap: 8 },
+  awardHeader: { backgroundColor: COLORS.primary, alignItems: "center", paddingVertical: 28, paddingHorizontal: 24, gap: 8 },
   awardHeaderTitle: { color: COLORS.gold, fontSize: 18, fontWeight: "800", letterSpacing: 3, textAlign: "center", textTransform: "uppercase" as const },
   awardHeaderSub: { color: "rgba(255,255,255,0.45)", fontSize: 11, textAlign: "center", letterSpacing: 1.5 },
   awardTopAccent: { height: 4, backgroundColor: COLORS.gold, opacity: 0.85 },
   starsRow: { flexDirection: "row", justifyContent: "center", paddingTop: 20, gap: 8 },
   starChar: { fontSize: 20, color: COLORS.gold },
-  awardCertLabel: { textAlign: "center", fontSize: 10, fontWeight: "700", color: "#9CA3AF", letterSpacing: 4, marginTop: 8, marginBottom: 14 },
+  awardCertLabel: { textAlign: "center", fontSize: 10, fontWeight: "700", color: COLORS.tertiary, letterSpacing: 4, marginTop: 8, marginBottom: 14 },
   awardNameRow: { flexDirection: "row", alignItems: "center", marginHorizontal: 24, gap: 12 },
   awardNameLine: { flex: 1, height: 1, backgroundColor: COLORS.gold, opacity: 0.4 },
-  awardMentorName: { textAlign: "center", fontSize: 26, fontWeight: "900", color: "#101828", letterSpacing: 0.5, flexShrink: 1 },
+  awardMentorName: { textAlign: "center", fontSize: 26, fontWeight: "900", color: COLORS.primary, letterSpacing: 0.5, flexShrink: 1 },
   awardPeriod: { textAlign: "center", fontSize: 13, color: "#6B7280", marginTop: 6, letterSpacing: 2, marginBottom: 18, fontStyle: "italic" as const },
   awardDividerWrapper: { marginHorizontal: 40, gap: 3, marginBottom: 4 },
   awardDivider: { height: 2, backgroundColor: COLORS.gold, opacity: 0.6 },
   awardDividerThin: { height: 1, backgroundColor: COLORS.gold, opacity: 0.25 },
   awardStatsRow: { flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingVertical: 20, paddingHorizontal: 16 },
   awardStatItem: { alignItems: "center", flex: 1 },
-  awardStatValue: { fontSize: 28, fontWeight: "800", color: "#101828" },
-  awardStatLabel: { fontSize: 10, color: "#9CA3AF", marginTop: 4, textAlign: "center", letterSpacing: 0.5, fontWeight: "600" as const },
+  awardStatValue: { fontSize: 28, fontWeight: "800", color: COLORS.primary },
+  awardStatLabel: { fontSize: 10, color: COLORS.tertiary, marginTop: 4, textAlign: "center", letterSpacing: 0.5, fontWeight: "600" as const },
   awardStatDivider: { width: 1, height: 40, backgroundColor: "#E5E7EB" },
   awardFooterWrapper: { alignItems: "center", paddingHorizontal: 24, paddingBottom: 18, gap: 5 },
   awardFooterLine: { width: 64, height: 2, backgroundColor: COLORS.gold, opacity: 0.35, marginBottom: 5 },
-  awardFooter: { textAlign: "center", fontSize: 11, color: "#9CA3AF", letterSpacing: 1.2, fontStyle: "italic" as const },
+  awardFooter: { textAlign: "center", fontSize: 11, color: COLORS.tertiary, letterSpacing: 1.2, fontStyle: "italic" as const },
   awardFooterOrg: { textAlign: "center", fontSize: 10, color: "#D1D5DB", letterSpacing: 0.8, fontWeight: "600" as const },
 
   // Downloads

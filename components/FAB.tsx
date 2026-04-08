@@ -103,7 +103,7 @@ export function FAB({
                 ...SHADOWS.md,
               }]}
             >
-              <Ionicons name={action.icon as any} size={20} color="#FFFFFF" />
+              <Ionicons name={action.icon as any} size={20} color={COLORS.white} />
             </BNMPressable>
           </Animated.View>
         );
@@ -121,7 +121,7 @@ export function FAB({
         }]}
       >
         <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-          <Ionicons name={icon as any} size={26} color="#FFFFFF" />
+          <Ionicons name={icon as any} size={26} color={COLORS.white} />
         </Animated.View>
       </BNMPressable>
 
@@ -131,7 +131,7 @@ export function FAB({
           onPress={toggle}
           disableHover
           style={styles.backdrop}
-        />
+        >{null}</BNMPressable>
       )}
     </View>
   );

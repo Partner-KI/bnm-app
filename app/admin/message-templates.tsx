@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   TextInput,
   StyleSheet,
   Platform,
@@ -118,13 +117,13 @@ export default function MessageTemplatesScreen() {
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <BNMPressable onPress={() => router.back()} style={styles.backButton}>
             <Text style={[styles.backText, { color: themeColors.text }]}>{"\u2039"} {t("common.back")}</Text>
-          </TouchableOpacity>
+          </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("templates.manage")}</Text>
-          <TouchableOpacity onPress={startNew} style={styles.addButton}>
+          <BNMPressable onPress={startNew} style={styles.addButton}>
             <Ionicons name="add-circle" size={28} color={COLORS.gold} />
-          </TouchableOpacity>
+          </BNMPressable>
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
@@ -198,12 +197,12 @@ export default function MessageTemplatesScreen() {
                   <Text style={[styles.templateCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
                 </View>
                 <View style={styles.templateActions}>
-                  <TouchableOpacity onPress={() => startEdit(tmpl)} style={styles.iconBtn}>
+                  <BNMPressable onPress={() => startEdit(tmpl)} style={styles.iconBtn}>
                     <Ionicons name="pencil" size={18} color={themeColors.textSecondary} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn}>
+                  </BNMPressable>
+                  <BNMPressable onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn}>
                     <Ionicons name="trash-outline" size={18} color={COLORS.error} />
-                  </TouchableOpacity>
+                  </BNMPressable>
                 </View>
               </View>
               <Text style={[styles.templatePreview, { color: themeColors.textSecondary }]} numberOfLines={4}>

@@ -147,6 +147,7 @@ const de = {
   "common.confirm": "Bestätigen",
   "common.back": "Zurück",
   "common.error": "Fehler",
+  "common.noAccess": "Kein Zugriff.",
   "common.success": "Erfolg",
   "common.loading": "Wird geladen...",
   "common.noData": "Keine Daten verfügbar.",
@@ -716,6 +717,7 @@ const de = {
   "changePassword.errorTooShort": "Das neue Passwort muss mindestens 8 Zeichen lang sein.",
   "changePassword.errorMatch": "Die Passwörter stimmen nicht überein.",
   "changePassword.errorSame": "Das neue Passwort muss sich vom alten unterscheiden.",
+  "changePassword.errorFailed": "Passwortänderung fehlgeschlagen. Bitte versuche es erneut.",
   "changePassword.errorTimeout": "Zeitüberschreitung – bitte erneut versuchen.",
   "changePassword.successMsg": "Dein Passwort wurde erfolgreich geändert.",
 
