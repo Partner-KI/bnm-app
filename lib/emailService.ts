@@ -10,7 +10,6 @@ import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "./supabase";
 const ADMIN_EMAIL = "hasan.sevenler@partner.ki";
 
 // Resend-Versand über Supabase Edge Function (kein API-Key im Client).
-// SECURITY: Sendet den User-JWT für Authentifizierung (nicht nur Anon Key).
 async function sendViaResend(
   to: string,
   subject: string,
@@ -18,10 +17,6 @@ async function sendViaResend(
   attachments?: { filename: string; content: string }[]
 ): Promise<boolean> {
   try {
-    // Aktuellen User-JWT holen für authentifizierten Aufruf
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token ?? SUPABASE_ANON_KEY;
-
     // 10s Timeout damit die UI nie hängen bleibt
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -33,7 +28,7 @@ async function sendViaResend(
         headers: {
           "Content-Type": "application/json",
           apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ to, subject, html: htmlBody, attachments }),
         signal: controller.signal,

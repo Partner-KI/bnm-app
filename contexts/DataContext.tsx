@@ -527,6 +527,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const { data: sessionData } = await supabase.auth.getSession();
       if (!sessionData?.session) {
         console.warn("[DataContext] No session, skipping load");
+        setIsLoading(false);
+        isActiveLoadRef.current = false;
         return;
       }
 
