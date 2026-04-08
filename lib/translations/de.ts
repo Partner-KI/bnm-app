@@ -696,6 +696,7 @@ const de = {
   "changePassword.title": "Passwort ändern",
   "changePassword.back": "‹ Zurück",
   "changePassword.info": "Wähle ein sicheres Passwort mit mindestens 8 Zeichen.",
+  "changePassword.forcedInfo": "Dein Passwort wurde vom Administrator zurückgesetzt. Bitte wähle ein neues Passwort, um fortzufahren.",
   "changePassword.currentPassword": "Aktuelles Passwort",
   "changePassword.newPassword": "Neues Passwort",
   "changePassword.passwordPlaceholder": "Mindestens 8 Zeichen",

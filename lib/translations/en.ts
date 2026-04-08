@@ -692,6 +692,7 @@ const en: Record<TranslationKeys, string> = {
   "changePassword.title": "Change Password",
   "changePassword.back": "‹ Back",
   "changePassword.info": "Choose a secure password with at least 8 characters.",
+  "changePassword.forcedInfo": "Your password was reset by an administrator. Please choose a new password to continue.",
   "changePassword.currentPassword": "Current Password",
   "changePassword.newPassword": "New Password",
   "changePassword.passwordPlaceholder": "At least 8 characters",

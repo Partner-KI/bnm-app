@@ -18,12 +18,15 @@ import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
 import { supabase } from "../lib/supabase";
 import { supabaseAnon } from "../lib/supabaseAnon";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function ChangePasswordScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
+  const { user: authUser, refreshUser } = useAuth();
+  const isForced = authUser?.force_password_change === true;
   const { isDark } = useTheme();
 
   const [oldPassword, setOldPassword] = useState("");
@@ -75,9 +78,11 @@ export default function ChangePasswordScreen() {
       if (updateError) {
         showError(updateError.message);
       } else {
-        // force_password_change Flag zurücksetzen
+        // force_password_change Flag zurücksetzen + AuthContext aktualisieren
         await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
-        showSuccess(t("changePassword.successMsg"), () => router.replace("/(tabs)"));
+        await refreshUser();
+        showSuccess(t("changePassword.successMsg"));
+        setTimeout(() => router.replace("/(tabs)"), 1200);
       }
     } catch (e: unknown) {
       showError(t("changePassword.errorFailed"));
@@ -101,18 +106,20 @@ export default function ChangePasswordScreen() {
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button">
-            <Text style={[styles.backText, { color: themeColors.text }]}>{t("changePassword.back")}</Text>
-          </BNMPressable>
+          {!isForced ? (
+            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="button">
+              <Text style={[styles.backText, { color: themeColors.text }]}>{t("changePassword.back")}</Text>
+            </BNMPressable>
+          ) : <View style={styles.backButton} />}
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("changePassword.title")}</Text>
           <View style={styles.headerRight} />
         </View>
 
         <ScrollView style={styles.scrollView} contentContainerStyle={styles.content}>
 
-          <View style={[styles.infoBox, { backgroundColor: themeColors.infoLight, borderColor: themeColors.info + "40" }]}>
-            <Text style={[styles.infoText, { color: themeColors.info }]}>
-              {t("changePassword.info")}
+          <View style={[styles.infoBox, { backgroundColor: isForced ? themeColors.warningLight : themeColors.infoLight, borderColor: isForced ? themeColors.warning + "40" : themeColors.info + "40" }]}>
+            <Text style={[styles.infoText, { color: isForced ? themeColors.warning : themeColors.info }]}>
+              {isForced ? t("changePassword.forcedInfo") : t("changePassword.info")}
             </Text>
           </View>
 
@@ -210,9 +217,11 @@ export default function ChangePasswordScreen() {
             </Text>
           </BNMPressable>
 
-          <BNMPressable style={[styles.cancelButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]} onPress={() => router.back()}>
-            <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>{t("changePassword.cancel")}</Text>
-          </BNMPressable>
+          {!isForced && (
+            <BNMPressable style={[styles.cancelButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]} onPress={() => router.back()}>
+              <Text style={[styles.cancelButtonText, { color: themeColors.textSecondary }]}>{t("changePassword.cancel")}</Text>
+            </BNMPressable>
+          )}
 
         </ScrollView>
       </KeyboardAvoidingView>

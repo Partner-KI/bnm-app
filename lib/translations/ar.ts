@@ -692,6 +692,7 @@ const ar: Record<TranslationKeys, string> = {
   "changePassword.title": "تغيير كلمة المرور",
   "changePassword.back": "‹ رجوع",
   "changePassword.info": "اختر كلمة مرور آمنة تتكون من 8 أحرف على الأقل.",
+  "changePassword.forcedInfo": "تم إعادة تعيين كلمة المرور الخاصة بك من قبل المسؤول. يرجى اختيار كلمة مرور جديدة للمتابعة.",
   "changePassword.currentPassword": "كلمة المرور الحالية",
   "changePassword.newPassword": "كلمة المرور الجديدة",
   "changePassword.passwordPlaceholder": "8 أحرف على الأقل",

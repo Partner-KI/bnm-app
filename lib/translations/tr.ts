@@ -692,6 +692,7 @@ const tr: Record<TranslationKeys, string> = {
   "changePassword.title": "Şifre Değiştir",
   "changePassword.back": "‹ Geri",
   "changePassword.info": "En az 8 karakterden oluşan güvenli bir şifre seç.",
+  "changePassword.forcedInfo": "Şifreniz yönetici tarafından sıfırlandı. Devam etmek için yeni bir şifre seçin.",
   "changePassword.currentPassword": "Mevcut Şifre",
   "changePassword.newPassword": "Yeni Şifre",
   "changePassword.passwordPlaceholder": "En az 8 karakter",
