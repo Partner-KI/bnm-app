@@ -185,6 +185,10 @@ export function AdminSidebar() {
     pathname.includes("/admin/qa-management") ||
     pathname.includes("/admin/hadithe-management");
 
+  const role = user?.role;
+  const isMentor = role === "mentor";
+  const isMentee = role === "mentee";
+
   const activeSegment = pathname.includes("/reports") || pathname.includes("donor-report")
     ? "reports"
     : pathname.includes("/mentees")
@@ -206,10 +210,6 @@ export function AdminSidebar() {
     : pathname.includes("/profile")
     ? "profile"
     : "index";
-
-  const role = user?.role;
-  const isMentor = role === "mentor";
-  const isMentee = role === "mentee";
 
   // Rollenabhängige Menüpunkte
   const mainItems = isMentee
