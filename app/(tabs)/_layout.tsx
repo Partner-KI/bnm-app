@@ -25,7 +25,6 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
 import { COLORS, RADIUS, TYPOGRAPHY } from "../../constants/Colors";
 import { AdminMobileDrawer } from "../../components/AdminMobileDrawer";
-import { AdminSidebar } from "../../components/AdminSidebar";
 
 // ─── Bell Button ────────────────────────────────────────────────────────────
 
@@ -417,53 +416,18 @@ function TabsLayout() {
 }
 
 // ─── Admin Sidebar Layout (Web only) ────────────────────────────────────────
-// ─── Sidebar Tab Layout (Web Desktop, alle Rollen) ─────────────────────────
-// Sidebar + Tabs ohne sichtbare TabBar. Die Sidebar übernimmt die Navigation.
-// Für Admin/Office wird die Sidebar zusätzlich im Root-Layout gerendert (für Detail-Screens).
-// Für Mentor/Mentee wird sie NUR hier gerendert.
-
-function SidebarTabLayout() {
-  const { user } = useAuth();
-  const isAdminOrOffice = user?.role === "admin" || user?.role === "office";
-  const isMentor = user?.role === "mentor";
-  const isMentee = user?.role === "mentee";
-
-  return (
-    <View style={{ flexDirection: "row", flex: 1 }}>
-      {/* Sidebar nur für Nicht-Admin rendern — Admin bekommt sie vom Root-Layout */}
-      {!isAdminOrOffice && <AdminSidebar />}
-      <View style={{ flex: 1 }}>
-        <Tabs
-          screenOptions={{
-            tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
-            headerShown: false,
-          }}
-        >
-          <Tabs.Screen name="index" options={{ title: "Dashboard" }} />
-          <Tabs.Screen name="mentees" options={{ title: "Mentees", href: isMentee ? null : undefined }} />
-          <Tabs.Screen name="chats" options={{ title: "Chats" }} />
-          <Tabs.Screen name="leaderboard" options={{ title: "Ranking", href: isMentee ? null : undefined }} />
-          <Tabs.Screen name="faq" options={{ title: "FAQ", href: isMentor ? null : undefined }} />
-          <Tabs.Screen name="mentors" options={{ href: null }} />
-          <Tabs.Screen name="applications" options={{ href: null }} />
-          <Tabs.Screen name="tools" options={{ href: null }} />
-          <Tabs.Screen name="reports" options={{ href: null }} />
-          <Tabs.Screen name="feedback" options={{ href: null }} />
-          <Tabs.Screen name="profile" options={{ title: "Profil" }} />
-        </Tabs>
-      </View>
-    </View>
-  );
-}
-
-// ─── Admin Sidebar Layout (Legacy, für Root-Layout Kompatibilität) ──────────
+// Sidebar wird vom Root-Layout (_layout.tsx) gerendert — hier nur Tabs ohne TabBar
 
 function AdminSidebarLayout() {
+  const themeColors = useThemeColors();
+
   return (
     <Tabs
       screenOptions={{
         tabBarStyle: { display: "none", height: 0, overflow: "hidden" },
         headerShown: false,
+        // Lazy loading deaktivieren damit Tabs sofort verfügbar sind
+        // und kein Flash zum Default-Tab entsteht
         lazy: false,
       }}
     >
@@ -547,14 +511,14 @@ export default function TabLayout() {
   const isWeb = Platform.OS === "web";
   const isMobile = Platform.OS !== "web";
 
-  // Web Desktop (>= 768px): Sidebar-Layout für alle eingeloggten User
-  const useSidebar = hasMounted && isWeb && !!user && width >= 768;
+  // Sidebar nur auf Web und bei Admin/Office, und nur wenn Viewport breit genug (>= 768px)
+  const useSidebar = hasMounted && isWeb && isAdminOrOffice && width >= 768;
 
   // Admin/Office auf Mobile: Hamburger-Menü statt TabBar
   const useMobileAdminDrawer = hasMounted && isMobile && isAdminOrOffice;
 
   if (useSidebar) {
-    return <SidebarTabLayout />;
+    return <AdminSidebarLayout />;
   }
 
   if (useMobileAdminDrawer) {
