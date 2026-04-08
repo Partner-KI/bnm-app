@@ -68,7 +68,7 @@ export default function LoginScreen() {
         <View style={isDesktop ? [styles.desktopCard, { backgroundColor: themeColors.card }, SHADOWS.lg] : undefined}>
           {/* Header mit Logo */}
           <View style={[styles.header, isDesktop && styles.headerDesktop]}>
-            <BNMLogo size={isDesktop ? 80 : 72} showSubtitle={false} />
+            <BNMLogo size={isDesktop ? 120 : 100} showSubtitle={false} />
             <View style={styles.goldDivider} />
           </View>
 

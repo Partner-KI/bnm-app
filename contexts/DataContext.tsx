@@ -371,6 +371,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Guard: verhindert parallele foreground-Loads (würden State inkonsistent machen)
   const isActiveLoadRef = useRef(false);
   const loadStartTimeRef = useRef(0);
+  const retryDoneRef = useRef(false);
 
   // ─── Initial Load ────────────────────────────────────────────────────────────
 
@@ -392,6 +393,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
       hasLoadedOnceRef.current = false;
       isActiveLoadRef.current = false;
+      retryDoneRef.current = false;
       return;
     }
 
@@ -490,11 +492,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   async function loadAllData(background = false) {
     // ── Concurrent-Load-Guard ──
-    // Foreground: Nur 1 gleichzeitig, mit Stale-Guard (10s) als Deadlock-Prevention
     if (!background) {
       if (isActiveLoadRef.current) {
-        const stale = Date.now() - loadStartTimeRef.current > 5_000;
-        if (!stale) return; // Noch aktiv, nicht doppelt laden
+        const stale = Date.now() - loadStartTimeRef.current > 10_000;
+        if (!stale) return;
         console.warn("[DataContext] Stale load lock (>10s), forcing reset");
       }
       isActiveLoadRef.current = true;
@@ -502,20 +503,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
     }
     try {
-      // Session-Check
+      // Session-Check — bei fehlender Session sauber abbrechen
       const { data: sessionData } = await supabase.auth.getSession();
-      if (!sessionData?.session) return;
+      if (!sessionData?.session) {
+        console.warn("[DataContext] No session, skipping load");
+        return;
+      }
 
       const isAdminOrOffice = authUser?.role === "admin" || authUser?.role === "office";
       const isMentor = authUser?.role === "mentor";
       const empty = Promise.resolve({ data: null, error: null });
 
-      // Timeout: 8s — verhindert dauerhaftes isLoading bei hängender Verbindung
+      // Timeout: 15s — verhindert dauerhaftes isLoading bei hängender Verbindung
       const withTimeout = <T>(p: Promise<T>): Promise<T> =>
         Promise.race([
           p,
           new Promise<T>((_, reject) =>
-            setTimeout(() => reject(new Error("Supabase query timeout (5s)")), 5_000)
+            setTimeout(() => reject(new Error("Supabase query timeout (15s)")), 15_000)
           ),
         ]);
 
@@ -981,21 +985,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
         showError("Daten konnten nicht geladen werden. Bitte prüfe deine Internetverbindung.");
       }
     } finally {
-      // IMMER Lock freigeben — egal ob foreground oder background
       isActiveLoadRef.current = false;
       hasLoadedOnceRef.current = true;
+      // IMMER isLoading zurücksetzen — auch bei Background-Loads
+      setIsLoading(false);
       if (!background) {
-        setIsLoading(false);
-        // Force-Refresh: Wenn nach dem Laden keine User vorhanden, einmalig nochmal laden
-        // (RLS-Timing: Session gerade erneuert → Profile noch nicht sichtbar)
-        setTimeout(() => {
-          setUsers((prev) => {
-            if (prev.length === 0) {
-              loadAllData(true);
-            }
-            return prev;
-          });
-        }, 2000);
+        // Einmaliger Retry wenn keine User geladen (RLS-Timing nach Session-Refresh)
+        if (!retryDoneRef.current) {
+          retryDoneRef.current = true;
+          setTimeout(() => {
+            setUsers((prev) => {
+              if (prev.length === 0) {
+                loadAllData(true);
+              }
+              return prev;
+            });
+          }, 2000);
+        }
       }
     }
   }
