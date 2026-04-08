@@ -189,8 +189,8 @@ export function AppSidebar() {
     ? "reports"
     : pathname.includes("/mentees")
     ? "mentees"
-    : pathname.includes("/mentors") && !pathname.includes("/admin/mentor")
-    ? "mentors"
+    : (pathname.includes("/mentors") || pathname.includes("/mentor/")) && !pathname.includes("/admin/mentor")
+    ? (isMentor ? "leaderboard" : "mentors")
     : pathname.includes("/applications") || pathname.includes("/admin/pending")
     ? "applications"
     : pathname.includes("/tools") || isAdminToolScreen
