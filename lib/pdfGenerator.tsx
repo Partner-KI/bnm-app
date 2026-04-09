@@ -102,18 +102,18 @@ function triggerDownload(bytes: Uint8Array, filename: string) {
 // ─── Farben ──────────────────────────────────────────────────────────────────
 
 const C = {
-  primary: [16 / 255, 24 / 255, 40 / 255] as [number, number, number],  // #101828 — Haupttext/Überschriften
-  gold: [238 / 255, 167 / 255, 27 / 255] as [number, number, number],   // #EEA71B — Akzentfarbe
-  green: [13 / 255, 156 / 255, 110 / 255] as [number, number, number],  // #0D9C6E — CTA/Positiv
-  gray: [71 / 255, 84 / 255, 103 / 255] as [number, number, number],    // #475467 — Sekundärtext
-  lgray: [152 / 255, 162 / 255, 179 / 255] as [number, number, number], // #98A2B3 — Tertiärtext
+  navy: [10 / 255, 58 / 255, 90 / 255] as [number, number, number],     // #0A3A5A — main bg + header
+  lightBlue: [91 / 255, 181 / 255, 232 / 255] as [number, number, number], // #5BB5E8 — accent for numbers
+  gold: [238 / 255, 167 / 255, 27 / 255] as [number, number, number],   // #EEA71B — BNM gold accent
+  green: [13 / 255, 156 / 255, 110 / 255] as [number, number, number],  // #0D9C6E — positive values
+  gray: [71 / 255, 84 / 255, 103 / 255] as [number, number, number],    // secondary text on light bg
+  lgray: [0.78, 0.85, 0.9] as [number, number, number],                 // light text on navy bg
   white: [1, 1, 1] as [number, number, number],
-  warmBg: [0.973, 0.969, 0.957] as [number, number, number],            // #F8F7F4 — Warmes Weiß (App-Hintergrund)
-  border: [0.9, 0.91, 0.92] as [number, number, number],
-  cardBg: [0.985, 0.983, 0.975] as [number, number, number],            // Warmes Hellgrau für Cards
-  tableBg: [0.975, 0.973, 0.965] as [number, number, number],           // Etwas dunkler für Tabellen-Zeilen
-  summaryBg: [0.98, 0.97, 0.94] as [number, number, number],
-  goldLight: [1, 0.97, 0.88] as [number, number, number],               // Gold-Tint für Hintergründe
+  border: [0.15, 0.30, 0.45] as [number, number, number],               // subtle border on navy
+  cardBg: [15 / 255, 68 / 255, 105 / 255] as [number, number, number],  // slightly lighter navy for cards
+  tableBg: [20 / 255, 78 / 255, 115 / 255] as [number, number, number], // table row alt color on navy
+  summaryBg: [0.98, 0.97, 0.94] as [number, number, number],            // warm summary box
+  pageBg: [10 / 255, 58 / 255, 90 / 255] as [number, number, number],   // full-page navy background
 };
 
 // ─── Hilfsfunktionen ─────────────────────────────────────────────────────────
@@ -125,8 +125,8 @@ function drawSectionHeader(
   // Farbiger Kreis mit Buchstabe
   page.drawCircle({ x: x + 7, y: y + 4, size: 7, color: rgb(...circleColor) });
   page.drawText(letter, { x: x + 4, y: y + 1, size: 7, font: bold, color: rgb(1, 1, 1) });
-  // Überschrift
-  page.drawText(text, { x: x + 20, y, size: 13, font: bold, color: rgb(...C.primary) });
+  // Überschrift (white on navy)
+  page.drawText(text, { x: x + 20, y, size: 13, font: bold, color: rgb(...C.white) });
   // Gold-Unterstrich
   const textWidth = bold.widthOfTextAtSize(text, 13);
   page.drawRectangle({ x: x + 20, y: y - 6, width: textWidth * 0.6, height: 2, color: rgb(...C.gold) });
@@ -136,18 +136,16 @@ function drawPageHeader(
   page: any, rgb: any, bold: any, font: any,
   W: number, H: number, title: string, periodLabel: string, today: string
 ) {
-  // Warmer Hintergrund-Header (kein kräftiges Blau mehr)
-  page.drawRectangle({ x: 0, y: H - 72, width: W, height: 72, color: rgb(...C.warmBg) });
-  // BNM branding links
+  // BNM branding links (navy bg already from page background)
   page.drawText("BNM", { x: 40, y: H - 36, size: 28, font: bold, color: rgb(...C.gold) });
   page.drawText("Betreuung neuer Muslime", { x: 40, y: H - 52, size: 7, font, color: rgb(...C.lgray) });
-  // Titel zentriert
-  page.drawText(title, { x: W / 2 - bold.widthOfTextAtSize(title, 16) / 2, y: H - 34, size: 16, font: bold, color: rgb(...C.primary) });
+  // Titel zentriert — lightBlue (IMAN style)
+  page.drawText(title, { x: W / 2 - bold.widthOfTextAtSize(title, 20) / 2, y: H - 34, size: 20, font: bold, color: rgb(...C.lightBlue) });
   // Zeitraum rechts
   page.drawText(periodLabel, { x: W - 40 - font.widthOfTextAtSize(periodLabel, 10), y: H - 34, size: 10, font, color: rgb(...C.gold) });
   const erstelltText = "Erstellt am: " + today;
   page.drawText(erstelltText, { x: W - 40 - font.widthOfTextAtSize(erstelltText, 7), y: H - 52, size: 7, font, color: rgb(...C.lgray) });
-  // Gold-Akzentlinie unter dem Header
+  // Gold-Akzentlinie unter dem Header (2pt)
   page.drawRectangle({ x: 0, y: H - 72, width: W, height: 2, color: rgb(...C.gold) });
 }
 
@@ -155,16 +153,16 @@ function drawKpiCard(
   page: any, rgb: any, bold: any, font: any,
   value: string, label: string, bx: number, by: number, w: number, h: number, dotColor: [number, number, number]
 ) {
-  // Hintergrund mit warmem Fill
+  // Hintergrund — slightly lighter navy for cards
   page.drawRectangle({ x: bx, y: by - h, width: w, height: h, color: rgb(...C.cardBg) });
   // Goldener dünner Rand (1px)
   page.drawRectangle({ x: bx, y: by - h, width: w, height: h, borderColor: rgb(...C.gold), borderWidth: 1 });
   // Kleiner farbiger Punkt links oben
   page.drawCircle({ x: bx + 6, y: by - 6, size: 3, color: rgb(...dotColor) });
-  // Wert
-  page.drawText(value, { x: bx + 8, y: by - 22, size: 18, font: bold, color: rgb(...C.primary) });
-  // Label
-  page.drawText(label, { x: bx + 8, y: by - 34, size: 7, font, color: rgb(...C.gray) });
+  // Wert — lightBlue (IMAN style big numbers)
+  page.drawText(value, { x: bx + 8, y: by - 22, size: 18, font: bold, color: rgb(...C.lightBlue) });
+  // Label — light gray on navy
+  page.drawText(label, { x: bx + 8, y: by - 34, size: 7, font, color: rgb(...C.lgray) });
 }
 
 function drawThreeColFooter(
@@ -176,7 +174,7 @@ function drawThreeColFooter(
   const rightText = `Seite ${currentPage} von ${totalPages}`;
   page.drawLine({ start: { x: 40, y: 42 }, end: { x: W - 40, y: 42 }, thickness: 0.5, color: rgb(...C.border) });
   page.drawText(leftText, { x: 40, y: 30, size: 7, font, color: rgb(...C.lgray) });
-  page.drawText(midText, { x: W / 2 - font.widthOfTextAtSize(midText, 7) / 2, y: 30, size: 7, font, color: rgb(...C.lgray) });
+  page.drawText(midText, { x: W / 2 - font.widthOfTextAtSize(midText, 7) / 2, y: 30, size: 7, font, color: rgb(...C.gold) });
   page.drawText(rightText, { x: W - 40 - font.widthOfTextAtSize(rightText, 7), y: 30, size: 7, font, color: rgb(...C.lgray) });
 }
 
@@ -195,15 +193,15 @@ function drawSummaryBox(
 
   const boxH = lines.length * 13 + 36; // extra space for label
   const boxY = startY - 8;
-  page.drawRectangle({ x: 40, y: boxY - boxH, width: W - 80, height: boxH, color: rgb(...C.summaryBg), borderColor: rgb(...C.border), borderWidth: 1 });
+  page.drawRectangle({ x: 40, y: boxY - boxH, width: W - 80, height: boxH, color: rgb(...C.summaryBg), borderColor: rgb(...C.gold), borderWidth: 1 });
   // Icon circle + label inside box
   let sy = boxY - 16;
   page.drawCircle({ x: 54, y: sy + 3, size: 5, color: rgb(...C.green) });
   page.drawText("Z", { x: 51.5, y: sy, size: 5, font: bold, color: rgb(1, 1, 1) });
-  page.drawText("Zusammenfassung", { x: 64, y: sy, size: 9, font: bold, color: rgb(...C.primary) });
+  page.drawText("Zusammenfassung", { x: 64, y: sy, size: 9, font: bold, color: rgb(...C.navy) });
   sy -= 16;
   for (const l of lines) {
-    if (sy > 50) { page.drawText(l, { x: 50, y: sy, size: 9, font, color: rgb(...C.primary) }); sy -= 13; }
+    if (sy > 50) { page.drawText(l, { x: 50, y: sy, size: 9, font, color: rgb(...C.navy) }); sy -= 13; }
   }
   return sy;
 }
@@ -222,12 +220,13 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 
     // ── Seite 1: Deckblatt + KPIs ──────────────────────────────────────────
     const p1 = doc.addPage([W, H]);
+    p1.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(...C.pageBg) });
 
     // Voller Header
     drawPageHeader(p1, rgb, bold, font, W, H, "Monatsbericht", data.periodLabel, today);
 
     // KPI-Sektion
-    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.primary);
+    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.lightBlue);
 
     // 2x4 KPI-Grid (8 Karten)
     const kpis = [
@@ -241,7 +240,7 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
       [String(data.kpis.salahSessions + data.kpis.koranSessions), "Salah+Koran Sessions"],
     ];
     const KPI_W = 122; const KPI_H = 42; const KPI_GAP = 5;
-    const kpiDotColors: [number, number, number][] = [C.primary, C.primary, C.green, C.gold, C.primary, C.primary, C.gold, C.gold];
+    const kpiDotColors: [number, number, number][] = [C.lightBlue, C.lightBlue, C.green, C.gold, C.lightBlue, C.lightBlue, C.gold, C.gold];
     kpis.forEach(([v, l], i) => {
       const col = i % 4; const row = Math.floor(i / 4);
       const bx = 40 + col * (KPI_W + KPI_GAP);
@@ -255,23 +254,23 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 
     // Abbrüche / Nachbetreuung
     const abbY = divY1 - 14;
-    p1.drawRectangle({ x: 40, y: abbY - 22, width: W - 80, height: 22, color: rgb(0.97, 0.97, 0.98), borderColor: rgb(...C.border), borderWidth: 1 });
-    p1.drawText("Abbrüche / Nachbetreuung:", { x: 48, y: abbY - 15, size: 7, font: bold, color: rgb(...C.gray) });
-    p1.drawText(String(data.kpis.nachbetreuung), { x: 200, y: abbY - 15, size: 7, font: bold, color: rgb(...C.primary) });
+    p1.drawRectangle({ x: 40, y: abbY - 22, width: W - 80, height: 22, color: rgb(...C.cardBg), borderColor: rgb(...C.border), borderWidth: 1 });
+    p1.drawText("Abbrüche / Nachbetreuung:", { x: 48, y: abbY - 15, size: 7, font: bold, color: rgb(...C.lgray) });
+    p1.drawText(String(data.kpis.nachbetreuung), { x: 200, y: abbY - 15, size: 7, font: bold, color: rgb(...C.lightBlue) });
 
     // Mentor des Monats Box – goldener Rahmen rundum
     const momY = abbY - 36;
     if (data.mentorOfMonth) {
-      // Goldener Hintergrund + rundumlaufender Rahmen
-      p1.drawRectangle({ x: 40, y: momY - 50, width: W - 80, height: 50, color: rgb(254 / 255, 243 / 255, 199 / 255) });
+      // Goldener Hintergrund + rundumlaufender Rahmen (navy-tinted gold)
+      p1.drawRectangle({ x: 40, y: momY - 50, width: W - 80, height: 50, color: rgb(...C.cardBg) });
       p1.drawRectangle({ x: 40, y: momY - 50, width: W - 80, height: 50, borderColor: rgb(...C.gold), borderWidth: 2 });
       // Goldene linke Akzent-Linie (extra sichtbar)
       p1.drawRectangle({ x: 40, y: momY - 50, width: 4, height: 50, color: rgb(...C.gold) });
-      p1.drawText("MENTOR DES MONATS", { x: 54, y: momY - 14, size: 7, font: bold, color: rgb(146 / 255, 64 / 255, 14 / 255) });
-      p1.drawText(data.mentorOfMonth.name, { x: 54, y: momY - 28, size: 14, font: bold, color: rgb(...C.primary) });
+      p1.drawText("MENTOR DES MONATS", { x: 54, y: momY - 14, size: 7, font: bold, color: rgb(...C.gold) });
+      p1.drawText(data.mentorOfMonth.name, { x: 54, y: momY - 28, size: 14, font: bold, color: rgb(...C.white) });
       p1.drawText(
         data.mentorOfMonth.score + " Pkt — " + data.mentorOfMonth.completed + " Abschl. — " + data.mentorOfMonth.sessions + " Sessions",
-        { x: 54, y: momY - 42, size: 7, font, color: rgb(...C.gray) }
+        { x: 54, y: momY - 42, size: 7, font, color: rgb(...C.lgray) }
       );
     }
 
@@ -280,6 +279,7 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 
     // ── Seite 2: Rangliste + Zusammenfassung ───────────────────────────────
     const p2 = doc.addPage([W, H]);
+    p2.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(...C.pageBg) });
 
     // Voller Header Seite 2
     drawPageHeader(p2, rgb, bold, font, W, H, "Monatsbericht", data.periodLabel, today);
@@ -287,37 +287,37 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
     // Rangliste
     drawSectionHeader(p2, rgb, bold, font, "Rangliste", 40, H - 94, "R", C.gold);
 
-    // Tabellenkopf – navy hinterlegt
+    // Tabellenkopf – gold hinterlegt mit navy text
     let ty = H - 110;
-    p2.drawRectangle({ x: 40, y: ty - 14, width: W - 80, height: 14, color: rgb(...C.primary) });
+    p2.drawRectangle({ x: 40, y: ty - 14, width: W - 80, height: 14, color: rgb(...C.gold) });
     const rankCols = [45, 70, 250, 320, 395, 465];
     ["#", "Name", "Score", "Sessions", "Abschl.", "Bewertung"].forEach((h, i) => {
-      p2.drawText(h, { x: rankCols[i], y: ty - 10, size: 7, font: bold, color: rgb(...C.white) });
+      p2.drawText(h, { x: rankCols[i], y: ty - 10, size: 7, font: bold, color: rgb(...C.navy) });
     });
     ty -= 14;
 
-    // Tabellenzeilen mit abwechselnden Farben (weiss / light blue)
+    // Tabellenzeilen mit abwechselnden Farben (navy / slightly lighter navy)
     data.rankings.slice(0, 15).forEach((m, i) => {
-      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(...C.tableBg);
+      const rowBg = i % 2 === 0 ? rgb(...C.pageBg) : rgb(...C.tableBg);
       p2.drawRectangle({ x: 40, y: ty - 13, width: W - 80, height: 13, color: rowBg });
       // Trennlinie
       p2.drawLine({ start: { x: 40, y: ty - 13 }, end: { x: W - 40, y: ty - 13 }, thickness: 0.5, color: rgb(...C.border) });
       const isTop = m.rank <= 3;
       const f = isTop ? bold : font;
-      const c = isTop ? rgb(...C.gold) : rgb(...C.primary);
+      const c = isTop ? rgb(...C.gold) : rgb(...C.white);
       // Gold medal indicator for #1
       const rankLabel = m.rank === 1 ? "1 *" : String(m.rank);
       p2.drawText(rankLabel, { x: rankCols[0], y: ty - 10, size: 7, font: f, color: c });
       p2.drawText(m.name, { x: rankCols[1], y: ty - 10, size: 7, font: f, color: c });
-      // Numbers right-aligned
+      // Numbers right-aligned — white on navy
       const scoreStr = String(m.score);
-      p2.drawText(scoreStr, { x: rankCols[2] + 40 - font.widthOfTextAtSize(scoreStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.primary) });
+      p2.drawText(scoreStr, { x: rankCols[2] + 40 - font.widthOfTextAtSize(scoreStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.white) });
       const sessStr = String(m.sessions);
-      p2.drawText(sessStr, { x: rankCols[3] + 40 - font.widthOfTextAtSize(sessStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.primary) });
+      p2.drawText(sessStr, { x: rankCols[3] + 40 - font.widthOfTextAtSize(sessStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.white) });
       const complStr = String(m.completed);
-      p2.drawText(complStr, { x: rankCols[4] + 40 - font.widthOfTextAtSize(complStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.primary) });
+      p2.drawText(complStr, { x: rankCols[4] + 40 - font.widthOfTextAtSize(complStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.white) });
       const ratingStr = m.rating !== null ? m.rating.toFixed(1) + " *" : "-";
-      p2.drawText(ratingStr, { x: rankCols[5] + 40 - font.widthOfTextAtSize(ratingStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.primary) });
+      p2.drawText(ratingStr, { x: rankCols[5] + 40 - font.widthOfTextAtSize(ratingStr, 7), y: ty - 10, size: 7, font, color: rgb(...C.white) });
       ty -= 13;
     });
 
@@ -359,7 +359,7 @@ export async function generateMentorAwardPDFBytes(data: AwardData): Promise<Uint
     aPage.drawText("BETREUUNG NEUER MUSLIME", { x: acx - aFont.widthOfTextAtSize("BETREUUNG NEUER MUSLIME", 8) / 2, y: AH - 140, size: 8, font: aFont, color: rgb(...C.gray) });
     aPage.drawRectangle({ x: acx - 30, y: AH - 170, width: 60, height: 3, color: rgb(...C.gold) });
     aPage.drawText("AUSZEICHNUNG", { x: acx - aFont.widthOfTextAtSize("AUSZEICHNUNG", 10) / 2, y: AH - 200, size: 10, font: aFont, color: rgb(...C.gray) });
-    aPage.drawText("Mentor des Monats", { x: acx - aBold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: AH - 240, size: 24, font: aBold, color: rgb(...C.primary) });
+    aPage.drawText("Mentor des Monats", { x: acx - aBold.widthOfTextAtSize("Mentor des Monats", 24) / 2, y: AH - 240, size: 24, font: aBold, color: rgb(...C.navy) });
     aPage.drawText(data.period, { x: acx - aFont.widthOfTextAtSize(data.period, 12) / 2, y: AH - 265, size: 12, font: aFont, color: rgb(...C.gray) });
     aPage.drawRectangle({ x: acx - 30, y: AH - 290, width: 60, height: 3, color: rgb(...C.gold) });
     aPage.drawText(data.mentorName, { x: acx - aBold.widthOfTextAtSize(data.mentorName, 28) / 2, y: AH - 340, size: 28, font: aBold, color: rgb(...C.gold) });
@@ -372,7 +372,7 @@ export async function generateMentorAwardPDFBytes(data: AwardData): Promise<Uint
     aStats.forEach(function(pair, i) {
       const asx = 120 + i * 140;
       aPage.drawRectangle({ x: asx, y: AH - 430, width: 110, height: 50, borderColor: rgb(...C.border), borderWidth: 1 });
-      aPage.drawText(pair[0], { x: asx + 55 - aBold.widthOfTextAtSize(pair[0], 20) / 2, y: AH - 410, size: 20, font: aBold, color: rgb(...C.primary) });
+      aPage.drawText(pair[0], { x: asx + 55 - aBold.widthOfTextAtSize(pair[0], 20) / 2, y: AH - 410, size: 20, font: aBold, color: rgb(...C.navy) });
       aPage.drawText(pair[1], { x: asx + 55 - aFont.widthOfTextAtSize(pair[1], 8) / 2, y: AH - 425, size: 8, font: aFont, color: rgb(...C.gray) });
     });
 
@@ -540,12 +540,13 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
 
     // ── Seite 1: Alles auf einer Seite ────────────────────────────────────
     const p1 = doc.addPage([W, H]);
+    p1.drawRectangle({ x: 0, y: 0, width: W, height: H, color: rgb(...C.pageBg) });
 
     // Voller Header
     drawPageHeader(p1, rgb, bold, font, W, H, "Spenderbericht", data.periodLabel, today);
 
     // KPI-Sektion
-    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.primary);
+    drawSectionHeader(p1, rgb, bold, font, "Kennzahlen", 40, H - 94, "K", C.lightBlue);
 
     // 2x4 KPI-Grid (8 Karten)
     const dk = [
@@ -559,7 +560,7 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
       [String(data.kpis.koranSessions), "Koran Sessions"],
     ];
     const DK_W = 122; const DK_H = 42; const DK_GAP = 5;
-    const dkDotColors: [number, number, number][] = [C.primary, C.gold, C.green, C.gold, C.primary, C.gold, C.gold, C.gold];
+    const dkDotColors: [number, number, number][] = [C.lightBlue, C.gold, C.green, C.gold, C.lightBlue, C.gold, C.gold, C.gold];
     dk.forEach(([v, l], i) => {
       const col = i % 4; const row = Math.floor(i / 4);
       const bx = 40 + col * (DK_W + DK_GAP);
@@ -575,14 +576,14 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
     const sessTitleY = divY2 - 18;
     drawSectionHeader(p1, rgb, bold, font, "Session-Verteilung", 40, sessTitleY, "S", C.gold);
 
-    // Tabellenkopf – navy hinterlegt
+    // Tabellenkopf – gold hinterlegt mit navy text
     let sessY = sessTitleY - 16;
-    p1.drawRectangle({ x: 40, y: sessY - 14, width: W - 80, height: 14, color: rgb(...C.primary) });
-    p1.drawText("Typ", { x: 48, y: sessY - 10, size: 7, font: bold, color: rgb(...C.white) });
-    p1.drawText("Anzahl", { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.white) });
+    p1.drawRectangle({ x: 40, y: sessY - 14, width: W - 80, height: 14, color: rgb(...C.gold) });
+    p1.drawText("Typ", { x: 48, y: sessY - 10, size: 7, font: bold, color: rgb(...C.navy) });
+    p1.drawText("Anzahl", { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.navy) });
     sessY -= 14;
 
-    // Session-Einträge mit abwechselnden Zeilenfarben
+    // Session-Einträge mit abwechselnden Zeilenfarben (navy / slightly lighter navy)
     const sessItems = data.sessionDistribution?.items ?? [];
     const displayItems = sessItems.length > 0 ? sessItems : [
       { label: "Wudu Sessions", value: data.kpis.wuduSessions },
@@ -590,13 +591,13 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
       { label: "Koran Sessions", value: data.kpis.koranSessions },
     ];
     displayItems.forEach((item: { label: string; value: number }, i: number) => {
-      const rowBg = i % 2 === 0 ? rgb(1, 1, 1) : rgb(...C.tableBg);
+      const rowBg = i % 2 === 0 ? rgb(...C.pageBg) : rgb(...C.tableBg);
       p1.drawRectangle({ x: 40, y: sessY - 13, width: W - 80, height: 13, color: rowBg });
       p1.drawLine({ start: { x: 40, y: sessY - 13 }, end: { x: W - 40, y: sessY - 13 }, thickness: 0.5, color: rgb(...C.border) });
       // Farbiger Punkt vor dem Label
       p1.drawCircle({ x: 52, y: sessY - 7, size: 3, color: rgb(...C.gold) });
-      p1.drawText(item.label, { x: 60, y: sessY - 10, size: 7, font, color: rgb(...C.primary) });
-      p1.drawText(String(item.value), { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.primary) });
+      p1.drawText(item.label, { x: 60, y: sessY - 10, size: 7, font, color: rgb(...C.white) });
+      p1.drawText(String(item.value), { x: 220, y: sessY - 10, size: 7, font: bold, color: rgb(...C.lightBlue) });
       sessY -= 13;
     });
 
