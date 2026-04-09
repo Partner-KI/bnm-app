@@ -312,12 +312,20 @@ export default function ChatScreen() {
             </BNMPressable>
           )}
           <TextInput
-            style={[styles.textInput, styles.textInputWithTemplate, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
+            style={[
+              styles.textInput,
+              styles.textInputWithTemplate,
+              { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text },
+              // Auf Web: Höhe wächst automatisch mit dem Inhalt (Vorlagen sind oft lang)
+              Platform.OS === "web" && inputText.length > 100 ? { minHeight: 80 } : {},
+              Platform.OS === "web" && inputText.length > 300 ? { minHeight: 140 } : {},
+            ]}
             value={inputText}
             onChangeText={setInputText}
             placeholder={t("chat.placeholder")}
             placeholderTextColor={themeColors.textTertiary}
             multiline
+            numberOfLines={Platform.OS === "web" ? 6 : undefined}
             returnKeyType="default"
           />
           <BNMPressable

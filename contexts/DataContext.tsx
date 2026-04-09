@@ -427,6 +427,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         setFeedback(cached.feedback);
         setHadithe(cached.hadithe);
         setQAEntries(cached.qaEntries);
+        if (cached.messageTemplates) setMessageTemplates(cached.messageTemplates);
         setAppSettings(cached.appSettings);
         setMentorOfMonthVisible(cached.mentorOfMonthVisible);
         setIsLoading(false);
@@ -950,6 +951,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
           feedback: cachedFeedback as Feedback[],
           hadithe: cachedHadithe,
           qaEntries: cachedQAEntries as QAEntry[],
+          messageTemplates: messageTemplatesRes?.data?.map((row: any) => ({
+            id: row.id, title: row.title, category: row.category, body: row.body,
+            sort_order: row.sort_order, is_active: row.is_active,
+          })) ?? [],
           appSettings: cachedSettings,
           mentorOfMonthVisible: cachedMentorOfMonthVisible,
           timestamp: Date.now(),

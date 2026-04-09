@@ -6,6 +6,7 @@ import React, {
   useCallback,
   ReactNode,
 } from "react";
+import { Platform } from "react-native";
 import type { User, UserRole, AuthContextValue } from "../types";
 import { supabase } from "../lib/supabase";
 import { unregisterPushToken } from "../lib/notificationService";
@@ -133,8 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     await supabase.auth.signOut().catch(() => {});
     // Auf Web: Hard-Reload damit DataContext, Subscriptions, etc. sauber zurückgesetzt werden.
-    // Verhindert "Wird geladen..."-Hänger durch stale isLoading-State.
-    if (typeof window !== "undefined") {
+    if (Platform.OS === "web") {
       window.location.href = "/";
     }
   }, [user?.id]);

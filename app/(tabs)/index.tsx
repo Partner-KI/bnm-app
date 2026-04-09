@@ -1036,7 +1036,7 @@ function MentorDashboard() {
               <Text style={[styles.mentorSectionTitle, { color: themeColors.textSecondary, marginBottom: 10 }]}>
                 {t("gamification.achievementsTitle")}
               </Text>
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "space-between" }}>
                 {ACHIEVEMENTS.map((ach) => {
                   const isUnlocked = userAchievements.some((a) => a.achievement_key === ach.key);
                   return (
@@ -1045,7 +1045,7 @@ function MentorDashboard() {
                       style={[
                         styles.achievementChip,
                         {
-                          width: "22%",
+                          width: "23.5%",
                           minWidth: 60,
                           backgroundColor: isUnlocked
                             ? (sem(SEMANTIC.goldBg, isDark))
