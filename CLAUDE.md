@@ -159,3 +159,84 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
 - session-types.tsx: #fef2f2 → COLORS.errorBg
 - pending-approvals.tsx: #fde68a → COLORS.warningBorder
 - Confetti.tsx: #3B82F6 → COLORS.blue, #F59E0B → COLORS.warning
+
+### 2026-04-09 — Hardcoded Shadows → SHADOWS Tokens
+**Neue SHADOWS-Tokens (constants/Colors.ts):**
+- `goldSubtle` — Dezenter Gold-Schimmer (opacity 0.05, radius 12, offset 2) für Level-/Hadith-Cards
+- `goldMedium` — Kräftiger Gold-Schatten (opacity 0.18, radius 12, offset 4) für Award-/Zertifikats-Cards
+- `glowSoft(color)` — Weicher Farb-Glow (opacity 0.12, radius 6) für Focus-/Error-States
+
+**Ersetzungen (5 Dateien, 6 Stellen):**
+- index.tsx: 2x hardcoded Gold-Shadow → SHADOWS.goldSubtle
+- mentor-award.tsx: hardcoded Gold-Shadow → SHADOWS.goldMedium + SHADOWS Import ergänzt
+- certificate-generator.tsx: hardcoded Gold-Shadow → SHADOWS.goldMedium + SHADOWS Import ergänzt
+- BNMInput.tsx: focusGlow + errorGlow → SHADOWS.glowSoft(color) + SHADOWS Import ergänzt
+
+**Nicht ersetzt (bewusst):**
+- login.tsx: Hero-Button-Shadow (nur 1x, kein Token nötig)
+- index.tsx: Dynamische Shadows mit lvl.color/barColor (nicht tokenisierbar)
+
+### 2026-04-09 — isDark-Ternaries → SEMANTIC Paare (Runde 2)
+**Neue SEMANTIC-Paare (constants/Colors.ts):**
+- `darkBorder` — { light: "#E2E8F0", dark: "#2A2A35" } (Dark-Mode Border)
+- `selectedBg` — { light: "#F0F4FF", dark: "#1E1E2C" } (Selected/Hover Hintergrund)
+
+**Ersetzungen (2 Dateien, 16 Stellen):**
+- chats.tsx: 11x `isDark ? "#2A2A35" : themeColors.border` → sem(SEMANTIC.darkBorder, isDark)
+- chats.tsx: 4x `isDark ? "#1E1E2C" : "#F0F4FF"` → sem(SEMANTIC.selectedBg, isDark)
+- index.tsx: 1x `isDark ? "#2A2A35" : themeColors.border` → sem(SEMANTIC.darkBorder, isDark)
+
+**Nicht konsolidiert (< 3 Vorkommen oder unterschiedliche Light-Werte):**
+- `isDark ? "#1A1A2C" : "#f0f4ff"` — nur 1x (faq.tsx)
+- `isDark ? "#FFCA28" : "#f59e0b"` — nur 2x (index.tsx)
+- `isDark ? "#42A5F5" : COLORS.gradientStart` — nur 1x (index.tsx)
+- `isDark ? "#1C1C28" : "#FFFFFF"` — nur 1x (index.tsx)
+- `isDark ? "#1A1A24" : ...` — 3x aber mit 3 verschiedenen Light-Werten
+- FAB.tsx: Override auf SHADOWS.lg mit dynamischer Farbe (teilweise Token, teilweise dynamisch)
+- onboarding.tsx: Override auf SHADOWS.glow (nur shadowOpacity-Anpassung)
+
+### 2026-04-09 — Android-Bugfixes (Runde 1+2)
+**Dashboard Stat-Cards (Android Farben):**
+- `hexToRgba()`-Helper statt 8-stelliger Hex-Codes (Android rendert `#RRGGBBAA` anders als iOS)
+- Icon-Circle Hintergründe, Card-Borders, Highlight-States alle auf `rgba()` umgestellt
+- `statAccentBar` hat jetzt eigene `borderTopLeftRadius`/`borderBottomLeftRadius` (für Android Clipping)
+- Android nutzt `elevation: 2` direkt statt SHADOWS.sm (vermeidet overflow:hidden Clipping)
+
+**Ranking-Seite:**
+- `overflow: "hidden"` für Android aktiviert auf podiumHero
+
+**Chat Tastatur (Android):**
+- `KeyboardAvoidingView` behavior: `"height"` statt `"padding"` auf Android
+- `keyboardVerticalOffset: 80` auf Android (war 0)
+- Fix in 3 Stellen: chats.tsx (2x ChatPanel/AdminDMPanel) + chat/[mentorshipId].tsx
+
+**Vorlagen (Templates) — komplett neuer Ansatz:**
+- Hardcoded FALLBACK_TEMPLATES in `constants/fallbackTemplates.ts` (4 Standard-Vorlagen)
+- **Template-Bar**: Prominente goldene Leiste über dem Input statt kleinem Icon-Button
+- Leiste zeigt "Vorlagen" Text + Icon, nicht zu übersehen
+- Fix in beiden Chat-Screens: chats.tsx + chat/[mentorshipId].tsx
+
+**Send-Button Opacity:**
+- Disabled-State: `#B0BEC5` (sichtbares Grau) statt `themeColors.border` (fast unsichtbar)
+- Active-State: `COLORS.gradientStart` direkt statt `themeColors.primary` (konsistenter auf Android)
+- Fix in 3 Stellen: chats.tsx (ChatPanel + AdminDMPanel) + chat/[mentorshipId].tsx
+
+### 2026-04-09 — Gamification-Extraktion aus DataContext
+**Refactoring:**
+- Neuer `contexts/GamificationContext.tsx` mit eigenem Provider + `useGamification()` Hook
+- 4 State-Variablen extrahiert: xpLog, userAchievements, thanks, streak
+- 4 Funktionen extrahiert: awardXP, sendThanks, checkAndUnlockAchievements, updateStreak
+- Gamification-Daten werden in eigenem useEffect geladen (nicht mehr in loadAllData)
+- DataContext kommuniziert via `gamificationRef` (Ref-Pattern) mit GamificationContext
+- DataContext bietet `_updateUserXP` Callback für XP-Updates am users-Array
+- `app/_layout.tsx`: GamificationProvider innerhalb DataProvider eingefügt
+- `app/(tabs)/index.tsx`: MentorDashboard + MenteeDashboard nutzen useGamification()
+- Keine anderen Dateien betroffen (Gamification nur in index.tsx konsumiert)
+
+### 2026-04-09 — Android StatCard Shadow-Fix
+**Problem:** StatCards auf Android sahen anders aus als auf iOS (matter, grauer, flacher)
+**Ursache:** Android bekam nur `elevation: 2`, iOS bekam `SHADOWS.sm` (farbige Schatten). Zusätzlich clippte `overflow: "hidden"` auf demselben View die Android-Elevation.
+**Fix:** Wrapper-View Pattern in StatCard:
+- Äußere View: `statCard` mit `SHADOWS.sm` (beide Plattformen identisch, kein Platform-Check mehr)
+- Innere View: `statCardClip` mit `overflow: "hidden"`, `borderWidth`, `flexDirection: "row"`
+- Platform.OS === "android" Check komplett entfernt

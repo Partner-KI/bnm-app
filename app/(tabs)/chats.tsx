@@ -53,11 +53,9 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
     sendMessage,
     deleteMessage,
     markChatAsRead,
-    messageTemplates,
   } = useData();
 
   const [inputText, setInputText] = useState("");
-  const [showTemplates, setShowTemplates] = useState(false);
   const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
@@ -130,8 +128,8 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
   return (
     <KeyboardAvoidingView
       style={panelStyles.container}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
     >
       {/* Chat-Header */}
       {mentorship && (
@@ -226,7 +224,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
                     style={[
                       panelStyles.bubbleWrapper,
                       isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
-                      isContinuation && { marginTop: -6 },
+                      isContinuation && { marginTop: -4 },
                     ]}
                   >
                     {/* Sender-Name nur beim ersten in der Gruppe */}
@@ -285,16 +283,6 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       {/* Input-Bereich */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
-          {/* Vorlagen-Button */}
-          {messageTemplates.length > 0 && (user?.role === "mentor" || user?.role === "admin" || user?.role === "office") && (
-            <BNMPressable
-              style={panelStyles.templateButton}
-              onPress={() => setShowTemplates(true)}
-              accessibilityLabel={t("chat.templates")}
-            >
-              <Ionicons name="document-text-outline" size={22} color={themeColors.textSecondary} />
-            </BNMPressable>
-          )}
           <TextInput
             style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
             value={inputText}
@@ -307,7 +295,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
           <BNMPressable
             style={[
               panelStyles.sendButton,
-              { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
+              { backgroundColor: COLORS.primary, opacity: inputText.trim() ? 1 : 0.35 },
             ]}
             onPress={handleSend}
             disabled={!inputText.trim()}
@@ -323,46 +311,6 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
             {t("chat.notActiveHint")}
           </Text>
         </View>
-      )}
-      {/* Vorlagen-Modal */}
-      {showTemplates && (
-        <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-          <BNMPressable style={panelStyles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)} accessibilityRole="button" accessibilityLabel="Vorlagen schliessen">
-            <View style={[panelStyles.modalSheet, { backgroundColor: themeColors.card }]} onStartShouldSetResponder={() => true}>
-              <View style={[panelStyles.modalHandle, { backgroundColor: themeColors.border }]} />
-              <Text style={[panelStyles.modalTitle, { color: themeColors.text }]}>{t("chat.templates")}</Text>
-              <ScrollView style={panelStyles.modalScroll} showsVerticalScrollIndicator={false}>
-                {messageTemplates.map((tmpl) => {
-                  const menteeName = mentorship?.mentee?.name?.split(" ")[0] ?? "";
-                  const menteeGender = mentorship?.mentee?.gender;
-                  const anrede = menteeGender === "male" ? t("chat.templateBrother") : t("chat.templateSister");
-                  const mentorName = user?.name ?? "";
-                  return (
-                    <BNMPressable
-                      key={tmpl.id}
-                      style={[panelStyles.templateCard, { borderColor: themeColors.border }]}
-                      onPress={() => {
-                        const text = tmpl.body
-                          .replace(/\{\{NAME\}\}/g, menteeName)
-                          .replace(/\{\{ANREDE\}\}/g, anrede)
-                          .replace(/\{\{MENTOR_NAME\}\}/g, mentorName);
-                        setInputText(text);
-                        setShowTemplates(false);
-                      }}
-                      accessibilityRole="button"
-                      accessibilityLabel={`Vorlage: ${tmpl.title}`}
-                    >
-                      <Text style={[panelStyles.templateCardTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
-                      <Text style={[panelStyles.templateCardPreview, { color: themeColors.textSecondary }]} numberOfLines={3}>
-                        {tmpl.body.replace(/\{\{NAME\}\}/g, menteeName).replace(/\{\{ANREDE\}\}/g, anrede).replace(/\{\{MENTOR_NAME\}\}/g, mentorName)}
-                      </Text>
-                    </BNMPressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          </BNMPressable>
-        </Modal>
       )}
     </KeyboardAvoidingView>
   );
@@ -444,42 +392,7 @@ const panelStyles = StyleSheet.create({
     justifyContent: "center",
   },
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
-  templateButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-    justifyContent: "flex-end",
-  },
-  modalSheet: {
-    borderTopLeftRadius: RADIUS.lg,
-    borderTopRightRadius: RADIUS.lg,
-    paddingTop: 12,
-    paddingBottom: 32,
-    paddingHorizontal: 20,
-    maxHeight: "60%",
-  },
-  modalHandle: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginBottom: 16,
-  },
-  modalTitle: { fontWeight: "700", fontSize: 16, marginBottom: 16 },
-  modalScroll: { flex: 1 },
-  templateCard: {
-    borderWidth: 1,
-    borderRadius: RADIUS.md,
-    padding: 14,
-    marginBottom: 10,
-  },
-  templateCardTitle: { fontWeight: "600", fontSize: 14, marginBottom: 4 },
-  templateCardPreview: { fontSize: 13, lineHeight: 18 },
+  timeText: { fontSize: 10, marginTop: 2 },
 });
 
 // ─── Admin-DM Chat Panel ──────────────────────────────────────────────────────
@@ -537,8 +450,8 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
   return (
     <KeyboardAvoidingView
       style={panelStyles.container}
-      behavior="padding"
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
     >
       {/* Header */}
       <View style={[panelStyles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
@@ -634,7 +547,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
         <BNMPressable
           style={[
             panelStyles.sendButton,
-            { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
+            { backgroundColor: COLORS.primary, opacity: inputText.trim() ? 1 : 0.35 },
           ]}
           onPress={handleSend}
           disabled={!inputText.trim()}
@@ -877,7 +790,7 @@ export default function ChatsScreen() {
               />
             }
             removeClippedSubviews={true}
-            ListHeaderComponent={() => (
+            ListHeaderComponent={
               <View style={styles.leftContent}>
                 <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("chats.title")}</Text>
                 {renderTabs()}
@@ -1042,7 +955,7 @@ export default function ChatsScreen() {
                   </>
                 )}
               </View>
-            )}
+            }
             ListEmptyComponent={() => {
               if (isAdmin && chatTab === "admin") {
                 return (
@@ -1460,7 +1373,7 @@ export default function ChatsScreen() {
             tintColor={COLORS.gold}
           />
         }
-        ListHeaderComponent={renderMobileListHeader}
+        ListHeaderComponent={<>{renderMobileListHeader()}</>}
         ListEmptyComponent={renderMobileListEmpty}
         removeClippedSubviews={true}
         contentContainerStyle={activeChatData.length > 0 ? {} : { flexGrow: 1 }}

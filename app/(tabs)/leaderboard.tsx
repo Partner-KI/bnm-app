@@ -528,7 +528,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     marginTop: 12,
     marginBottom: 16,
-    ...(Platform.OS !== "android" ? { overflow: "hidden" as const } : {}),
+    overflow: "hidden" as const,
   },
   podiumRow: {
     flexDirection: "row",
@@ -628,6 +628,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 16,
     ...SHADOWS.md,
+    ...(Platform.OS === "android" ? { elevation: 0 } : {}),
   },
   momHeader: { flexDirection: "row", alignItems: "center", marginBottom: 8 },
   momStar: { color: COLORS.gold, fontSize: 22, marginRight: 8 },

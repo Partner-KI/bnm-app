@@ -1483,6 +1483,14 @@ function KpiGrid({ children, style }: { children: React.ReactNode; style?: objec
   );
 }
 
+// Hex-Farbe + Opacity → rgba() (konsistent auf iOS + Android)
+function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function StatCard({
   label,
   value,
@@ -1503,37 +1511,43 @@ function StatCard({
   const valueColor = highlight
     ? (isDark ? themeColors.accent : COLORS.gradientStart)
     : (isDark ? themeColors.text : themeColors.text);
+
+  const cardStyle = {
+    backgroundColor: highlight
+      ? hexToRgba(color, isDark ? 0.07 : 0.03)
+      : (isDark ? themeColors.card : "#FFFFFF"),
+    borderColor: highlight
+      ? hexToRgba(color, isDark ? 0.25 : 0.18)
+      : (isDark ? hexToRgba(color, 0.15) : themeColors.border),
+  };
+
   return (
-    <View style={[styles.statCard, {
-      backgroundColor: highlight
-        ? (isDark ? color + "12" : color + "08")
-        : (isDark ? themeColors.card : "#FFFFFF"),
-      borderColor: highlight
-        ? (isDark ? color + "40" : color + "30")
-        : (isDark ? color + "25" : themeColors.border),
-    }, highlight && {
+    <View style={[styles.statCard, highlight && {
       ...SHADOWS.md,
       shadowColor: color,
       shadowOpacity: 0.15,
+      ...(Platform.OS === "android" ? { elevation: 0 } : {}),
     }]}>
-      {/* Linker Akzent-Balken */}
-      <View style={[styles.statAccentBar, { backgroundColor: color }]} />
-      <View style={styles.statCardInner}>
-        <View style={{ flex: 1 }}>
-          <Text style={[styles.statValue, highlight && styles.statValueHighlight, { color: valueColor }]}>{value}</Text>
-          <Text style={[styles.statLabel, { color: highlight ? color : themeColors.textSecondary }]}>{label}</Text>
-          {sublabel && (
-            <Text style={[styles.statSublabel, { color: themeColors.textTertiary }]}>{sublabel}</Text>
+      <View style={[styles.statCardClip, cardStyle]}>
+        {/* Linker Akzent-Balken */}
+        <View style={[styles.statAccentBar, { backgroundColor: color }]} />
+        <View style={styles.statCardInner}>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.statValue, highlight && styles.statValueHighlight, { color: valueColor }]}>{value}</Text>
+            <Text style={[styles.statLabel, { color: highlight ? color : themeColors.textSecondary }]}>{label}</Text>
+            {sublabel && (
+              <Text style={[styles.statSublabel, { color: themeColors.textTertiary }]}>{sublabel}</Text>
+            )}
+          </View>
+          {iconName && (
+            <View style={[styles.statIconCircle, {
+              backgroundColor: hexToRgba(color, isDark ? 0.13 : 0.08),
+              ...(highlight ? { borderWidth: 1.5, borderColor: hexToRgba(color, 0.18) } : {}),
+            }]}>
+              <Ionicons name={iconName as any} size={highlight ? 22 : 20} color={color} />
+            </View>
           )}
         </View>
-        {iconName && (
-          <View style={[styles.statIconCircle, {
-            backgroundColor: color + (isDark ? "22" : "15"),
-            ...(highlight ? { borderWidth: 1.5, borderColor: color + "30" } : {}),
-          }]}>
-            <Ionicons name={iconName as any} size={highlight ? 22 : 20} color={color} />
-          </View>
-        )}
       </View>
     </View>
   );
@@ -1812,15 +1826,22 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     borderRadius: RADIUS.lg,
-    borderWidth: 1,
-    flexDirection: "row",
-    ...(Platform.OS !== "android" ? { overflow: "hidden" as const } : {}),
     ...SHADOWS.sm,
+    ...(Platform.OS === "android" ? { elevation: 0 } : {}),
     minHeight: 110,
+  },
+  statCardClip: {
+    flex: 1,
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    flexDirection: "row" as const,
+    overflow: "hidden" as const,
   },
   statAccentBar: {
     width: 4,
     alignSelf: "stretch",
+    borderTopLeftRadius: RADIUS.lg,
+    borderBottomLeftRadius: RADIUS.lg,
   },
   statCardInner: {
     flexDirection: "row",
@@ -2729,6 +2750,7 @@ const styles = StyleSheet.create({
     padding: 20,
     marginBottom: 8,
     ...SHADOWS.goldSubtle,
+    ...(Platform.OS === "android" ? { elevation: 0 } : {}),
   },
   mentorHadithArabic: {
     fontSize: 16,

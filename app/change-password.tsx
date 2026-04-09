@@ -16,8 +16,7 @@ import { COLORS, RADIUS } from "../constants/Colors";
 import { Container } from "../components/Container";
 import { useLanguage } from "../contexts/LanguageContext";
 import { useTheme, useThemeColors } from "../contexts/ThemeContext";
-import { supabase } from "../lib/supabase";
-import { supabaseAnon } from "../lib/supabaseAnon";
+import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function ChangePasswordScreen() {
@@ -63,31 +62,41 @@ export default function ChangePasswordScreen() {
       }
 
       // Bei erzwungener PW-Änderung: Altes PW nicht verifizieren (Admin hat es gerade gesetzt).
-      // Bei normaler PW-Änderung: Altes PW über separaten Client verifizieren.
+      // Bei normaler PW-Änderung: Altes PW über direkten fetch verifizieren
+      // (kein Supabase-Client nötig — vermeidet Session-/Lock-Probleme).
       if (!isForced) {
-        const verifyResult = await Promise.race([
-          supabaseAnon.auth.signInWithPassword({ email: user.email, password: oldPassword }),
-          new Promise<{ error: { message: string } }>((resolve) =>
-            setTimeout(() => resolve({ error: { message: "timeout" } }), 8000)
-          ),
-        ]);
-        if (verifyResult.error) {
+        const res = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_ANON_KEY,
+          },
+          body: JSON.stringify({ email: user.email, password: oldPassword }),
+        });
+        if (!res.ok) {
           showError(t("changePassword.errorCurrent"));
           setIsSaving(false);
           return;
         }
       }
 
+      // WICHTIG: force_password_change ZUERST zurücksetzen, BEVOR updateUser aufgerufen wird.
+      // updateUser triggert onAuthStateChange → NavigationGuard prüft force_password_change.
+      // Wenn das Flag noch true ist, wird change-password neu gemountet und der State geht verloren.
+      await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
+
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
 
       if (updateError) {
+        // Flag wieder setzen falls PW-Update fehlschlägt
+        await supabase.from("profiles").update({ force_password_change: isForced }).eq("id", user.id);
         showError(updateError.message);
       } else {
-        // force_password_change Flag zurücksetzen + AuthContext aktualisieren
-        await supabase.from("profiles").update({ force_password_change: false }).eq("id", user.id);
         await refreshUser();
+        setIsSaving(false);
         showSuccess(t("changePassword.successMsg"));
         setTimeout(() => router.replace("/(tabs)"), 1200);
+        return;
       }
     } catch (e: unknown) {
       showError(t("changePassword.errorFailed"));
