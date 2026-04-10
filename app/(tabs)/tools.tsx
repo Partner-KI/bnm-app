@@ -117,18 +117,7 @@ export default function ToolsTabScreen() {
               </BNMPressable>
             )}
 
-            <BNMPressable
-              style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
-              onPress={() => router.push("/admin/message-templates" as never)}
-              accessibilityRole="link"
-              accessibilityLabel="Nachrichtenvorlagen verwalten"
-            >
-              <View style={[styles.toolIconBg, { backgroundColor: isDark ? "#2A2518" : "#FFF8E6" }]}>
-                <Ionicons name="document-text-outline" size={24} color={COLORS.gold} />
-              </View>
-              <Text style={[styles.toolLabel, { color: themeColors.text }]}>{t("templates.manage")}</Text>
-              <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("templates.manageDesc")}</Text>
-            </BNMPressable>
+            {/* Nachrichtenvorlagen vorerst ausgeblendet */}
 
             <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}

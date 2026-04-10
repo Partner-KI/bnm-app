@@ -3,7 +3,6 @@ import {
   View,
   Text,
   FlatList,
-  ScrollView,
   TextInput,
   KeyboardAvoidingView,
   Platform,
@@ -11,14 +10,12 @@ import {
   Animated,
   NativeSyntheticEvent,
   NativeScrollEvent,
-  Modal,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
 import { useData } from "../../contexts/DataContext";
 import { showError, showConfirm } from "../../lib/errorHandler";
 import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS } from "../../constants/Colors";
@@ -39,45 +36,12 @@ export default function ChatScreen() {
     sendMessage,
     deleteMessage,
     markChatAsRead,
-    messageTemplates,
     isLoading: dataLoading,
   } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
 
   const [inputText, setInputText] = useState("");
   const [inputHeight, setInputHeight] = useState(44);
-  const [showTemplates, setShowTemplates] = useState(false);
-  const [localTemplates, setLocalTemplates] = useState<typeof messageTemplates>([]);
-
-  // Templates laden: Context zuerst, dann Fallback direkt aus DB mit Retry
-  useEffect(() => {
-    if (messageTemplates.length > 0) {
-      setLocalTemplates(messageTemplates);
-      return;
-    }
-    let cancelled = false;
-    async function loadTemplates() {
-      // Bis zu 3 Versuche mit Delay (Session ist auf Native beim Start oft noch nicht bereit)
-      for (let attempt = 0; attempt < 3; attempt++) {
-        if (cancelled) return;
-        if (attempt > 0) await new Promise((r) => setTimeout(r, 1500));
-        try {
-          const { data } = await supabase.from("message_templates").select("*").eq("is_active", true).order("sort_order", { ascending: true });
-          if (data?.length && !cancelled) {
-            setLocalTemplates(data.map((r: any) => ({
-              id: r.id, title: r.title, category: r.category,
-              body: r.body, sort_order: r.sort_order, is_active: r.is_active,
-            })));
-            return;
-          }
-        } catch {}
-      }
-    }
-    loadTemplates();
-    return () => { cancelled = true; };
-  }, [messageTemplates.length]);
-
-  const templates = localTemplates.length > 0 ? localTemplates : messageTemplates;
   const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
@@ -209,7 +173,7 @@ export default function ChatScreen() {
           style={[
             styles.messageBubbleWrapper,
             isOwn ? { alignSelf: "flex-end" } : { alignSelf: "flex-start" },
-            isContinuation && { marginTop: -6 },
+            isContinuation && { marginTop: -4 },
           ]}
         >
           {/* Sender-Name nur bei erstem in der Gruppe */}
@@ -275,7 +239,7 @@ export default function ChatScreen() {
     <KeyboardAvoidingView
       style={[styles.flex1, { backgroundColor: themeColors.background }]}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 80}
     >
       {/* Chat-Header-Info */}
       {mentorship && (
@@ -334,16 +298,6 @@ export default function ChatScreen() {
       {/* Input-Bereich — Admin/Office dürfen schreiben (als Beobachter/Moderator) */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
-          {/* Vorlagen-Button */}
-          {templates.length > 0 && (user?.role === "mentor" || user?.role === "admin" || user?.role === "office") && (
-            <BNMPressable
-              style={styles.templateButton}
-              onPress={() => setShowTemplates(true)}
-              accessibilityLabel={t("chat.templates")}
-            >
-              <Ionicons name="document-text-outline" size={22} color={themeColors.textSecondary} />
-            </BNMPressable>
-          )}
           <TextInput
             style={[
               styles.textInput,
@@ -362,7 +316,7 @@ export default function ChatScreen() {
           <BNMPressable
             style={[
               styles.sendButton,
-              { backgroundColor: inputText.trim() ? themeColors.primary : themeColors.border },
+              { backgroundColor: inputText.trim() ? COLORS.primary : COLORS.primary, opacity: inputText.trim() ? 1 : 0.35 },
             ]}
             onPress={handleSend}
             disabled={!inputText.trim()}
@@ -379,48 +333,6 @@ export default function ChatScreen() {
           </Text>
         </View>
       )}
-      {/* Vorlagen-Modal */}
-      <Modal visible={showTemplates} transparent animationType="slide" onRequestClose={() => setShowTemplates(false)}>
-        <BNMPressable style={styles.modalOverlay} activeOpacity={1} onPress={() => setShowTemplates(false)} accessibilityRole="button" accessibilityLabel="Vorlagen schliessen">
-          <View style={[styles.modalSheet, { backgroundColor: themeColors.card }]} onStartShouldSetResponder={() => true}>
-            <View style={[styles.modalHandle, { backgroundColor: themeColors.border }]} />
-            <Text style={[styles.modalTitle, { color: themeColors.text }]}>{t("chat.templates")}</Text>
-            <ScrollView style={styles.modalScroll} showsVerticalScrollIndicator={false}>
-              {templates.map((tmpl) => {
-                const menteeName = mentorship?.mentee?.name?.split(" ")[0] ?? "";
-                const menteeGender = mentorship?.mentee?.gender;
-                const anrede = menteeGender === "male" ? t("chat.templateBrother") : t("chat.templateSister");
-                const mentorName = user?.name ?? "";
-
-                return (
-                  <BNMPressable
-                    key={tmpl.id}
-                    style={[styles.templateCard, { borderColor: themeColors.border }]}
-                    onPress={() => {
-                      const text = tmpl.body
-                        .replace(/\{\{NAME\}\}/g, menteeName)
-                        .replace(/\{\{ANREDE\}\}/g, anrede)
-                        .replace(/\{\{MENTOR_NAME\}\}/g, mentorName);
-                      setInputText(text);
-                      setShowTemplates(false);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Vorlage: ${tmpl.title}`}
-                  >
-                    <View style={styles.templateCardHeader}>
-                      <Text style={[styles.templateCardTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
-                      <Text style={[styles.templateCardCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
-                    </View>
-                    <Text style={[styles.templateCardPreview, { color: themeColors.textSecondary }]} numberOfLines={3}>
-                      {tmpl.body.replace(/\{\{NAME\}\}/g, menteeName).replace(/\{\{ANREDE\}\}/g, anrede).replace(/\{\{MENTOR_NAME\}\}/g, mentorName)}
-                    </Text>
-                  </BNMPressable>
-                );
-              })}
-            </ScrollView>
-          </View>
-        </BNMPressable>
-      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -502,65 +414,7 @@ const styles = StyleSheet.create({
   },
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
 
-  // Template Button
-  templateButton: {
-    width: 44,
-    height: 44,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   textInputWithTemplate: {},
-
-  // Template Modal
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
-  },
-  modalSheet: {
-    borderTopLeftRadius: RADIUS.xl,
-    borderTopRightRadius: RADIUS.xl,
-    paddingHorizontal: 20,
-    paddingBottom: 32,
-    maxHeight: "70%",
-  },
-  modalHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    alignSelf: "center",
-    marginTop: 12,
-    marginBottom: 16,
-  },
-  modalTitle: {
-    fontWeight: "800",
-    fontSize: 18,
-    marginBottom: 16,
-  },
-  modalScroll: {
-    flex: 1,
-  },
-  templateCard: {
-    borderWidth: 1,
-    borderRadius: RADIUS.md,
-    padding: 14,
-    marginBottom: 10,
-  },
-  templateCardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 6,
-  },
-  templateCardTitle: {
-    fontWeight: "700",
-    fontSize: 14,
-  },
-  templateCardCategory: {
-    fontSize: 11,
-    fontWeight: "500",
-    textTransform: "capitalize",
-  },
   templateCardPreview: {
     fontSize: 12,
     lineHeight: 18,
