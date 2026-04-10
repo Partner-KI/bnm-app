@@ -462,20 +462,31 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
     drawSectionHeader(p1, rgb, bold, font, "Betreuungs-Status", 40, secY, "B", C.green);
 
     const totalB = data.kpis.activeBetreuungen + data.kpis.abgeschlossen + data.kpis.neueBetreuungen;
-    // Donut: compact — radius 30, center at secY-55
-    // Donut bottom = secY-55-30 = secY-85
-    // Legend bottom = secY-55+30-5 - 2*15 - 10 = secY-55+25-40 = secY-70 (ok)
+
+    // --- LAYOUT MATH (pdf-lib: y=0 is BOTTOM, y grows UP) ---
+    // secY = section header Y position
+    // Donut: center at (105, secY-50), radius 28
+    //   -> top = secY-50+28 = secY-22, bottom = secY-50-28 = secY-78
+    // Legend: starts at cy+outerR-5 = secY-50+28-5 = secY-27
+    //   -> 3 items * 14px = 42px -> legend bottom = secY-27-42 = secY-69
+    // Donut visual bottom = secY-78
+    // Session bars: first at secY-24, gap=16, 4 items
+    //   -> bottom = secY-24 - 3*16 - 10 = secY-82
+    // Lowest element = secY-82
+    // MdM box: height=52, needs top edge < secY-82-8 = secY-90
+    //   -> momY + 52 < secY-90 -> momY < secY-142
+    //   -> momY = secY-150 (safe margin)
+
     drawDonutChart(p1, rgb, bold, font, [
       { label: "Aktiv", value: data.kpis.activeBetreuungen, color: C.green },
       { label: "Abgeschl.", value: data.kpis.abgeschlossen, color: C.gold },
       { label: "Neu", value: data.kpis.neueBetreuungen, color: C.blue },
-    ], 105, secY - 55, 30, 16);
+    ], 105, secY - 50, 28, 14);
 
-    // SESSION-VERTEILUNG (rechte Haelfte: x=310..555)
+    // SESSION-VERTEILUNG (rechte Haelfte)
     const sessX = 310;
     drawSectionHeader(p1, rgb, bold, font, "Session-Verteilung", sessX, secY, "S", C.gold);
 
-    // gap=16 compact, all 4 bars fit. Bottom = secY-24-3*16 = secY-72
     drawHorizontalBars(p1, rgb, bold, font, [
       { label: "Wudu", value: data.kpis.wuduSessions, color: C.blue },
       { label: "Salah", value: data.kpis.salahSessions, color: C.green },
@@ -483,8 +494,8 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
       { label: "Nachbetr.", value: data.kpis.nachbetreuung, color: C.purple },
     ], sessX, secY - 24, W - 40 - sessX, 10, 16);
 
-    // MENTOR DES MONATS — starts at secY-100 (donut bottom=secY-85, 15px gap)
-    const momY = secY - 100;
+    // MENTOR DES MONATS — well below everything
+    const momY = secY - 150;
     if (data.mentorOfMonth) {
       p1.drawRectangle({ x: 40, y: momY, width: W - 80, height: 52, color: rgb(...C.card), borderColor: rgb(...C.gold), borderWidth: 2 });
       p1.drawRectangle({ x: 42, y: momY + 4, width: 4, height: 44, color: rgb(...C.gold) });
@@ -823,7 +834,7 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
       { label: "Aktiv", value: data.kpis.activeMentorships, color: C.green },
       { label: "Abgeschl.", value: data.kpis.completedInPeriod, color: C.gold },
       { label: "BNM-Boxen", value: data.kpis.bnmBoxes, color: C.blue },
-    ], 120, doY - 60, 40, 22);
+    ], 105, doY - 50, 28, 14);
 
     drawFooter(p1, rgb, font, W, 1, TP);
 
