@@ -291,10 +291,10 @@ function drawDonutChart(
   const gw = font.widthOfTextAtSize(gs, 6);
   page.drawText(gs, { x: cx - gw / 2, y: cy - 13, size: 6, font, color: rgb(...C.textMuted) });
 
-  // Legend to the right
+  // Legend to the right — compact spacing to avoid overflow
   segments.forEach((seg, i) => {
-    const ly = cy + outerR - 5 - i * 18;
-    const lx = cx + outerR + 16;
+    const ly = cy + outerR - 5 - i * 15;
+    const lx = cx + outerR + 14;
     page.drawCircle({ x: lx, y: ly + 3, size: 4, color: rgb(...seg.color) });
     page.drawText(`${seg.label}: ${seg.value}`, { x: lx + 8, y: ly, size: 7.5, font, color: rgb(...C.textDark) });
     const pct = Math.round((seg.value / total) * 100);
@@ -383,10 +383,12 @@ function drawImpactCard(
 ) {
   page.drawRectangle({ x, y, width: w, height: h, color: rgb(...C.card), borderColor: rgb(...accentColor), borderWidth: 1 });
   page.drawRectangle({ x, y, width: 4, height: h, color: rgb(...accentColor) });
-  page.drawCircle({ x: x + 22, y: y + h / 2, size: 12, color: rgb(...accentColor) });
-  page.drawText(icon, { x: x + 18, y: y + h / 2 - 4, size: 8, font: bold, color: rgb(...C.white) });
-  page.drawText(value, { x: x + 42, y: y + h - 18, size: 18, font: bold, color: rgb(...C.navy) });
-  page.drawText(label, { x: x + 42, y: y + 6, size: 7.5, font, color: rgb(...C.textMuted) });
+  // Value large — centered in card, right of accent stripe
+  const vw2 = bold.widthOfTextAtSize(value, 22);
+  page.drawText(value, { x: x + w / 2 - vw2 / 2 + 10, y: y + h - 22, size: 22, font: bold, color: rgb(...C.navy) });
+  // Label below value — centered
+  const lw2 = font.widthOfTextAtSize(label, 8);
+  page.drawText(label, { x: x + w / 2 - lw2 / 2 + 10, y: y + 8, size: 8, font, color: rgb(...C.textMuted) });
 }
 
 
@@ -439,25 +441,27 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
     drawSectionHeader(p1, rgb, bold, font, "Betreuungs-Status", 40, secY, "B", C.green);
 
     const totalB = data.kpis.activeBetreuungen + data.kpis.abgeschlossen + data.kpis.neueBetreuungen;
+    // Donut: smaller radius, more below section header
     drawDonutChart(p1, rgb, bold, font, [
       { label: "Aktiv", value: data.kpis.activeBetreuungen, color: C.green },
       { label: "Abgeschl.", value: data.kpis.abgeschlossen, color: C.gold },
       { label: "Neu", value: data.kpis.neueBetreuungen, color: C.blue },
-    ], 120, secY - 70, 42, 22);
+    ], 110, secY - 62, 35, 18);
 
-    // SESSION-VERTEILUNG (rechte Haelfte: x=300..555)
+    // SESSION-VERTEILUNG (rechte Haelfte: x=310..555)
     const sessX = 310;
     drawSectionHeader(p1, rgb, bold, font, "Session-Verteilung", sessX, secY, "S", C.gold);
 
+    // gap=18 so all 4 bars fit without clipping
     drawHorizontalBars(p1, rgb, bold, font, [
       { label: "Wudu", value: data.kpis.wuduSessions, color: C.blue },
       { label: "Salah", value: data.kpis.salahSessions, color: C.green },
       { label: "Koran", value: data.kpis.koranSessions, color: C.gold },
       { label: "Nachbetr.", value: data.kpis.nachbetreuung, color: C.purple },
-    ], sessX, secY - 24, W - 40 - sessX, 10, 22);
+    ], sessX, secY - 24, W - 40 - sessX, 10, 18);
 
-    // MENTOR DES MONATS — ganz unten mit Abstand
-    const momY = secY - 135;
+    // MENTOR DES MONATS — well below donut/bars (donut bottom ~ secY-97, bars bottom ~ secY-24-3*18=secY-78)
+    const momY = secY - 115;
     if (data.mentorOfMonth) {
       p1.drawRectangle({ x: 40, y: momY, width: W - 80, height: 52, color: rgb(...C.card), borderColor: rgb(...C.gold), borderWidth: 2 });
       p1.drawRectangle({ x: 42, y: momY + 4, width: 4, height: 44, color: rgb(...C.gold) });
@@ -552,12 +556,15 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
       const fn = isTop ? bold : font;
       const tc = m.rank === 1 ? rgb(...C.gold) : isTop ? rgb(...C.navy) : rgb(...C.textDark);
 
-      // Medal circle for top 3 — positioned to NOT overlap text
+      // Medal for top 3: show rank inside colored circle; others just number
       if (isTop) {
         const mc = m.rank === 1 ? C.gold : m.rank === 2 ? C.silver : C.bronze;
-        p3.drawCircle({ x: 54, y: ty + 5, size: 5, color: rgb(...mc) });
+        p3.drawCircle({ x: 55, y: ty + 5, size: 6, color: rgb(...mc) });
+        const rs = String(m.rank); const rw = bold.widthOfTextAtSize(rs, 7);
+        p3.drawText(rs, { x: 55 - rw / 2, y: ty + 2, size: 7, font: bold, color: rgb(...C.white) });
+      } else {
+        p3.drawText(String(m.rank), { x: 52, y: ty + 2, size: 7, font: fn, color: tc });
       }
-      p3.drawText(String(m.rank), { x: 48, y: ty + 2, size: 7, font: fn, color: tc });
       p3.drawText(m.name, { x: cols[1], y: ty + 2, size: 7, font: fn, color: tc });
       // Numbers
       [String(m.score), String(m.sessions), String(m.completed)].forEach((v, vi) => {
