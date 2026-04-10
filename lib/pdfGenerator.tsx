@@ -453,49 +453,14 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
       drawKpiCard(p1, rgb, bold, font, v, l, 40 + c2 * (KW + KG), y - 14 - r * (KH + KG), KW, KH, col);
     });
 
-    // Gold divider
+    // Gold divider after KPIs
     const dv1 = y - 14 - 2 * (KH + KG) - 8;
     p1.drawRectangle({ x: 40, y: dv1, width: W - 80, height: 1.5, color: rgb(...C.gold) });
 
-    // BETREUUNGS-STATUS Donut (linke Haelfte: x=40..290)
-    const secY = dv1 - 18;
-    drawSectionHeader(p1, rgb, bold, font, "Betreuungs-Status", 40, secY, "B", C.green);
-
     const totalB = data.kpis.activeBetreuungen + data.kpis.abgeschlossen + data.kpis.neueBetreuungen;
 
-    // --- LAYOUT MATH (pdf-lib: y=0 is BOTTOM, y grows UP) ---
-    // secY = section header Y position
-    // Donut: center at (105, secY-50), radius 28
-    //   -> top = secY-50+28 = secY-22, bottom = secY-50-28 = secY-78
-    // Legend: starts at cy+outerR-5 = secY-50+28-5 = secY-27
-    //   -> 3 items * 14px = 42px -> legend bottom = secY-27-42 = secY-69
-    // Donut visual bottom = secY-78
-    // Session bars: first at secY-24, gap=16, 4 items
-    //   -> bottom = secY-24 - 3*16 - 10 = secY-82
-    // Lowest element = secY-82
-    // MdM box: height=52, needs top edge < secY-82-8 = secY-90
-    //   -> momY + 52 < secY-90 -> momY < secY-142
-    //   -> momY = secY-150 (safe margin)
-
-    drawDonutChart(p1, rgb, bold, font, [
-      { label: "Aktiv", value: data.kpis.activeBetreuungen, color: C.green },
-      { label: "Abgeschl.", value: data.kpis.abgeschlossen, color: C.gold },
-      { label: "Neu", value: data.kpis.neueBetreuungen, color: C.blue },
-    ], 105, secY - 50, 28, 14);
-
-    // SESSION-VERTEILUNG (rechte Haelfte)
-    const sessX = 310;
-    drawSectionHeader(p1, rgb, bold, font, "Session-Verteilung", sessX, secY, "S", C.gold);
-
-    drawHorizontalBars(p1, rgb, bold, font, [
-      { label: "Wudu", value: data.kpis.wuduSessions, color: C.blue },
-      { label: "Salah", value: data.kpis.salahSessions, color: C.green },
-      { label: "Koran", value: data.kpis.koranSessions, color: C.gold },
-      { label: "Nachbetr.", value: data.kpis.nachbetreuung, color: C.purple },
-    ], sessX, secY - 24, W - 40 - sessX, 10, 16);
-
-    // MENTOR DES MONATS — well below everything
-    const momY = secY - 150;
+    // MENTOR DES MONATS — directly after KPIs (plenty of space)
+    const momY = dv1 - 70;
     if (data.mentorOfMonth) {
       p1.drawRectangle({ x: 40, y: momY, width: W - 80, height: 52, color: rgb(...C.card), borderColor: rgb(...C.gold), borderWidth: 2 });
       p1.drawRectangle({ x: 42, y: momY + 4, width: 4, height: 44, color: rgb(...C.gold) });
@@ -509,70 +474,91 @@ export async function downloadMonthlyReportPDF(data: ReportData): Promise<boolea
 
     drawFooter(p1, rgb, font, W, 1, TP);
 
-    // === SEITE 2: Charts + Top-Mentoren + Gauge ===
+    // === SEITE 2: Donut + Session-Bars + Vertikales Chart + Gauge ===
     const p2 = doc.addPage([W, H]);
     drawPageBg(p2, rgb, W, H);
     drawPageHeader(p2, rgb, bold, font, W, H, "Monatsbericht", data.periodLabel, today, logo);
 
     let y2 = H - 80;
-    drawSectionHeader(p2, rgb, bold, font, "Sessions nach Typ", 40, y2, "S", C.gold);
 
+    // Betreuungs-Status Donut (left half) — lots of space here
+    drawSectionHeader(p2, rgb, bold, font, "Betreuungs-Status", 40, y2, "B", C.green);
+    drawDonutChart(p2, rgb, bold, font, [
+      { label: "Aktiv", value: data.kpis.activeBetreuungen, color: C.green },
+      { label: "Abgeschl.", value: data.kpis.abgeschlossen, color: C.gold },
+      { label: "Neu", value: data.kpis.neueBetreuungen, color: C.blue },
+    ], 120, y2 - 65, 38, 20);
+
+    // Session-Verteilung (right half) — horizontal bars
+    const sessX = 310;
+    drawSectionHeader(p2, rgb, bold, font, "Session-Verteilung", sessX, y2, "S", C.gold);
+    drawHorizontalBars(p2, rgb, bold, font, [
+      { label: "Wudu", value: data.kpis.wuduSessions, color: C.blue },
+      { label: "Salah", value: data.kpis.salahSessions, color: C.green },
+      { label: "Koran", value: data.kpis.koranSessions, color: C.gold },
+      { label: "Nachbetr.", value: data.kpis.nachbetreuung, color: C.purple },
+    ], sessX, y2 - 28, W - 40 - sessX, 10, 24);
+
+    // Divider
+    const dv2 = y2 - 140;
+    p2.drawRectangle({ x: 40, y: dv2, width: W - 80, height: 1.5, color: rgb(...C.gold) });
+
+    // Sessions nach Typ — vertikale Balken (volle Breite)
+    const chY = dv2 - 18;
+    drawSectionHeader(p2, rgb, bold, font, "Sessions nach Typ", 40, chY, "S", C.gold);
     drawVerticalBarChart(p2, rgb, bold, font, [
       { label: "Wudu", value: data.kpis.wuduSessions, color: C.blue },
       { label: "Salah", value: data.kpis.salahSessions, color: C.green },
       { label: "Koran", value: data.kpis.koranSessions, color: C.gold },
       { label: "Nachbetr.", value: data.kpis.nachbetreuung, color: C.purple },
-    ], 60, y2 - 160, W - 120, 130);
+    ], 60, chY - 140, W - 120, 110);
 
     // Divider
-    const dv2 = y2 - 182;
-    p2.drawRectangle({ x: 40, y: dv2, width: W - 80, height: 1.5, color: rgb(...C.gold) });
-
-    // TOP MENTOREN
-    const tmY = dv2 - 18;
-    drawSectionHeader(p2, rgb, bold, font, "Top-Mentoren (Score)", 40, tmY, "M", C.blue);
-
-    const top5 = data.rankings.slice(0, 5);
-    const maxScore = Math.max(...top5.map(m => m.score), 1);
-    top5.forEach((m, i) => {
-      const my = tmY - 28 - i * 40;  // 40px spacing (no overlap)
-      // Rank circle
-      const rc = i === 0 ? C.gold : i === 1 ? C.silver : i === 2 ? C.bronze : C.textLight;
-      p2.drawCircle({ x: 54, y: my + 12, size: 10, color: rgb(...rc) });
-      p2.drawText(String(m.rank), { x: 51, y: my + 9, size: 8, font: bold, color: rgb(...C.white) });
-      // Name
-      p2.drawText(m.name, { x: 72, y: my + 16, size: 8.5, font: bold, color: rgb(...C.textDark) });
-      // Score bar
-      const barX = 72; const barW = W - 160;
-      p2.drawRectangle({ x: barX, y: my, width: barW, height: 9, color: rgb(...C.barBg) });
-      const fillW = maxScore > 0 ? Math.max(4, barW * (m.score / maxScore)) : 4;
-      const bColor = i === 0 ? C.gold : i < 3 ? C.blue : C.textLight;
-      p2.drawRectangle({ x: barX, y: my, width: fillW, height: 9, color: rgb(...bColor) });
-      // Score text
-      const st = `${m.score} Pkt`;
-      p2.drawText(st, { x: W - 40 - bold.widthOfTextAtSize(st, 7) - 4, y: my + 1, size: 7, font: bold, color: rgb(...C.navy) });
-    });
-
-    // Divider
-    const gDv = tmY - 28 - Math.max(top5.length, 1) * 40 - 12;
-    p2.drawRectangle({ x: 40, y: gDv, width: W - 80, height: 1.5, color: rgb(...C.gold) });
+    const dv3 = chY - 162;
+    p2.drawRectangle({ x: 40, y: dv3, width: W - 80, height: 1.5, color: rgb(...C.gold) });
 
     // Completion Gauge
-    drawSectionHeader(p2, rgb, bold, font, "Abschlussquote", 40, gDv - 14, "A", C.navy);
-    drawCompletionGauge(p2, rgb, bold, font, data.kpis.abgeschlossen, totalB, 40, gDv - 40, W - 80);
+    drawSectionHeader(p2, rgb, bold, font, "Abschlussquote", 40, dv3 - 14, "A", C.navy);
+    drawCompletionGauge(p2, rgb, bold, font, data.kpis.abgeschlossen, totalB, 40, dv3 - 40, W - 80);
 
     drawFooter(p2, rgb, font, W, 2, TP);
 
-    // === SEITE 3: Rangliste + Zusammenfassung ===
+    // === SEITE 3: Top-Mentoren + Rangliste + Zusammenfassung ===
     const p3 = doc.addPage([W, H]);
     drawPageBg(p3, rgb, W, H);
     drawPageHeader(p3, rgb, bold, font, W, H, "Monatsbericht", data.periodLabel, today, logo);
 
     let y3 = H - 80;
-    drawSectionHeader(p3, rgb, bold, font, "Rangliste", 40, y3, "R", C.gold);
+
+    // Top-Mentoren Fortschrittsbalken
+    drawSectionHeader(p3, rgb, bold, font, "Top-Mentoren (Score)", 40, y3, "M", C.blue);
+    const top5 = data.rankings.slice(0, 5);
+    const maxScore = Math.max(...top5.map(m => m.score), 1);
+    top5.forEach((m, i) => {
+      const my = y3 - 28 - i * 36;
+      const rc = i === 0 ? C.gold : i === 1 ? C.silver : i === 2 ? C.bronze : C.textLight;
+      p3.drawCircle({ x: 54, y: my + 10, size: 9, color: rgb(...rc) });
+      p3.drawText(String(m.rank), { x: 51, y: my + 7, size: 7, font: bold, color: rgb(...C.white) });
+      p3.drawText(m.name, { x: 70, y: my + 14, size: 8, font: bold, color: rgb(...C.textDark) });
+      const barX = 70; const barW = W - 150;
+      p3.drawRectangle({ x: barX, y: my - 1, width: barW, height: 8, color: rgb(...C.barBg) });
+      const fillW = maxScore > 0 ? Math.max(4, barW * (m.score / maxScore)) : 4;
+      const bColor = i === 0 ? C.gold : i < 3 ? C.blue : C.textLight;
+      p3.drawRectangle({ x: barX, y: my - 1, width: fillW, height: 8, color: rgb(...bColor) });
+      const st = `${m.score} Pkt`;
+      p3.drawText(st, { x: W - 40 - bold.widthOfTextAtSize(st, 7) - 4, y: my, size: 7, font: bold, color: rgb(...C.navy) });
+    });
+
+    // Divider after top mentors
+    const tmDv = y3 - 28 - Math.max(top5.length, 1) * 36 - 10;
+    p3.drawRectangle({ x: 40, y: tmDv, width: W - 80, height: 1.5, color: rgb(...C.gold) });
+
+    // Rangliste (table)
+    const rlY = tmDv - 18;
+    drawSectionHeader(p3, rgb, bold, font, "Rangliste", 40, rlY, "R", C.gold);
 
     // Table header
-    let ty = y3 - 20;
+    let ty = rlY - 18;
     p3.drawRectangle({ x: 40, y: ty - 2, width: W - 80, height: 16, color: rgb(...C.navy) });
     const cols = [48, 72, 250, 320, 395, 465];
     ["#", "Name", "Score", "Sessions", "Abschl.", "Bewertung"].forEach((h, i) => {
