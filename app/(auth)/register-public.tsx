@@ -465,23 +465,25 @@ export default function RegisterPublicScreen() {
             {/* PLZ + Stadt */}
             <View style={styles.rowInputs}>
               <BNMInput
-                label="PLZ"
+                label="PLZ *"
                 icon="location-outline"
+                placeholder="z.B. 10115"
                 value={plz}
                 onChangeText={setPlz}
                 keyboardType="numeric"
                 maxLength={5}
                 error={errors.plz}
-                containerStyle={{ width: 120, flex: 0 }}
+                containerStyle={{ minWidth: 130, maxWidth: 160, flex: 0 }}
                 accessibilityLabel="PLZ"
               />
               <BNMInput
-                label={t("register.cityPlaceholder")}
+                label={t("register.city")}
+                placeholder={t("register.cityPlaceholder")}
                 value={city}
                 onChangeText={setCity}
                 error={errors.city}
                 containerStyle={{ flex: 1 }}
-                accessibilityLabel={t("register.cityPlaceholder")}
+                accessibilityLabel={t("register.city")}
               />
             </View>
 
@@ -840,6 +842,7 @@ const styles = StyleSheet.create({
   rowInputs: {
     flexDirection: "row",
     gap: 8,
+    alignItems: "flex-start",
   },
 
   pillRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 4 },

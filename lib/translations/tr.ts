@@ -199,6 +199,9 @@ const tr: Record<TranslationKeys, string> = {
   "settings.deleteAccount": "Hesabı Sil",
   "settings.deleteTitle": "Hesabı Sil",
   "settings.deleteConfirm": "Emin misiniz? Bu işlem geri alınamaz. Tüm verileriniz kalıcı olarak silinecek.",
+  "settings.deactivateAccount": "Hesabı Devre Dışı Bırak",
+  "settings.deactivateTitle": "Hesabı Devre Dışı Bırak",
+  "settings.deactivateConfirm": "Hesabınızı gerçekten devre dışı bırakmak istiyor musunuz? Bundan sonra giriş yapamayacaksınız. Verileriniz korunacak ve bir yönetici gerekirse hesabınızı yeniden etkinleştirebilir.",
   "settings.rtlHint": "RTL düzeni gelecek bir sürümde desteklenecektir",
   "settings.footer": "BNM – Yeni Müslümanlar İçin Rehberlik · Sürüm 1.0.0",
 
@@ -1552,10 +1555,12 @@ const tr: Record<TranslationKeys, string> = {
   // Applications – account created
   "applications.accountCreated": "Hesap oluşturuldu. Giriş bilgileri e-posta ile mentee'ye gönderildi.",
 
-  // Settings – account deleted
+  // Settings – account deleted/deactivated
   "settings.accountDeleted": "Hesabınız başarıyla silindi.",
+  "settings.accountDeactivated": "Hesabınız devre dışı bırakıldı. Şimdi çıkış yapılacak.",
   "settings.dangerZone": "TEHLİKE BÖLGESİ",
   "settings.deleteError": "Hesap silinemedi. Lütfen daha sonra tekrar deneyin.",
+  "settings.deactivateError": "Hesap devre dışı bırakılamadı. Lütfen daha sonra tekrar deneyin.",
 
   // Chat – send error
   "chat.sendError": "Mesaj gönderilemedi.",

@@ -50,6 +50,7 @@ export function BNMInput({
   onFocus,
   onBlur,
   multiline = false,
+  placeholder,
   ...rest
 }: BNMInputProps) {
   const themeColors = useThemeColors();
@@ -153,7 +154,8 @@ export function BNMInput({
               multiline && styles.inputMultiline,
             ]}
             value={value}
-            placeholderTextColor="transparent"
+            placeholder={(isFocused || hasValue) && placeholder ? placeholder : undefined}
+            placeholderTextColor={themeColors.textTertiary}
             onFocus={(e) => {
               setIsFocused(true);
               onFocus?.(e);
