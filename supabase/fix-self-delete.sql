@@ -42,7 +42,7 @@ BEGIN
   UPDATE mentorships SET
     status = 'cancelled'
   WHERE (mentor_id = my_id OR mentee_id = my_id)
-    AND status IN ('active', 'pending');
+    AND status IN ('active', 'pending_approval');
 
   -- 3. Auth-User sperren → Login nicht mehr möglich
   UPDATE auth.users
