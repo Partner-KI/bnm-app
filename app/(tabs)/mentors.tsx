@@ -37,6 +37,7 @@ export default function MentorsTabScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [genderFilter, setGenderFilter] = useState<"all" | "male" | "female">("all");
 
   // Multi-Select State
   const [selectMode, setSelectMode] = useState(false);
@@ -111,6 +112,10 @@ export default function MentorsTabScreen() {
     } else {
       list = list.filter((m) => m.is_active !== false);
     }
+    // Gender-Filter
+    if (genderFilter !== "all") {
+      list = list.filter((m) => m.gender === genderFilter);
+    }
     if (!q) return list;
     return list.filter(
       (m) =>
@@ -118,7 +123,7 @@ export default function MentorsTabScreen() {
         m.city.toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q)
     );
-  }, [allMentors, search, showArchived]);
+  }, [allMentors, search, showArchived, genderFilter]);
 
   // Vorberechnete Mentor-Stats (vermeidet O(n*m) in der Render-Loop)
   const mentorStats = useMemo(() => {
@@ -342,6 +347,32 @@ export default function MentorsTabScreen() {
               </BNMPressable>
             </View>
           )}
+
+          {/* Gender-Filter: Alle / Brüder / Schwestern */}
+          <View style={styles.filterChipsRow}>
+            {(["all", "male", "female"] as const).map((g) => {
+              const isActive = genderFilter === g;
+              const label = g === "all" ? t("mentees.all") : g === "male" ? t("mentees.brothers") : t("mentees.sisters");
+              return (
+                <BNMPressable
+                  key={g}
+                  style={[
+                    styles.filterChip,
+                    isActive
+                      ? styles.filterChipActive
+                      : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                  ]}
+                  onPress={() => setGenderFilter(g)}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                >
+                  <Text style={isActive ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                    {label}
+                  </Text>
+                </BNMPressable>
+              );
+            })}
+          </View>
 
           {/* Multi-Select: Alle / Keine */}
           {selectMode && (

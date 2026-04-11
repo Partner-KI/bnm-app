@@ -118,7 +118,6 @@ function EditUserForm({ userId }: { userId: string }) {
         city: city.trim(),
         age: parseInt(age, 10),
         phone: phone.trim() || undefined,
-        role,
         gender,
       });
       showSuccess(t("editUser.successMsg"), () => router.back());
@@ -268,28 +267,6 @@ function EditUserForm({ userId }: { userId: string }) {
               >
                 <Text style={[styles.pillText, gender === g ? { color: COLORS.white } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
                   {g === "male" ? t("editUser.male") : t("editUser.female")}
-                </Text>
-              </BNMPressable>
-            ))}
-          </View>
-
-          {/* Rolle */}
-          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("editUser.role").toUpperCase()}</Text>
-          <View style={styles.pillRow}>
-            {ROLES.map(({ key, labelKey }) => (
-              <BNMPressable
-                key={key}
-                accessibilityRole="radio"
-                accessibilityLabel={t(labelKey)}
-                accessibilityState={{ checked: role === key }}
-                style={[
-                  styles.pill,
-                  role === key ? { backgroundColor: themeColors.primary, borderColor: themeColors.primary } : [styles.pillInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
-                ]}
-                onPress={() => setRole(key)}
-              >
-                <Text style={[styles.pillText, role === key ? { color: COLORS.white } : [styles.pillTextInactive, { color: themeColors.textSecondary }]]}>
-                  {t(labelKey)}
                 </Text>
               </BNMPressable>
             ))}

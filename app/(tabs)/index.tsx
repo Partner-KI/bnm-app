@@ -611,7 +611,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 10 }]}>{t("dashboard.recentActivitySub")}</Text>
 
               {/* Filter Chips: Typ */}
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8, flexGrow: 0 }}>
                 <View style={{ flexDirection: "row", gap: 6 }}>
                   {([
                     { key: "all" as const, label: "Alle" },
@@ -1691,7 +1691,7 @@ function DashboardRow({ children }: { children: React.ReactNode }) {
   const { width } = useWindowDimensions();
   const isDesktop = Platform.OS === "web" && width > 900;
   return (
-    <View style={{ flexDirection: isDesktop ? "row" : "column", gap: 16, marginBottom: 16, alignItems: isDesktop ? "stretch" : undefined }}>
+    <View style={{ flexDirection: isDesktop ? "row" : "column", gap: 16, marginBottom: 16, alignItems: isDesktop ? "flex-start" : undefined }}>
       {children}
     </View>
   );

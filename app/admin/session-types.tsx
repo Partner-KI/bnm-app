@@ -9,7 +9,7 @@ import {
   KeyboardAvoidingView,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
-import { showError, showConfirm } from "../../lib/errorHandler";
+import { showError, showSuccess, showConfirm } from "../../lib/errorHandler";
 import { Container } from "../../components/Container";
 import { useRouter } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
@@ -80,8 +80,9 @@ export default function SessionTypesScreen() {
     try {
       await updateSessionType(editingId, { name: editName.trim(), description: editDescription.trim() });
       setEditingId(null);
-    } catch {
-      showError("Fehler beim Speichern");
+      showSuccess("Gespeichert");
+    } catch (err) {
+      showError("Fehler beim Speichern: " + (err instanceof Error ? err.message : String(err)));
     }
   }
 
