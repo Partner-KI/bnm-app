@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   View,
   Text,
   ScrollView,
   StyleSheet,
   Platform,
-  ActivityIndicator,
-  Alert,
   useWindowDimensions,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
@@ -17,8 +15,6 @@ import { useLanguage } from "../../contexts/LanguageContext";
 import { COLORS, SHADOWS, RADIUS } from "../../constants/Colors";
 import { Container } from "../../components/Container";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
-import { geocodeAllUsers } from "../../lib/geocoding";
-
 export default function ToolsTabScreen() {
   const router = useRouter();
   const { t } = useLanguage();
@@ -26,7 +22,6 @@ export default function ToolsTabScreen() {
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
   const { width } = useWindowDimensions();
-  const [isGeocoding, setIsGeocoding] = useState(false);
   // Auf Mobile: 2-Spalten-Grid; auf Web/Desktop: flexibles Layout
   const isMobileLayout = Platform.OS !== "web" || width < 600;
   const itemWidth = isMobileLayout ? "48%" : undefined;
@@ -40,29 +35,6 @@ export default function ToolsTabScreen() {
   }
 
   const showSystemSettings = user.role === "admin";
-
-  async function handleGeocodeAllUsers() {
-    const confirmed = await new Promise<boolean>((resolve) => {
-      Alert.alert(
-        "Koordinaten nachträglich setzen",
-        "Für alle User ohne Koordinaten wird die PLZ per Nominatim API geocodiert (1 Request/Sekunde). Dies kann je nach Anzahl der User einige Minuten dauern.",
-        [
-          { text: "Abbrechen", onPress: () => resolve(false), style: "cancel" },
-          { text: "Starten", onPress: () => resolve(true) },
-        ]
-      );
-    });
-    if (!confirmed) return;
-
-    setIsGeocoding(true);
-    const result = await geocodeAllUsers();
-    setIsGeocoding(false);
-
-    Alert.alert(
-      "Geocoding abgeschlossen",
-      `Gesamt: ${result.total}\nErfolgreich: ${result.success}\nFehlgeschlagen: ${result.failed}`
-    );
-  }
 
   return (
     <Container fullWidth={Platform.OS === "web"}>
@@ -119,6 +91,21 @@ export default function ToolsTabScreen() {
 
             {/* Nachrichtenvorlagen vorerst ausgeblendet */}
 
+            {showSystemSettings && (
+              <BNMPressable
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
+                onPress={() => router.push("/admin/resources" as never)}
+                accessibilityRole="link"
+                accessibilityLabel="Ressourcen verwalten"
+              >
+                <View style={[styles.toolIconBg, { backgroundColor: "#EDE9FE" }]}>
+                  <Ionicons name="link-outline" size={24} color="#7C3AED" />
+                </View>
+                <Text style={[styles.toolLabel, { color: themeColors.text }]}>Ressourcen</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>Links fuer Mentoren verwalten</Text>
+              </BNMPressable>
+            )}
+
             <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/certificate-generator" as never)}
@@ -132,29 +119,6 @@ export default function ToolsTabScreen() {
               <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>{t("certGen.toolDesc")}</Text>
             </BNMPressable>
 
-            {showSystemSettings && (
-              <BNMPressable
-                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth, opacity: isGeocoding ? 0.6 : 1 }]}
-                onPress={handleGeocodeAllUsers}
-                disabled={isGeocoding}
-                accessibilityRole="button"
-                accessibilityLabel="PLZ zu Koordinaten konvertieren"
-              >
-                <View style={[styles.toolIconBg, { backgroundColor: "#E8F0FE" }]}>
-                  {isGeocoding ? (
-                    <ActivityIndicator size="small" color={COLORS.gradientStart} />
-                  ) : (
-                    <Ionicons name="location-outline" size={24} color={COLORS.gradientStart} />
-                  )}
-                </View>
-                <Text style={[styles.toolLabel, { color: themeColors.text }]}>
-                  {isGeocoding ? "Geocoding..." : "PLZ → Koordinaten"}
-                </Text>
-                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>
-                  Fehlende lat/lng für alle User setzen
-                </Text>
-              </BNMPressable>
-            )}
           </View>
         </View>
       </ScrollView>

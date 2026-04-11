@@ -32,10 +32,11 @@ export default function MentorsTabScreen() {
   const { user } = useAuth();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { users, mentorships, sessions, feedback, refreshData, isLoading, bulkDeleteUsers } = useData();
+  const { users, mentorships, sessions, feedback, refreshData, isLoading, bulkDeleteUsers, setUserActive } = useData();
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   // Multi-Select State
   const [selectMode, setSelectMode] = useState(false);
@@ -99,17 +100,25 @@ export default function MentorsTabScreen() {
   }
 
   const allMentors = users.filter((u) => u.role === "mentor");
+  const archivedCount = useMemo(() => allMentors.filter((u) => u.is_active === false).length, [allMentors]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q) return allMentors;
-    return allMentors.filter(
+    let list = allMentors;
+    // Archiv vs. aktive Mentoren
+    if (showArchived) {
+      list = list.filter((m) => m.is_active === false);
+    } else {
+      list = list.filter((m) => m.is_active !== false);
+    }
+    if (!q) return list;
+    return list.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
         m.city.toLowerCase().includes(q) ||
         m.email.toLowerCase().includes(q)
     );
-  }, [allMentors, search]);
+  }, [allMentors, search, showArchived]);
 
   // Vorberechnete Mentor-Stats (vermeidet O(n*m) in der Render-Loop)
   const mentorStats = useMemo(() => {
@@ -256,14 +265,16 @@ export default function MentorsTabScreen() {
             </View>
             {!selectMode && Platform.OS === "web" && (
               <>
-                <BNMPressable
-                  style={[styles.csvButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
-                  onPress={() => router.push("/admin/csv-import")}
-                  accessibilityRole="button"
-                  accessibilityLabel={t("csvImport.tabMentors")}
-                >
-                  <Text style={[styles.csvButtonText, { color: themeColors.text }]}>{t("csvImport.tabMentors")}</Text>
-                </BNMPressable>
+                {user?.role === "admin" && (
+                  <BNMPressable
+                    style={[styles.csvButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
+                    onPress={() => router.push("/admin/csv-import")}
+                    accessibilityRole="button"
+                    accessibilityLabel={t("csvImport.tabMentors")}
+                  >
+                    <Text style={[styles.csvButtonText, { color: themeColors.text }]}>{t("csvImport.tabMentors")}</Text>
+                  </BNMPressable>
+                )}
                 <BNMPressable
                   style={[styles.csvButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
                   onPress={handleExportCsv}
@@ -295,6 +306,42 @@ export default function MentorsTabScreen() {
             onChangeText={setSearch}
             accessibilityLabel={t("adminMentors.search")}
           />
+
+          {/* Aktiv / Archiv Chips */}
+          {archivedCount > 0 && (
+            <View style={styles.filterChipsRow}>
+              <BNMPressable
+                style={[
+                  styles.filterChip,
+                  !showArchived
+                    ? styles.filterChipActive
+                    : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                ]}
+                onPress={() => setShowArchived(false)}
+                accessibilityRole="button"
+                accessibilityLabel="Aktive Mentoren"
+              >
+                <Text style={!showArchived ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                  Aktiv
+                </Text>
+              </BNMPressable>
+              <BNMPressable
+                style={[
+                  styles.filterChip,
+                  showArchived
+                    ? [styles.filterChipActive, { backgroundColor: COLORS.error, borderColor: COLORS.error }]
+                    : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                ]}
+                onPress={() => setShowArchived(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Archiv / Deaktivierte Mentoren"
+              >
+                <Text style={showArchived ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                  Archiv ({archivedCount})
+                </Text>
+              </BNMPressable>
+            </View>
+          )}
 
           {/* Multi-Select: Alle / Keine */}
           {selectMode && (
@@ -403,7 +450,7 @@ export default function MentorsTabScreen() {
             </View>
 
             {/* Stats-Zeile */}
-            {!selectMode && (
+            {!selectMode && !showArchived && (
               <View style={styles.statsRow}>
                 <View style={[styles.statChip, { backgroundColor: themeColors.background }]}>
                   <Text style={[styles.statChipValue, { color: COLORS.gradientStart }]}>{active}</Text>
@@ -418,6 +465,27 @@ export default function MentorsTabScreen() {
                   <Text style={[styles.statChipLabel, { color: themeColors.textTertiary }]}>{t("common.sessions")}</Text>
                 </View>
               </View>
+            )}
+
+            {/* Reaktivieren-Button im Archiv-Modus */}
+            {!selectMode && showArchived && mentor.is_active === false && (
+              <BNMPressable
+                style={styles.reactivateButton}
+                hapticStyle="success"
+                onPress={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    await setUserActive(mentor.id, true);
+                    showSuccess(`${mentor.name} wurde reaktiviert.`);
+                  } catch {
+                    showError(t("common.error"));
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Reaktivieren"
+              >
+                <Text style={styles.reactivateButtonText}>Reaktivieren</Text>
+              </BNMPressable>
             )}
           </BNMPressable>
         );
@@ -608,4 +676,32 @@ const styles = StyleSheet.create({
     textAlign: "center",
     letterSpacing: 2,
   },
+  filterChipsRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 12,
+  },
+  filterChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.full,
+    borderWidth: 1,
+  },
+  filterChipActive: {
+    backgroundColor: COLORS.gradientStart,
+    borderColor: COLORS.gradientStart,
+  },
+  filterChipInactive: {},
+  filterChipTextActive: { color: COLORS.white, fontSize: 13, fontWeight: "600" },
+  filterChipTextInactive: { fontSize: 13, fontWeight: "500" },
+  reactivateButton: {
+    marginTop: 10,
+    backgroundColor: COLORS.cta,
+    borderRadius: RADIUS.md,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: "flex-start",
+  },
+  reactivateButtonText: { color: COLORS.white, fontSize: 13, fontWeight: "700" },
 });

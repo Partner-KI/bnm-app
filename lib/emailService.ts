@@ -296,6 +296,66 @@ export async function sendFeedbackRequestEmail(
   return sendEmail(menteeEmail, subject, body);
 }
 
+// ─── Gesprächs-Einladung ─────────────────────────────────────────────────────
+
+export async function sendInterviewInvitationEmail(
+  email: string,
+  name: string
+): Promise<boolean> {
+  const subject = "[BNM] Einladung zum Gespräch";
+  const body = `
+<p>Salam Aleikum ${escapeHtml(name)},</p>
+<p>vielen Dank für deine Bewerbung bei BNM – Betreuung neuer Muslime.</p>
+<p>Wir würden dich gerne zu einem persönlichen Gespräch einladen, um dich besser kennenzulernen und offene Fragen zu klären.</p>
+<p>Bitte antworte auf diese E-Mail mit deinen Verfügbarkeiten, damit wir einen passenden Termin finden können.</p>
+<p>Wir freuen uns auf das Gespräch!</p>
+<p>Barakallahu fik</p>
+<p>Das BNM-Team</p>
+<hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
+  `.trim();
+  return sendEmail(email, subject, body);
+}
+
+// ─── Webinar-Einladung ──────────────────────────────────────────────────────
+
+export async function sendWebinarInvitationEmail(
+  email: string,
+  name: string
+): Promise<boolean> {
+  const subject = "[BNM] Einladung zum Einführungswebinar";
+  const body = `
+<p>Salam Aleikum ${escapeHtml(name)},</p>
+<p>vielen Dank für deine Bewerbung bei BNM – Betreuung neuer Muslime.</p>
+<p>Wir möchten dich herzlich zu unserem Einführungswebinar einladen. Dort erfährst du alles Wichtige über das BNM-Programm, die Abläufe und deine Rolle als Mentor.</p>
+<p>Weitere Details zum Termin und Zugangslink erhältst du in Kürze.</p>
+<p>Wir freuen uns auf deine Teilnahme!</p>
+<p>Barakallahu fik</p>
+<p>Das BNM-Team</p>
+<hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
+  `.trim();
+  return sendEmail(email, subject, body);
+}
+
+// ─── Betreuung abgebrochen – Mentee informieren ─────────────────────────────
+
+export async function sendMentorshipCancelledToMenteeEmail(
+  email: string,
+  menteeName: string,
+  mentorName: string
+): Promise<boolean> {
+  const subject = "[BNM] Deine Betreuung wurde beendet";
+  const body = `
+<p>Salam Aleikum ${escapeHtml(menteeName)},</p>
+<p>deine Betreuung mit <strong>${escapeHtml(mentorName)}</strong> wurde leider beendet.</p>
+<p>Wir würden uns sehr freuen, wenn du uns kurz dein Feedback in der BNM-App gibst — das hilft uns, das Programm weiter zu verbessern.</p>
+<p>Bei Fragen kannst du uns jederzeit kontaktieren.</p>
+<p>Barakallahu fik</p>
+<p>Das BNM-Team</p>
+<hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>
+  `.trim();
+  return sendEmail(email, subject, body);
+}
+
 // ─── Urkunde per E-Mail (mit PDF-Anhang) ─────────────────────────────────────
 
 export async function sendCertificateEmail(

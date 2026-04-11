@@ -37,7 +37,9 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
   13. `supabase/fix-self-delete.sql` — Self-Deactivate für Mentor/Mentee (Deaktivierung statt Löschung, Daten bleiben erhalten)
   14. `supabase/feedback-questionnaire.sql` — JSONB answers-Spalte für Feedback-Fragebogen
   15. `supabase/message-templates.sql` — Nachrichtenvorlagen-Tabelle + Seed-Daten
-  16. Dashboard: Auth → Email → "Confirm email" OFF
+  16. `supabase/resources.sql` — Ressourcen-Tabelle (Links fuer Mentor-Dashboard)
+  17. `supabase/events.sql` — Event-Participations-Tabelle (Teilnahme-Polling fuer Event-Ressourcen)
+  18. Dashboard: Auth → Email → "Confirm email" OFF
   13. Test-User manuell anlegen + Profile-INSERT
   14. `lib/supabase.ts`: URL + Anon Key ändern (2 Zeilen)
 
@@ -74,6 +76,87 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
     - email_queue INSERT nur für authentifizierte User
 
 ## FORTSCHRITTS-LOG
+
+### 2026-04-10 — Feedback-Umsetzung (21 Punkte aus User-Tests)
+
+**Phase 1: Bug-Fixes & Quick Wins:**
+- Logout-Performance: signOut() fire-and-forget auf Web, sofort redirect
+- PLZ-Tool: Auto-Geocoding bei approveApplication + CSV-Import, manueller Button entfernt
+- Monatsbericht geprüft (funktioniert, war Wartungsfenster)
+
+**Phase 2: UI-Erweiterungen:**
+- Mentee-Liste: Gender-Tabs (Brüder/Schwestern/Alle) + Sort "Anmeldedatum"
+- Mentor-Profil: Kontaktdaten-Sektion (E-Mail, Telefon, PLZ, Kontaktpräferenz)
+- Session-Typen: Edit-Button mit Inline-Bearbeitung (Name + Beschreibung)
+- Abbruch-Datum: Rote Info-Box in Mentorship-Detail
+- Leaderboard: Gold-Banner "Du bist auf Platz X" + eigene Zeile hervorgehoben
+- Abgebrochene Betreuungen: "Abgebrochen"-Filter + Datum/Grund in Liste
+- User-Löschung: Prominenter Soft-Delete + Hard-Delete (Admin, doppelte Bestätigung)
+- Archiv-Liste: "Archiv"-Filter in Mentees + Mentoren mit Reaktivieren-Button
+- Mentorship-Typ: cancelled_at + cancel_reason zu TypeScript-Interface
+
+**Phase 3: Neue Features:**
+- Auto-Feedback bei Abbruch: sendFeedbackRequestEmail + Notification + neue E-Mail an Mentee
+- Office-Rechte: Kein CSV-Import, keine Bewerbungs-Genehmigung
+- Sitzungsnotizen: Aufklappbare Notizen in Mentorship-Detail
+- Feedback-Statistiken: Durchschnitt, Verteilung, Trend, häufigste Themen
+- Bewerbungs-Statistiken: Counts, Annahmequote, Geschlechterverteilung
+- Bewerbungs-Buttons: "Zum Gespräch einladen" + "Zum Webinar einladen"
+- E-Mail-Vorlagen: Tab-System Chat/E-Mail mit Betreff + Platzhaltern
+- Ressourcen-Verwaltung: Admin-CRUD + Mentor-Dashboard-Karten (neue DB: resources)
+- Event-Teilnahme: Teilnehmen-Toggle + Admin-Teilnehmerliste (neue DB: event_participations)
+- Chat-Weiterleitung: Long-Press → Weiterleiten an andere Mentorship-Chats
+- Mentee-Reminder: Feedback-Erinnerung + Session-fällig-Erinnerung
+- Activity-Log: Detailliert mit Typ-/Zeitraum-Filtern
+
+### 2026-04-10 — Mentee-Reminders + Admin Activity Log
+**Mentee-Reminders (lib/reminders.ts):**
+- Neue Funktion `checkMenteeReminders()` neben bestehendem `checkReminders()`
+- Feedback-Erinnerung: Wenn Betreuung completed/cancelled und kein Feedback vom Mentee → Notification
+- Session-fällig-Erinnerung: Aktive Betreuung + letzte Session >7 Tage → "Deine nächste Session steht an"
+- Cooldown + Duplikat-Check wie bei Mentor-Reminders (5 Tage Cooldown, ungelesene nicht doppelt)
+- Integration in DataContext.tsx: Wird in loadAllData aufgerufen (parallel zu Mentor-Reminders)
+
+**Admin Activity Log (app/(tabs)/index.tsx - AdminDashboard):**
+- Bisherige "letzte 5 Sessions" durch umfassendes Aktivitäten-Log ersetzt
+- Aggregiert aus: Sessions, Zuweisungen, Abschlüsse/Abbrüche, Feedback
+- Filter-Chips: "Alle" / "Sessions" / "Zuweisungen" / "Abschlüsse" / "Feedback"
+- Zeitraum-Filter: "7 Tage" / "30 Tage" / "Alles"
+- Farbcodierte Icons: Sessions=blau, Zuweisungen=gold, Abschlüsse=grün, Abbrüche=rot, Feedback=amber
+- Pagination: 20 Einträge, "Mehr anzeigen" / "Weniger anzeigen"
+- Keine neue DB-Tabelle, alles aus bestehenden Daten aggregiert
+
+### 2026-04-10 — Event-Participation + Chat-Weiterleitung
+**Event-Participation-Polling (4.2.1):**
+- Neue DB-Tabelle: `supabase/events.sql` (event_participations mit resource_id, user_id, status)
+- RLS: User verwaltet eigene Teilnahmen, Admin/Office sieht alle
+- `types/index.ts`: EventParticipation + EventParticipationStatus Interfaces
+- `contexts/DataContext.tsx`: eventParticipations State, Laden in loadAllData, toggleEventParticipation/getEventParticipationsByResourceId/getMyEventParticipation
+- `app/(tabs)/index.tsx`: MentorDashboard zeigt fuer Event-Ressourcen Teilnehmer-Count + "Teilnehmen"/"Nicht teilnehmen" Toggle
+- `app/admin/resources.tsx`: "event" Kategorie hinzugefuegt, Participation-Count + Teilnehmer-Liste bei Event-Ressourcen
+
+**Chat-Nachricht-Weiterleitung (4.3.2):**
+- `app/chat/[mentorshipId].tsx`: Long-Press zeigt jetzt "Weiterleiten" + "Loeschen" (eigene) bzw. nur "Weiterleiten" (fremde)
+- Forward-Modal mit Liste der anderen Mentorship-Chats des Users
+- Weitergeleitete Nachricht mit Prefix "↪ Weitergeleitet von {Name}:\n{Nachricht}"
+- Erfolgs-Toast nach Weiterleitung
+
+### 2026-04-10 — E-Mail-Vorlagen + Ressourcen-Verwaltung
+**E-Mail-Vorlagen (message-templates.tsx):**
+- Tab-Switcher: "Chat-Vorlagen" / "E-Mail-Vorlagen" mit Ionicons
+- E-Mail-Vorlagen nutzen "[E-Mail]" Prefix im Titel + "Betreff: ...\n---\n..." Body-Format
+- Separates Betreff-Feld + Platzhalter-Hinweise ({name}, {datum}, {mentor_name}, {mentee_name})
+- Eigene Kategorien: einladung, absage, willkommen, general
+- Anzeige: Betreff wird in Gold unter Titel angezeigt
+
+**Ressourcen-Verwaltung (neu):**
+- Neue DB-Tabelle: `supabase/resources.sql` (id, title, url, description, icon, category, sort_order, is_active)
+- RLS: Jeder liest aktive Ressourcen, nur Admin verwaltet
+- `types/index.ts`: Resource Interface
+- `contexts/DataContext.tsx`: resources State, Laden in loadAllData, addResource/updateResource/deleteResource
+- `app/admin/resources.tsx`: CRUD-Screen mit Icon-Picker, Kategorie-Chips, Sortierung, Toggle aktiv/inaktiv
+- `app/(tabs)/tools.tsx`: "Ressourcen"-Button im Tool-Grid (admin only)
+- `app/(tabs)/index.tsx`: "Ressourcen"-Sektion im MentorDashboard mit klickbaren Cards (Icon + Titel + Beschreibung)
 
 ### 2026-04-10 — PLZ-Bug-Fix + Account-Deaktivierung statt Löschung
 **PLZ-Bug im Web-Registrierungsformular:**

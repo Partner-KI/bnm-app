@@ -28,6 +28,7 @@ import {
   getMentorCSVTemplate,
   type CSVRow,
 } from "../../lib/csvParser";
+import { geocodePLZ } from "../../lib/geocoding";
 
 // ─── Typen ────────────────────────────────────────────────────────────────────
 
@@ -80,8 +81,8 @@ export default function CSVImportScreen() {
   const [progress, setProgress] = useState(0);
   const [progressTotal, setProgressTotal] = useState(0);
 
-  // Nur Admin/Office darf importieren
-  if (!user || (user.role !== "admin" && user.role !== "office")) {
+  // Nur Admin darf importieren (Office darf keine Accounts erstellen)
+  if (!user || user.role !== "admin") {
     return (
       <View style={[styles.center, { backgroundColor: themeColors.background }]}>
         <Text style={[styles.errorText, { color: themeColors.error }]}>{t("applications.accessDenied")}</Text>
@@ -252,6 +253,14 @@ export default function CSVImportScreen() {
             }
           } else if (signUpData?.user) {
             result.created++;
+            // Auto-Geocoding: PLZ → Koordinaten (fire-and-forget)
+            if (parsed.plz) {
+              geocodePLZ(parsed.plz).then((coords) => {
+                if (coords) {
+                  supabase.from("profiles").update({ lat: coords.lat, lng: coords.lng }).eq("id", signUpData.user!.id);
+                }
+              }).catch(() => {});
+            }
           } else {
             result.failed++;
             result.errors.push(`${parsed.name}: Unbekannter Fehler`);

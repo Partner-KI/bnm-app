@@ -10,6 +10,8 @@ import {
   Animated,
   NativeSyntheticEvent,
   NativeScrollEvent,
+  Modal,
+  ScrollView,
 } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,7 +19,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { showError, showConfirm } from "../../lib/errorHandler";
+import { showError, showConfirm, showSuccess } from "../../lib/errorHandler";
 import { COLORS, RADIUS, TYPOGRAPHY, SHADOWS } from "../../constants/Colors";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { useThemeColors } from "../../contexts/ThemeContext";
@@ -33,9 +35,13 @@ export default function ChatScreen() {
   const {
     getMessagesByMentorshipId,
     getMentorshipById,
+    getMentorshipsByMentorId,
+    getMentorshipByMenteeId,
     sendMessage,
     deleteMessage,
     markChatAsRead,
+    getUserById,
+    mentorships: allMentorships,
     isLoading: dataLoading,
   } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
@@ -45,6 +51,11 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
+
+  // Forward message state
+  const [forwardModalVisible, setForwardModalVisible] = useState(false);
+  const [forwardMessageContent, setForwardMessageContent] = useState("");
+  const [forwardSenderName, setForwardSenderName] = useState("");
 
   // Für inverted FlatList: offset > 150 bedeutet der User hat nach oben gescrollt (= ältere Nachrichten)
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -93,16 +104,59 @@ export default function ChatScreen() {
     }
   }
 
-  const handleLongPress = useCallback(async (messageId: string, isOwn: boolean) => {
-    if (!isOwn) return; // Nur eigene Nachrichten löschbar
+  const handleLongPress = useCallback(async (messageId: string, isOwn: boolean, msgContent: string, senderName: string) => {
+    if (Platform.OS !== "web") {
+      // Native: use Alert with multiple buttons
+      const { Alert } = require("react-native");
+      const buttons: any[] = [];
 
-    const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
-    if (!ok) return;
+      buttons.push({
+        text: "Weiterleiten",
+        onPress: () => {
+          setForwardMessageContent(msgContent);
+          setForwardSenderName(senderName);
+          setForwardModalVisible(true);
+        },
+      });
 
-    try {
-      await deleteMessage(messageId);
-    } catch {
-      showError(t("chat.deleteError"));
+      if (isOwn) {
+        buttons.push({
+          text: "Loeschen",
+          style: "destructive",
+          onPress: async () => {
+            const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
+            if (!ok) return;
+            try {
+              await deleteMessage(messageId);
+            } catch {
+              showError(t("chat.deleteError"));
+            }
+          },
+        });
+      }
+
+      buttons.push({ text: "Abbrechen", style: "cancel" });
+      Alert.alert("Nachricht", undefined, buttons);
+    } else {
+      // Web: simple confirm-based flow
+      const action = isOwn
+        ? window.confirm("Weiterleiten? (OK = Weiterleiten, Abbrechen = weitere Optionen)")
+        : true;
+
+      if (action) {
+        setForwardMessageContent(msgContent);
+        setForwardSenderName(senderName);
+        setForwardModalVisible(true);
+      } else if (isOwn) {
+        const ok = window.confirm("Nachricht loeschen?");
+        if (ok) {
+          try {
+            await deleteMessage(messageId);
+          } catch {
+            showError(t("chat.deleteError"));
+          }
+        }
+      }
     }
   }, [t, deleteMessage]);
 
@@ -182,7 +236,7 @@ export default function ChatScreen() {
           )}
           <BNMPressable
             activeOpacity={0.8}
-            onLongPress={() => handleLongPress(msg.id, isOwn)}
+            onLongPress={() => handleLongPress(msg.id, isOwn, msg.content, displayName)}
             delayLongPress={500}
             accessibilityRole="button"
             accessibilityLabel={`Nachricht von ${displayName}`}
@@ -223,6 +277,33 @@ export default function ChatScreen() {
   }, [user, chatPartnerName, mentorship, reversedMessages, themeColors, handleLongPress]);
 
   const keyExtractor = useCallback((item: typeof messages[0]) => item.id, []);
+
+  // Mentorships for forwarding (exclude current chat)
+  const forwardableMentorships = useMemo(() => {
+    if (!user) return [];
+    return allMentorships
+      .filter((m) => m.id !== mentorshipId && (m.mentor_id === user.id || m.mentee_id === user.id))
+      .filter((m) => m.status === "active" || m.status === "completed")
+      .map((m) => {
+        const partnerId = m.mentor_id === user.id ? m.mentee_id : m.mentor_id;
+        const partner = getUserById(partnerId);
+        return { ...m, partnerName: partner?.name ?? "Unbekannt" };
+      });
+  }, [allMentorships, user, mentorshipId, getUserById]);
+
+  const handleForwardToChat = useCallback(async (targetMentorshipId: string) => {
+    if (!user) return;
+    const forwardedContent = `\u21AA Weitergeleitet von ${forwardSenderName}:\n${forwardMessageContent}`;
+    try {
+      await sendMessage(targetMentorshipId, user.id, forwardedContent);
+      setForwardModalVisible(false);
+      setForwardMessageContent("");
+      setForwardSenderName("");
+      showSuccess("Nachricht weitergeleitet");
+    } catch {
+      showError("Fehler beim Weiterleiten");
+    }
+  }, [user, forwardSenderName, forwardMessageContent, sendMessage]);
 
   if (!user) return null;
 
@@ -333,6 +414,59 @@ export default function ChatScreen() {
           </Text>
         </View>
       )}
+
+      {/* Forward Modal */}
+      <Modal
+        visible={forwardModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setForwardModalVisible(false)}
+      >
+        <BNMPressable
+          style={styles.modalOverlay}
+          onPress={() => setForwardModalVisible(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Schliessen"
+        >
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>Weiterleiten an</Text>
+            <Text style={[styles.modalSubtitle, { color: themeColors.textTertiary }]} numberOfLines={2}>
+              {forwardMessageContent.length > 80
+                ? forwardMessageContent.substring(0, 80) + "..."
+                : forwardMessageContent}
+            </Text>
+            {forwardableMentorships.length === 0 ? (
+              <Text style={{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 20, fontSize: 13 }}>
+                Keine anderen Chats verfuegbar.
+              </Text>
+            ) : (
+              <ScrollView style={{ maxHeight: 300 }}>
+                {forwardableMentorships.map((m) => (
+                  <BNMPressable
+                    key={m.id}
+                    style={[styles.forwardItem, { borderBottomColor: themeColors.border }]}
+                    onPress={() => handleForwardToChat(m.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Weiterleiten an ${m.partnerName}`}
+                  >
+                    <Ionicons name="chatbubble-outline" size={18} color={COLORS.gold} style={{ marginRight: 10 }} />
+                    <Text style={[styles.forwardItemText, { color: themeColors.text }]}>{m.partnerName}</Text>
+                    <Ionicons name="chevron-forward" size={16} color={themeColors.textTertiary} />
+                  </BNMPressable>
+                ))}
+              </ScrollView>
+            )}
+            <BNMPressable
+              style={[styles.modalCancelBtn, { borderColor: themeColors.border }]}
+              onPress={() => setForwardModalVisible(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Abbrechen"
+            >
+              <Text style={{ color: themeColors.textSecondary, fontWeight: "600", fontSize: 14 }}>Abbrechen</Text>
+            </BNMPressable>
+          </View>
+        </BNMPressable>
+      </Modal>
     </KeyboardAvoidingView>
   );
 }
@@ -418,5 +552,49 @@ const styles = StyleSheet.create({
   templateCardPreview: {
     fontSize: 12,
     lineHeight: 18,
+  },
+
+  // Forward Modal
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+  },
+  modalContent: {
+    width: "100%",
+    maxWidth: 400,
+    borderRadius: RADIUS.lg,
+    padding: 20,
+    ...SHADOWS.lg,
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  modalSubtitle: {
+    fontSize: 12,
+    marginBottom: 16,
+    fontStyle: "italic",
+  },
+  forwardItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  forwardItemText: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  modalCancelBtn: {
+    marginTop: 16,
+    borderWidth: 1,
+    borderRadius: RADIUS.sm,
+    paddingVertical: 10,
+    alignItems: "center",
   },
 });

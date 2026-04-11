@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -88,6 +88,192 @@ function QuestionnaireDetail({ answers }: { answers: QuestionnaireAnswers }) {
   );
 }
 
+// ─── Statistics Section ──────────────────────────────────────────────────────
+
+function FeedbackStatistics({ feedbacks }: { feedbacks: Feedback[] }) {
+  const themeColors = useThemeColors();
+  const { isDark } = useTheme();
+  const { t } = useLanguage();
+  const [collapsed, setCollapsed] = useState(false);
+
+  const stats = useMemo(() => {
+    if (feedbacks.length === 0) return null;
+
+    // Average rating
+    const sum = feedbacks.reduce((acc, f) => acc + f.rating, 0);
+    const avg = sum / feedbacks.length;
+
+    // Rating distribution
+    const distribution: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    feedbacks.forEach((f) => { distribution[f.rating] = (distribution[f.rating] || 0) + 1; });
+    const maxCount = Math.max(...Object.values(distribution));
+
+    // Trend: last 30 days vs previous 30 days
+    const now = Date.now();
+    const ms30d = 30 * 24 * 60 * 60 * 1000;
+    const recent = feedbacks.filter((f) => now - new Date(f.created_at).getTime() < ms30d);
+    const previous = feedbacks.filter((f) => {
+      const age = now - new Date(f.created_at).getTime();
+      return age >= ms30d && age < ms30d * 2;
+    });
+    const recentAvg = recent.length > 0 ? recent.reduce((a, f) => a + f.rating, 0) / recent.length : null;
+    const previousAvg = previous.length > 0 ? previous.reduce((a, f) => a + f.rating, 0) / previous.length : null;
+
+    // Topic analysis from q2_2 (multiselect: Betreuungsthemen)
+    const topicCounts: Record<string, number> = {};
+    const topicQuestion = QUESTIONNAIRE_SECTIONS
+      .flatMap((s) => s.questions)
+      .find((q) => q.id === "q2_2");
+
+    feedbacks.forEach((f) => {
+      if (!f.answers) return;
+      const val = (f.answers as any)["q2_2"];
+      if (Array.isArray(val)) {
+        val.forEach((key: string) => {
+          topicCounts[key] = (topicCounts[key] || 0) + 1;
+        });
+      }
+    });
+
+    const sortedTopics = Object.entries(topicCounts)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 6);
+
+    return { avg, distribution, maxCount, recentAvg, previousAvg, sortedTopics, topicQuestion };
+  }, [feedbacks]);
+
+  const toggleCollapsed = useCallback(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setCollapsed((prev) => !prev);
+  }, []);
+
+  if (!stats) return null;
+
+  const fullStars = Math.floor(stats.avg);
+  const starsDisplay = "★".repeat(fullStars) + "☆".repeat(5 - fullStars);
+
+  // Trend
+  let trendIcon: "trending-up" | "trending-down" | "remove" = "remove";
+  let trendColor = themeColors.textTertiary;
+  let trendText = "Keine Vergleichsdaten";
+  if (stats.recentAvg !== null && stats.previousAvg !== null) {
+    const diff = stats.recentAvg - stats.previousAvg;
+    if (diff > 0.1) {
+      trendIcon = "trending-up";
+      trendColor = sem(SEMANTIC.greenText, isDark);
+      trendText = `+${diff.toFixed(1)} vs. Vormonat`;
+    } else if (diff < -0.1) {
+      trendIcon = "trending-down";
+      trendColor = sem(SEMANTIC.redText, isDark);
+      trendText = `${diff.toFixed(1)} vs. Vormonat`;
+    } else {
+      trendText = "Stabil vs. Vormonat";
+    }
+  } else if (stats.recentAvg !== null) {
+    trendText = "Noch kein Vormonat";
+  }
+
+  return (
+    <View style={[styles.statsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+      {/* Header */}
+      <BNMPressable
+        style={styles.statsHeader}
+        onPress={toggleCollapsed}
+        accessibilityRole="button"
+        accessibilityLabel={collapsed ? "Statistiken einblenden" : "Statistiken ausblenden"}
+        accessibilityState={{ expanded: !collapsed }}
+      >
+        <View style={styles.statsHeaderLeft}>
+          <Ionicons name="stats-chart" size={18} color={COLORS.gold} />
+          <Text style={[styles.statsHeaderTitle, { color: themeColors.text }]}>Statistiken</Text>
+        </View>
+        <Ionicons
+          name={collapsed ? "chevron-down" : "chevron-up"}
+          size={18}
+          color={themeColors.textTertiary}
+        />
+      </BNMPressable>
+
+      {!collapsed && (
+        <View style={styles.statsBody}>
+          {/* Average Rating */}
+          <View style={styles.statsAvgRow}>
+            <Text style={[styles.statsAvgNumber, { color: themeColors.text }]}>
+              {stats.avg.toFixed(1)}
+            </Text>
+            <View style={{ marginLeft: 8 }}>
+              <Text style={{ color: COLORS.gold, fontSize: 20, letterSpacing: 2 }}>{starsDisplay}</Text>
+              <Text style={[styles.statsTotalLabel, { color: themeColors.textTertiary }]}>
+                {feedbacks.length} Feedbacks insgesamt
+              </Text>
+            </View>
+          </View>
+
+          {/* Trend */}
+          <View style={[styles.statsTrendRow, { backgroundColor: themeColors.background }]}>
+            <Ionicons name={trendIcon} size={18} color={trendColor} />
+            <Text style={[styles.statsTrendText, { color: trendColor }]}>{trendText}</Text>
+            {stats.recentAvg !== null && (
+              <Text style={[styles.statsTrendDetail, { color: themeColors.textTertiary }]}>
+                Letzte 30 Tage: {stats.recentAvg.toFixed(1)} ({feedbacks.filter((f) => Date.now() - new Date(f.created_at).getTime() < 30 * 24 * 60 * 60 * 1000).length})
+              </Text>
+            )}
+          </View>
+
+          {/* Rating Distribution */}
+          <View style={styles.statsDistribution}>
+            {[5, 4, 3, 2, 1].map((star) => {
+              const count = stats.distribution[star] || 0;
+              const barWidth = stats.maxCount > 0 ? (count / stats.maxCount) * 100 : 0;
+              return (
+                <View key={star} style={styles.statsDistRow}>
+                  <Text style={[styles.statsDistLabel, { color: themeColors.textSecondary }]}>{star}★</Text>
+                  <View style={[styles.statsDistBarBg, { backgroundColor: themeColors.background }]}>
+                    <View
+                      style={[
+                        styles.statsDistBarFill,
+                        {
+                          width: `${barWidth}%`,
+                          backgroundColor: star >= 4 ? COLORS.gold : star === 3 ? COLORS.gradientStart : sem(SEMANTIC.redText, isDark),
+                        },
+                      ]}
+                    />
+                  </View>
+                  <Text style={[styles.statsDistCount, { color: themeColors.textTertiary }]}>{count}</Text>
+                </View>
+              );
+            })}
+          </View>
+
+          {/* Most Common Topics */}
+          {stats.sortedTopics.length > 0 && stats.topicQuestion?.options && (
+            <View style={styles.statsTopics}>
+              <Text style={[styles.statsTopicsTitle, { color: themeColors.textSecondary }]}>
+                Haeufigste Themen
+              </Text>
+              <View style={styles.statsTopicsGrid}>
+                {stats.sortedTopics.map(([key, count]) => {
+                  const opt = stats.topicQuestion!.options!.find((o) => o.key === key);
+                  const label = opt ? t(opt.translationKey) : key;
+                  return (
+                    <View
+                      key={key}
+                      style={[styles.statsTopicChip, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
+                    >
+                      <Text style={[styles.statsTopicLabel, { color: themeColors.text }]}>{label}</Text>
+                      <Text style={[styles.statsTopicCount, { color: COLORS.gold }]}>{count}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          )}
+        </View>
+      )}
+    </View>
+  );
+}
+
 export default function FeedbackTabScreen() {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -133,6 +319,9 @@ export default function FeedbackTabScreen() {
               </Text>
             </View>
           )}
+
+          {/* Statistiken */}
+          {allFeedbacks.length > 0 && <FeedbackStatistics feedbacks={allFeedbacks} />}
 
           {/* Filter */}
           <View style={[styles.filterCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
@@ -379,4 +568,123 @@ const styles = StyleSheet.create({
   detailRow: { marginBottom: 8 },
   detailQuestion: { fontSize: 11, marginBottom: 2 },
   detailAnswer: { fontSize: 13, fontWeight: "500" },
+
+  // ─── Statistics ─────────────────────────────────────────────────────
+  statsCard: {
+    borderRadius: RADIUS.lg,
+    borderWidth: 1,
+    marginBottom: 16,
+    ...SHADOWS.md,
+  },
+  statsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+  },
+  statsHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statsHeaderTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+  },
+  statsBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+  },
+  statsAvgRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  statsAvgNumber: {
+    fontSize: 40,
+    fontWeight: "800",
+    letterSpacing: -1,
+  },
+  statsTotalLabel: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  statsTrendRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderRadius: RADIUS.sm,
+    padding: 10,
+    marginBottom: 16,
+  },
+  statsTrendText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  statsTrendDetail: {
+    fontSize: 11,
+    marginLeft: "auto",
+  },
+  statsDistribution: {
+    gap: 6,
+    marginBottom: 16,
+  },
+  statsDistRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  statsDistLabel: {
+    width: 28,
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "right",
+  },
+  statsDistBarBg: {
+    flex: 1,
+    height: 14,
+    borderRadius: 7,
+    overflow: "hidden",
+  },
+  statsDistBarFill: {
+    height: "100%",
+    borderRadius: 7,
+    minWidth: 2,
+  },
+  statsDistCount: {
+    width: 28,
+    fontSize: 12,
+    fontWeight: "600",
+    textAlign: "right",
+  },
+  statsTopics: {
+    marginTop: 4,
+  },
+  statsTopicsTitle: {
+    fontSize: 13,
+    fontWeight: "700",
+    marginBottom: 8,
+  },
+  statsTopicsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  statsTopicChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+  },
+  statsTopicLabel: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
+  statsTopicCount: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
 });

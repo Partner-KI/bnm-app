@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -15,7 +15,7 @@ import { useData } from "../../contexts/DataContext";
 import type { MentorApplication } from "../../types";
 import { COLORS, RADIUS, SEMANTIC, sem } from "../../constants/Colors";
 import { Container } from "../../components/Container";
-import { sendApplicationRejectionEmail } from "../../lib/emailService";
+import { sendApplicationRejectionEmail, sendInterviewInvitationEmail, sendWebinarInvitationEmail } from "../../lib/emailService";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { usePageTitle } from "../../hooks/usePageTitle";
 import { useTheme, useThemeColors } from "../../contexts/ThemeContext";
@@ -89,6 +89,18 @@ export default function ApplicationsTabScreen() {
   );
 
   const pendingMentorCount = mentorApps.filter((a) => a.status === "pending").length;
+
+  // ─── Statistiken ───
+  const stats = useMemo(() => {
+    const total = mentorApps.length;
+    const pending = mentorApps.filter((a) => a.status === "pending").length;
+    const approved = mentorApps.filter((a) => a.status === "approved").length;
+    const rejected = mentorApps.filter((a) => a.status === "rejected").length;
+    const acceptanceRate = total > 0 ? Math.round((approved / total) * 100) : 0;
+    const maleCount = mentorApps.filter((a) => a.gender === "male").length;
+    const femaleCount = mentorApps.filter((a) => a.gender === "female").length;
+    return { total, pending, approved, rejected, acceptanceRate, maleCount, femaleCount };
+  }, [mentorApps]);
 
   async function handleApproveMentor(app: MentorApplication) {
     if (isApprovingRef.current) return;
@@ -188,6 +200,46 @@ export default function ApplicationsTabScreen() {
     <View style={styles.page}>
       <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("applications.title")}</Text>
 
+      {/* ─── Statistik-Card ─── */}
+      <View style={[styles.statsCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+        <Text style={[styles.statsTitle, { color: themeColors.text }]}>Statistik</Text>
+        <View style={styles.statsGrid}>
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Gesamt</Text>
+            <Text style={[styles.statsValue, { color: themeColors.text }]}>{stats.total}</Text>
+          </View>
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Offen</Text>
+            <View style={[styles.statsBadge, { backgroundColor: "#fffbeb" }]}>
+              <Text style={[styles.statsBadgeText, { color: "#92400e" }]}>{stats.pending}</Text>
+            </View>
+          </View>
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Genehmigt</Text>
+            <View style={[styles.statsBadge, { backgroundColor: COLORS.successBg }]}>
+              <Text style={[styles.statsBadgeText, { color: COLORS.successDark }]}>{stats.approved}</Text>
+            </View>
+          </View>
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Abgelehnt</Text>
+            <View style={[styles.statsBadge, { backgroundColor: COLORS.errorBg }]}>
+              <Text style={[styles.statsBadgeText, { color: COLORS.error }]}>{stats.rejected}</Text>
+            </View>
+          </View>
+          <View style={styles.statsDivider} />
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Annahmequote</Text>
+            <Text style={[styles.statsValue, { color: COLORS.cta }]}>{stats.acceptanceRate}%</Text>
+          </View>
+          <View style={styles.statsRow}>
+            <Text style={[styles.statsLabel, { color: themeColors.textTertiary }]}>Geschlecht</Text>
+            <Text style={[styles.statsValue, { color: themeColors.textSecondary }]}>
+              {stats.maleCount} ♂ / {stats.femaleCount} ♀
+            </Text>
+          </View>
+        </View>
+      </View>
+
       {/* Suche */}
       <TextInput
         style={[styles.searchInput, { backgroundColor: themeColors.card, borderColor: themeColors.border, color: themeColors.text }]}
@@ -239,7 +291,7 @@ export default function ApplicationsTabScreen() {
         })}
       </View>
     </View>
-  ), [themeColors, search, mentorFilter, pendingMentorCount, mentorApps]);
+  ), [themeColors, search, mentorFilter, pendingMentorCount, mentorApps, stats]);
 
   const listEmpty = useCallback(() => (
     <EmptyState
@@ -392,11 +444,15 @@ function ApplicationCard({
   onReject: () => void;
 }) {
   const { t } = useLanguage();
+  const { user: currentUser } = useAuth();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
   const [expanded, setExpanded] = useState(false);
+  const [isSendingInvite, setIsSendingInvite] = useState(false);
   const isPending = application.status === "pending";
   const isApproved = application.status === "approved";
+  // Office darf Bewerbungen sehen aber nicht genehmigen (Genehmigung erstellt Accounts)
+  const canApprove = currentUser?.role === "admin";
 
   const badgeStatus = isPending ? "pending" as const : isApproved ? "active" as const : "cancelled" as const;
   const statusLabel = isPending ? t("applications.statusOpen") : isApproved ? t("applications.statusApproved") : t("applications.statusRejected");
@@ -515,27 +571,66 @@ function ApplicationCard({
             </>
           )}
 
-          {/* Aktions-Buttons (nur für offene Einträge) */}
-          {isPending && (
-            <View style={styles.actionRow}>
-              <BNMPressable
-                style={[styles.rejectButton, { backgroundColor: sem(SEMANTIC.redBg, isDark), borderColor: sem(SEMANTIC.redBorder, isDark) }]}
-                onPress={onReject}
-                accessibilityRole="button"
-                accessibilityLabel={`${application.name} ${t("applications.reject")}`}
-              >
-                <Text style={[styles.rejectButtonText, { color: isDark ? "#f87171" : "#dc2626" }]}>{t("applications.reject")}</Text>
-              </BNMPressable>
-              <BNMPressable
-                style={[styles.approveButton, { backgroundColor: approveColor }]}
-                onPress={onApprove}
-                hapticStyle="success"
-                accessibilityRole="button"
-                accessibilityLabel={`${application.name} ${approveLabel}`}
-              >
-                <Text style={styles.approveButtonText}>{approveLabel}</Text>
-              </BNMPressable>
-            </View>
+          {/* Aktions-Buttons (nur für offene Einträge, Genehmigung nur für Admin) */}
+          {isPending && canApprove && (
+            <>
+              <View style={styles.actionRow}>
+                <BNMPressable
+                  style={[styles.rejectButton, { backgroundColor: sem(SEMANTIC.redBg, isDark), borderColor: sem(SEMANTIC.redBorder, isDark) }]}
+                  onPress={onReject}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${application.name} ${t("applications.reject")}`}
+                >
+                  <Text style={[styles.rejectButtonText, { color: isDark ? "#f87171" : "#dc2626" }]}>{t("applications.reject")}</Text>
+                </BNMPressable>
+                <BNMPressable
+                  style={[styles.approveButton, { backgroundColor: approveColor }]}
+                  onPress={onApprove}
+                  hapticStyle="success"
+                  accessibilityRole="button"
+                  accessibilityLabel={`${application.name} ${approveLabel}`}
+                >
+                  <Text style={styles.approveButtonText}>{approveLabel}</Text>
+                </BNMPressable>
+              </View>
+              {/* Einladungs-Buttons */}
+              <View style={styles.inviteRow}>
+                <BNMPressable
+                  style={[styles.inviteButton, { borderColor: COLORS.gradientStart }, isSendingInvite && { opacity: 0.6 }]}
+                  disabled={isSendingInvite}
+                  onPress={async () => {
+                    setIsSendingInvite(true);
+                    try {
+                      const ok = await sendInterviewInvitationEmail(application.email, application.name);
+                      if (ok) showSuccess("Gesprächseinladung gesendet");
+                      else showError("E-Mail konnte nicht gesendet werden");
+                    } catch { showError("Fehler beim Senden"); }
+                    finally { setIsSendingInvite(false); }
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${application.name} zum Gespräch einladen`}
+                >
+                  <Text style={[styles.inviteButtonText, { color: COLORS.gradientStart }]}>Zum Gespräch einladen</Text>
+                </BNMPressable>
+                <BNMPressable
+                  style={[styles.inviteButton, { borderColor: COLORS.gold }, isSendingInvite && { opacity: 0.6 }]}
+                  disabled={isSendingInvite}
+                  onPress={async () => {
+                    setIsSendingInvite(true);
+                    try {
+                      const ok = await sendWebinarInvitationEmail(application.email, application.name);
+                      if (ok) showSuccess("Webinar-Einladung gesendet");
+                      else showError("E-Mail konnte nicht gesendet werden");
+                    } catch { showError("Fehler beim Senden"); }
+                    finally { setIsSendingInvite(false); }
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${application.name} zum Webinar einladen`}
+                >
+                  <Text style={[styles.inviteButtonText, { color: COLORS.gold }]}>Zum Webinar einladen</Text>
+                </BNMPressable>
+              </View>
+            </>
           )}
         </>
       )}
@@ -664,7 +759,62 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
 
+  // Stats
+  statsCard: {
+    borderRadius: RADIUS.md,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+  },
+  statsTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    marginBottom: 10,
+  },
+  statsGrid: {
+    gap: 6,
+  },
+  statsRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 2,
+  },
+  statsLabel: {
+    fontSize: 13,
+  },
+  statsValue: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
+  statsBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+  },
+  statsBadgeText: {
+    fontSize: 12,
+    fontWeight: "700",
+  },
+  statsDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.divider,
+    marginVertical: 4,
+  },
+
   actionRow: { flexDirection: "row", gap: 10, marginTop: 4 },
+  inviteRow: { flexDirection: "row", gap: 10, marginTop: 6 },
+  inviteButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderRadius: RADIUS.md,
+    paddingVertical: 7,
+    alignItems: "center",
+  },
+  inviteButtonText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
   rejectButton: {
     flex: 1,
     borderWidth: 1,

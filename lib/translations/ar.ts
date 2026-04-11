@@ -531,6 +531,7 @@ const ar: Record<TranslationKeys, string> = {
   "mentorship.congratulations": "تهانينا!",
   "mentorship.allStepsDone": "لقد أكملت جميع الخطوات العشر بنجاح!",
   "mentorship.notFound": "لم يُعثر على الإرشاد",
+  "mentorship.noNotes": "لا توجد ملاحظات",
   "mentorship.since": "منذ {0}",
   "mentorship.mentee": "المتعلم",
   "mentorship.mentor": "المرشد",

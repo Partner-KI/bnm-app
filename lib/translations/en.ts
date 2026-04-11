@@ -531,6 +531,7 @@ const en: Record<TranslationKeys, string> = {
   "mentorship.congratulations": "Congratulations!",
   "mentorship.allStepsDone": "You have successfully completed all 10 steps!",
   "mentorship.notFound": "Mentorship not found",
+  "mentorship.noNotes": "No notes",
   "mentorship.since": "Since {0}",
   "mentorship.mentee": "MENTEE",
   "mentorship.mentor": "MENTOR",

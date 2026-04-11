@@ -127,16 +127,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(async () => {
     // Sofort User-State löschen → Navigation reagiert unmittelbar
     setUser(null);
-    // Cleanup asynchron im Hintergrund
+    // Auf Web: Sofort redirect, Cleanup im Hintergrund (verhindert Ladezeit-Hänger)
+    if (Platform.OS === "web") {
+      const userId = user?.id;
+      if (userId) unregisterPushToken(userId).catch(() => {});
+      supabase.auth.signOut().catch(() => {});
+      window.location.href = "/";
+      return;
+    }
+    // Native: Cleanup synchron (kein Redirect nötig)
     const userId = user?.id;
     if (userId) {
       unregisterPushToken(userId).catch(() => {});
     }
     await supabase.auth.signOut().catch(() => {});
-    // Auf Web: Hard-Reload damit DataContext, Subscriptions, etc. sauber zurückgesetzt werden.
-    if (Platform.OS === "web") {
-      window.location.href = "/";
-    }
   }, [user?.id]);
 
   const refreshUser = useCallback(async () => {

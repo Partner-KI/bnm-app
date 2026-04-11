@@ -26,11 +26,16 @@ export default function SessionTypesScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { sessionTypes, addSessionType, updateSessionTypeOrder, deleteSessionType } = useData();
+  const { sessionTypes, addSessionType, updateSessionTypeOrder, updateSessionType, deleteSessionType } = useData();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDescription, setNewDescription] = useState("");
+
+  // Edit-State
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editDescription, setEditDescription] = useState("");
 
   const sortedTypes = [...sessionTypes].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -59,6 +64,25 @@ export default function SessionTypesScreen() {
     }
     const ok = await showConfirm(t("sessionTypes.deleteTitle"), t("sessionTypes.deleteText").replace("{0}", `"${st.name}"`));
     if (ok) deleteSessionType(st.id);
+  }
+
+  function startEdit(st: SessionType) {
+    setEditingId(st.id);
+    setEditName(st.name);
+    setEditDescription(st.description ?? "");
+  }
+
+  async function handleSaveEdit() {
+    if (!editingId || !editName.trim()) {
+      showError(t("sessionTypes.errorName"));
+      return;
+    }
+    try {
+      await updateSessionType(editingId, { name: editName.trim(), description: editDescription.trim() });
+      setEditingId(null);
+    } catch {
+      showError("Fehler beim Speichern");
+    }
   }
 
   function handleAdd() {
@@ -133,25 +157,73 @@ export default function SessionTypesScreen() {
               </View>
 
               {/* Inhalt */}
-              <View style={styles.itemContent}>
-                <View style={styles.itemNameRow}>
-                  <Text style={[styles.itemName, { color: themeColors.text }]}>{st.name}</Text>
-                  {st.is_default && (
-                    <View style={[styles.standardBadge, { backgroundColor: themeColors.background }]}>
-                      <Text style={[styles.standardBadgeText, { color: themeColors.textTertiary }]}>{t("sessionTypes.standard")}</Text>
-                    </View>
-                  )}
+              {editingId === st.id ? (
+                <View style={[styles.itemContent, { gap: 6 }]}>
+                  <TextInput
+                    style={[styles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text, marginBottom: 0 }]}
+                    value={editName}
+                    onChangeText={setEditName}
+                    placeholder={t("sessionTypes.namePlaceholder")}
+                    placeholderTextColor={themeColors.textTertiary}
+                  />
+                  <TextInput
+                    style={[styles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text, marginBottom: 0, minHeight: 50 }]}
+                    value={editDescription}
+                    onChangeText={setEditDescription}
+                    placeholder={t("sessionTypes.descPlaceholder")}
+                    placeholderTextColor={themeColors.textTertiary}
+                    multiline
+                  />
+                  <View style={{ flexDirection: "row", gap: 8 }}>
+                    <BNMPressable
+                      style={[styles.arrowButton, { backgroundColor: themeColors.background, flex: 1 }]}
+                      onPress={() => setEditingId(null)}
+                      accessibilityRole="button"
+                      accessibilityLabel="Abbrechen"
+                    >
+                      <Text style={[{ color: themeColors.textSecondary, fontSize: 12, fontWeight: "600" }]}>✕</Text>
+                    </BNMPressable>
+                    <BNMPressable
+                      style={[styles.arrowButton, { backgroundColor: COLORS.cta, flex: 1 }]}
+                      onPress={handleSaveEdit}
+                      accessibilityRole="button"
+                      accessibilityLabel="Speichern"
+                    >
+                      <Text style={{ color: COLORS.white, fontSize: 12, fontWeight: "600" }}>✓</Text>
+                    </BNMPressable>
+                  </View>
                 </View>
-                {st.description ? (
-                  <Text style={[styles.itemDesc, { color: themeColors.textTertiary }]} numberOfLines={2}>
-                    {st.description}
-                  </Text>
-                ) : null}
-              </View>
+              ) : (
+                <View style={styles.itemContent}>
+                  <View style={styles.itemNameRow}>
+                    <Text style={[styles.itemName, { color: themeColors.text }]}>{st.name}</Text>
+                    {st.is_default && (
+                      <View style={[styles.standardBadge, { backgroundColor: themeColors.background }]}>
+                        <Text style={[styles.standardBadgeText, { color: themeColors.textTertiary }]}>{t("sessionTypes.standard")}</Text>
+                      </View>
+                    )}
+                  </View>
+                  {st.description ? (
+                    <Text style={[styles.itemDesc, { color: themeColors.textTertiary }]} numberOfLines={2}>
+                      {st.description}
+                    </Text>
+                  ) : null}
+                </View>
+              )}
 
               {/* Aktionen (nur Admin) */}
-              {isAdminRole && (
+              {isAdminRole && editingId !== st.id && (
                 <View style={styles.actionsRow}>
+                  {/* Bearbeiten */}
+                  <BNMPressable
+                    style={[styles.arrowButton, { backgroundColor: themeColors.background }]}
+                    onPress={() => startEdit(st)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${st.name} bearbeiten`}
+                  >
+                    <Text style={[styles.arrowText, { color: COLORS.gradientStart }]}>✎</Text>
+                  </BNMPressable>
+
                   {/* Hoch */}
                   <BNMPressable
                     style={[styles.arrowButton, { backgroundColor: themeColors.background }, idx === 0 ? { opacity: 0.3 } : {}]}

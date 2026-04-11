@@ -529,6 +529,7 @@ const de = {
   "mentorship.congratulations": "Herzlichen Glückwunsch!",
   "mentorship.allStepsDone": "Du hast alle 10 Schritte erfolgreich durchlaufen!",
   "mentorship.notFound": "Betreuung nicht gefunden",
+  "mentorship.noNotes": "Keine Notizen",
   "mentorship.since": "Seit {0}",
   "mentorship.mentee": "MENTEE",
   "mentorship.mentor": "MENTOR",

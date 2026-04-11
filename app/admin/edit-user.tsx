@@ -66,7 +66,8 @@ export default function EditUserScreen() {
 
 function EditUserForm({ userId }: { userId: string }) {
   const router = useRouter();
-  const { getUserById, updateUser, setUserActive } = useData();
+  const { user: authUser } = useAuth();
+  const { getUserById, updateUser, setUserActive, deleteUser } = useData();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
 
@@ -87,7 +88,14 @@ function EditUserForm({ userId }: { userId: string }) {
   const [forceChange, setForceChange] = useState(true);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Hard-Delete State (nur Admin)
+  const [showHardDelete1, setShowHardDelete1] = useState(false);
+  const [showHardDelete2, setShowHardDelete2] = useState(false);
+  const [hardDeleteInput, setHardDeleteInput] = useState("");
+  const [isHardDeleting, setIsHardDeleting] = useState(false);
+
   const isBlocked = target.is_active === false;
+  const isAdmin = authUser?.role === "admin";
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
@@ -138,6 +146,22 @@ function EditUserForm({ userId }: { userId: string }) {
       showError(t("common.error"));
     } finally {
       setIsBlocking(false);
+    }
+  }
+
+  async function handleHardDelete() {
+    setShowHardDelete2(false);
+    setIsHardDeleting(true);
+    try {
+      const ok = await deleteUser(userId);
+      if (ok) {
+        showSuccess("Benutzer endgültig gelöscht.", () => router.back());
+      }
+    } catch {
+      showError(t("common.error"));
+    } finally {
+      setIsHardDeleting(false);
+      setHardDeleteInput("");
     }
   }
 
@@ -285,26 +309,7 @@ function EditUserForm({ userId }: { userId: string }) {
             </Text>
           </BNMPressable>
 
-          {/* User sperren / entsperren */}
-          <BNMPressable
-            hapticStyle="warning"
-            accessibilityRole="button"
-            accessibilityLabel={isBlocked ? "Entsperren" : "Sperren"}
-            style={[
-              styles.blockButton,
-              { backgroundColor: themeColors.errorLight, borderColor: themeColors.error + "40" },
-              isBlocked ? { backgroundColor: themeColors.successLight, borderColor: themeColors.success + "40" } : {},
-              isBlocking ? { opacity: 0.6 } : {},
-            ]}
-            onPress={handleToggleBlock}
-            disabled={isBlocking}
-          >
-            <Text style={[styles.blockButtonText, { color: themeColors.error }, isBlocked ? { color: themeColors.success } : {}]}>
-              {isBlocking ? "..." : isBlocked ? t("editUser.unblockUser") : t("editUser.blockUser")}
-            </Text>
-          </BNMPressable>
-
-          {/* Passwort zurücksetzen — nur Admin */}
+          {/* Passwort zurücksetzen */}
           <BNMPressable
             style={[styles.resetPwButton, { borderColor: themeColors.info + "40", backgroundColor: themeColors.infoLight }, isResetting ? { opacity: 0.6 } : {}]}
             onPress={handleResetPassword}
@@ -316,6 +321,60 @@ function EditUserForm({ userId }: { userId: string }) {
               {isResetting ? t("editUser.resetting") : t("editUser.resetPassword")}
             </Text>
           </BNMPressable>
+
+          {/* ── Deaktivieren / Aktivieren (Soft-Delete) ── */}
+          <View style={[styles.dangerSection, { borderColor: COLORS.warning + "60", backgroundColor: COLORS.warning + "08" }]}>
+            <Text style={[styles.dangerSectionTitle, { color: COLORS.warning }]}>
+              {isBlocked ? "Benutzer ist deaktiviert" : "Benutzer deaktivieren"}
+            </Text>
+            <Text style={[styles.dangerSectionDesc, { color: themeColors.textSecondary }]}>
+              {isBlocked
+                ? "Dieser Account ist gesperrt. Der Benutzer kann sich nicht anmelden. Daten bleiben erhalten."
+                : "Deaktiviert den Account. Der Benutzer kann sich nicht mehr anmelden, aber alle Daten bleiben erhalten und können jederzeit wiederhergestellt werden."}
+            </Text>
+            <BNMPressable
+              hapticStyle="warning"
+              accessibilityRole="button"
+              accessibilityLabel={isBlocked ? "Entsperren" : "Sperren"}
+              style={[
+                styles.dangerButton,
+                isBlocked
+                  ? { backgroundColor: themeColors.success, borderColor: themeColors.success }
+                  : { backgroundColor: COLORS.warning, borderColor: COLORS.warning },
+                isBlocking ? { opacity: 0.6 } : {},
+              ]}
+              onPress={handleToggleBlock}
+              disabled={isBlocking}
+            >
+              <Text style={[styles.dangerButtonText, { color: COLORS.white }]}>
+                {isBlocking ? "..." : isBlocked ? t("editUser.unblockUser") : t("editUser.blockUser")}
+              </Text>
+            </BNMPressable>
+          </View>
+
+          {/* ── Endgültig löschen (Hard-Delete) — nur Admin ── */}
+          {isAdmin && (
+            <View style={[styles.dangerSection, { borderColor: COLORS.error + "60", backgroundColor: COLORS.error + "08" }]}>
+              <Text style={[styles.dangerSectionTitle, { color: COLORS.error }]}>
+                Endgültig löschen
+              </Text>
+              <Text style={[styles.dangerSectionDesc, { color: themeColors.textSecondary }]}>
+                Löscht den Benutzer, alle Betreuungen, Sitzungen, Nachrichten und Feedback unwiderruflich. Diese Aktion kann nicht rückgängig gemacht werden.
+              </Text>
+              <BNMPressable
+                hapticStyle="error"
+                accessibilityRole="button"
+                accessibilityLabel="Endgueltig loeschen"
+                style={[styles.dangerButton, { backgroundColor: COLORS.error, borderColor: COLORS.error }, isHardDeleting ? { opacity: 0.6 } : {}]}
+                onPress={() => setShowHardDelete1(true)}
+                disabled={isHardDeleting}
+              >
+                <Text style={[styles.dangerButtonText, { color: COLORS.white }]}>
+                  {isHardDeleting ? "..." : "Endgültig löschen"}
+                </Text>
+              </BNMPressable>
+            </View>
+          )}
 
         </ScrollView>
       </KeyboardAvoidingView>
@@ -379,6 +438,66 @@ function EditUserForm({ userId }: { userId: string }) {
             <BNMPressable style={[styles.modalClose, { backgroundColor: themeColors.primary }]} onPress={() => setResetTempPw(null)} accessibilityRole="button" accessibilityLabel="OK">
               <Text style={[styles.modalCloseText, { color: COLORS.white }]}>{t("common.ok")}</Text>
             </BNMPressable>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal: Hard-Delete Bestätigung 1 */}
+      <Modal visible={showHardDelete1} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: COLORS.error }]}>Endgültig löschen?</Text>
+            <Text style={[styles.modalBody, { color: themeColors.textSecondary }]}>
+              Bist du sicher? Diese Aktion kann nicht rückgängig gemacht werden. Alle Daten von {target.name} werden unwiderruflich gelöscht.
+            </Text>
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 8 }}>
+              <BNMPressable style={[styles.modalClose, { flex: 1, backgroundColor: themeColors.background, borderWidth: 1, borderColor: themeColors.border }]} onPress={() => setShowHardDelete1(false)} accessibilityRole="button" accessibilityLabel="Abbrechen">
+                <Text style={[styles.modalCloseText, { color: themeColors.textSecondary }]}>{t("common.cancel")}</Text>
+              </BNMPressable>
+              <BNMPressable style={[styles.modalClose, { flex: 1, backgroundColor: COLORS.error }]} onPress={() => { setShowHardDelete1(false); setShowHardDelete2(true); setHardDeleteInput(""); }} accessibilityRole="button" accessibilityLabel="Weiter">
+                <Text style={[styles.modalCloseText, { color: COLORS.white }]}>Weiter</Text>
+              </BNMPressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal: Hard-Delete Bestätigung 2 — Name eintippen */}
+      <Modal visible={showHardDelete2} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: COLORS.error }]}>Letzte Warnung</Text>
+            <Text style={[styles.modalBody, { color: themeColors.textSecondary }]}>
+              Tippe den Namen des Benutzers ein, um das Löschen zu bestätigen:
+            </Text>
+            <Text style={{ fontWeight: "800", fontSize: 15, color: themeColors.text, textAlign: "center", marginBottom: 10 }}>
+              {target.name}
+            </Text>
+            <TextInput
+              style={[styles.pwInput, { color: themeColors.text, borderColor: hardDeleteInput === target.name ? COLORS.error : themeColors.border, backgroundColor: themeColors.elevated }]}
+              value={hardDeleteInput}
+              onChangeText={setHardDeleteInput}
+              placeholder="Name eingeben"
+              placeholderTextColor={themeColors.textTertiary}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+              <BNMPressable style={[styles.modalClose, { flex: 1, backgroundColor: themeColors.background, borderWidth: 1, borderColor: themeColors.border }]} onPress={() => { setShowHardDelete2(false); setHardDeleteInput(""); }} accessibilityRole="button" accessibilityLabel="Abbrechen">
+                <Text style={[styles.modalCloseText, { color: themeColors.textSecondary }]}>{t("common.cancel")}</Text>
+              </BNMPressable>
+              <BNMPressable
+                style={[styles.modalClose, { flex: 1, backgroundColor: hardDeleteInput === target.name ? COLORS.error : COLORS.gray }, hardDeleteInput !== target.name ? { opacity: 0.5 } : {}]}
+                onPress={hardDeleteInput === target.name ? handleHardDelete : undefined}
+                disabled={hardDeleteInput !== target.name || isHardDeleting}
+                accessibilityRole="button"
+                accessibilityLabel="Endgueltig loeschen bestaetigen"
+              >
+                <Text style={[styles.modalCloseText, { color: COLORS.white }]}>
+                  {isHardDeleting ? "..." : "Endgültig löschen"}
+                </Text>
+              </BNMPressable>
+            </View>
           </View>
         </View>
       </Modal>
@@ -458,13 +577,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   saveButtonText: { fontWeight: "700", fontSize: 15 },
-  blockButton: {
-    borderWidth: 1,
-    borderRadius: RADIUS.xs,
-    paddingVertical: 11,
-    alignItems: "center",
-  },
-  blockButtonText: { fontWeight: "600", fontSize: 14 },
+  // blockButton styles removed — replaced by dangerSection/dangerButton
   resetPwButton: {
     borderWidth: 1,
     borderRadius: RADIUS.xs,
@@ -473,6 +586,29 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   resetPwButtonText: { fontWeight: "600", fontSize: 14 },
+  dangerSection: {
+    borderWidth: 1,
+    borderRadius: RADIUS.sm,
+    padding: 16,
+    marginTop: 20,
+  },
+  dangerSectionTitle: {
+    fontWeight: "800",
+    fontSize: 15,
+    marginBottom: 6,
+  },
+  dangerSectionDesc: {
+    fontSize: 13,
+    lineHeight: 19,
+    marginBottom: 14,
+  },
+  dangerButton: {
+    borderWidth: 1,
+    borderRadius: RADIUS.xs,
+    paddingVertical: 11,
+    alignItems: "center",
+  },
+  dangerButtonText: { fontWeight: "700", fontSize: 14 },
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",

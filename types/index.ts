@@ -33,6 +33,8 @@ export interface Mentorship {
   assigned_by: string;
   assigned_at: string;
   completed_at?: string;
+  cancelled_at?: string;
+  cancel_reason?: string;
   notes?: string;
   mentor?: User;
   mentee?: User;
@@ -100,6 +102,18 @@ export interface MessageTemplate {
   is_active: boolean;
 }
 
+export interface Resource {
+  id: string;
+  title: string;
+  url: string;
+  description: string;
+  icon: string;
+  category: string;
+  sort_order: number;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface Message {
   id: string;
   mentorship_id: string;
@@ -108,6 +122,16 @@ export interface Message {
   read_at?: string;
   created_at: string;
   sender?: User;
+}
+
+export type EventParticipationStatus = "interested" | "confirmed" | "declined";
+
+export interface EventParticipation {
+  id: string;
+  resource_id: string;
+  user_id: string;
+  status: EventParticipationStatus;
+  created_at: string;
 }
 
 export type ApplicationStatus = "pending" | "approved" | "rejected";

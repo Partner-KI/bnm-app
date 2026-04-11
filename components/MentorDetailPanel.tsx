@@ -128,6 +128,41 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
         )}
       </View>
 
+      {/* Kontaktdaten */}
+      {isAdminOrOffice && (
+        <>
+          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>KONTAKTDATEN</Text>
+          <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            {mentor.email ? (
+              <View style={styles.infoRow}>
+                <Text style={[styles.infoLabel, { color: themeColors.textTertiary }]}>E-Mail</Text>
+                <Text style={[styles.infoValue, { color: themeColors.text }]}>{mentor.email}</Text>
+              </View>
+            ) : null}
+            {mentor.phone ? (
+              <View style={[styles.infoRow, { borderTopWidth: 1, borderTopColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textTertiary }]}>Telefon</Text>
+                <Text style={[styles.infoValue, { color: themeColors.text }]}>{mentor.phone}</Text>
+              </View>
+            ) : null}
+            {mentor.plz ? (
+              <View style={[styles.infoRow, { borderTopWidth: 1, borderTopColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textTertiary }]}>PLZ</Text>
+                <Text style={[styles.infoValue, { color: themeColors.text }]}>{mentor.plz}</Text>
+              </View>
+            ) : null}
+            {mentor.contact_preference ? (
+              <View style={[styles.infoRow, { borderTopWidth: 1, borderTopColor: themeColors.border }]}>
+                <Text style={[styles.infoLabel, { color: themeColors.textTertiary }]}>Kontakt</Text>
+                <Text style={[styles.infoValue, { color: themeColors.text }]}>
+                  {mentor.contact_preference === "whatsapp" ? "WhatsApp" : mentor.contact_preference === "telegram" ? "Telegram" : mentor.contact_preference === "phone" ? "Telefon" : mentor.contact_preference}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        </>
+      )}
+
       {/* Statistiken */}
       <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>{t("mentorDetail.stats")}</Text>
       <View style={styles.statsGrid}>
@@ -406,4 +441,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   editProfileButtonText: { color: COLORS.white, fontWeight: "700", fontSize: 14 },
+  infoRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", paddingHorizontal: 14, paddingVertical: 10 },
+  infoLabel: { fontSize: 12, fontWeight: "500" },
+  infoValue: { fontSize: 13, fontWeight: "600", flexShrink: 1, textAlign: "right" },
 });

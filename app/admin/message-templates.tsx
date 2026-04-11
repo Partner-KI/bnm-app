@@ -22,6 +22,9 @@ import { supabase } from "../../lib/supabase";
 import type { MessageTemplate } from "../../types";
 
 const CATEGORIES = ["erstkontakt", "reaktivierung", "nachfassen", "general"];
+const EMAIL_CATEGORIES = ["einladung", "absage", "willkommen", "general"];
+
+type TemplateTab = "chat" | "email";
 
 export default function MessageTemplatesScreen() {
   const router = useRouter();
@@ -31,9 +34,11 @@ export default function MessageTemplatesScreen() {
   const themeColors = useThemeColors();
   const { messageTemplates, refreshData } = useData();
 
+  const [activeTab, setActiveTab] = useState<TemplateTab>("chat");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("general");
+  const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
@@ -45,23 +50,46 @@ export default function MessageTemplatesScreen() {
     );
   }
 
+  // Filter templates by tab
+  const isEmailTemplate = (tmpl: MessageTemplate) => tmpl.title.startsWith("[E-Mail]");
+  const chatTemplates = messageTemplates.filter((t) => !isEmailTemplate(t));
+  const emailTemplates = messageTemplates.filter((t) => isEmailTemplate(t));
+  const displayedTemplates = activeTab === "chat" ? chatTemplates : emailTemplates;
+
   function startEdit(tmpl: MessageTemplate) {
     setEditingId(tmpl.id);
-    setTitle(tmpl.title);
+    if (activeTab === "email") {
+      // Parse "[E-Mail] Title" format and extract subject from body
+      const rawTitle = tmpl.title.replace(/^\[E-Mail\]\s*/, "");
+      setTitle(rawTitle);
+      // Body format: "Betreff: ...\n---\n..."
+      const bodyParts = tmpl.body.split("\n---\n");
+      if (bodyParts.length >= 2) {
+        setSubject(bodyParts[0].replace(/^Betreff:\s*/, ""));
+        setBody(bodyParts.slice(1).join("\n---\n"));
+      } else {
+        setSubject("");
+        setBody(tmpl.body);
+      }
+    } else {
+      setTitle(tmpl.title);
+      setBody(tmpl.body);
+    }
     setCategory(tmpl.category);
-    setBody(tmpl.body);
   }
 
   function startNew() {
     setEditingId("new");
     setTitle("");
-    setCategory("general");
+    setCategory(activeTab === "email" ? "einladung" : "general");
+    setSubject("");
     setBody("");
   }
 
   function cancelEdit() {
     setEditingId(null);
     setTitle("");
+    setSubject("");
     setBody("");
   }
 
@@ -70,22 +98,32 @@ export default function MessageTemplatesScreen() {
       showError(t("templates.errorEmpty"));
       return;
     }
+    if (activeTab === "email" && !subject.trim()) {
+      showError("Bitte einen Betreff eingeben");
+      return;
+    }
     setIsSaving(true);
     try {
+      // For email templates: prefix title with [E-Mail] and encode subject in body
+      const finalTitle = activeTab === "email" ? `[E-Mail] ${title.trim()}` : title.trim();
+      const finalBody = activeTab === "email"
+        ? `Betreff: ${subject.trim()}\n---\n${body.trim()}`
+        : body.trim();
+
       if (editingId === "new") {
         const { error } = await supabase.from("message_templates").insert({
-          title: title.trim(),
+          title: finalTitle,
           category,
-          body: body.trim(),
+          body: finalBody,
           sort_order: messageTemplates.length + 1,
         });
         if (error) throw error;
         showSuccess(t("templates.saved"));
       } else {
         const { error } = await supabase.from("message_templates").update({
-          title: title.trim(),
+          title: finalTitle,
           category,
-          body: body.trim(),
+          body: finalBody,
           updated_at: new Date().toISOString(),
         }).eq("id", editingId);
         if (error) throw error;
@@ -127,8 +165,32 @@ export default function MessageTemplatesScreen() {
         </View>
 
         <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+          {/* Tab Switcher */}
+          <View style={styles.tabRow}>
+            <BNMPressable
+              style={[styles.tab, activeTab === "chat" && styles.tabActive, { borderColor: activeTab === "chat" ? COLORS.gold : themeColors.border }]}
+              onPress={() => { setActiveTab("chat"); cancelEdit(); }}
+              accessibilityRole="tab"
+              accessibilityLabel="Chat-Vorlagen"
+              accessibilityState={{ selected: activeTab === "chat" }}
+            >
+              <Ionicons name="chatbubble-outline" size={16} color={activeTab === "chat" ? COLORS.gold : themeColors.textSecondary} />
+              <Text style={[styles.tabText, { color: activeTab === "chat" ? COLORS.gold : themeColors.textSecondary }]}>Chat-Vorlagen</Text>
+            </BNMPressable>
+            <BNMPressable
+              style={[styles.tab, activeTab === "email" && styles.tabActive, { borderColor: activeTab === "email" ? COLORS.gold : themeColors.border }]}
+              onPress={() => { setActiveTab("email"); cancelEdit(); }}
+              accessibilityRole="tab"
+              accessibilityLabel="E-Mail-Vorlagen"
+              accessibilityState={{ selected: activeTab === "email" }}
+            >
+              <Ionicons name="mail-outline" size={16} color={activeTab === "email" ? COLORS.gold : themeColors.textSecondary} />
+              <Text style={[styles.tabText, { color: activeTab === "email" ? COLORS.gold : themeColors.textSecondary }]}>E-Mail-Vorlagen</Text>
+            </BNMPressable>
+          </View>
+
           <Text style={[styles.hint, { color: themeColors.textTertiary }]}>
-            {t("templates.hint")}
+            {activeTab === "chat" ? t("templates.hint") : "E-Mail-Vorlagen mit Betreff und Text. Platzhalter: {name}, {datum}, {mentor_name}"}
           </Text>
 
           {/* Edit Form */}
@@ -139,13 +201,13 @@ export default function MessageTemplatesScreen() {
                 style={[styles.input, { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.elevated }]}
                 value={title}
                 onChangeText={setTitle}
-                placeholder={t("templates.titlePlaceholder")}
+                placeholder={activeTab === "email" ? "z.B. Einladung zum Gespräch" : t("templates.titlePlaceholder")}
                 placeholderTextColor={themeColors.textTertiary}
               />
 
               <Text style={[styles.formLabel, { color: themeColors.text }]}>{t("templates.categoryLabel")}</Text>
               <View style={styles.chipRow}>
-                {CATEGORIES.map((cat) => (
+                {(activeTab === "email" ? EMAIL_CATEGORIES : CATEGORIES).map((cat) => (
                   <BNMPressable
                     key={cat}
                     style={[
@@ -165,15 +227,38 @@ export default function MessageTemplatesScreen() {
                 ))}
               </View>
 
-              <Text style={[styles.formLabel, { color: themeColors.text }]}>{t("templates.bodyLabel")}</Text>
+              {/* Subject field for email templates */}
+              {activeTab === "email" && (
+                <>
+                  <Text style={[styles.formLabel, { color: themeColors.text }]}>Betreff</Text>
+                  <TextInput
+                    style={[styles.input, { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.elevated }]}
+                    value={subject}
+                    onChangeText={setSubject}
+                    placeholder="z.B. Einladung: Erstgespräch am {datum}"
+                    placeholderTextColor={themeColors.textTertiary}
+                  />
+                  <Text style={[styles.placeholderHint, { color: themeColors.textTertiary }]}>
+                    Platzhalter: {"{name}"}, {"{datum}"}, {"{mentor_name}"}, {"{mentee_name}"}
+                  </Text>
+                </>
+              )}
+
+              <Text style={[styles.formLabel, { color: themeColors.text }]}>
+                {activeTab === "email" ? "E-Mail-Text" : t("templates.bodyLabel")}
+              </Text>
               <Text style={[styles.placeholderHint, { color: themeColors.textTertiary }]}>
-                {t("templates.placeholderHint")}
+                {activeTab === "email"
+                  ? "Platzhalter: {name}, {datum}, {mentor_name}, {mentee_name}, {link}"
+                  : t("templates.placeholderHint")}
               </Text>
               <TextInput
                 style={[styles.inputMulti, { borderColor: themeColors.border, color: themeColors.text, backgroundColor: themeColors.elevated }]}
                 value={body}
                 onChangeText={setBody}
-                placeholder={t("templates.bodyPlaceholder")}
+                placeholder={activeTab === "email"
+                  ? "Assalamu alaikum {name},\n\nwir laden dich herzlich ein..."
+                  : t("templates.bodyPlaceholder")}
                 placeholderTextColor={themeColors.textTertiary}
                 multiline
                 numberOfLines={Platform.OS === "web" ? 16 : 8}
@@ -192,32 +277,47 @@ export default function MessageTemplatesScreen() {
           )}
 
           {/* Template List */}
-          {messageTemplates.map((tmpl) => (
-            <View key={tmpl.id} style={[styles.templateCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <View style={styles.templateHeader}>
-                <View style={{ flex: 1 }}>
-                  <Text style={[styles.templateTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
-                  <Text style={[styles.templateCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
-                </View>
-                <View style={styles.templateActions}>
-                  <BNMPressable onPress={() => startEdit(tmpl)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Bearbeiten">
-                    <Ionicons name="pencil" size={18} color={themeColors.textSecondary} />
-                  </BNMPressable>
-                  <BNMPressable onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Loeschen">
-                    <Ionicons name="trash-outline" size={18} color={COLORS.error} />
-                  </BNMPressable>
-                </View>
-              </View>
-              <Text style={[styles.templatePreview, { color: themeColors.textSecondary }]} numberOfLines={4}>
-                {tmpl.body}
-              </Text>
-            </View>
-          ))}
+          {displayedTemplates.map((tmpl) => {
+            const displayTitle = activeTab === "email" ? tmpl.title.replace(/^\[E-Mail\]\s*/, "") : tmpl.title;
+            const displayBody = activeTab === "email"
+              ? tmpl.body.replace(/^Betreff:.*?\n---\n/, "")
+              : tmpl.body;
+            const emailSubject = activeTab === "email"
+              ? tmpl.body.match(/^Betreff:\s*(.*?)(?:\n|$)/)?.[1] ?? ""
+              : "";
 
-          {messageTemplates.length === 0 && !editingId && (
+            return (
+              <View key={tmpl.id} style={[styles.templateCard, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+                <View style={styles.templateHeader}>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.templateTitle, { color: themeColors.text }]}>{displayTitle}</Text>
+                    {activeTab === "email" && emailSubject ? (
+                      <Text style={[styles.templateCategory, { color: COLORS.gold }]}>Betreff: {emailSubject}</Text>
+                    ) : null}
+                    <Text style={[styles.templateCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
+                  </View>
+                  <View style={styles.templateActions}>
+                    <BNMPressable onPress={() => startEdit(tmpl)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Bearbeiten">
+                      <Ionicons name="pencil" size={18} color={themeColors.textSecondary} />
+                    </BNMPressable>
+                    <BNMPressable onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Loeschen">
+                      <Ionicons name="trash-outline" size={18} color={COLORS.error} />
+                    </BNMPressable>
+                  </View>
+                </View>
+                <Text style={[styles.templatePreview, { color: themeColors.textSecondary }]} numberOfLines={4}>
+                  {displayBody}
+                </Text>
+              </View>
+            );
+          })}
+
+          {displayedTemplates.length === 0 && !editingId && (
             <View style={styles.emptyBox}>
-              <Ionicons name="document-text-outline" size={48} color={themeColors.textTertiary} />
-              <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("templates.empty")}</Text>
+              <Ionicons name={activeTab === "email" ? "mail-outline" : "document-text-outline"} size={48} color={themeColors.textTertiary} />
+              <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>
+                {activeTab === "email" ? "Noch keine E-Mail-Vorlagen vorhanden" : t("templates.empty")}
+              </Text>
             </View>
           )}
         </ScrollView>
@@ -242,6 +342,21 @@ const styles = StyleSheet.create({
   addButton: { flex: 1, alignItems: "flex-end" },
   scroll: { flex: 1 },
   content: { padding: 24, paddingBottom: 40 },
+  tabRow: { flexDirection: "row", gap: 10, marginBottom: 16 },
+  tab: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: RADIUS.sm,
+    borderWidth: 1,
+  },
+  tabActive: {
+    backgroundColor: COLORS.gold + "15",
+  },
+  tabText: { fontSize: 13, fontWeight: "600" },
   hint: { fontSize: 12, marginBottom: 16, textAlign: "center" },
 
   // Form

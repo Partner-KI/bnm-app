@@ -22,6 +22,9 @@ import type {
   ApplicationStatus,
   Notification,
   MessageTemplate,
+  Resource,
+  EventParticipation,
+  EventParticipationStatus,
 } from "../types";
 import { XP_VALUES } from "../lib/gamification";
 
@@ -34,13 +37,15 @@ export interface GamificationCallbacks {
 import { supabase } from "../lib/supabase";
 import { supabaseAnon } from "../lib/supabaseAnon";
 import { useAuth } from "./AuthContext";
-import { checkReminders } from "../lib/reminders";
+import { checkReminders, checkMenteeReminders } from "../lib/reminders";
+import { geocodePLZ } from "../lib/geocoding";
 import { showError, showSuccess } from "../lib/errorHandler";
 import {
   sendMentorshipStatusChangeNotification,
   sendCredentialsEmail,
   sendMenteeAssignedNotification,
   sendFeedbackRequestEmail,
+  sendMentorshipCancelledToMenteeEmail,
 } from "../lib/emailService";
 import { sendLocalNotification, notifyNewMessage, notifyMentorAssigned, notifyMenteeAssigned, notifyMentorshipCompleted, notifyFeedbackRequested } from "../lib/notificationService";
 
@@ -88,6 +93,8 @@ export interface DataContextValue {
   hadithe: Hadith[];
   qaEntries: QAEntry[];
   messageTemplates: MessageTemplate[];
+  resources: Resource[];
+  eventParticipations: EventParticipation[];
 
   // Internal: Gamification callbacks ref (used by GamificationContext)
   _gamificationRef: MutableRefObject<GamificationCallbacks | null>;
@@ -119,6 +126,7 @@ export interface DataContextValue {
   // SessionType actions
   addSessionType: (sessionType: Omit<SessionType, "id">) => Promise<void>;
   updateSessionTypeOrder: (sessionTypes: SessionType[]) => Promise<void>;
+  updateSessionType: (id: string, data: { name?: string; description?: string }) => Promise<void>;
   deleteSessionType: (id: string) => Promise<void>;
 
   // Feedback actions
@@ -172,6 +180,16 @@ export interface DataContextValue {
   addQAEntry: (entry: Omit<QAEntry, "id" | "created_at" | "updated_at">) => Promise<void>;
   updateQAEntry: (id: string, data: Partial<Omit<QAEntry, "id" | "created_at" | "updated_at">>) => Promise<void>;
   deleteQAEntry: (id: string) => Promise<void>;
+
+  // Resource actions
+  addResource: (resource: Omit<Resource, "id" | "created_at">) => Promise<void>;
+  updateResource: (id: string, data: Partial<Omit<Resource, "id" | "created_at">>) => Promise<void>;
+  deleteResource: (id: string) => Promise<void>;
+
+  // Event Participation actions
+  toggleEventParticipation: (resourceId: string, status: EventParticipationStatus) => Promise<void>;
+  getEventParticipationsByResourceId: (resourceId: string) => EventParticipation[];
+  getMyEventParticipation: (resourceId: string) => EventParticipation | undefined;
 
   // Computed helpers
   getMentorshipsByMentorId: (mentorId: string) => Mentorship[];
@@ -356,6 +374,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [applications, setApplications] = useState<MentorApplication[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [messageTemplates, setMessageTemplates] = useState<MessageTemplate[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
+  const [eventParticipations, setEventParticipations] = useState<EventParticipation[]>([]);
   const [mentorOfMonthVisible, setMentorOfMonthVisible] = useState<boolean>(true);
   const [hadithe, setHadithe] = useState<Hadith[]>([]);
   const [qaEntries, setQAEntries] = useState<QAEntry[]>([]);
@@ -557,6 +577,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         haditheRes,
         qaEntriesRes,
         messageTemplatesRes,
+        resourcesRes,
+        eventParticipationsRes,
         adminMsgsRes,
       ] = await Promise.all([
         safe(supabase.from("profiles").select("*")),
@@ -571,6 +593,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         safe(supabase.from("hadithe").select("*").order("sort_order", { ascending: true })),
         safe(supabase.from("qa_entries").select("*").order("created_at", { ascending: true })),
         safe(supabase.from("message_templates").select("*").eq("is_active", true).order("sort_order", { ascending: true })),
+        safe(supabase.from("resources").select("*").order("sort_order", { ascending: true })),
+        safe(supabase.from("event_participations").select("*")),
         safe(isAdminOrOffice
           ? supabase.from("admin_messages").select("*").order("created_at", { ascending: true })
           : supabase.from("admin_messages").select("*").eq("user_id", authUser!.id).order("created_at", { ascending: true })),
@@ -783,6 +807,34 @@ export function DataProvider({ children }: { children: ReactNode }) {
         })));
       }
 
+      // Resources
+      if (resourcesRes.error) console.warn("[DataContext] resources error:", resourcesRes.error.message);
+      if (resourcesRes.data) {
+        setResources(resourcesRes.data.map((row: any) => ({
+          id: row.id,
+          title: row.title ?? "",
+          url: row.url ?? "",
+          description: row.description ?? "",
+          icon: row.icon ?? "link-outline",
+          category: row.category ?? "general",
+          sort_order: row.sort_order ?? 0,
+          is_active: row.is_active ?? true,
+          created_at: row.created_at,
+        })));
+      }
+
+      // Event Participations
+      if (eventParticipationsRes.error) console.warn("[DataContext] event_participations error:", eventParticipationsRes.error.message);
+      if (eventParticipationsRes.data) {
+        setEventParticipations(eventParticipationsRes.data.map((row: any) => ({
+          id: row.id,
+          resource_id: row.resource_id,
+          user_id: row.user_id,
+          status: row.status ?? "interested",
+          created_at: row.created_at,
+        })));
+      }
+
       // ─── Admin-Messages verarbeiten (Query läuft parallel im Promise.all oben) ──
       {
         const profileMap2: Record<string, User> = {};
@@ -959,6 +1011,72 @@ export function DataProvider({ children }: { children: ReactNode }) {
               }
             })
             .catch((err) => console.warn("[DataContext] reminder insert:", err));
+        }
+      }
+
+      // ─── Mentee-Reminder-Check (Feedback + Session-fällig) ──────────────────
+      if (authUser?.role === 'mentee' && mentorshipsRes.data && sessionsRes.data && notificationsRes.data && feedbackRes.data) {
+        const freshMentorshipsMentee: Mentorship[] = mentorshipsRes.data.map((row) => ({
+          id: row.id as string,
+          mentor_id: row.mentor_id as string,
+          mentee_id: row.mentee_id as string,
+          status: row.status as MentorshipStatus,
+          assigned_by: row.assigned_by as string,
+          assigned_at: row.assigned_at as string,
+          completed_at: (row.completed_at as string) ?? undefined,
+        }));
+
+        const freshSessionsMentee: Session[] = sessionsRes.data.map((row) => ({
+          id: row.id as string,
+          mentorship_id: row.mentorship_id as string,
+          session_type_id: row.session_type_id as string,
+          date: row.date as string,
+          is_online: row.is_online as boolean,
+          details: (row.details as string) ?? undefined,
+          documented_by: row.documented_by as string,
+        }));
+
+        const freshNotificationsMentee: Notification[] = notificationsRes.data.map(mapNotification);
+
+        const freshFeedbackMentee: Feedback[] = feedbackRes.data.map((row) => ({
+          id: row.id as string,
+          mentorship_id: row.mentorship_id as string,
+          submitted_by: row.submitted_by as string,
+          rating: row.rating as number,
+          comments: (row.comments as string) ?? undefined,
+          created_at: row.created_at as string,
+        }));
+
+        const menteeReminders = checkMenteeReminders(
+          freshMentorshipsMentee,
+          freshSessionsMentee,
+          freshNotificationsMentee,
+          freshFeedbackMentee,
+          authUser.id
+        );
+
+        if (menteeReminders.length > 0) {
+          supabase
+            .from('notifications')
+            .insert(
+              menteeReminders.map((r) => ({
+                user_id: authUser.id,
+                type: r.type,
+                title: r.title,
+                body: r.body,
+                related_id: r.related_id ?? null,
+              }))
+            )
+            .select()
+            .then(({ data: insertedReminders }) => {
+              if (insertedReminders) {
+                setNotifications((prev) => [
+                  ...prev,
+                  ...insertedReminders.map(mapNotification),
+                ]);
+              }
+            })
+            .catch((err) => console.warn("[DataContext] mentee reminder insert:", err));
         }
       }
     } catch (err) {
@@ -1742,6 +1860,33 @@ export function DataProvider({ children }: { children: ReactNode }) {
           mentorship.mentee?.name ?? "Unbekannt",
           "cancelled"
         ).catch(() => {});
+
+        // Mentee benachrichtigen: Feedback-Anfrage + Cancellation-E-Mail
+        const mentee = users.find((u) => u.id === mentorship.mentee_id);
+        const mentor = users.find((u) => u.id === mentorship.mentor_id);
+
+        if (mentee?.email) {
+          sendFeedbackRequestEmail(
+            mentee.email,
+            mentee.name ?? "Mentee",
+            mentor?.name ?? "Mentor",
+            mentorshipId
+          ).catch(() => {});
+
+          sendMentorshipCancelledToMenteeEmail(
+            mentee.email,
+            mentee.name ?? "Mentee",
+            mentor?.name ?? "Mentor"
+          ).catch(() => {});
+        }
+
+        createNotification(
+          mentorship.mentee_id,
+          "feedback",
+          "Feedback gewünscht",
+          "Bitte gib uns Feedback zu deiner Betreuung.",
+          mentorshipId
+        ).catch(() => {});
       }
     },
     [users, mentorships, createNotification]
@@ -1785,6 +1930,19 @@ export function DataProvider({ children }: { children: ReactNode }) {
           .eq("id", st.id)
       )
     );
+  }, []);
+
+  const updateSessionType = useCallback(async (id: string, data: { name?: string; description?: string }) => {
+    const { error } = await supabase
+      .from("session_types")
+      .update(data)
+      .eq("id", id);
+
+    if (error) {
+      throw new Error(error.message ?? "Session-Typ konnte nicht aktualisiert werden");
+    }
+
+    setSessionTypes((prev) => prev.map((st) => st.id === id ? { ...st, ...data } : st));
   }, []);
 
   const deleteSessionType = useCallback(async (id: string) => {
@@ -2072,6 +2230,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 if (prev.some((u) => u.id === newProfile.id)) return prev;
                 return [...prev, mapProfile(newProfile)];
               });
+              // Auto-Geocoding: PLZ → Koordinaten (fire-and-forget)
+              if (app.plz && !newProfile.lat && !newProfile.lng) {
+                geocodePLZ(app.plz).then((coords) => {
+                  if (coords) {
+                    supabase.from("profiles").update({ lat: coords.lat, lng: coords.lng }).eq("id", newProfile.id).then(() => {
+                      setUsers((prev) => prev.map((u) => u.id === newProfile.id ? { ...u, lat: coords.lat, lng: coords.lng } : u));
+                    });
+                  }
+                }).catch(() => {});
+              }
             }
           }
 
@@ -2654,6 +2822,91 @@ export function DataProvider({ children }: { children: ReactNode }) {
     setQAEntries((prev) => prev.filter((e) => e.id !== id));
   }, []);
 
+  // ─── Resource CRUD ──────────────────────────────────────────────────────────
+
+  const addResource = useCallback(async (resource: Omit<Resource, "id" | "created_at">) => {
+    const { data, error } = await supabase.from("resources").insert(resource).select().single();
+    if (error) throw new Error(error.message);
+    if (data) {
+      setResources((prev) => [...prev, {
+        id: data.id,
+        title: data.title ?? "",
+        url: data.url ?? "",
+        description: data.description ?? "",
+        icon: data.icon ?? "link-outline",
+        category: data.category ?? "general",
+        sort_order: data.sort_order ?? 0,
+        is_active: data.is_active ?? true,
+        created_at: data.created_at,
+      }]);
+    }
+  }, []);
+
+  const updateResource = useCallback(async (id: string, data: Partial<Omit<Resource, "id" | "created_at">>) => {
+    const { error } = await supabase.from("resources").update(data).eq("id", id);
+    if (error) throw new Error(error.message);
+    setResources((prev) => prev.map((r) => r.id === id ? { ...r, ...data } : r));
+  }, []);
+
+  const deleteResource = useCallback(async (id: string) => {
+    const { error } = await supabase.from("resources").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    setResources((prev) => prev.filter((r) => r.id !== id));
+  }, []);
+
+  // ─── Event Participation ─────────────────────────────────────────────────────
+
+  const toggleEventParticipation = useCallback(async (resourceId: string, status: EventParticipationStatus) => {
+    if (!authUser) return;
+    const existing = eventParticipations.find(
+      (ep) => ep.resource_id === resourceId && ep.user_id === authUser.id
+    );
+
+    if (existing) {
+      if (existing.status === status) {
+        // Same status → remove participation
+        const { error } = await supabase.from("event_participations").delete().eq("id", existing.id);
+        if (error) throw new Error(error.message);
+        setEventParticipations((prev) => prev.filter((ep) => ep.id !== existing.id));
+      } else {
+        // Different status → update
+        const { error } = await supabase.from("event_participations").update({ status }).eq("id", existing.id);
+        if (error) throw new Error(error.message);
+        setEventParticipations((prev) => prev.map((ep) => ep.id === existing.id ? { ...ep, status } : ep));
+      }
+    } else {
+      // New participation
+      const { data, error } = await supabase
+        .from("event_participations")
+        .insert({ resource_id: resourceId, user_id: authUser.id, status })
+        .select()
+        .single();
+      if (error) throw new Error(error.message);
+      if (data) {
+        setEventParticipations((prev) => [...prev, {
+          id: data.id,
+          resource_id: data.resource_id,
+          user_id: data.user_id,
+          status: data.status,
+          created_at: data.created_at,
+        }]);
+      }
+    }
+  }, [authUser, eventParticipations]);
+
+  const getEventParticipationsByResourceId = useCallback(
+    (resourceId: string) => eventParticipations.filter((ep) => ep.resource_id === resourceId),
+    [eventParticipations]
+  );
+
+  const getMyEventParticipation = useCallback(
+    (resourceId: string) => {
+      if (!authUser) return undefined;
+      return eventParticipations.find((ep) => ep.resource_id === resourceId && ep.user_id === authUser.id);
+    },
+    [authUser, eventParticipations]
+  );
+
   // ─── refreshData ──────────────────────────────────────────────────────────────
 
   // Throttled refresh: nur wenn letzte Ladung > 10s her ist
@@ -2835,6 +3088,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     bulkInsertHadithe,
     qaEntries,
     messageTemplates,
+    resources,
+    eventParticipations,
+    addResource,
+    updateResource,
+    deleteResource,
+    toggleEventParticipation,
+    getEventParticipationsByResourceId,
+    getMyEventParticipation,
     loadQAEntries,
     addQAEntry,
     updateQAEntry,
@@ -2854,6 +3115,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     cancelMentorship,
     addSessionType,
     updateSessionTypeOrder,
+    updateSessionType,
     deleteSessionType,
     addFeedback,
     getFeedbacks,
@@ -2897,13 +3159,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }), [
     users, mentorships, sessions, sessionTypes, feedback, messages, applications,
     notifications, hadithe, qaEntries,
-    messageTemplates, adminMessages, mentorOfMonthVisible, isLoading, _updateUserXP,
+    messageTemplates, resources, eventParticipations, adminMessages, mentorOfMonthVisible, isLoading, _updateUserXP,
+    addResource, updateResource, deleteResource,
+    toggleEventParticipation, getEventParticipationsByResourceId, getMyEventParticipation,
     addHadith, updateHadith, deleteHadith, reorderHadithe, bulkInsertHadithe,
     loadQAEntries, addQAEntry, updateQAEntry, deleteQAEntry,
     getSetting, toggleMentorOfMonth, addUser, assignMentorship,
     updateMentorshipStatus, approveMentorship, rejectMentorship, getPendingApprovalsCount,
     addSession, updateSession, deleteSession, cancelMentorship,
-    addSessionType, updateSessionTypeOrder, deleteSessionType, addFeedback, getFeedbacks,
+    addSessionType, updateSessionTypeOrder, updateSessionType, deleteSessionType, addFeedback, getFeedbacks,
     sendMessage, deleteMessage, markAsRead, markAllAsRead, getUnreadCount,
     sendAdminDirectMessage, sendAdminMessage, replyToAdmin,
     getAdminMessagesByUserId, getAdminChatPartners,

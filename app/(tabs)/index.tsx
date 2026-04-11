@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useCallback, useEffect } from "react";
-import { View, Text, ScrollView, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput } from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl, Platform, Share, useWindowDimensions, Modal, TextInput, Linking } from "react-native";
 import { BNMPressable } from "../../components/BNMPressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -60,7 +60,9 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
   const [activePeriod, setActivePeriod] = useState<"thisMonth" | "lastMonth" | "thisQuarter" | "thisYear">("thisMonth");
   const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [selectedMenteeId, setSelectedMenteeId] = useState<string | null>(null);
-  const [showAllActivities, setShowAllActivities] = useState(false);
+  const [activityFilter, setActivityFilter] = useState<"all" | "sessions" | "assignments" | "completions" | "feedback">("all");
+  const [activityDateRange, setActivityDateRange] = useState<"7d" | "30d" | "all">("30d");
+  const [activityLimit, setActivityLimit] = useState(20);
   const [sendingReminderFor, setSendingReminderFor] = useState<string | null>(null);
 
   // Prüft ob für eine Mentorship bereits ein Reminder gesendet wurde (via adminMessages in DB)
@@ -121,13 +123,120 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
     (a) => a.motivation !== "Anmeldung als neuer Muslim (öffentliches Formular)" && a.status === "pending"
   ).length;
 
-  // Aktivitäten: Sessions sortiert nach Datum absteigend (5 oder alle)
-  const allSortedSessions = useMemo(() => {
-    return [...sessions].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [sessions]);
-  const recentSessions = useMemo(() => {
-    return showAllActivities ? allSortedSessions : allSortedSessions.slice(0, 5);
-  }, [allSortedSessions, showAllActivities]);
+  // ─── Unified Activity Log ──────────────────────────────────────────────────
+  type ActivityItem = {
+    id: string;
+    timestamp: Date;
+    type: "session" | "assignment" | "completion" | "cancellation" | "feedback";
+    description: string;
+    icon: keyof typeof Ionicons.glyphMap;
+    color: string;
+  };
+
+  const allActivities = useMemo(() => {
+    const items: ActivityItem[] = [];
+
+    // Sessions
+    for (const s of sessions) {
+      const ms = mentorships.find((m) => m.id === s.mentorship_id);
+      const stepName = s.session_type?.name ?? "Session";
+      const mentorName = ms?.mentor?.name ?? "–";
+      const menteeName = ms?.mentee?.name ?? "–";
+      items.push({
+        id: `s-${s.id}`,
+        timestamp: new Date(s.date),
+        type: "session",
+        description: `${mentorName} hat Session '${stepName}' mit ${menteeName} dokumentiert`,
+        icon: "document-text",
+        color: COLORS.blue,
+      });
+    }
+
+    // Assignments
+    for (const m of mentorships) {
+      if (m.assigned_at) {
+        items.push({
+          id: `a-${m.id}`,
+          timestamp: new Date(m.assigned_at),
+          type: "assignment",
+          description: `${m.mentee?.name ?? "Mentee"} wurde ${m.mentor?.name ?? "Mentor"} zugewiesen`,
+          icon: "people",
+          color: COLORS.gold,
+        });
+      }
+    }
+
+    // Completions & Cancellations
+    for (const m of mentorships) {
+      if (m.status === "completed" && m.completed_at) {
+        items.push({
+          id: `c-${m.id}`,
+          timestamp: new Date(m.completed_at),
+          type: "completion",
+          description: `Betreuung ${m.mentor?.name ?? "Mentor"} → ${m.mentee?.name ?? "Mentee"} wurde abgeschlossen`,
+          icon: "checkmark-circle",
+          color: COLORS.cta,
+        });
+      }
+      if (m.status === "cancelled" && m.cancelled_at) {
+        items.push({
+          id: `x-${m.id}`,
+          timestamp: new Date(m.cancelled_at),
+          type: "cancellation",
+          description: `Betreuung ${m.mentor?.name ?? "Mentor"} → ${m.mentee?.name ?? "Mentee"} wurde abgebrochen`,
+          icon: "close-circle",
+          color: COLORS.error,
+        });
+      }
+    }
+
+    // Feedback
+    for (const f of feedback) {
+      const ms = mentorships.find((m) => m.id === f.mentorship_id);
+      const submitterName = users.find((u) => u.id === f.submitted_by)?.name ?? "Jemand";
+      items.push({
+        id: `f-${f.id}`,
+        timestamp: new Date(f.created_at),
+        type: "feedback",
+        description: `${submitterName} hat Feedback gegeben (${f.rating}★)`,
+        icon: "star",
+        color: COLORS.warning,
+      });
+    }
+
+    return items.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+  }, [sessions, mentorships, feedback, users]);
+
+  const filteredActivities = useMemo(() => {
+    let items = allActivities;
+
+    // Date range filter
+    if (activityDateRange !== "all") {
+      const now = Date.now();
+      const days = activityDateRange === "7d" ? 7 : 30;
+      const cutoff = now - days * 24 * 60 * 60 * 1000;
+      items = items.filter((a) => a.timestamp.getTime() >= cutoff);
+    }
+
+    // Type filter
+    if (activityFilter !== "all") {
+      if (activityFilter === "completions") {
+        items = items.filter((a) => a.type === "completion" || a.type === "cancellation");
+      } else if (activityFilter === "sessions") {
+        items = items.filter((a) => a.type === "session");
+      } else if (activityFilter === "assignments") {
+        items = items.filter((a) => a.type === "assignment");
+      } else if (activityFilter === "feedback") {
+        items = items.filter((a) => a.type === "feedback");
+      }
+    }
+
+    return items;
+  }, [allActivities, activityFilter, activityDateRange]);
+
+  const visibleActivities = useMemo(() => {
+    return filteredActivities.slice(0, activityLimit);
+  }, [filteredActivities, activityLimit]);
 
   // Betreuungs-Warnungen: Alle Typen in einer vereinten Liste
   const allWarnings = useMemo(() => {
@@ -495,44 +604,106 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
               </View>
             )}
 
-            {/* ── Row 2: Aktivitäten (links) + XP-Übersicht (rechts) ── */}
+            {/* ── Row 2: Aktivitäten-Log (links) + XP-Übersicht (rechts) ── */}
             <DashboardRow>
             <View style={[styles.card, styles.dashCol, { backgroundColor: themeColors.card }]}>
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 2 }}>
-                <Text style={[styles.cardTitle, { color: themeColors.text }]}>{t("dashboard.recentActivity")}</Text>
-                {allSortedSessions.length > 5 && (
-                  <BNMPressable onPress={() => setShowAllActivities((v) => !v)} activeOpacity={0.7} accessibilityRole="button" accessibilityLabel={showAllActivities ? "Weniger Aktivitaeten anzeigen" : "Alle Aktivitaeten anzeigen"}>
-                    <Text style={{ color: themeColors.accent, fontSize: 13, fontWeight: "600" }}>
-                      {showAllActivities ? t("dashboard.showLessActivities") : t("dashboard.showAllActivities").replace("{0}", String(allSortedSessions.length))}
-                    </Text>
-                  </BNMPressable>
-                )}
+              <Text style={[styles.cardTitle, { color: themeColors.text, marginBottom: 4 }]}>{t("dashboard.recentActivity")}</Text>
+              <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 10 }]}>{t("dashboard.recentActivitySub")}</Text>
+
+              {/* Filter Chips: Typ */}
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 8 }}>
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  {([
+                    { key: "all" as const, label: "Alle" },
+                    { key: "sessions" as const, label: "Sessions" },
+                    { key: "assignments" as const, label: "Zuweisungen" },
+                    { key: "completions" as const, label: "Abschlüsse" },
+                    { key: "feedback" as const, label: "Feedback" },
+                  ]).map((chip) => {
+                    const isActive = activityFilter === chip.key;
+                    return (
+                      <BNMPressable
+                        key={chip.key}
+                        onPress={() => { setActivityFilter(chip.key); setActivityLimit(20); }}
+                        style={[
+                          styles.activityChip,
+                          { backgroundColor: isActive ? COLORS.gold + "20" : themeColors.card, borderColor: isActive ? COLORS.gold : themeColors.border },
+                        ]}
+                        accessibilityRole="button"
+                        accessibilityLabel={chip.label}
+                      >
+                        <Text style={{ fontSize: 12, fontWeight: isActive ? "700" : "500", color: isActive ? COLORS.gold : themeColors.textSecondary }}>
+                          {chip.label}
+                        </Text>
+                      </BNMPressable>
+                    );
+                  })}
+                </View>
+              </ScrollView>
+
+              {/* Filter Chips: Zeitraum */}
+              <View style={{ flexDirection: "row", gap: 6, marginBottom: 10 }}>
+                {([
+                  { key: "7d" as const, label: "7 Tage" },
+                  { key: "30d" as const, label: "30 Tage" },
+                  { key: "all" as const, label: "Alles" },
+                ]).map((chip) => {
+                  const isActive = activityDateRange === chip.key;
+                  return (
+                    <BNMPressable
+                      key={chip.key}
+                      onPress={() => { setActivityDateRange(chip.key); setActivityLimit(20); }}
+                      style={[
+                        styles.activityChip,
+                        { backgroundColor: isActive ? COLORS.gradientStart + "18" : themeColors.card, borderColor: isActive ? COLORS.gradientStart : themeColors.border },
+                      ]}
+                      accessibilityRole="button"
+                      accessibilityLabel={chip.label}
+                    >
+                      <Text style={{ fontSize: 12, fontWeight: isActive ? "700" : "500", color: isActive ? COLORS.gradientStart : themeColors.textSecondary }}>
+                        {chip.label}
+                      </Text>
+                    </BNMPressable>
+                  );
+                })}
               </View>
-              <Text style={[styles.tertiaryXs, { color: themeColors.textTertiary, marginBottom: 8 }]}>{t("dashboard.recentActivitySub")}</Text>
-              {recentSessions.length === 0 ? (
+
+              {/* Activity List */}
+              {visibleActivities.length === 0 ? (
                 <Text style={[styles.emptyText, { color: themeColors.textTertiary }]}>{t("dashboard.noRecentActivity")}</Text>
               ) : (
-                recentSessions.map((s, idx) => {
-                  const mentorship = mentorships.find((m) => m.id === s.mentorship_id);
-                  const stepName = s.session_type?.name ?? `${t("dashboard.activityStep")} ${idx + 1}`;
-                  const mentorName = mentorship?.mentor?.name ?? "–";
-                  const menteeName = mentorship?.mentee?.name ?? "–";
-                  const isLast = idx === recentSessions.length - 1;
+                visibleActivities.map((activity, idx) => {
+                  const isLast = idx === visibleActivities.length - 1;
                   return (
-                    <View key={s.id} style={[styles.activityRow, isLast ? {} : [styles.activityRowBorder, { borderBottomColor: themeColors.border }]]}>
-                      <View style={styles.activityDot} />
+                    <View key={activity.id} style={[styles.activityRow, isLast ? {} : [styles.activityRowBorder, { borderBottomColor: themeColors.border }]]}>
+                      <View style={[styles.activityIconCircle, { backgroundColor: activity.color + "18" }]}>
+                        <Ionicons name={activity.icon} size={14} color={activity.color} />
+                      </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.activityTitle, { color: themeColors.text }]}>{stepName}</Text>
-                        <Text style={[styles.activitySub, { color: themeColors.textTertiary }]}>
-                          {menteeName} · {t("dashboard.activityBy")} {mentorName}
-                        </Text>
+                        <Text style={[styles.activityTitle, { color: themeColors.text }]} numberOfLines={2}>{activity.description}</Text>
                       </View>
                       <Text style={[styles.activityDate, { color: themeColors.textTertiary }]}>
-                        {new Date(s.date).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
+                        {activity.timestamp.toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit" })}
                       </Text>
                     </View>
                   );
                 })
+              )}
+
+              {/* Show More / Show Less */}
+              {filteredActivities.length > activityLimit && (
+                <BNMPressable onPress={() => setActivityLimit((v) => v + 20)} style={{ paddingTop: 10, alignItems: "center" }} accessibilityRole="button" accessibilityLabel="Mehr anzeigen">
+                  <Text style={{ color: themeColors.accent, fontSize: 13, fontWeight: "600" }}>
+                    Mehr anzeigen ({filteredActivities.length - activityLimit} weitere)
+                  </Text>
+                </BNMPressable>
+              )}
+              {activityLimit > 20 && (
+                <BNMPressable onPress={() => setActivityLimit(20)} style={{ paddingTop: 6, alignItems: "center" }} accessibilityRole="button" accessibilityLabel="Weniger anzeigen">
+                  <Text style={{ color: themeColors.textTertiary, fontSize: 12, fontWeight: "500" }}>
+                    Weniger anzeigen
+                  </Text>
+                </BNMPressable>
               )}
             </View>
 
@@ -711,7 +882,7 @@ function MentorDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, sessionTypes, isLoading } = useData();
+  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, sessionTypes, isLoading, resources, eventParticipations, toggleEventParticipation, getEventParticipationsByResourceId, getMyEventParticipation } = useData();
   const { xpLog, userAchievements, thanks, streak } = useGamification();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
@@ -1121,6 +1292,69 @@ function MentorDashboard() {
         />
         </View>
         </DashboardRow>
+
+        {/* ── Ressourcen ── */}
+        {resources.filter((r) => r.is_active).length > 0 && (
+          <View style={{ marginTop: 8 }}>
+            <Text style={[styles.mentorSectionTitle, { color: themeColors.textSecondary, marginBottom: 10 }]}>
+              Ressourcen
+            </Text>
+            <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+              {resources
+                .filter((r) => r.is_active)
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((res) => {
+                  const isEvent = res.category === "event";
+                  const myParticipation = isEvent ? getMyEventParticipation(res.id) : undefined;
+                  const confirmedCount = isEvent
+                    ? getEventParticipationsByResourceId(res.id).filter((ep) => ep.status === "confirmed").length
+                    : 0;
+                  const isConfirmed = myParticipation?.status === "confirmed";
+
+                  return (
+                    <BNMPressable
+                      key={res.id}
+                      style={[styles.resourceCard, { backgroundColor: themeColors.card, borderColor: sem(SEMANTIC.goldBorder, isDark) }]}
+                      onPress={() => !isEvent ? Linking.openURL(res.url) : undefined}
+                      accessibilityRole={isEvent ? "button" : "link"}
+                      accessibilityLabel={res.title}
+                    >
+                      <View style={[styles.resourceIconBg, { backgroundColor: COLORS.gold + "15" }]}>
+                        <Ionicons name={res.icon as any} size={22} color={COLORS.gold} />
+                      </View>
+                      <Text style={[styles.resourceTitle, { color: themeColors.text }]} numberOfLines={2}>{res.title}</Text>
+                      {res.description ? (
+                        <Text style={[styles.resourceDesc, { color: themeColors.textTertiary }]} numberOfLines={2}>{res.description}</Text>
+                      ) : null}
+                      {isEvent && (
+                        <View style={{ marginTop: 8 }}>
+                          <Text style={{ fontSize: 11, color: themeColors.textTertiary, marginBottom: 6 }}>
+                            {confirmedCount} Teilnehmer
+                          </Text>
+                          <BNMPressable
+                            style={{
+                              paddingVertical: 6,
+                              paddingHorizontal: 12,
+                              borderRadius: RADIUS.sm,
+                              backgroundColor: isConfirmed ? COLORS.error + "15" : COLORS.gold + "15",
+                              alignItems: "center",
+                            }}
+                            onPress={() => toggleEventParticipation(res.id, "confirmed")}
+                            accessibilityRole="button"
+                            accessibilityLabel={isConfirmed ? "Nicht teilnehmen" : "Teilnehmen"}
+                          >
+                            <Text style={{ fontSize: 12, fontWeight: "600", color: isConfirmed ? COLORS.error : COLORS.gold }}>
+                              {isConfirmed ? "Nicht teilnehmen" : "Teilnehmen"}
+                            </Text>
+                          </BNMPressable>
+                        </View>
+                      )}
+                    </BNMPressable>
+                  );
+                })}
+            </View>
+          </View>
+        )}
 
       </View>
     </ScrollView>
@@ -2211,13 +2445,13 @@ const styles = StyleSheet.create({
   mentorDetailRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   mentorDetailLabel: { color: COLORS.secondary, fontSize: 12 },
   mentorDetailValue: { color: COLORS.primary, fontSize: 12, fontWeight: "500" },
-  // Letzte Aktivitäten
-  activityRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 12 },
+  // Aktivitäten-Log
+  activityRow: { flexDirection: "row", alignItems: "center", paddingVertical: 10, gap: 10 },
   activityRowBorder: { borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  activityDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.gold, flexShrink: 0 },
-  activityTitle: { color: COLORS.primary, fontSize: 13, fontWeight: "600" },
-  activitySub: { color: COLORS.tertiary, fontSize: 12, marginTop: 2 },
+  activityIconCircle: { width: 28, height: 28, borderRadius: 14, alignItems: "center", justifyContent: "center", flexShrink: 0 },
+  activityTitle: { color: COLORS.primary, fontSize: 13, fontWeight: "600", lineHeight: 18 },
   activityDate: { color: COLORS.tertiary, fontSize: 11, flexShrink: 0, fontWeight: "500" },
+  activityChip: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: RADIUS.sm, borderWidth: 1 },
 
   // Betreuungs-Warnungen Widget
   warningBox: {
@@ -2956,5 +3190,35 @@ const styles = StyleSheet.create({
   showMoreText: {
     fontSize: 13,
     fontWeight: "600",
+  },
+
+  // Resources
+  resourceCard: {
+    borderWidth: 1,
+    borderRadius: RADIUS.md,
+    padding: 14,
+    alignItems: "center",
+    flex: 1,
+    minWidth: 140,
+    maxWidth: Platform.OS === "web" ? 200 : "48%" as any,
+  },
+  resourceIconBg: {
+    width: 44,
+    height: 44,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+  resourceTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: 4,
+  },
+  resourceDesc: {
+    fontSize: 11,
+    textAlign: "center",
+    lineHeight: 15,
   },
 });

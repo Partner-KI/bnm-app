@@ -41,12 +41,13 @@ export default function MenteesScreen() {
 }
 
 type AssignmentFilter = "all" | "assigned" | "unassigned";
-type StatusFilter = "all" | "active" | "completed" | "cancelled";
+type StatusFilter = "all" | "active" | "completed" | "cancelled" | "archived";
 type GenderFilter = "all" | "male" | "female";
-type SortKey = "name" | "city" | "progress";
+type SortKey = "name" | "city" | "progress" | "date";
 
 function AdminMenteesView() {
   const router = useRouter();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
@@ -69,7 +70,7 @@ function AdminMenteesView() {
   const [deleteInput, setDeleteInput] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { users, mentorships, sessionTypes, getCompletedStepIds, refreshData, isLoading, bulkDeleteUsers } = useData();
+  const { users, mentorships, sessionTypes, getCompletedStepIds, refreshData, isLoading, bulkDeleteUsers, setUserActive } = useData();
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await refreshData();
@@ -152,6 +153,8 @@ function AdminMenteesView() {
         filenamePart = t("mentees.csvFileActive");
       } else if (statusFilter === "completed") {
         filenamePart = t("mentees.csvFileCompleted");
+      } else if (statusFilter === "cancelled") {
+        filenamePart = t("mentees.cancelled");
       } else {
         filenamePart = t("mentees.csvFileAll");
       }
@@ -174,8 +177,20 @@ function AdminMenteesView() {
     }
   }
 
+  const archivedCount = useMemo(() => allMentees.filter((u) => u.is_active === false).length, [allMentees]);
+
   const filteredMentees = useMemo(() => allMentees
     .filter((mentee) => {
+      // Archiv-Filter: nur deaktivierte anzeigen
+      if (statusFilter === "archived") {
+        return mentee.is_active === false &&
+          (mentee.name.toLowerCase().includes(search.toLowerCase()) ||
+           mentee.city.toLowerCase().includes(search.toLowerCase())) &&
+          (genderFilter === "all" ? true : mentee.gender === genderFilter);
+      }
+      // Normaler Modus: deaktivierte ausblenden
+      if (mentee.is_active === false) return false;
+
       const mentorship = mentorships.find((m) => m.mentee_id === mentee.id);
       const matchesSearch =
         mentee.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -199,6 +214,7 @@ function AdminMenteesView() {
     .sort((a, b) => {
       if (sortKey === "name") return a.name.localeCompare(b.name);
       if (sortKey === "city") return a.city.localeCompare(b.city);
+      if (sortKey === "date") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
       if (sortKey === "progress") {
         const mA = mentorships.find((m) => m.mentee_id === a.id);
         const mB = mentorships.find((m) => m.mentee_id === b.id);
@@ -305,14 +321,16 @@ function AdminMenteesView() {
             <View style={{ flexDirection: "row", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
               {!selectMode && Platform.OS === "web" && (
                 <>
-                  <BNMPressable
-                    style={[styles.csvButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
-                    onPress={() => router.push("/admin/csv-import")}
-                    accessibilityRole="link"
-                    accessibilityLabel="CSV importieren"
-                  >
-                    <Text style={[styles.csvButtonText, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
-                  </BNMPressable>
+                  {user?.role === "admin" && (
+                    <BNMPressable
+                      style={[styles.csvButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
+                      onPress={() => router.push("/admin/csv-import")}
+                      accessibilityRole="link"
+                      accessibilityLabel="CSV importieren"
+                    >
+                      <Text style={[styles.csvButtonText, { color: themeColors.text }]}>{t("csvImport.title")}</Text>
+                    </BNMPressable>
+                  )}
                   <BNMPressable style={[styles.csvButton, { backgroundColor: themeColors.card, borderColor: themeColors.border }]} onPress={handleExportCsv} accessibilityRole="button" accessibilityLabel="CSV exportieren">
                     <Text style={[styles.csvButtonText, { color: themeColors.text }]}>{t("csv.export")}</Text>
                   </BNMPressable>
@@ -427,13 +445,49 @@ function AdminMenteesView() {
                   {t("mentees.completedStatus")}
                 </Text>
               </BNMPressable>
+
+              {/* "Abgebrochen" */}
+              <BNMPressable
+                style={[
+                  styles.filterChip,
+                  statusFilter === "cancelled" && assignFilter !== "unassigned"
+                    ? styles.filterChipActive
+                    : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                ]}
+                onPress={() => { setStatusFilter("cancelled"); setAssignFilter("all"); }}
+                accessibilityRole="button"
+                accessibilityLabel="Abgebrochene filtern"
+              >
+                <Text style={statusFilter === "cancelled" && assignFilter !== "unassigned" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                  {t("mentees.cancelled")}
+                </Text>
+              </BNMPressable>
+
+              {/* "Archiv" (deaktivierte) */}
+              {archivedCount > 0 && (
+                <BNMPressable
+                  style={[
+                    styles.filterChip,
+                    statusFilter === "archived"
+                      ? [styles.filterChipActive, { backgroundColor: COLORS.error, borderColor: COLORS.error }]
+                      : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }],
+                  ]}
+                  onPress={() => { setStatusFilter("archived"); setAssignFilter("all"); }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Archiv / Deaktivierte anzeigen"
+                >
+                  <Text style={statusFilter === "archived" ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                    Archiv ({archivedCount})
+                  </Text>
+                </BNMPressable>
+              )}
             </View>
 
             {/* Sort-Icon */}
             <BNMPressable
               style={[styles.filterIconBtn, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}
               onPress={() => {
-                const order: SortKey[] = ["name", "city", "progress"];
+                const order: SortKey[] = ["name", "city", "progress", "date"];
                 const next = order[(order.indexOf(sortKey) + 1) % order.length];
                 setSortKey(next);
               }}
@@ -442,9 +496,30 @@ function AdminMenteesView() {
             >
               <Ionicons name="swap-vertical-outline" size={16} color={themeColors.textSecondary} />
               <Text style={[styles.filterIconBtnText, { color: themeColors.textSecondary }]}>
-                {sortKey === "name" ? t("mentees.sortName") : sortKey === "city" ? t("mentees.sortCity") : t("mentees.sortProgress")}
+                {sortKey === "name" ? t("mentees.sortName") : sortKey === "city" ? t("mentees.sortCity") : sortKey === "date" ? "Datum" : t("mentees.sortProgress")}
               </Text>
             </BNMPressable>
+          </View>
+
+          {/* Gender-Tabs: Alle / Brüder / Schwestern */}
+          <View style={[styles.filterChipsGroup, { marginBottom: 12 }]}>
+            {(["all", "male", "female"] as GenderFilter[]).map((g) => {
+              const isActive = genderFilter === g;
+              const label = g === "all" ? t("mentees.all") : g === "male" ? t("mentees.brothers") : t("mentees.sisters");
+              return (
+                <BNMPressable
+                  key={g}
+                  style={[styles.filterChip, isActive ? styles.filterChipActive : [styles.filterChipInactive, { backgroundColor: themeColors.card, borderColor: themeColors.border }]]}
+                  onPress={() => setGenderFilter(g)}
+                  accessibilityRole="button"
+                  accessibilityLabel={label}
+                >
+                  <Text style={isActive ? styles.filterChipTextActive : [styles.filterChipTextInactive, { color: themeColors.textSecondary }]}>
+                    {label}
+                  </Text>
+                </BNMPressable>
+              );
+            })}
           </View>
         </>
       }
@@ -531,6 +606,14 @@ function AdminMenteesView() {
             {!selectMode && mentorship ? (
               <>
                 <Text style={[styles.mentorLabel, { color: themeColors.textTertiary }]}>{t("mentees.mentor")}: {mentorship.mentor?.name}</Text>
+                {mentorship.status === "cancelled" && (
+                  <Text style={[styles.mentorLabel, { color: sem(SEMANTIC.redTextDark, isDark), marginTop: 2 }]}>
+                    {mentorship.cancelled_at
+                      ? new Date(mentorship.cancelled_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })
+                      : ""}
+                    {mentorship.cancel_reason ? ` · ${mentorship.cancel_reason}` : ""}
+                  </Text>
+                )}
                 <View style={styles.progressRow}>
                   <View style={[styles.progressTrack, { backgroundColor: themeColors.background }]}>
                     <View
@@ -556,6 +639,27 @@ function AdminMenteesView() {
                 <Text style={styles.assignButtonText}>{t("mentees.assignMentor")}</Text>
               </BNMPressable>
             ) : null}
+
+            {/* Reaktivieren-Button für archivierte User */}
+            {!selectMode && statusFilter === "archived" && mentee.is_active === false && (
+              <BNMPressable
+                style={styles.reactivateButton}
+                hapticStyle="success"
+                onPress={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    await setUserActive(mentee.id, true);
+                    showSuccess(`${mentee.name} wurde reaktiviert.`);
+                  } catch {
+                    showError(t("common.error"));
+                  }
+                }}
+                accessibilityRole="button"
+                accessibilityLabel="Reaktivieren"
+              >
+                <Text style={styles.reactivateButtonText}>Reaktivieren</Text>
+              </BNMPressable>
+            )}
           </BNMPressable>
         );
       }}
@@ -1229,6 +1333,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   assignButtonText: { color: COLORS.white, fontSize: 14, fontWeight: "700" },
+  reactivateButton: {
+    marginTop: 10,
+    backgroundColor: COLORS.cta,
+    borderRadius: RADIUS.md,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    alignSelf: "flex-start",
+  },
+  reactivateButtonText: { color: COLORS.white, fontSize: 13, fontWeight: "700" },
   stepSectionLabel: {
     fontSize: 11,
     fontWeight: "600",

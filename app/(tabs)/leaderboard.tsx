@@ -207,6 +207,15 @@ export default function LeaderboardScreen() {
             </View>
           )}
 
+          {/* Eigene Position Banner */}
+          {user?.role === "mentor" && myRankIndex >= 0 && (
+            <View style={[styles.myRankBanner, { backgroundColor: isDark ? "#2A2518" : "#FFF8E1", borderColor: isDark ? "#3A3520" : "rgba(238,167,27,0.4)" }]}>
+              <Text style={[styles.myRankBannerText, { color: isDark ? COLORS.gold : COLORS.goldText }]}>
+                Du bist auf Platz {myRankIndex + 1} von {ranked.length}
+              </Text>
+            </View>
+          )}
+
           {/* Monats-Picker */}
           <View style={[styles.monthPickerRow, { backgroundColor: themeColors.card }]}>
             <BNMPressable
@@ -392,7 +401,7 @@ export default function LeaderboardScreen() {
                         style={[
                           styles.rankRow,
                           idx < rest.length - 1 ? [styles.rankRowBorder, { borderBottomColor: themeColors.border }] : {},
-                          isMe ? [styles.rankRowHighlight, { borderWidth: 2, borderColor: COLORS.gold, borderRadius: RADIUS.sm }] : {},
+                          isMe ? [styles.rankRowHighlight, { backgroundColor: "rgba(238,167,27,0.1)", borderWidth: 2, borderColor: COLORS.gold, borderRadius: RADIUS.sm }] : {},
                         ]}
                         onPress={() =>
                           router.push({ pathname: "/mentor/[id]", params: { id: item.mentorId } })
@@ -733,6 +742,20 @@ const styles = StyleSheet.create({
   },
 
   // Monats-Picker
+  // Eigene Position Banner
+  myRankBanner: {
+    borderWidth: 1,
+    borderRadius: RADIUS.md,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  myRankBannerText: {
+    fontWeight: "800",
+    fontSize: 15,
+  },
+
   monthPickerRow: {
     flexDirection: "row",
     alignItems: "center",

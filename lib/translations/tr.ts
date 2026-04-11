@@ -531,6 +531,7 @@ const tr: Record<TranslationKeys, string> = {
   "mentorship.congratulations": "Tebrikler!",
   "mentorship.allStepsDone": "10 adımın tümünü başarıyla tamamladın!",
   "mentorship.notFound": "Danışmanlık bulunamadı",
+  "mentorship.noNotes": "Not yok",
   "mentorship.since": "{0} tarihinden beri",
   "mentorship.mentee": "DANIŞAN",
   "mentorship.mentor": "MENTOR",

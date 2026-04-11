@@ -41,6 +41,7 @@ export default function MentorshipDetailScreen() {
   } = useData();
   const [notesText, setNotesText] = useState<string | null>(null);
   const [isSavingNotes, setIsSavingNotes] = useState(false);
+  const [expandedSessions, setExpandedSessions] = useState<Set<string>>(new Set());
 
   // Abbruch-Flow State
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -192,6 +193,22 @@ export default function MentorshipDetailScreen() {
           </Text>
         </View>
 
+        {/* Abbruch-Info-Box */}
+        {mentorship.status === "cancelled" && (
+          <View style={[styles.cancelledInfoBox, { backgroundColor: isDark ? "#3a1a1a" : COLORS.errorBg, borderColor: isDark ? "#7a2a2a" : COLORS.errorBorderLight }]}>
+            <Text style={[styles.cancelledInfoTitle, { color: isDark ? "#f87171" : COLORS.error }]}>
+              Abgebrochen am: {mentorship.cancelled_at
+                ? new Date(mentorship.cancelled_at).toLocaleDateString("de-DE", { day: "2-digit", month: "2-digit", year: "numeric" })
+                : t("common.unknown")}
+            </Text>
+            {mentorship.cancel_reason ? (
+              <Text style={[styles.cancelledInfoReason, { color: isDark ? "#fca5a5" : COLORS.errorDark }]}>
+                Grund: {mentorship.cancel_reason}
+              </Text>
+            ) : null}
+          </View>
+        )}
+
         {/* Mentee-Info */}
         <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
           <Text style={[styles.cardSectionLabel, { color: themeColors.textTertiary }]}>{t("mentorship.mentee")}</Text>
@@ -254,16 +271,10 @@ export default function MentorshipDetailScreen() {
             const isCurrent = !isDone && idx === completedStepIds.length;
             const session = sessions.find((s) => s.session_type_id === step.id);
             const isLast = idx === sortedSessionTypes.length - 1;
+            const isSessionExpanded = expandedSessions.has(step.id);
 
-            return (
-              <View
-                key={step.id}
-                style={[
-                  styles.timelineItem,
-                  !isLast ? [styles.timelineItemBorder, { borderBottomColor: themeColors.border }] : {},
-                  isCurrent ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
-                ]}
-              >
+            const timelineContent = (
+              <>
                 <View style={styles.timelineDotCol}>
                   <View
                     style={[
@@ -299,18 +310,26 @@ export default function MentorshipDetailScreen() {
 
                 {/* Content */}
                 <View style={styles.timelineContent}>
-                  <Text
-                    style={[
-                      styles.stepName,
-                      isDone
-                        ? { color: COLORS.cta }
-                        : isCurrent
-                        ? { color: themeColors.text }
-                        : { color: themeColors.textTertiary },
-                    ]}
-                  >
-                    {step.name}
-                  </Text>
+                  <View style={styles.stepNameRow}>
+                    <Text
+                      style={[
+                        styles.stepName,
+                        { flex: 1 },
+                        isDone
+                          ? { color: COLORS.cta }
+                          : isCurrent
+                          ? { color: themeColors.text }
+                          : { color: themeColors.textTertiary },
+                      ]}
+                    >
+                      {step.name}
+                    </Text>
+                    {isDone && session && (
+                      <Text style={[styles.expandArrow, { color: themeColors.textTertiary }]}>
+                        {isSessionExpanded ? "▲" : "▼"}
+                      </Text>
+                    )}
+                  </View>
 
                   {isDone && session && (
                     <>
@@ -322,10 +341,14 @@ export default function MentorshipDetailScreen() {
                           ? ` · ${t("timeline.attempt").replace("{0}", String(session.attempt_number))}`
                           : ""}
                       </Text>
-                      {session.details && (
-                        <Text style={[styles.sessionDetails, { color: themeColors.textSecondary }]}>"{session.details}"</Text>
+                      {isSessionExpanded && (
+                        <View style={[styles.sessionNotesBox, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}>
+                          <Text style={[styles.sessionNotesText, { color: session.details ? themeColors.textSecondary : themeColors.textTertiary }]}>
+                            {session.details || t("mentorship.noNotes")}
+                          </Text>
+                        </View>
                       )}
-                      {user?.role === "admin" && (
+                      {user?.role === "admin" && isSessionExpanded && (
                         <View style={styles.sessionActionRow}>
                           <BNMPressable
                             style={[styles.sessionDeleteButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
@@ -346,6 +369,39 @@ export default function MentorshipDetailScreen() {
                     </View>
                   )}
                 </View>
+              </>
+            );
+
+            return isDone && session ? (
+              <BNMPressable
+                key={step.id}
+                style={[
+                  styles.timelineItem,
+                  !isLast ? [styles.timelineItemBorder, { borderBottomColor: themeColors.border }] : {},
+                ]}
+                onPress={() => {
+                  setExpandedSessions((prev) => {
+                    const next = new Set(prev);
+                    if (next.has(step.id)) next.delete(step.id);
+                    else next.add(step.id);
+                    return next;
+                  });
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`${step.name} ${isSessionExpanded ? "einklappen" : "aufklappen"}`}
+              >
+                {timelineContent}
+              </BNMPressable>
+            ) : (
+              <View
+                key={step.id}
+                style={[
+                  styles.timelineItem,
+                  !isLast ? [styles.timelineItemBorder, { borderBottomColor: themeColors.border }] : {},
+                  isCurrent ? { backgroundColor: isDark ? "#2a2218" : "#fffbeb" } : {},
+                ]}
+              >
+                {timelineContent}
               </View>
             );
           })}
@@ -577,8 +633,12 @@ const styles = StyleSheet.create({
   timelineLine: { width: 2, flex: 1, minHeight: 16, marginTop: 4 },
   timelineContent: { flex: 1, paddingBottom: 8 },
   stepName: { fontWeight: "600" },
+  stepNameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
+  expandArrow: { fontSize: 10, paddingHorizontal: 4 },
   sessionDate: { fontSize: 12, marginTop: 2 },
   sessionDetails: { fontSize: 12, marginTop: 4, fontStyle: "italic" },
+  sessionNotesBox: { marginTop: 6, padding: 10, borderRadius: RADIUS.sm, borderWidth: 1 },
+  sessionNotesText: { fontSize: 13, lineHeight: 18 },
   currentBadge: { marginTop: 4, alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 2, borderRadius: RADIUS.full },
   currentBadgeText: { fontSize: 12, fontWeight: "500" },
   primaryButton: { borderRadius: RADIUS.md, paddingVertical: 9, alignItems: "center" },
@@ -716,4 +776,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalConfirmText: { color: COLORS.white, fontWeight: "800" },
+
+  // Abbruch-Info-Box
+  cancelledInfoBox: {
+    borderWidth: 1,
+    borderRadius: RADIUS.lg,
+    padding: 18,
+    marginBottom: 16,
+  },
+  cancelledInfoTitle: {
+    fontWeight: "800",
+    fontSize: 14,
+    marginBottom: 4,
+  },
+  cancelledInfoReason: {
+    fontSize: 13,
+    marginTop: 4,
+  },
 });
