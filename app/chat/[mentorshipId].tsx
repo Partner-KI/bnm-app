@@ -409,7 +409,7 @@ export default function ChatScreen() {
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
           {isMentor && chatTemplates.length > 0 && (
             <BNMPressable
-              style={[styles.templateButton, { backgroundColor: themeColors.elevated, borderColor: themeColors.border }]}
+              style={[styles.templateButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
               onPress={() => setShowTemplateModal(true)}
               accessibilityRole="button"
               accessibilityLabel="Nachrichtenvorlage einfuegen"
@@ -421,7 +421,7 @@ export default function ChatScreen() {
             style={[
               styles.textInput,
               styles.textInputWithTemplate,
-              { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text },
+              { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text },
               { height: Math.max(44, Math.min(inputHeight, Platform.OS === "web" ? 300 : 120)) },
             ]}
             value={inputText}

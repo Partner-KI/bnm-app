@@ -53,9 +53,20 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
     sendMessage,
     deleteMessage,
     markChatAsRead,
+    messageTemplates,
+    getUserById,
   } = useData();
 
   const [inputText, setInputText] = useState("");
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+
+  const isMentor = user?.role === "mentor";
+  const mentorship = getMentorshipById(mentorshipId);
+  const menteeUser = mentorship ? getUserById(mentorship.mentee_id) : null;
+  const chatTemplates = useMemo(() =>
+    messageTemplates.filter(t => !t.title.startsWith("[E-Mail]") && t.is_active),
+    [messageTemplates]
+  );
   const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
@@ -280,11 +291,49 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
         )}
       </View>
 
+      {/* Template Modal */}
+      <Modal visible={showTemplateModal} transparent animationType="fade" onRequestClose={() => setShowTemplateModal(false)}>
+        <BNMPressable style={panelStyles.modalOverlay} onPress={() => setShowTemplateModal(false)}>
+          <View style={[panelStyles.modalContent, { backgroundColor: themeColors.card }]}>
+            <Text style={[panelStyles.modalTitle, { color: themeColors.text }]}>Vorlage waehlen</Text>
+            <ScrollView style={{ maxHeight: 300 }}>
+              {chatTemplates.map((tmpl) => (
+                <BNMPressable
+                  key={tmpl.id}
+                  style={[panelStyles.templateCard, { borderBottomColor: themeColors.border }]}
+                  onPress={() => {
+                    let text = tmpl.body;
+                    text = text.replace(/\{name\}/g, menteeUser?.name || "");
+                    text = text.replace(/\{mentee_name\}/g, menteeUser?.name || "");
+                    text = text.replace(/\{mentor_name\}/g, user?.name || "");
+                    setInputText(text);
+                    setShowTemplateModal(false);
+                  }}
+                >
+                  <Text style={[panelStyles.templateTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
+                  <Text style={[panelStyles.templateBody, { color: themeColors.textTertiary }]} numberOfLines={2}>{tmpl.body}</Text>
+                </BNMPressable>
+              ))}
+            </ScrollView>
+          </View>
+        </BNMPressable>
+      </Modal>
+
       {/* Input-Bereich */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
+          {isMentor && chatTemplates.length > 0 && (
+            <BNMPressable
+              style={[panelStyles.templateButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
+              onPress={() => setShowTemplateModal(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Nachrichtenvorlage"
+            >
+              <Ionicons name="document-text-outline" size={20} color={COLORS.gold} />
+            </BNMPressable>
+          )}
           <TextInput
-            style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
+            style={[panelStyles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text }]}
             value={inputText}
             onChangeText={setInputText}
             placeholder={t("chat.placeholder")}
@@ -393,6 +442,43 @@ const panelStyles = StyleSheet.create({
   },
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
   timeText: { fontSize: 10, marginTop: 2 },
+  templateButton: {
+    width: 40,
+    height: 40,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    borderRadius: RADIUS.lg,
+    padding: 20,
+    width: "90%",
+    maxWidth: 400,
+  },
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  templateCard: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+  },
+  templateTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  templateBody: {
+    fontSize: 12,
+  },
 });
 
 // ─── Admin-DM Chat Panel ──────────────────────────────────────────────────────
@@ -536,7 +622,7 @@ function AdminChatPanel({ userId, adminId }: { userId: string; adminId?: string 
       {/* Input */}
       <View style={[panelStyles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border }]}>
         <TextInput
-          style={[panelStyles.textInput, { backgroundColor: themeColors.elevated, borderColor: themeColors.border, color: themeColors.text }]}
+          style={[panelStyles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text }]}
           value={inputText}
           onChangeText={setInputText}
           placeholder={t("chat.placeholder")}
@@ -840,7 +926,7 @@ export default function ChatsScreen() {
                           </BNMPressable>
                         </View>
                         <TextInput
-                          style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
+                          style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.background, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
                           value={newChatSearch}
                           onChangeText={setNewChatSearch}
                           placeholder={t("chats.search") ?? "Suchen..."}
@@ -1214,7 +1300,7 @@ export default function ChatsScreen() {
                   </BNMPressable>
                 </View>
                 <TextInput
-                  style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.elevated, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
+                  style={[styles.searchInput, { color: themeColors.text, backgroundColor: themeColors.background, borderColor: themeColors.border, borderWidth: 1, borderRadius: RADIUS.sm, paddingHorizontal: 12, paddingVertical: 8, marginBottom: 8 }]}
                   value={newChatSearch}
                   onChangeText={setNewChatSearch}
                   placeholder={t("chats.search") ?? "Suchen..."}
