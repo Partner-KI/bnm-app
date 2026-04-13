@@ -275,10 +275,11 @@ export async function initiateGoogleAuth(): Promise<{
 
     // ── Native (iOS + Android) ───────────────────────────────────────────────
     } else {
-      // Redirect URI: Custom Scheme bnmapp://oauth
-      // WICHTIG: Diese URI muss in Google Cloud Console als "Authorized redirect URI" eingetragen sein:
-      //   APIs & Services → Credentials → OAuth Client → Authorized redirect URIs → bnmapp://oauth
-      const redirectUri = "bnmapp://oauth";
+      // Redirect URI: gleiche Web-URL — kein Custom Scheme nötig.
+      // expo-web-browser fängt die URL ab sobald Google dorthin redirectet.
+      // Muss in Google Cloud Console als "Authorized redirect URI" eingetragen sein:
+      //   https://bnm.iman.ngo/auth/google/callback  ← bereits eingetragen
+      const redirectUri = "https://bnm.iman.ngo/auth/google/callback";
       const authUrl     = buildAuthUrl(redirectUri);
 
       const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
