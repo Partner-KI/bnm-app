@@ -1736,6 +1736,7 @@ const en: Record<TranslationKeys, string> = {
 
   // FAQ Tab
   "tabs.faq": "FAQ",
+  "tabs.calendar": "Calendar",
   "faq.title": "Knowledge & FAQ",
   "faq.subtitle": "Hadiths and frequently asked questions",
   "faq.hadithSection": "Hadith of the Day",

@@ -1736,6 +1736,7 @@ const ar: Record<TranslationKeys, string> = {
 
   // FAQ Tab
   "tabs.faq": "الأسئلة",
+  "tabs.calendar": "التقويم",
   "faq.title": "المعرفة والأسئلة",
   "faq.subtitle": "الأحاديث والأسئلة الشائعة",
   "faq.hadithSection": "حديث اليوم",

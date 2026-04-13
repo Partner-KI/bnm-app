@@ -106,6 +106,21 @@ export default function ToolsTabScreen() {
               </BNMPressable>
             )}
 
+            {showSystemSettings && (
+              <BNMPressable
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
+                onPress={() => router.push("/admin/calendar-management" as never)}
+                accessibilityRole="link"
+                accessibilityLabel="Kalender verwalten"
+              >
+                <View style={[styles.toolIconBg, { backgroundColor: "#E6F7F0" }]}>
+                  <Ionicons name="calendar-outline" size={24} color={COLORS.cta} />
+                </View>
+                <Text style={[styles.toolLabel, { color: themeColors.text }]}>Kalender</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>Events verwalten</Text>
+              </BNMPressable>
+            )}
+
             <BNMPressable
               style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
               onPress={() => router.push("/admin/certificate-generator" as never)}

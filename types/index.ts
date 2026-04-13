@@ -146,6 +146,36 @@ export interface ResourceCompletion {
   completed_at: string;
 }
 
+// Calendar
+export type CalendarEventType = "webinar" | "retreat" | "kurs" | "meeting" | "custom";
+export type EventAttendeeStatus = "invited" | "accepted" | "declined";
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description: string;
+  start_at: string;
+  end_at: string | null;
+  type: CalendarEventType;
+  location: string;
+  created_by: string | null;
+  recurrence: "weekly" | "biweekly" | "monthly" | null;
+  visible_to: ResourceVisibility;
+  is_active: boolean;
+  google_calendar_event_id: string | null;
+  created_at: string;
+}
+
+export interface EventAttendee {
+  id: string;
+  event_id: string;
+  user_id: string;
+  status: EventAttendeeStatus;
+  reminder_minutes: number;
+  google_synced: boolean;
+  created_at: string;
+}
+
 export type ApplicationStatus = "pending" | "approved" | "rejected";
 
 export interface MentorApplication {

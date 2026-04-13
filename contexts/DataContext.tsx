@@ -26,6 +26,9 @@ import type {
   EventParticipation,
   EventParticipationStatus,
   ResourceCompletion,
+  CalendarEvent,
+  EventAttendee,
+  EventAttendeeStatus,
 } from "../types";
 import { XP_VALUES } from "../lib/gamification";
 
@@ -97,6 +100,8 @@ export interface DataContextValue {
   resources: Resource[];
   eventParticipations: EventParticipation[];
   resourceCompletions: ResourceCompletion[];
+  calendarEvents: CalendarEvent[];
+  eventAttendees: EventAttendee[];
 
   // Internal: Gamification callbacks ref (used by GamificationContext)
   _gamificationRef: MutableRefObject<GamificationCallbacks | null>;
@@ -197,6 +202,14 @@ export interface DataContextValue {
   toggleResourceCompletion: (resourceId: string) => Promise<void>;
   isResourceCompleted: (resourceId: string) => boolean;
   getResourceCompletionCount: (resourceId: string) => number;
+
+  // Calendar actions
+  addCalendarEvent: (event: Omit<CalendarEvent, "id" | "created_at">) => Promise<void>;
+  updateCalendarEvent: (id: string, data: Partial<Omit<CalendarEvent, "id" | "created_at">>) => Promise<void>;
+  deleteCalendarEvent: (id: string) => Promise<void>;
+  respondToEvent: (eventId: string, status: EventAttendeeStatus) => Promise<void>;
+  inviteToEvent: (eventId: string, userIds: string[]) => Promise<void>;
+  getEventsByDate: (dateStr: string) => CalendarEvent[];
 
   // Computed helpers
   getMentorshipsByMentorId: (mentorId: string) => Mentorship[];
@@ -384,6 +397,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [resources, setResources] = useState<Resource[]>([]);
   const [eventParticipations, setEventParticipations] = useState<EventParticipation[]>([]);
   const [resourceCompletions, setResourceCompletions] = useState<ResourceCompletion[]>([]);
+  const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([]);
+  const [eventAttendees, setEventAttendees] = useState<EventAttendee[]>([]);
   const [mentorOfMonthVisible, setMentorOfMonthVisible] = useState<boolean>(true);
   const [hadithe, setHadithe] = useState<Hadith[]>([]);
   const [qaEntries, setQAEntries] = useState<QAEntry[]>([]);
@@ -588,6 +603,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         resourcesRes,
         eventParticipationsRes,
         resourceCompletionsRes,
+        calendarEventsRes,
+        eventAttendeesRes,
         adminMsgsRes,
       ] = await Promise.all([
         safe(supabase.from("profiles").select("*")),
@@ -605,6 +622,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         safe(supabase.from("resources").select("*").order("sort_order", { ascending: true })),
         safe(supabase.from("event_participations").select("*")),
         safe(supabase.from("resource_completions").select("*")),
+        safe(supabase.from("calendar_events").select("*").order("start_at", { ascending: true })),
+        safe(supabase.from("event_attendees").select("*")),
         safe(isAdminOrOffice
           ? supabase.from("admin_messages").select("*").order("created_at", { ascending: true })
           : supabase.from("admin_messages").select("*").eq("user_id", authUser!.id).order("created_at", { ascending: true })),
@@ -856,6 +875,40 @@ export function DataProvider({ children }: { children: ReactNode }) {
           resource_id: row.resource_id,
           user_id: row.user_id,
           completed_at: row.completed_at,
+        })));
+      }
+
+      // Calendar Events
+      if (calendarEventsRes.error) console.warn("[DataContext] calendar_events error:", calendarEventsRes.error.message);
+      if (calendarEventsRes.data) {
+        setCalendarEvents(calendarEventsRes.data.map((row: any) => ({
+          id: row.id,
+          title: row.title ?? "",
+          description: row.description ?? "",
+          start_at: row.start_at,
+          end_at: row.end_at ?? null,
+          type: row.type ?? "custom",
+          location: row.location ?? "",
+          created_by: row.created_by ?? null,
+          recurrence: row.recurrence ?? null,
+          visible_to: row.visible_to ?? "all",
+          is_active: row.is_active ?? true,
+          google_calendar_event_id: row.google_calendar_event_id ?? null,
+          created_at: row.created_at,
+        })));
+      }
+
+      // Event Attendees
+      if (eventAttendeesRes.error) console.warn("[DataContext] event_attendees error:", eventAttendeesRes.error.message);
+      if (eventAttendeesRes.data) {
+        setEventAttendees(eventAttendeesRes.data.map((row: any) => ({
+          id: row.id,
+          event_id: row.event_id,
+          user_id: row.user_id,
+          status: row.status ?? "invited",
+          reminder_minutes: row.reminder_minutes ?? 60,
+          google_synced: row.google_synced ?? false,
+          created_at: row.created_at,
         })));
       }
 
@@ -2994,6 +3047,83 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [resourceCompletions]
   );
 
+  // ─── Calendar Event Actions ────────────────────────────────────────────────────
+
+  const addCalendarEvent = useCallback(async (event: Omit<CalendarEvent, "id" | "created_at">) => {
+    const { data, error } = await supabase.from("calendar_events").insert(event).select().maybeSingle();
+    if (error) throw new Error(error.message);
+    if (data) {
+      setCalendarEvents((prev) => [...prev, {
+        id: data.id, title: data.title ?? "", description: data.description ?? "",
+        start_at: data.start_at, end_at: data.end_at ?? null, type: data.type ?? "custom",
+        location: data.location ?? "", created_by: data.created_by ?? null,
+        recurrence: data.recurrence ?? null, visible_to: data.visible_to ?? "all",
+        is_active: data.is_active ?? true, google_calendar_event_id: data.google_calendar_event_id ?? null,
+        created_at: data.created_at,
+      }]);
+    }
+  }, []);
+
+  const updateCalendarEvent = useCallback(async (id: string, data: Partial<Omit<CalendarEvent, "id" | "created_at">>) => {
+    const { error } = await supabase.from("calendar_events").update(data).eq("id", id);
+    if (error) throw new Error(error.message);
+    setCalendarEvents((prev) => prev.map((e) => e.id === id ? { ...e, ...data } as CalendarEvent : e));
+  }, []);
+
+  const deleteCalendarEvent = useCallback(async (id: string) => {
+    const { error } = await supabase.from("calendar_events").delete().eq("id", id);
+    if (error) throw new Error(error.message);
+    setCalendarEvents((prev) => prev.filter((e) => e.id !== id));
+    setEventAttendees((prev) => prev.filter((a) => a.event_id !== id));
+  }, []);
+
+  const respondToEvent = useCallback(async (eventId: string, status: EventAttendeeStatus) => {
+    if (!authUser) return;
+    const existing = eventAttendees.find((a) => a.event_id === eventId && a.user_id === authUser.id);
+    if (existing) {
+      if (existing.status === status) return;
+      const { error } = await supabase.from("event_attendees").update({ status }).eq("id", existing.id);
+      if (error) throw new Error(error.message);
+      setEventAttendees((prev) => prev.map((a) => a.id === existing.id ? { ...a, status } : a));
+    } else {
+      const { data, error } = await supabase.from("event_attendees")
+        .insert({ event_id: eventId, user_id: authUser.id, status })
+        .select().maybeSingle();
+      if (error) throw new Error(error.message);
+      if (data) {
+        setEventAttendees((prev) => [...prev, {
+          id: data.id, event_id: data.event_id, user_id: data.user_id,
+          status: data.status, reminder_minutes: data.reminder_minutes ?? 60,
+          google_synced: data.google_synced ?? false, created_at: data.created_at,
+        }]);
+      }
+    }
+  }, [authUser, eventAttendees]);
+
+  const inviteToEvent = useCallback(async (eventId: string, userIds: string[]) => {
+    const existing = eventAttendees.filter((a) => a.event_id === eventId).map((a) => a.user_id);
+    const newIds = userIds.filter((id) => !existing.includes(id));
+    if (newIds.length === 0) return;
+    const rows = newIds.map((userId) => ({ event_id: eventId, user_id: userId, status: "invited" as const }));
+    const { data, error } = await supabase.from("event_attendees").insert(rows).select();
+    if (error) throw new Error(error.message);
+    if (data) {
+      setEventAttendees((prev) => [...prev, ...data.map((row: any) => ({
+        id: row.id, event_id: row.event_id, user_id: row.user_id,
+        status: row.status ?? "invited", reminder_minutes: row.reminder_minutes ?? 60,
+        google_synced: row.google_synced ?? false, created_at: row.created_at,
+      }))]);
+    }
+  }, [eventAttendees]);
+
+  const getEventsByDate = useCallback((dateStr: string) => {
+    return calendarEvents.filter((e) => {
+      if (!e.is_active) return false;
+      const eventDate = e.start_at.slice(0, 10);
+      return eventDate === dateStr;
+    });
+  }, [calendarEvents]);
+
   // ─── refreshData ──────────────────────────────────────────────────────────────
 
   // Throttled refresh: nur wenn letzte Ladung > 10s her ist
@@ -3187,6 +3317,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
     toggleResourceCompletion,
     isResourceCompleted,
     getResourceCompletionCount,
+    calendarEvents,
+    eventAttendees,
+    addCalendarEvent,
+    updateCalendarEvent,
+    deleteCalendarEvent,
+    respondToEvent,
+    inviteToEvent,
+    getEventsByDate,
     loadQAEntries,
     addQAEntry,
     updateQAEntry,
@@ -3254,6 +3392,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
     addResource, updateResource, deleteResource,
     toggleEventParticipation, getEventParticipationsByResourceId, getMyEventParticipation,
     resourceCompletions, toggleResourceCompletion, isResourceCompleted, getResourceCompletionCount,
+    calendarEvents, eventAttendees, addCalendarEvent, updateCalendarEvent, deleteCalendarEvent,
+    respondToEvent, inviteToEvent, getEventsByDate,
     addHadith, updateHadith, deleteHadith, reorderHadithe, bulkInsertHadithe,
     loadQAEntries, addQAEntry, updateQAEntry, deleteQAEntry,
     getSetting, toggleMentorOfMonth, addUser, assignMentorship,

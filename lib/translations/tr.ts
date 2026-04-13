@@ -1736,6 +1736,7 @@ const tr: Record<TranslationKeys, string> = {
 
   // FAQ Tab
   "tabs.faq": "SSS",
+  "tabs.calendar": "Takvim",
   "faq.title": "Bilgi & SSS",
   "faq.subtitle": "Hadisler ve sıkça sorulan sorular",
   "faq.hadithSection": "Günün Hadisi",

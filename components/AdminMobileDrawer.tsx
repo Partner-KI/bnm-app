@@ -60,11 +60,14 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
     }
   }, [open]);
 
+  const calendarNavItem = { key: "/calendar", label: t("tabs.calendar"), icon: "calendar-outline" as const, iconActive: "calendar" as const, href: "/(tabs)/calendar" };
+
   // Rollenabhängige Menüpunkte
   const navItems = isMentee
     ? [
         { key: "/", label: t("tabs.dashboard"), icon: "grid-outline" as const, iconActive: "grid" as const, href: "/(tabs)/" },
         { key: "/chats", label: t("tabs.chats"), icon: "chatbubbles-outline" as const, iconActive: "chatbubbles" as const, href: "/(tabs)/chats", badge: chatUnread },
+        calendarNavItem,
         { key: "/faq", label: t("tabs.faq"), icon: "help-circle-outline" as const, iconActive: "help-circle" as const, href: "/(tabs)/faq" },
         { key: "/profile", label: t("tabs.profile"), icon: "person-circle-outline" as const, iconActive: "person-circle" as const, href: "/(tabs)/profile" },
       ]
@@ -73,6 +76,7 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
         { key: "/", label: t("tabs.dashboard"), icon: "grid-outline" as const, iconActive: "grid" as const, href: "/(tabs)/" },
         { key: "/mentees", label: t("tabs.mentees"), icon: "people-outline" as const, iconActive: "people" as const, href: "/(tabs)/mentees" },
         { key: "/chats", label: t("tabs.chats"), icon: "chatbubbles-outline" as const, iconActive: "chatbubbles" as const, href: "/(tabs)/chats", badge: chatUnread },
+        calendarNavItem,
         { key: "/leaderboard", label: t("tabs.ranking"), icon: "trophy-outline" as const, iconActive: "trophy" as const, href: "/(tabs)/leaderboard" },
         { key: "/profile", label: t("tabs.profile"), icon: "person-circle-outline" as const, iconActive: "person-circle" as const, href: "/(tabs)/profile" },
       ]
@@ -86,12 +90,14 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
           ? [{ key: "/chats", label: t("tabs.chats"), icon: "chatbubbles-outline" as const, iconActive: "chatbubbles" as const, href: "/(tabs)/chats", badge: chatUnread }]
           : []),
         { key: "/tools", label: "Tools", icon: "construct-outline" as const, iconActive: "construct" as const, href: "/(tabs)/tools" },
+        calendarNavItem,
         { key: "/reports", label: t("tabs.reports"), icon: "stats-chart-outline" as const, iconActive: "stats-chart" as const, href: "/(tabs)/reports" },
         { key: "/feedback", label: t("tabs.feedback"), icon: "star-outline" as const, iconActive: "star" as const, href: "/(tabs)/feedback" },
         { key: "/profile", label: t("tabs.profile"), icon: "person-circle-outline" as const, iconActive: "person-circle" as const, href: "/(tabs)/profile" },
       ];
 
   const adminToolPaths = ["/admin/session-types", "/admin/qa-management", "/admin/hadithe-management", "/admin/message-templates", "/admin/certificate-generator", "/admin/csv-import", "/admin/mentor-award", "/admin/statistics", "/admin/resources"];
+  const calendarPaths = ["/admin/calendar-management"];
   // Sub-Routes die zu bestimmten Tabs gehören
   const menteeSubPaths = ["/mentee/", "/mentorship/", "/assign", "/document-session"];
   const mentorSubPaths = ["/mentor/"];
@@ -99,6 +105,8 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
     if (key === "/") return pathname === "/" || pathname === "/index";
     // Tools-Tab soll auch bei Admin-Unterseiten aktiv bleiben
     if (key === "/tools") return pathname.includes("/tools") || adminToolPaths.some((p) => pathname.includes(p));
+    // Calendar-Tab: auch bei /admin/calendar-management
+    if (key === "/calendar") return pathname.includes("/calendar") || calendarPaths.some((p) => pathname.includes(p));
     // Mentees-Tab: auch bei Mentee-Detail, Mentorship, Assign, Document-Session, edit-user
     // edit-user: from-Parameter bestimmt ob Mentees oder Mentoren
     if (pathname.includes("/admin/edit-user")) {

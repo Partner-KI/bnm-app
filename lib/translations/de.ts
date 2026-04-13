@@ -1742,6 +1742,7 @@ const de = {
 
   // FAQ Tab
   "tabs.faq": "FAQ",
+  "tabs.calendar": "Kalender",
   "faq.title": "Wissen & FAQ",
   "faq.subtitle": "Hadithe und häufige Fragen",
   "faq.hadithSection": "Hadith des Tages",

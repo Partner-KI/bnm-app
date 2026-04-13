@@ -191,6 +191,8 @@ export function AdminSidebar() {
     pathname.includes("/admin/statistics") ||
     pathname.includes("/admin/resources");
 
+  const isCalendarScreen = pathname.includes("/calendar") || pathname.includes("/admin/calendar-management");
+
   const role = user?.role;
   const isMentor = role === "mentor";
   const isMentee = role === "mentee";
@@ -214,7 +216,9 @@ export function AdminSidebar() {
     ? new URLSearchParams(window.location.search).get("from")
     : null;
 
-  const activeSegment = pathname.includes("/reports") || pathname.includes("donor-report")
+  const activeSegment = isCalendarScreen
+    ? "calendar"
+    : pathname.includes("/reports") || pathname.includes("donor-report")
     ? "reports"
     : isEditUser
     ? (editUserFrom === "mentors" ? "mentors" : "mentees")
@@ -239,10 +243,13 @@ export function AdminSidebar() {
     : "index";
 
   // Rollenabhängige Menüpunkte
+  const calendarItem = { key: "calendar", label: t("tabs.calendar"), iconName: "calendar-outline", iconNameActive: "calendar", href: "/(tabs)/calendar" };
+
   const mainItems = isMentee
     ? [
         { key: "index", label: t("tabs.dashboard"), iconName: "grid-outline", iconNameActive: "grid", href: "/(tabs)/" },
         { key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread },
+        calendarItem,
         { key: "faq", label: t("tabs.faq"), iconName: "help-circle-outline", iconNameActive: "help-circle", href: "/(tabs)/faq" },
       ]
     : isMentor
@@ -250,6 +257,7 @@ export function AdminSidebar() {
         { key: "index", label: t("tabs.dashboard"), iconName: "grid-outline", iconNameActive: "grid", href: "/(tabs)/" },
         { key: "mentees", label: t("tabs.mentees"), iconName: "people-outline", iconNameActive: "people", href: "/(tabs)/mentees" },
         { key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread },
+        calendarItem,
         { key: "leaderboard", label: t("tabs.ranking"), iconName: "trophy-outline", iconNameActive: "trophy", href: "/(tabs)/leaderboard" },
       ]
     : [
@@ -259,6 +267,7 @@ export function AdminSidebar() {
         { key: "mentors", label: t("sidebar.mentors"), iconName: "school-outline", iconNameActive: "school", href: "/(tabs)/mentors" },
         { key: "applications", label: t("sidebar.applications"), iconName: "document-text-outline", iconNameActive: "document-text", href: "/(tabs)/applications" },
         { key: "tools", label: "Tools", iconName: "construct-outline", iconNameActive: "construct", href: "/(tabs)/tools" },
+        calendarItem,
         { key: "feedback", label: t("tabs.feedback"), iconName: "star-outline", iconNameActive: "star", href: "/(tabs)/feedback" },
         ...(!isOffice
           ? [{ key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread }]

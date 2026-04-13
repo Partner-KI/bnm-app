@@ -180,6 +180,7 @@ function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     const menteeSubPaths = ["/mentee/", "/mentorship/", "/assign", "/document-session"];
     const mentorSubPaths = ["/mentor/"];
     const toolPaths = ["/admin/session-types", "/admin/qa-management", "/admin/hadithe-management", "/admin/message-templates", "/admin/certificate-generator", "/admin/csv-import", "/admin/mentor-award", "/admin/statistics", "/admin/resources"];
+    const calendarPaths = ["/admin/calendar-management"];
     const chatPaths = ["/chat/"];
 
     if (menteeSubPaths.some((p) => pathname.includes(p))) {
@@ -190,6 +191,9 @@ function GlassTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
     }
     if (toolPaths.some((p) => pathname.includes(p))) {
       return state.routes.findIndex((r) => r.name === "tools");
+    }
+    if (calendarPaths.some((p) => pathname.includes(p))) {
+      return state.routes.findIndex((r) => r.name === "calendar");
     }
     if (chatPaths.some((p) => pathname.includes(p))) {
       return state.routes.findIndex((r) => r.name === "chats");
@@ -316,6 +320,8 @@ function TabsLayout() {
   const showChats = !isOffice;
   // Leaderboard: nur für Mentor auf Mobile; für Admin/Office auf Mobile ausblenden (zu viele Tabs)
   const showLeaderboard = !isMentee && !(isAdminOrOffice && isMobile);
+  // Kalender: für alle Rollen sichtbar
+  const showCalendar = true;
   // FAQ: nur für Mentees sichtbar
   const showFAQ = isMentee;
   // Admin-only Tabs (Mentors, Applications, Tools, Reports, Feedback): auf Mobile ausblenden
@@ -373,6 +379,20 @@ function TabsLayout() {
               {focused && <View style={[tabStyles.activeDot, { backgroundColor: color }]} />}
             </View>
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="calendar"
+        options={{
+          title: t("tabs.calendar"),
+          href: showCalendar ? "/(tabs)/calendar" : null,
+          tabBarIcon: ({ color, focused }) => (
+            <View style={tabStyles.iconWrapper}>
+              <Ionicons name={focused ? "calendar" : "calendar-outline"} size={22} color={color} />
+              {focused && <View style={[tabStyles.activeDot, { backgroundColor: color }]} />}
+            </View>
+          ),
+          headerShown: false,
         }}
       />
       <Tabs.Screen
@@ -468,6 +488,7 @@ function AdminSidebarLayout() {
       <Tabs.Screen name="mentees" options={{ title: "Mentees" }} />
       <Tabs.Screen name="chats" options={{ title: "Chats" }} />
       <Tabs.Screen name="leaderboard" options={{ href: null }} />
+      <Tabs.Screen name="calendar" options={{ title: "Kalender" }} />
       <Tabs.Screen name="faq" options={{ href: null }} />
       <Tabs.Screen name="mentors" options={{ title: "Mentoren" }} />
       <Tabs.Screen name="applications" options={{ title: "Bewerbungen" }} />
@@ -518,6 +539,7 @@ function AdminMobileLayout() {
         <Tabs.Screen name="mentees" options={{ title: t("tabs.mentees") }} />
         <Tabs.Screen name="chats" options={{ title: t("tabs.chats"), href: isOffice ? null : undefined }} />
         <Tabs.Screen name="leaderboard" options={{ href: null }} />
+        <Tabs.Screen name="calendar" options={{ title: t("tabs.calendar") }} />
         <Tabs.Screen name="faq" options={{ href: null }} />
         <Tabs.Screen name="mentors" options={{ title: t("sidebar.mentors") }} />
         <Tabs.Screen name="applications" options={{ title: t("sidebar.applications") }} />
