@@ -14,7 +14,8 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
 - **Framework:** Expo SDK 55 (React Native) – eine Codebase für Web + iOS + Android
 - **Routing:** Expo Router | **Styling:** StyleSheet.create() + COLORS (constants/Colors.ts)
 - **Backend:** Supabase (PostgreSQL, Auth, Realtime, Storage)
-- **E-Mail:** Resend API (lib/emailService.ts), Override an hasan.sevenler@partner.ki
+- **E-Mail:** Resend API (lib/emailService.ts) — Domain `bnm.iman.ngo` verifiziert, `noreply@bnm.iman.ngo` aktiv
+- **Web-Hosting:** Vercel → `https://bnm.iman.ngo` (Custom Domain aktiv)
 - **Repo:** github.com/hannesgerlach6/bnm-app (private)
 
 ## SUPABASE
@@ -76,6 +77,22 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
     - Mentorship INSERT nur Admin/Office (kein Self-Assign)
     - E-Mail-Enumeration: anon Grant von check_duplicate_registration entfernt
     - email_queue INSERT nur für authentifizierte User
+
+## EDGE FUNCTIONS (deploy-Status)
+
+| Function | Status | Beschreibung |
+|---|---|---|
+| `send-emails` | Gebaut, NICHT deployed | E-Mails aus email_queue versenden |
+| `send-push` | Gebaut, NICHT deployed | Push bei neuen Chat-Nachrichten |
+| `send-direct` | Gebaut, NICHT deployed | Direkter E-Mail-Versand (mit JWT-Auth) |
+| `reset-password` | Gebaut, NICHT deployed | Password-Reset Flow |
+| `send-reminders` | **NEU, NICHT deployed** | Tägliche Mentor-Erinnerungen (Notifications + Push + E-Mail) |
+
+**Deploy-Befehl:** `supabase functions deploy <name> --project-ref jbuvnmjlvebzknbmzryb`
+
+**Für Erinnerungssystem:** Nach Deploy → `supabase/edge-functions.sql` im SQL-Editor ausführen (pg_cron + pg_net Extensions vorher aktivieren)
+
+---
 
 ## FORTSCHRITTS-LOG
 
@@ -344,6 +361,22 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
 - Äußere View: `statCard` mit `SHADOWS.sm` (beide Plattformen identisch, kein Platform-Check mehr)
 - Innere View: `statCardClip` mit `overflow: "hidden"`, `borderWidth`, `flexDirection: "row"`
 - Platform.OS === "android" Check komplett entfernt
+
+### 2026-04-13 — Erinnerungssystem + Dark Mode Fix + Domain
+**Erinnerungssystem (server-seitig):**
+- Neue Edge Function: `supabase/functions/send-reminders/index.ts`
+- Prüft täglich alle aktiven Mentorships auf fehlende Sessions (> 3 Tage)
+- Sendet: DB-Notification + Push (Expo) + E-Mail (Resend, `noreply@bnm.iman.ngo`)
+- Cooldown: Keine Doppel-Erinnerung innerhalb 2 Tagen
+- `supabase/edge-functions.sql` aktualisiert: pg_cron Job einkommentiert (Option A: SQL-direkt, Option B: pg_net → Edge Function)
+- Deployment-Steps: pg_cron + pg_net Extensions aktivieren → SQL ausführen → `supabase functions deploy send-reminders`
+
+**Dark Mode:**
+- `app/+not-found.tsx` auf `useThemeColors()` umgestellt (war einzige Datei ohne Dynamic Colors)
+
+**Domain + Hosting:**
+- Web: `https://bnm.iman.ngo` live (Vercel Custom Domain)
+- E-Mail: `noreply@bnm.iman.ngo` via Resend (Domain verifiziert)
 
 ### 2026-04-10 — Professionelle PDF-Reports v2 (Komplettes Redesign)
 **Vollstaendiger Rewrite von `lib/pdfGenerator.tsx` — von 0.2/10 auf professionelles Niveau:**
