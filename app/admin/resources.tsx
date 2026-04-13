@@ -47,6 +47,7 @@ export default function ResourcesScreen() {
   const [editIcon, setEditIcon] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const isSavingRef = React.useRef(false);
 
   const sortedResources = [...resources].sort((a, b) => a.sort_order - b.sort_order);
 
@@ -131,7 +132,8 @@ export default function ResourcesScreen() {
       showError("Titel und URL sind Pflichtfelder");
       return;
     }
-    if (isSaving) return;
+    if (isSavingRef.current) return;
+    isSavingRef.current = true;
     setIsSaving(true);
     try {
       const maxOrder = resources.length > 0 ? Math.max(...resources.map((r) => r.sort_order)) + 1 : 1;
@@ -153,8 +155,10 @@ export default function ResourcesScreen() {
       showSuccess("Ressource hinzugefuegt");
     } catch (err) {
       showError("Fehler: " + (err instanceof Error ? err.message : String(err)));
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }
 
   const ICON_OPTIONS = [

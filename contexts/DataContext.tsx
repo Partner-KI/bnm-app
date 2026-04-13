@@ -2846,23 +2846,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ─── Resource CRUD ──────────────────────────────────────────────────────────
 
   const addResource = useCallback(async (resource: Omit<Resource, "id" | "created_at">) => {
-    // Insert ohne .select().single() — vermeidet RLS-Probleme bei der Rückgabe
-    const { error } = await supabase.from("resources").insert(resource);
+    const { data, error } = await supabase.from("resources").insert(resource).select().maybeSingle();
     if (error) throw new Error(error.message);
-    // Neue Ressource direkt aus DB laden (sichere SELECT-Policy)
-    const { data: allRes } = await supabase.from("resources").select("*").order("sort_order", { ascending: true });
-    if (allRes) {
-      setResources(allRes.map((row: any) => ({
-        id: row.id,
-        title: row.title ?? "",
-        url: row.url ?? "",
-        description: row.description ?? "",
-        icon: row.icon ?? "link-outline",
-        category: row.category ?? "general",
-        sort_order: row.sort_order ?? 0,
-        is_active: row.is_active ?? true,
-        created_at: row.created_at,
-      })));
+    if (data) {
+      // Optimistic update mit dem zurückgegebenen Datensatz
+      const newRes: Resource = {
+        id: data.id,
+        title: data.title ?? "",
+        url: data.url ?? "",
+        description: data.description ?? "",
+        icon: data.icon ?? "link-outline",
+        category: data.category ?? "general",
+        sort_order: data.sort_order ?? 0,
+        is_active: data.is_active ?? true,
+        created_at: data.created_at,
+      };
+      setResources((prev) => {
+        if (prev.some((r) => r.id === newRes.id)) return prev;
+        return [...prev, newRes];
+      });
+    } else {
+      // Fallback: alle Ressourcen neu laden
+      const { data: allRes } = await supabase.from("resources").select("*").order("sort_order", { ascending: true });
+      if (allRes) {
+        setResources(allRes.map((row: any) => ({
+          id: row.id, title: row.title ?? "", url: row.url ?? "", description: row.description ?? "",
+          icon: row.icon ?? "link-outline", category: row.category ?? "general",
+          sort_order: row.sort_order ?? 0, is_active: row.is_active ?? true, created_at: row.created_at,
+        })));
+      }
     }
   }, []);
 
