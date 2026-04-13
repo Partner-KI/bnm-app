@@ -242,7 +242,7 @@ export default function MentorAwardScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurueck">
+            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
               <Ionicons name="arrow-back" size={22} color={themeColors.text} />
             </BNMPressable>
             <View style={{ flex: 1 }}>

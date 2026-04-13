@@ -111,7 +111,7 @@ export default function PendingApprovalsScreen() {
         }
       >
         <View style={styles.page}>
-          <BNMPressable style={styles.backLink} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck">
+          <BNMPressable style={styles.backLink} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backLinkText, { color: themeColors.link }]}>‹ {t("common.back")}</Text>
           </BNMPressable>
 

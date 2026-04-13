@@ -115,7 +115,7 @@ export default function ToolsTabScreen() {
                   <Ionicons name="link-outline" size={24} color="#7C3AED" />
                 </View>
                 <Text style={[styles.toolLabel, { color: themeColors.text }]}>Ressourcen</Text>
-                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>Links fuer Mentoren verwalten</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>Links für Mentoren verwalten</Text>
               </BNMPressable>
             )}
 

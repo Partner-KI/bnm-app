@@ -125,7 +125,7 @@ export default function ChatScreen() {
 
       if (isOwn) {
         buttons.push({
-          text: "Loeschen",
+          text: "Löschen",
           style: "destructive",
           onPress: async () => {
             const ok = await showConfirm(t("chat.deleteConfirmTitle"), t("chat.deleteConfirmText"));
@@ -152,7 +152,7 @@ export default function ChatScreen() {
         setForwardSenderName(senderName);
         setForwardModalVisible(true);
       } else if (isOwn) {
-        const ok = window.confirm("Nachricht loeschen?");
+        const ok = window.confirm("Nachricht löschen?");
         if (ok) {
           try {
             await deleteMessage(messageId);
@@ -412,7 +412,7 @@ export default function ChatScreen() {
               style={[styles.templateButton, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
               onPress={() => setShowTemplateModal(true)}
               accessibilityRole="button"
-              accessibilityLabel="Nachrichtenvorlage einfuegen"
+              accessibilityLabel="Nachrichtenvorlage einfügen"
             >
               <Ionicons name="document-text-outline" size={20} color={COLORS.gold} />
             </BNMPressable>
@@ -467,13 +467,13 @@ export default function ChatScreen() {
           accessibilityLabel="Schliessen"
         >
           <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
-            <Text style={[styles.modalTitle, { color: themeColors.text }]}>Vorlage einfuegen</Text>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>Vorlage einfügen</Text>
             <Text style={[styles.modalSubtitle, { color: themeColors.textTertiary }]}>
-              Tippe auf eine Vorlage, um den Text einzufuegen.
+              Tippe auf eine Vorlage, um den Text einzufügen.
             </Text>
             {chatTemplates.length === 0 ? (
               <Text style={{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 20, fontSize: 13 }}>
-                Keine Vorlagen verfuegbar.
+                Keine Vorlagen verfügbar.
               </Text>
             ) : (
               <ScrollView style={{ maxHeight: 350 }}>
@@ -527,7 +527,7 @@ export default function ChatScreen() {
             </Text>
             {forwardableMentorships.length === 0 ? (
               <Text style={{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 20, fontSize: 13 }}>
-                Keine anderen Chats verfuegbar.
+                Keine anderen Chats verfügbar.
               </Text>
             ) : (
               <ScrollView style={{ maxHeight: 300 }}>

@@ -52,7 +52,7 @@ export default function HaditheScreen() {
     <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
       <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
         {/* Header */}
-        <BNMPressable style={styles.backRow} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck">
+        <BNMPressable style={styles.backRow} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück">
           <Text style={[styles.backArrow, { color: themeColors.text }]}>‹</Text>
           <Text style={[styles.backText, { color: themeColors.text }]}>{t("hadithe.back")}</Text>
         </BNMPressable>

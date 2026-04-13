@@ -576,7 +576,7 @@ export default function AdminDonorReportScreen() {
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]} showsVerticalScrollIndicator={false}>
         {/* Back-Button (nicht im Druck) */}
         <View style={{ paddingTop: insets.top + 24, paddingHorizontal: 24 }}>
-          <BNMPressable style={styles.backBtn} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck zu Berichten">
+          <BNMPressable style={styles.backBtn} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück zu Berichten">
             <Text style={styles.backBtnText}>{t("donorDashboard.backToReports")}</Text>
           </BNMPressable>
         </View>
@@ -925,7 +925,7 @@ export default function AdminDonorReportScreen() {
             </BNMPressable>
           )}
 
-          <BNMPressable style={[styles.backBtnBottom, { borderColor: themeColors.border }]} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck zu Berichten">
+          <BNMPressable style={[styles.backBtnBottom, { borderColor: themeColors.border }]} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück zu Berichten">
             <Text style={[styles.backBtnBottomText, { color: themeColors.textTertiary }]}>{t("donorDashboard.backToReports")}</Text>
           </BNMPressable>
         </View>

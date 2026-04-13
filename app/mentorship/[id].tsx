@@ -88,7 +88,7 @@ export default function MentorshipDetailScreen() {
           style={[styles.primaryButton, { marginTop: 16 }]}
           onPress={() => router.back()}
           accessibilityRole="link"
-          accessibilityLabel="Zurueck"
+          accessibilityLabel="Zurück"
         >
           <Text style={styles.primaryButtonText}>{t("mentorship.back")}</Text>
         </BNMPressable>
@@ -354,7 +354,7 @@ export default function MentorshipDetailScreen() {
                             style={[styles.sessionDeleteButton, { backgroundColor: isDark ? "#3a1a1a" : "#fef2f2", borderColor: isDark ? "#7a2a2a" : "#fecaca" }]}
                             onPress={() => handleDeleteSession(session.id)}
                             accessibilityRole="button"
-                            accessibilityLabel="Sitzung loeschen"
+                            accessibilityLabel="Sitzung löschen"
                           >
                             <Text style={[styles.sessionDeleteText, { color: isDark ? "#f87171" : "#dc2626" }]}>🗑 {t("sessionEdit.delete")}</Text>
                           </BNMPressable>

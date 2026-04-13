@@ -223,7 +223,7 @@ export default function MentorsTabScreen() {
             onChangeText={setDeleteInput}
             autoCapitalize="characters"
             autoCorrect={false}
-            accessibilityLabel="Bestaetigungswort eingeben"
+            accessibilityLabel="Bestätigungswort eingeben"
           />
           <View style={styles.modalButtons}>
             <BNMPressable
@@ -445,7 +445,7 @@ export default function MentorsTabScreen() {
                   style={[styles.checkbox, isSelected && styles.checkboxSelected]}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: isSelected }}
-                  accessibilityLabel={`${mentor.name} auswaehlen`}
+                  accessibilityLabel={`${mentor.name} auswählen`}
                 >
                   {isSelected && <Text style={styles.checkmark}>✓</Text>}
                 </View>

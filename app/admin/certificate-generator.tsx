@@ -153,7 +153,7 @@ export default function CertificateGeneratorScreen() {
 
           {/* Header */}
           <View style={styles.header}>
-            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurueck">
+            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
               <Ionicons name="arrow-back" size={22} color={themeColors.text} />
             </BNMPressable>
             <View style={{ flex: 1 }}>
@@ -169,7 +169,7 @@ export default function CertificateGeneratorScreen() {
               style={[styles.pickerBtn, { backgroundColor: themeColors.background, borderColor: themeColors.border }]}
               onPress={() => setMentorPickerOpen(true)}
               accessibilityRole="button"
-              accessibilityLabel="Mentor auswaehlen"
+              accessibilityLabel="Mentor auswählen"
             >
               <Text style={[styles.pickerBtnText, { color: selectedMentor ? themeColors.text : themeColors.textTertiary }]}>
                 {selectedMentor?.name ?? t("certGen.noMentorSelected")}
@@ -374,7 +374,7 @@ export default function CertificateGeneratorScreen() {
                   ]}
                   onPress={() => { setSelectedMentorId(item.id); setMentorPickerOpen(false); }}
                   accessibilityRole="button"
-                  accessibilityLabel={`${item.name} auswaehlen`}
+                  accessibilityLabel={`${item.name} auswählen`}
                 >
                   <Text style={[styles.mentorRowName, { color: themeColors.text }]}>{item.name}</Text>
                   {item.id === selectedMentorId && <Ionicons name="checkmark" size={18} color={COLORS.gold} />}

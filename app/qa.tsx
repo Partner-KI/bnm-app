@@ -81,7 +81,7 @@ export default function QAScreen() {
       >
         <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
           {/* Header */}
-          <BNMPressable style={styles.backRow} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck">
+          <BNMPressable style={styles.backRow} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backText, { color: themeColors.textSecondary }]}>
               {t("qa.back")}
             </Text>

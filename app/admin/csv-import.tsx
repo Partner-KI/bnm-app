@@ -308,7 +308,7 @@ export default function CSVImportScreen() {
       <View style={[styles.page, { paddingTop: insets.top + 12 }]}>
         {/* Header */}
         <View style={styles.headerRow}>
-          <BNMPressable onPress={() => router.back()} style={styles.backBtn} accessibilityRole="link" accessibilityLabel="Zurueck">
+          <BNMPressable onPress={() => router.back()} style={styles.backBtn} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backBtnText, { color: themeColors.text }]}>‹</Text>
           </BNMPressable>
           <Text style={[styles.pageTitle, { color: themeColors.text }]}>{t("csvImport.title")}</Text>

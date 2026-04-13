@@ -155,7 +155,7 @@ export default function MessageTemplatesScreen() {
       <View style={[styles.root, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurueck">
+          <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backText, { color: themeColors.text }]}>{"\u2039"} {t("common.back")}</Text>
           </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("templates.manage")}</Text>
@@ -306,7 +306,7 @@ export default function MessageTemplatesScreen() {
                     <BNMPressable onPress={() => startEdit(tmpl)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Bearbeiten">
                       <Ionicons name="pencil" size={18} color={themeColors.textSecondary} />
                     </BNMPressable>
-                    <BNMPressable onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Loeschen">
+                    <BNMPressable onPress={() => handleDelete(tmpl.id)} style={styles.iconBtn} accessibilityRole="button" accessibilityLabel="Löschen">
                       <Ionicons name="trash-outline" size={18} color={COLORS.error} />
                     </BNMPressable>
                   </View>

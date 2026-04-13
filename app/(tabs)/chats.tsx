@@ -294,7 +294,7 @@ function ChatPanel({ mentorshipId }: { mentorshipId: string }) {
       <Modal visible={showTemplateModal} transparent animationType="fade" onRequestClose={() => setShowTemplateModal(false)}>
         <BNMPressable style={panelStyles.modalOverlay} onPress={() => setShowTemplateModal(false)}>
           <View style={[panelStyles.modalContent, { backgroundColor: themeColors.card }]}>
-            <Text style={[panelStyles.modalTitle, { color: themeColors.text }]}>Vorlage waehlen</Text>
+            <Text style={[panelStyles.modalTitle, { color: themeColors.text }]}>Vorlage wählen</Text>
             <ScrollView style={{ maxHeight: 300 }}>
               {chatTemplates.map((tmpl) => (
                 <BNMPressable
@@ -918,7 +918,7 @@ export default function ChatsScreen() {
                       <View style={[styles.newChatModal, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                         <View style={styles.newChatModalHeader}>
                           <Text style={[styles.newChatModalTitle, { color: themeColors.text }]}>
-                            {t("chats.selectUser") ?? "User auswaehlen"}
+                            {t("chats.selectUser") ?? "User auswählen"}
                           </Text>
                           <BNMPressable onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }} accessibilityRole="button" accessibilityLabel="Schliessen">
                             <Ionicons name="close" size={20} color={themeColors.textTertiary} />
@@ -1022,7 +1022,7 @@ export default function ChatsScreen() {
                         placeholderTextColor={themeColors.textTertiary}
                       />
                       {searchQuery.length > 0 && (
-                        <BNMPressable onPress={() => setSearchQuery("")} accessibilityRole="button" accessibilityLabel="Suche loeschen">
+                        <BNMPressable onPress={() => setSearchQuery("")} accessibilityRole="button" accessibilityLabel="Suche löschen">
                           <Ionicons name="close-circle" size={16} color={themeColors.textTertiary} />
                         </BNMPressable>
                       )}
@@ -1117,11 +1117,11 @@ export default function ChatsScreen() {
             style={[styles.backButton, { backgroundColor: themeColors.card }]}
             onPress={() => setSelectedAdminUserId(null)}
             accessibilityRole="link"
-            accessibilityLabel="Zurueck"
+            accessibilityLabel="Zurück"
           >
             <Ionicons name="arrow-back" size={20} color={themeColors.text} />
             <Text style={[{ color: themeColors.text, marginLeft: 8, fontSize: 15, fontWeight: "600" }]}>
-              {t("chats.back") ?? "Zurueck"}
+              {t("chats.back") ?? "Zurück"}
             </Text>
           </BNMPressable>
           <AdminChatPanel
@@ -1292,7 +1292,7 @@ export default function ChatsScreen() {
               <View style={[styles.newChatModal, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
                 <View style={styles.newChatModalHeader}>
                   <Text style={[styles.newChatModalTitle, { color: themeColors.text }]}>
-                    {t("chats.selectUser") ?? "User auswaehlen"}
+                    {t("chats.selectUser") ?? "User auswählen"}
                   </Text>
                   <BNMPressable onPress={() => { setShowNewChatModal(false); setNewChatSearch(""); }}>
                     <Ionicons name="close" size={20} color={themeColors.textTertiary} />

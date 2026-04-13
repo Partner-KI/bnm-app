@@ -206,7 +206,7 @@ function EditUserForm({ userId }: { userId: string }) {
       >
         {/* Header */}
         <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border }]}>
-          <BNMPressable onPress={() => router.back()} style={styles.backBtn} accessibilityRole="link" accessibilityLabel="Zurueck">
+          <BNMPressable onPress={() => router.back()} style={styles.backBtn} accessibilityRole="link" accessibilityLabel="Zurück">
             <Text style={[styles.backBtnText, { color: themeColors.text }]}>{t("editUser.back")}</Text>
           </BNMPressable>
           <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("editUser.title")}</Text>
@@ -341,7 +341,7 @@ function EditUserForm({ userId }: { userId: string }) {
               <BNMPressable
                 hapticStyle="error"
                 accessibilityRole="button"
-                accessibilityLabel="Endgueltig loeschen"
+                accessibilityLabel="Endgültig löschen"
                 style={[styles.dangerButton, { backgroundColor: COLORS.error, borderColor: COLORS.error }, isHardDeleting ? { opacity: 0.6 } : {}]}
                 onPress={() => setShowHardDelete1(true)}
                 disabled={isHardDeleting}
@@ -468,7 +468,7 @@ function EditUserForm({ userId }: { userId: string }) {
                 onPress={hardDeleteInput === target.name ? handleHardDelete : undefined}
                 disabled={hardDeleteInput !== target.name || isHardDeleting}
                 accessibilityRole="button"
-                accessibilityLabel="Endgueltig loeschen bestaetigen"
+                accessibilityLabel="Endgültig löschen bestätigen"
               >
                 <Text style={[styles.modalCloseText, { color: COLORS.white }]}>
                   {isHardDeleting ? "..." : "Endgültig löschen"}

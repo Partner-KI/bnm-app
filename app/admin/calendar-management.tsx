@@ -28,13 +28,13 @@ const VISIBLE_LABELS: Record<string, string> = {
   all: "Alle",
   mentors: "Mentoren",
   mentees: "Mentees",
-  male: "Maenner",
+  male: "Männer",
   female: "Frauen",
 };
 
 const RECURRENCE_LABELS: Record<string, string> = {
   none: "Keine",
-  weekly: "Woechentlich",
+  weekly: "Wöchentlich",
   biweekly: "Alle 2 Wochen",
   monthly: "Monatlich",
 };
@@ -246,13 +246,13 @@ export default function CalendarManagementScreen() {
   };
 
   const handleDelete = async (id: string, title: string) => {
-    const ok = await showConfirm("Event loeschen", `"${title}" wirklich loeschen?`);
+    const ok = await showConfirm("Event löschen", `"${title}" wirklich löschen?`);
     if (!ok) return;
     try {
       await deleteCalendarEvent(id);
-      showSuccess("Event geloescht");
+      showSuccess("Event gelöscht");
     } catch {
-      showError("Fehler beim Loeschen");
+      showError("Fehler beim Löschen");
     }
   };
 
@@ -346,7 +346,7 @@ export default function CalendarManagementScreen() {
               <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>ORT</Text>
               <TextInput style={inputStyle} value={formLocation} onChangeText={setFormLocation} placeholder="Ort / Link" placeholderTextColor={themeColors.textTertiary} />
 
-              <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>SICHTBAR FUER</Text>
+              <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>SICHTBAR FÜR</Text>
               <View style={styles.chipRow}>
                 {VISIBLE_OPTIONS.map((v) => (
                   <BNMPressable
@@ -444,7 +444,7 @@ export default function CalendarManagementScreen() {
                   <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>ORT</Text>
                   <TextInput style={inputStyle} value={editLocation} onChangeText={setEditLocation} />
 
-                  <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>SICHTBAR FUER</Text>
+                  <Text style={[styles.formLabel, { color: themeColors.textTertiary }]}>SICHTBAR FÜR</Text>
                   <View style={styles.chipRow}>
                     {VISIBLE_OPTIONS.map((v) => (
                       <BNMPressable

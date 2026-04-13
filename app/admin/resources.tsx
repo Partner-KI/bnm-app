@@ -91,13 +91,13 @@ export default function ResourcesScreen() {
   }
 
   async function handleDelete(res: Resource) {
-    const ok = await showConfirm("Ressource loeschen", `"${res.title}" wirklich loeschen?`);
+    const ok = await showConfirm("Ressource löschen", `"${res.title}" wirklich löschen?`);
     if (!ok) return;
     try {
       await deleteResource(res.id);
-      showSuccess("Geloescht");
+      showSuccess("Gelöscht");
     } catch {
-      showError("Fehler beim Loeschen");
+      showError("Fehler beim Löschen");
     }
   }
 
@@ -170,7 +170,7 @@ export default function ResourcesScreen() {
       setNewVisibleUntil("");
       setNewVisibleAfterSession(null);
       setShowAddForm(false);
-      showSuccess("Ressource hinzugefuegt");
+      showSuccess("Ressource hinzugefügt");
     } catch (err) {
       showError("Fehler: " + (err instanceof Error ? err.message : String(err)));
     } finally {
@@ -195,14 +195,14 @@ export default function ResourcesScreen() {
           <View style={styles.page}>
             <Text style={[styles.pageTitle, { color: themeColors.text }]}>Ressourcen verwalten</Text>
             <Text style={[styles.pageSubtitle, { color: themeColors.textSecondary }]}>
-              {sortedResources.length} Ressource{sortedResources.length !== 1 ? "n" : ""} - Links fuer das Mentor-Dashboard
+              {sortedResources.length} Ressource{sortedResources.length !== 1 ? "n" : ""} - Links für das Mentor-Dashboard
             </Text>
 
             {/* Info Box */}
             <View style={[styles.blueBox, { backgroundColor: sem(SEMANTIC.blueBg, isDark), borderColor: isDark ? "#2d4a7a" : "#dbeafe" }]}>
               <Text style={[styles.blueTitle, { color: isDark ? "#93c5fd" : "#1e40af" }]}>Hinweis</Text>
               <Text style={[styles.blueText, { color: isDark ? "#93c5fd" : "#2563eb" }]}>
-                Ressourcen werden als klickbare Karten auf dem Mentor-Dashboard angezeigt. Inaktive Ressourcen sind fuer Mentoren nicht sichtbar.
+                Ressourcen werden als klickbare Karten auf dem Mentor-Dashboard angezeigt. Inaktive Ressourcen sind für Mentoren nicht sichtbar.
               </Text>
             </View>
 
@@ -293,13 +293,13 @@ export default function ResourcesScreen() {
                           ))}
                         </View>
                         {/* Sichtbarkeit */}
-                        <Text style={{ fontSize: 12, fontWeight: "500", color: themeColors.textSecondary, marginTop: 6, marginBottom: 4 }}>Sichtbar fuer</Text>
+                        <Text style={{ fontSize: 12, fontWeight: "500", color: themeColors.textSecondary, marginTop: 6, marginBottom: 4 }}>Sichtbar für</Text>
                         <View style={styles.chipRow}>
                           {([
                             { key: "all", label: "Alle" },
                             { key: "mentors", label: "Mentoren" },
                             { key: "mentees", label: "Mentees" },
-                            { key: "male", label: "Brueder" },
+                            { key: "male", label: "Brüder" },
                             { key: "female", label: "Schwestern" },
                           ] as const).map((opt) => (
                             <BNMPressable
@@ -395,7 +395,7 @@ export default function ResourcesScreen() {
                           {res.visible_to !== "all" && (
                             <View style={[styles.categoryBadge, { backgroundColor: COLORS.gradientStart + "15" }]}>
                               <Text style={[styles.categoryBadgeText, { color: COLORS.gradientStart }]}>
-                                {res.visible_to === "mentors" ? "Nur Mentoren" : res.visible_to === "mentees" ? "Nur Mentees" : res.visible_to === "male" ? "Nur Brueder" : "Nur Schwestern"}
+                                {res.visible_to === "mentors" ? "Nur Mentoren" : res.visible_to === "mentees" ? "Nur Mentees" : res.visible_to === "male" ? "Nur Brüder" : "Nur Schwestern"}
                               </Text>
                             </View>
                           )}
@@ -434,7 +434,7 @@ export default function ResourcesScreen() {
                           return (
                             <View style={{ marginTop: 6 }}>
                               <Text style={{ fontSize: 11, color: COLORS.gold, fontWeight: "600" }}>
-                                {confirmed.length} bestaetigt · {interested.length} interessiert
+                                {confirmed.length} bestätigt · {interested.length} interessiert
                               </Text>
                               {confirmed.length > 0 && (
                                 <View style={{ marginTop: 4 }}>
@@ -499,7 +499,7 @@ export default function ResourcesScreen() {
                           style={styles.deleteButton}
                           onPress={() => handleDelete(res)}
                           accessibilityRole="button"
-                          accessibilityLabel={`${res.title} loeschen`}
+                          accessibilityLabel={`${res.title} löschen`}
                         >
                           <Ionicons name="trash-outline" size={14} color={COLORS.error} />
                         </BNMPressable>
@@ -520,7 +520,7 @@ export default function ResourcesScreen() {
                   style={[styles.textInput, { backgroundColor: themeColors.background, borderColor: themeColors.border, color: themeColors.text }]}
                   value={newTitle}
                   onChangeText={setNewTitle}
-                  placeholder="z.B. Leitfaden fuer Mentoren"
+                  placeholder="z.B. Leitfaden für Mentoren"
                   placeholderTextColor={themeColors.textTertiary}
                 />
 
@@ -583,13 +583,13 @@ export default function ResourcesScreen() {
                 </View>
 
                 {/* Sichtbarkeit */}
-                <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>Sichtbar fuer</Text>
+                <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>Sichtbar für</Text>
                 <View style={styles.chipRow}>
                   {([
                     { key: "all", label: "Alle" },
                     { key: "mentors", label: "Nur Mentoren" },
                     { key: "mentees", label: "Nur Mentees" },
-                    { key: "male", label: "Nur Brueder" },
+                    { key: "male", label: "Nur Brüder" },
                     { key: "female", label: "Nur Schwestern" },
                   ] as const).map((opt) => (
                     <BNMPressable

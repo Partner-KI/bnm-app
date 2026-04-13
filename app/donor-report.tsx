@@ -199,7 +199,7 @@ export default function DonorReportScreen() {
       <ScrollView style={[styles.scrollView, { backgroundColor: themeColors.background }]}>
         {/* Header */}
         <View style={[styles.reportHeader, { paddingTop: insets.top + 28 }]}>
-          <BNMPressable style={styles.backButton} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck zu Berichten">
+          <BNMPressable style={styles.backButton} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück zu Berichten">
             <Text style={styles.backButtonText}>{t("donorReport.backToReports")}</Text>
           </BNMPressable>
           <View style={styles.logoBadge}>
@@ -482,7 +482,7 @@ export default function DonorReportScreen() {
             </BNMPressable>
           )}
 
-          <BNMPressable style={[styles.backBtn, { borderColor: themeColors.border }]} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurueck zu Berichten">
+          <BNMPressable style={[styles.backBtn, { borderColor: themeColors.border }]} onPress={() => router.back()} accessibilityRole="link" accessibilityLabel="Zurück zu Berichten">
             <Text style={[styles.backBtnText, { color: themeColors.textSecondary }]}>{t("donorReport.backToReports")}</Text>
           </BNMPressable>
         </View>

@@ -3,7 +3,7 @@ import { Platform } from "react-native";
 let _pdfLib: any = null;
 async function getPdfLib(): Promise<{ PDFDocument: any; StandardFonts: any; rgb: any }> {
   if (_pdfLib) return _pdfLib;
-  if (typeof window === "undefined") throw new Error("PDF nur auf Web verfuegbar");
+  if (typeof window === "undefined") throw new Error("PDF nur auf Web verfügbar");
   const script = document.createElement("script");
   script.src = "https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js";
   await new Promise<void>((resolve, reject) => {
@@ -889,7 +889,7 @@ export async function downloadDonorReportPDF(data: DonorReportData): Promise<boo
 
     // ===== SEITE 1: COVER =====
     const p1 = doc.addPage([W, H]);
-    const below = drawCoverPage(p1, rgb, bold, font, W, H, "SPENDERBERICHT", "Wirkungsbericht fuer Foerderer", data.periodLabel, today, logo);
+    const below = drawCoverPage(p1, rgb, bold, font, W, H, "SPENDERBERICHT", "Wirkungsbericht für Förderer", data.periodLabel, today, logo);
 
     let y1 = below - 10;
     const hW = 115, hH = 70, hG = 10;

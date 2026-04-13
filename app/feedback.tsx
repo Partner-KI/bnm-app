@@ -454,7 +454,7 @@ export default function FeedbackScreen() {
                   style={[styles.navButton, styles.navButtonBack, { borderColor: themeColors.border }]}
                   onPress={handleBack}
                   accessibilityRole="button"
-                  accessibilityLabel="Zurueck"
+                  accessibilityLabel="Zurück"
                 >
                   <Ionicons name="chevron-back" size={18} color={themeColors.text} />
                   <Text style={[styles.navButtonText, { color: themeColors.text }]}>
@@ -500,7 +500,7 @@ export default function FeedbackScreen() {
             </View>
 
             {/* Skip */}
-            <BNMPressable style={styles.skipButton} onPress={() => router.replace("/(tabs)")} accessibilityRole="link" accessibilityLabel="Ueberspringen">
+            <BNMPressable style={styles.skipButton} onPress={() => router.replace("/(tabs)")} accessibilityRole="link" accessibilityLabel="Überspringen">
               <Text style={[styles.skipText, { color: themeColors.textTertiary }]}>{t("feedback.skip")}</Text>
             </BNMPressable>
           </View>

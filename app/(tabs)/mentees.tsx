@@ -251,7 +251,7 @@ function AdminMenteesView() {
               style={[styles.modalBtn, styles.modalBtnDanger]}
               onPress={() => { setConfirmModal1(false); setConfirmModal2(true); setDeleteInput(""); }}
               accessibilityRole="button"
-              accessibilityLabel="Bestaetigen"
+              accessibilityLabel="Bestätigen"
             >
               <Text style={[styles.modalBtnText, { color: COLORS.white }]}>{t("common.confirm")}</Text>
             </BNMPressable>
@@ -292,7 +292,7 @@ function AdminMenteesView() {
               disabled={deleteInput.toUpperCase() !== confirmWord.toUpperCase() || isDeleting}
               hapticStyle="error"
               accessibilityRole="button"
-              accessibilityLabel={isDeleting ? "Wird geloescht" : "Loeschen bestaetigen"}
+              accessibilityLabel={isDeleting ? "Wird gelöscht" : "Löschen bestätigen"}
             >
               <Text style={[styles.modalBtnText, { color: COLORS.white }]}>
                 {isDeleting ? t("admin.deleting") : t("admin.deleteConfirmInput")}
@@ -364,11 +364,11 @@ function AdminMenteesView() {
           {/* Multi-Select: Alle / Keine */}
           {selectMode && (
             <View style={[styles.selectBar, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
-              <BNMPressable onPress={() => selectAll(filteredMentees.map((m) => m.id))} accessibilityRole="button" accessibilityLabel="Alle auswaehlen">
+              <BNMPressable onPress={() => selectAll(filteredMentees.map((m) => m.id))} accessibilityRole="button" accessibilityLabel="Alle auswählen">
                 <Text style={[styles.selectBarBtn, { color: COLORS.gradientStart }]}>{t("admin.selectAll")}</Text>
               </BNMPressable>
               <Text style={[styles.selectBarSep, { color: themeColors.border }]}>|</Text>
-              <BNMPressable onPress={selectNone} accessibilityRole="button" accessibilityLabel="Keine auswaehlen">
+              <BNMPressable onPress={selectNone} accessibilityRole="button" accessibilityLabel="Keine auswählen">
                 <Text style={[styles.selectBarBtn, { color: themeColors.textSecondary }]}>{t("admin.selectNone")}</Text>
               </BNMPressable>
             </View>
@@ -492,7 +492,7 @@ function AdminMenteesView() {
                 setSortKey(next);
               }}
               accessibilityRole="button"
-              accessibilityLabel="Sortierung aendern"
+              accessibilityLabel="Sortierung ändern"
             >
               <Ionicons name="swap-vertical-outline" size={16} color={themeColors.textSecondary} />
               <Text style={[styles.filterIconBtnText, { color: themeColors.textSecondary }]}>
@@ -676,7 +676,7 @@ function AdminMenteesView() {
           onPress={() => { setConfirmModal1(true); }}
           hapticStyle="error"
           accessibilityRole="button"
-          accessibilityLabel={`${selectedCount} ausgewaehlte loeschen`}
+          accessibilityLabel={`${selectedCount} ausgewählte löschen`}
         >
           <Text style={styles.footerDeleteBtnText}>
             {t("admin.deleteSelected").replace("{0}", String(selectedCount))}
@@ -781,7 +781,7 @@ function MentorMenteesView() {
                 style={styles.selfAssignButton}
                 onPress={() => router.push("/assign")}
                 accessibilityRole="link"
-                accessibilityLabel="Mentee uebernehmen"
+                accessibilityLabel="Mentee übernehmen"
               >
                 <Text style={styles.selfAssignText}>{t("mentees.takeMentee")}</Text>
               </BNMPressable>

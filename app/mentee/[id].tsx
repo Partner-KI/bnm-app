@@ -55,7 +55,7 @@ export default function MenteeDetailScreen() {
       <Container fullWidth={Platform.OS === "web"}>
         <View style={[styles.root, { backgroundColor: themeColors.background }]}>
           <View style={[styles.header, { backgroundColor: themeColors.card, borderBottomColor: themeColors.border, paddingTop: insets.top + 16 }]}>
-            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurueck">
+            <BNMPressable onPress={() => router.back()} style={styles.backButton} accessibilityRole="link" accessibilityLabel="Zurück">
               <Text style={[styles.backText, { color: themeColors.text }]}>{t("menteeDetail.back")}</Text>
             </BNMPressable>
             <Text style={[styles.headerTitle, { color: themeColors.text }]}>{t("menteeDetail.headerTitle")}</Text>
