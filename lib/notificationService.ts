@@ -117,6 +117,7 @@ export interface NotificationSettings {
   applicationStatus: boolean;
   reminders: boolean;
   feedback: boolean;
+  calendarReminders: boolean;
 }
 
 const DEFAULT_SETTINGS: NotificationSettings = {
@@ -125,6 +126,7 @@ const DEFAULT_SETTINGS: NotificationSettings = {
   applicationStatus: true,
   reminders: true,
   feedback: true,
+  calendarReminders: true,
 };
 
 export async function getNotificationSettings(): Promise<NotificationSettings> {
@@ -186,4 +188,12 @@ export async function notifyMentorshipCompleted(menteeName: string): Promise<voi
 
 export async function notifyFeedbackRequested(mentorName: string): Promise<void> {
   await sendLocalNotification("Feedback gewünscht", `Bitte gib Feedback zu deiner Betreuung mit ${mentorName}.`, "feedback");
+}
+
+export async function notifyUpcomingEvent(eventTitle: string, minutesBefore: number): Promise<void> {
+  await sendLocalNotification(
+    `Termin in ${minutesBefore} Min`,
+    eventTitle,
+    "reminders"
+  );
 }

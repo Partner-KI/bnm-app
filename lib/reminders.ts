@@ -1,4 +1,4 @@
-import type { Mentorship, Session, Notification, Feedback } from '../types';
+import type { Mentorship, Session, Notification, Feedback, CalendarEvent, EventAttendee } from '../types';
 
 const REMINDER_THRESHOLD_DAYS = 5;
 const REMINDER_COOLDOWN_DAYS = 5;
@@ -154,6 +154,62 @@ export function checkMenteeReminders(
         }
       }
     }
+  }
+
+  return result;
+}
+
+const EVENT_REMINDER_WINDOW_MS = 60 * 60 * 1000; // 60 Minuten
+
+/**
+ * Prüft ob für bevorstehende Kalender-Events Erinnerungen erstellt werden sollen.
+ * Für jedes Event, bei dem der User als Teilnehmer mit Status "accepted" eingetragen ist
+ * und das innerhalb der nächsten 60 Minuten startet, wird eine Erinnerung generiert
+ * (sofern noch keine ungelesene Erinnerung für dieses Event existiert).
+ */
+export function checkEventReminders(
+  calendarEvents: CalendarEvent[],
+  eventAttendees: EventAttendee[],
+  notifications: Notification[],
+  currentUserId: string
+): Array<Omit<Notification, 'id' | 'created_at' | 'read'>> {
+  const now = Date.now();
+  const result: Array<Omit<Notification, 'id' | 'created_at' | 'read'>> = [];
+
+  // Events bei denen der User als "accepted" teilnimmt
+  const myAcceptedEventIds = new Set(
+    eventAttendees
+      .filter((a) => a.user_id === currentUserId && a.status === 'accepted')
+      .map((a) => a.event_id)
+  );
+
+  for (const event of calendarEvents) {
+    if (!event.is_active) continue;
+    if (!myAcceptedEventIds.has(event.id)) continue;
+
+    const startTime = new Date(event.start_at).getTime();
+    const timeUntilStart = startTime - now;
+
+    // Nur Events die in den nächsten 60 Minuten starten (und noch nicht begonnen haben)
+    if (timeUntilStart <= 0 || timeUntilStart > EVENT_REMINDER_WINDOW_MS) continue;
+
+    // Bereits eine ungelesene Erinnerung für dieses Event?
+    const existingReminder = notifications.find(
+      (n) =>
+        n.type === 'reminder' &&
+        n.related_id === event.id &&
+        !n.read
+    );
+    if (existingReminder) continue;
+
+    const timeStr = new Date(event.start_at).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
+    result.push({
+      type: 'reminder',
+      title: 'Termin in Kürze',
+      body: `${event.title} um ${timeStr} Uhr`,
+      related_id: event.id,
+    });
   }
 
   return result;

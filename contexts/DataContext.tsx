@@ -41,7 +41,7 @@ export interface GamificationCallbacks {
 import { supabase } from "../lib/supabase";
 import { supabaseAnon } from "../lib/supabaseAnon";
 import { useAuth } from "./AuthContext";
-import { checkReminders, checkMenteeReminders } from "../lib/reminders";
+import { checkReminders, checkMenteeReminders, checkEventReminders } from "../lib/reminders";
 import { geocodePLZ } from "../lib/geocoding";
 import { showError, showSuccess } from "../lib/errorHandler";
 import {
@@ -1154,6 +1154,66 @@ export function DataProvider({ children }: { children: ReactNode }) {
               }
             })
             .catch((err) => console.warn("[DataContext] mentee reminder insert:", err));
+        }
+      }
+
+      // ─── Kalender-Event-Reminder-Check (alle Rollen) ───────────────────────
+      if (calendarEventsRes.data && eventAttendeesRes.data && notificationsRes.data && authUser) {
+        const freshCalendarEvents = calendarEventsRes.data.map((row: any) => ({
+          id: row.id as string,
+          title: (row.title ?? "") as string,
+          description: (row.description ?? "") as string,
+          start_at: row.start_at as string,
+          end_at: (row.end_at ?? null) as string | null,
+          type: (row.type ?? "custom") as string,
+          location: (row.location ?? "") as string,
+          created_by: (row.created_by ?? null) as string | null,
+          recurrence: (row.recurrence ?? null) as any,
+          visible_to: (row.visible_to ?? "all") as any,
+          is_active: (row.is_active ?? true) as boolean,
+          google_calendar_event_id: (row.google_calendar_event_id ?? null) as string | null,
+          created_at: row.created_at as string,
+        }));
+        const freshEventAttendees = eventAttendeesRes.data.map((row: any) => ({
+          id: row.id as string,
+          event_id: row.event_id as string,
+          user_id: row.user_id as string,
+          status: (row.status ?? "invited") as any,
+          reminder_minutes: (row.reminder_minutes ?? 60) as number,
+          google_synced: (row.google_synced ?? false) as boolean,
+          created_at: row.created_at as string,
+        }));
+        const freshNotificationsForEvents: Notification[] = notificationsRes.data.map(mapNotification);
+
+        const eventReminders = checkEventReminders(
+          freshCalendarEvents,
+          freshEventAttendees,
+          freshNotificationsForEvents,
+          authUser.id
+        );
+
+        if (eventReminders.length > 0) {
+          supabase
+            .from('notifications')
+            .insert(
+              eventReminders.map((r) => ({
+                user_id: authUser.id,
+                type: r.type,
+                title: r.title,
+                body: r.body,
+                related_id: r.related_id ?? null,
+              }))
+            )
+            .select()
+            .then(({ data: insertedReminders }) => {
+              if (insertedReminders) {
+                setNotifications((prev) => [
+                  ...prev,
+                  ...insertedReminders.map(mapNotification),
+                ]);
+              }
+            })
+            .catch((err) => console.warn("[DataContext] event reminder insert:", err));
         }
       }
     } catch (err) {

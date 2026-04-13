@@ -882,7 +882,7 @@ function MentorDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, sessionTypes, isLoading, resources, eventParticipations, toggleEventParticipation, getEventParticipationsByResourceId, getMyEventParticipation, isResourceCompleted, toggleResourceCompletion } = useData();
+  const { getMentorshipsByMentorId, sessions, users, hadithe, feedback, refreshData, sessionTypes, isLoading, resources, eventParticipations, toggleEventParticipation, getEventParticipationsByResourceId, getMyEventParticipation, isResourceCompleted, toggleResourceCompletion, calendarEvents, eventAttendees, respondToEvent } = useData();
   const { xpLog, userAchievements, thanks, streak } = useGamification();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
@@ -1044,6 +1044,23 @@ function MentorDashboard() {
   }, [user, myMentorships, sessions, sessionTypes, completedMentorships]);
 
   const [showAchievementTooltip, setShowAchievementTooltip] = useState<string | null>(null);
+
+  // Nächste 3 Kalender-Termine (sichtbar für Mentor-Rolle + Geschlecht)
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return calendarEvents
+      .filter((e) => {
+        if (!e.is_active) return false;
+        if (new Date(e.start_at) <= now) return false;
+        // Sichtbarkeits-Filter
+        if (e.visible_to === "mentees") return false;
+        if (e.visible_to === "male" && user?.gender !== "male") return false;
+        if (e.visible_to === "female" && user?.gender !== "female") return false;
+        return true;
+      })
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+      .slice(0, 3);
+  }, [calendarEvents, user]);
 
   if (isLoading) return <SkeletonDashboard />;
 
@@ -1293,6 +1310,86 @@ function MentorDashboard() {
         </View>
         </DashboardRow>
 
+        {/* ── Nächste Termine ── */}
+        {upcomingEvents.length > 0 && (
+          <View style={{ marginTop: 8, marginBottom: 16 }}>
+            <Text style={[styles.mentorSectionTitle, { color: themeColors.textSecondary, marginBottom: 10 }]}>
+              Nächste Termine
+            </Text>
+            <View style={{ gap: 10 }}>
+              {upcomingEvents.map((evt) => {
+                const startDate = new Date(evt.start_at);
+                const dateStr = startDate.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                const timeStr = `${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")} Uhr`;
+                const typeMap: Record<string, { label: string; color: string }> = {
+                  webinar: { label: "Webinar", color: COLORS.gradientStart },
+                  retreat: { label: "Retreat", color: COLORS.cta },
+                  kurs: { label: "Kurs", color: COLORS.gold },
+                  meeting: { label: "Meeting", color: COLORS.blue },
+                  custom: { label: "Termin", color: COLORS.secondary },
+                };
+                const typeInfo = typeMap[evt.type] ?? typeMap.custom;
+                const myAttendee = eventAttendees.find((a) => a.event_id === evt.id && a.user_id === user?.id);
+                const isAccepted = myAttendee?.status === "accepted";
+                return (
+                  <View
+                    key={evt.id}
+                    style={[styles.levelCard, { backgroundColor: themeColors.card, borderColor: sem(SEMANTIC.goldBorder, isDark), marginBottom: 0 }]}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: RADIUS.sm, backgroundColor: typeInfo.color + "18" }}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: typeInfo.color }}>{typeInfo.label}</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: themeColors.text, marginBottom: 4 }}>{evt.title}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                      <Ionicons name="calendar-outline" size={13} color={themeColors.textTertiary} />
+                      <Text style={{ fontSize: 12, color: themeColors.textSecondary }}>{dateStr}, {timeStr}</Text>
+                    </View>
+                    {evt.location ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                        <Ionicons name="location-outline" size={13} color={themeColors.textTertiary} />
+                        <Text style={{ fontSize: 12, color: themeColors.textSecondary }}>{evt.location}</Text>
+                      </View>
+                    ) : null}
+                    <BNMPressable
+                      style={{
+                        marginTop: 8,
+                        paddingVertical: 7,
+                        paddingHorizontal: 14,
+                        borderRadius: RADIUS.sm,
+                        backgroundColor: isAccepted ? COLORS.cta + "15" : COLORS.gold + "15",
+                        alignSelf: "flex-start",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                      onPress={() => respondToEvent(evt.id, isAccepted ? "declined" : "accepted")}
+                      accessibilityRole="button"
+                      accessibilityLabel={isAccepted ? "Zusage zurücknehmen" : "Zusagen"}
+                    >
+                      <Ionicons name={isAccepted ? "checkmark-circle" : "checkmark-circle-outline"} size={16} color={isAccepted ? COLORS.cta : COLORS.gold} />
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: isAccepted ? COLORS.cta : COLORS.gold }}>
+                        {isAccepted ? "Zugesagt \u2713" : "Zusagen"}
+                      </Text>
+                    </BNMPressable>
+                  </View>
+                );
+              })}
+            </View>
+            <BNMPressable
+              style={{ marginTop: 10, alignSelf: "flex-start" }}
+              onPress={() => router.push("/(tabs)/calendar")}
+              accessibilityRole="link"
+              accessibilityLabel="Alle Termine anzeigen"
+            >
+              <Text style={{ fontSize: 13, fontWeight: "600", color: isDark ? COLORS.gold : COLORS.gradientStart }}>
+                Alle Termine →
+              </Text>
+            </BNMPressable>
+          </View>
+        )}
+
         {/* ── Ressourcen ── */}
         {(() => {
           const now = new Date();
@@ -1529,7 +1626,7 @@ function MenteeDashboard() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, isLoading } = useData();
+  const { getMentorshipByMenteeId, getCompletedStepIds, sessionTypes, hadithe, refreshData, isLoading, calendarEvents, eventAttendees, respondToEvent } = useData();
   const { sendThanks } = useGamification();
   const [refreshing, setRefreshing] = useState(false);
   const [hadithOffset, setHadithOffset] = useState(0);
@@ -1586,6 +1683,22 @@ function MenteeDashboard() {
   const daysSinceStart = mentorship?.assigned_at
     ? Math.max(0, Math.floor((Date.now() - new Date(mentorship.assigned_at).getTime()) / 86400000))
     : null;
+
+  // Nächste 3 Kalender-Termine (sichtbar für Mentee-Rolle + Geschlecht)
+  const upcomingMenteeEvents = useMemo(() => {
+    const now = new Date();
+    return calendarEvents
+      .filter((e) => {
+        if (!e.is_active) return false;
+        if (new Date(e.start_at) <= now) return false;
+        if (e.visible_to === "mentors") return false;
+        if (e.visible_to === "male" && user?.gender !== "male") return false;
+        if (e.visible_to === "female" && user?.gender !== "female") return false;
+        return true;
+      })
+      .sort((a, b) => new Date(a.start_at).getTime() - new Date(b.start_at).getTime())
+      .slice(0, 3);
+  }, [calendarEvents, user]);
 
   if (isLoading) return <SkeletonDashboard />;
 
@@ -1736,6 +1849,86 @@ function MenteeDashboard() {
             <Text style={[styles.emptyText, { color: themeColors.textTertiary, marginTop: 8 }]}>
               {t("dashboard.pendingAssignmentText")}
             </Text>
+          </View>
+        )}
+
+        {/* ── Nächste Termine (Mentee) ── */}
+        {upcomingMenteeEvents.length > 0 && (
+          <View style={{ marginTop: 8, marginBottom: 16 }}>
+            <Text style={[styles.mentorSectionTitle, { color: themeColors.textSecondary, marginBottom: 10 }]}>
+              Nächste Termine
+            </Text>
+            <View style={{ gap: 10 }}>
+              {upcomingMenteeEvents.map((evt) => {
+                const startDate = new Date(evt.start_at);
+                const dateStr = startDate.toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
+                const timeStr = `${String(startDate.getHours()).padStart(2, "0")}:${String(startDate.getMinutes()).padStart(2, "0")} Uhr`;
+                const typeMap: Record<string, { label: string; color: string }> = {
+                  webinar: { label: "Webinar", color: COLORS.gradientStart },
+                  retreat: { label: "Retreat", color: COLORS.cta },
+                  kurs: { label: "Kurs", color: COLORS.gold },
+                  meeting: { label: "Meeting", color: COLORS.blue },
+                  custom: { label: "Termin", color: COLORS.secondary },
+                };
+                const typeInfo = typeMap[evt.type] ?? typeMap.custom;
+                const myAttendee = eventAttendees.find((a) => a.event_id === evt.id && a.user_id === user?.id);
+                const isAccepted = myAttendee?.status === "accepted";
+                return (
+                  <View
+                    key={evt.id}
+                    style={[styles.levelCard, { backgroundColor: themeColors.card, borderColor: sem(SEMANTIC.goldBorder, isDark), marginBottom: 0 }]}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <View style={{ paddingHorizontal: 8, paddingVertical: 3, borderRadius: RADIUS.sm, backgroundColor: typeInfo.color + "18" }}>
+                        <Text style={{ fontSize: 10, fontWeight: "700", color: typeInfo.color }}>{typeInfo.label}</Text>
+                      </View>
+                    </View>
+                    <Text style={{ fontSize: 15, fontWeight: "700", color: themeColors.text, marginBottom: 4 }}>{evt.title}</Text>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                      <Ionicons name="calendar-outline" size={13} color={themeColors.textTertiary} />
+                      <Text style={{ fontSize: 12, color: themeColors.textSecondary }}>{dateStr}, {timeStr}</Text>
+                    </View>
+                    {evt.location ? (
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                        <Ionicons name="location-outline" size={13} color={themeColors.textTertiary} />
+                        <Text style={{ fontSize: 12, color: themeColors.textSecondary }}>{evt.location}</Text>
+                      </View>
+                    ) : null}
+                    <BNMPressable
+                      style={{
+                        marginTop: 8,
+                        paddingVertical: 7,
+                        paddingHorizontal: 14,
+                        borderRadius: RADIUS.sm,
+                        backgroundColor: isAccepted ? COLORS.cta + "15" : COLORS.gold + "15",
+                        alignSelf: "flex-start",
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 6,
+                      }}
+                      onPress={() => respondToEvent(evt.id, isAccepted ? "declined" : "accepted")}
+                      accessibilityRole="button"
+                      accessibilityLabel={isAccepted ? "Zusage zurücknehmen" : "Zusagen"}
+                    >
+                      <Ionicons name={isAccepted ? "checkmark-circle" : "checkmark-circle-outline"} size={16} color={isAccepted ? COLORS.cta : COLORS.gold} />
+                      <Text style={{ fontSize: 12, fontWeight: "600", color: isAccepted ? COLORS.cta : COLORS.gold }}>
+                        {isAccepted ? "Zugesagt \u2713" : "Zusagen"}
+                      </Text>
+                    </BNMPressable>
+                  </View>
+                );
+              })}
+            </View>
+            <BNMPressable
+              style={{ marginTop: 10, alignSelf: "flex-start" }}
+              onPress={() => router.push("/(tabs)/calendar")}
+              accessibilityRole="link"
+              accessibilityLabel="Alle Termine anzeigen"
+            >
+              <Text style={{ fontSize: 13, fontWeight: "600", color: isDark ? COLORS.gold : COLORS.gradientStart }}>
+                Alle Termine →
+              </Text>
+            </BNMPressable>
           </View>
         )}
 
