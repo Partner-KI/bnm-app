@@ -217,14 +217,21 @@ export default function CalendarTabScreen() {
       });
     });
 
-    // Sessions
+    // Sessions (via mentorships filtern)
+    const myMentorshipIds = new Set(
+      mentorships
+        .filter((m) =>
+          user?.role === "mentor" ? m.mentor_id === user.id
+          : user?.role === "mentee" ? m.mentee_id === user.id
+          : true
+        )
+        .map((m) => m.id)
+    );
     sessions.forEach((s) => {
-      if (!s.session_date) return;
-      // For mentors: only their sessions; for mentees: only their sessions
-      if (user?.role === "mentor" && s.mentor_id !== user.id) return;
-      if (user?.role === "mentee" && s.mentee_id !== user.id) return;
+      if (!s.date) return;
+      if (!myMentorshipIds.has(s.mentorship_id)) return;
       result.push({
-        date: s.session_date.slice(0, 10),
+        date: s.date.slice(0, 10),
         type: "session",
         title: "Sitzung",
       });
@@ -266,17 +273,30 @@ export default function CalendarTabScreen() {
   // Sessions for selected day
   const daySessions = useMemo(() => {
     if (!selectedDate) return [];
+    const myMentorshipIds = new Set(
+      mentorships
+        .filter((m) =>
+          user?.role === "mentor" ? m.mentor_id === user.id
+          : user?.role === "mentee" ? m.mentee_id === user.id
+          : true
+        )
+        .map((m) => m.id)
+    );
     return sessions.filter((s) => {
-      if (!s.session_date) return false;
-      if (s.session_date.slice(0, 10) !== selectedDate) return false;
-      if (user?.role === "mentor" && s.mentor_id !== user.id) return false;
-      if (user?.role === "mentee" && s.mentee_id !== user.id) return false;
+      if (!s.date) return false;
+      if (s.date.slice(0, 10) !== selectedDate) return false;
+      if (!myMentorshipIds.has(s.mentorship_id)) return false;
       return true;
     }).map((s) => {
       const st = sessionTypes.find((t) => t.id === s.session_type_id);
-      return { ...s, session_type_name: st?.name || "Sitzung" };
+      const m = mentorships.find((m) => m.id === s.mentorship_id);
+      const partner = m
+        ? user?.role === "mentor" ? users.find((u) => u.id === m.mentee_id)
+        : users.find((u) => u.id === m.mentor_id)
+        : null;
+      return { ...s, session_type_name: st?.name || "Sitzung", partner_name: partner?.name || "" };
     });
-  }, [sessions, selectedDate, user, sessionTypes]);
+  }, [sessions, selectedDate, user, sessionTypes, mentorships, users]);
 
   const handleRespond = async (eventId: string, status: "accepted" | "declined") => {
     try {

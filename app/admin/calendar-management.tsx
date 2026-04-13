@@ -245,18 +245,15 @@ export default function CalendarManagementScreen() {
     }
   };
 
-  const handleDelete = (id: string, title: string) => {
-    showConfirm(
-      `"${title}" wirklich loeschen?`,
-      async () => {
-        try {
-          await deleteCalendarEvent(id);
-          showSuccess("Event geloescht");
-        } catch {
-          showError("Fehler beim Loeschen");
-        }
-      },
-    );
+  const handleDelete = async (id: string, title: string) => {
+    const ok = await showConfirm("Event loeschen", `"${title}" wirklich loeschen?`);
+    if (!ok) return;
+    try {
+      await deleteCalendarEvent(id);
+      showSuccess("Event geloescht");
+    } catch {
+      showError("Fehler beim Loeschen");
+    }
   };
 
   const handleInviteMentors = async (eventId: string) => {

@@ -385,7 +385,7 @@ function TabsLayout() {
         name="calendar"
         options={{
           title: t("tabs.calendar"),
-          href: showCalendar ? "/(tabs)/calendar" : null,
+          href: showCalendar ? ("/(tabs)/calendar" as never) : null,
           tabBarIcon: ({ color, focused }) => (
             <View style={tabStyles.iconWrapper}>
               <Ionicons name={focused ? "calendar" : "calendar-outline"} size={22} color={color} />

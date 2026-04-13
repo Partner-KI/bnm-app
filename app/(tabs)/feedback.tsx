@@ -53,7 +53,7 @@ function QuestionnaireDetail({ answers }: { answers: QuestionnaireAnswers }) {
         return (
           <View key={sec.id} style={styles.detailSection}>
             <Text style={[styles.detailSectionTitle, { color: themeColors.primary }]}>
-              {t(sec.titleKey)}
+              {t(sec.titleKey as any)}
             </Text>
             {visibleQuestions.map((q) => {
               const val = (answers as any)[q.id];
@@ -66,14 +66,14 @@ function QuestionnaireDetail({ answers }: { answers: QuestionnaireAnswers }) {
                 const keys = Array.isArray(val) ? val : [val];
                 display = keys.map((k: string) => {
                   const opt = q.options!.find((o) => o.key === k);
-                  return opt ? t(opt.translationKey) : k;
+                  return opt ? t(opt.translationKey as any) : k;
                 }).join(", ");
               }
 
               return (
                 <View key={q.id} style={styles.detailRow}>
                   <Text style={[styles.detailQuestion, { color: themeColors.textTertiary }]}>
-                    {t(q.translationKey)}
+                    {t(q.translationKey as any)}
                   </Text>
                   <Text style={[styles.detailAnswer, { color: themeColors.text }]}>
                     {display}
@@ -254,7 +254,7 @@ function FeedbackStatistics({ feedbacks }: { feedbacks: Feedback[] }) {
               <View style={styles.statsTopicsGrid}>
                 {stats.sortedTopics.map(([key, count]) => {
                   const opt = stats.topicQuestion!.options!.find((o) => o.key === key);
-                  const label = opt ? t(opt.translationKey) : key;
+                  const label = opt ? t(opt.translationKey as any) : key;
                   return (
                     <View
                       key={key}

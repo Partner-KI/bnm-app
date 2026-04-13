@@ -1379,7 +1379,7 @@ function MentorDashboard() {
             </View>
             <BNMPressable
               style={{ marginTop: 10, alignSelf: "flex-start" }}
-              onPress={() => router.push("/(tabs)/calendar")}
+              onPress={() => router.push("/(tabs)/calendar" as never)}
               accessibilityRole="link"
               accessibilityLabel="Alle Termine anzeigen"
             >
@@ -1921,7 +1921,7 @@ function MenteeDashboard() {
             </View>
             <BNMPressable
               style={{ marginTop: 10, alignSelf: "flex-start" }}
-              onPress={() => router.push("/(tabs)/calendar")}
+              onPress={() => router.push("/(tabs)/calendar" as never)}
               accessibilityRole="link"
               accessibilityLabel="Alle Termine anzeigen"
             >
