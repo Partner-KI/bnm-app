@@ -42,6 +42,7 @@ export default function ChatScreen() {
     markChatAsRead,
     getUserById,
     mentorships: allMentorships,
+    messageTemplates,
     isLoading: dataLoading,
   } = useData();
   const { mentorshipId } = useLocalSearchParams<{ mentorshipId: string }>();
@@ -51,6 +52,9 @@ export default function ChatScreen() {
   const flatListRef = useRef<FlatList>(null);
   const [showScrollFab, setShowScrollFab] = useState(false);
   const fabOpacity = useRef(new Animated.Value(0)).current;
+
+  // Template picker state
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
 
   // Forward message state
   const [forwardModalVisible, setForwardModalVisible] = useState(false);
@@ -291,6 +295,30 @@ export default function ChatScreen() {
       });
   }, [allMentorships, user, mentorshipId, getUserById]);
 
+  // Chat templates (exclude email templates, only active)
+  const chatTemplates = useMemo(() =>
+    messageTemplates.filter(t => !t.title.startsWith("[E-Mail]") && t.is_active),
+    [messageTemplates]
+  );
+
+  const isMentor = user?.role === "mentor";
+
+  // Mentee name for placeholder replacement
+  const menteeName = useMemo(() => {
+    if (!mentorship) return "";
+    const mentee = getUserById(mentorship.mentee_id);
+    return mentee?.name ?? "";
+  }, [mentorship, getUserById]);
+
+  const handleSelectTemplate = useCallback((template: typeof chatTemplates[0]) => {
+    let body = template.body;
+    body = body.replace(/\{name\}/g, menteeName);
+    body = body.replace(/\{mentor_name\}/g, user?.name ?? "");
+    body = body.replace(/\{mentee_name\}/g, menteeName);
+    setInputText(body);
+    setShowTemplateModal(false);
+  }, [menteeName, user?.name]);
+
   const handleForwardToChat = useCallback(async (targetMentorshipId: string) => {
     if (!user) return;
     const forwardedContent = `\u21AA Weitergeleitet von ${forwardSenderName}:\n${forwardMessageContent}`;
@@ -379,6 +407,16 @@ export default function ChatScreen() {
       {/* Input-Bereich — Admin/Office dürfen schreiben (als Beobachter/Moderator) */}
       {mentorship && (mentorship.status === "active" || mentorship.status === "completed") ? (
         <View style={[styles.inputContainer, { backgroundColor: themeColors.card, borderTopColor: themeColors.border, paddingBottom: Platform.OS !== "web" ? Math.max(insets.bottom, 16) + 12 : 10 }]}>
+          {isMentor && chatTemplates.length > 0 && (
+            <BNMPressable
+              style={[styles.templateButton, { backgroundColor: themeColors.elevated, borderColor: themeColors.border }]}
+              onPress={() => setShowTemplateModal(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Nachrichtenvorlage einfuegen"
+            >
+              <Ionicons name="document-text-outline" size={20} color={COLORS.gold} />
+            </BNMPressable>
+          )}
           <TextInput
             style={[
               styles.textInput,
@@ -414,6 +452,58 @@ export default function ChatScreen() {
           </Text>
         </View>
       )}
+
+      {/* Template Picker Modal */}
+      <Modal
+        visible={showTemplateModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowTemplateModal(false)}
+      >
+        <BNMPressable
+          style={styles.modalOverlay}
+          onPress={() => setShowTemplateModal(false)}
+          accessibilityRole="button"
+          accessibilityLabel="Schliessen"
+        >
+          <View style={[styles.modalContent, { backgroundColor: themeColors.card }]}>
+            <Text style={[styles.modalTitle, { color: themeColors.text }]}>Vorlage einfuegen</Text>
+            <Text style={[styles.modalSubtitle, { color: themeColors.textTertiary }]}>
+              Tippe auf eine Vorlage, um den Text einzufuegen.
+            </Text>
+            {chatTemplates.length === 0 ? (
+              <Text style={{ color: themeColors.textTertiary, textAlign: "center", paddingVertical: 20, fontSize: 13 }}>
+                Keine Vorlagen verfuegbar.
+              </Text>
+            ) : (
+              <ScrollView style={{ maxHeight: 350 }}>
+                {chatTemplates.map((tmpl) => (
+                  <BNMPressable
+                    key={tmpl.id}
+                    style={[styles.templateCard, { borderBottomColor: themeColors.border }]}
+                    onPress={() => handleSelectTemplate(tmpl)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Vorlage: ${tmpl.title}`}
+                  >
+                    <Text style={[styles.templateCardTitle, { color: themeColors.text }]}>{tmpl.title}</Text>
+                    <Text style={[styles.templateCardPreview, { color: themeColors.textTertiary }]} numberOfLines={2}>
+                      {tmpl.body.length > 80 ? tmpl.body.substring(0, 80) + "..." : tmpl.body}
+                    </Text>
+                  </BNMPressable>
+                ))}
+              </ScrollView>
+            )}
+            <BNMPressable
+              style={[styles.modalCancelBtn, { borderColor: themeColors.border }]}
+              onPress={() => setShowTemplateModal(false)}
+              accessibilityRole="button"
+              accessibilityLabel="Abbrechen"
+            >
+              <Text style={{ color: themeColors.textSecondary, fontWeight: "600", fontSize: 14 }}>Abbrechen</Text>
+            </BNMPressable>
+          </View>
+        </BNMPressable>
+      </Modal>
 
       {/* Forward Modal */}
       <Modal
@@ -549,6 +639,24 @@ const styles = StyleSheet.create({
   inactiveHint: { flex: 1, textAlign: "center", fontSize: 13, paddingVertical: 4 },
 
   textInputWithTemplate: {},
+  templateButton: {
+    width: 44,
+    height: 44,
+    borderRadius: RADIUS.full,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
+  },
+  templateCard: {
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+  },
+  templateCardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
   templateCardPreview: {
     fontSize: 12,
     lineHeight: 18,
