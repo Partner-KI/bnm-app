@@ -42,7 +42,8 @@ Alle SQL-Änderungen dokumentieren. Selbstständig handeln.
   17. `supabase/events.sql` — Event-Participations-Tabelle (Teilnahme-Polling fuer Event-Ressourcen)
   18. `supabase/resource-completions.sql` — Ressourcen-Abhaken (Mentoren können Trainings als erledigt markieren)
   19. `supabase/calendar.sql` — Kalender-Events + Teilnehmer + Google Calendar Token
-  20. Dashboard: Auth → Email → "Confirm email" OFF
+  20. `supabase/email-templates.sql` — template_key Spalte + Default E-Mail-Vorlagen (Admin kann E-Mail-Texte aendern)
+  21. Dashboard: Auth → Email → "Confirm email" OFF
   13. Test-User manuell anlegen + Profile-INSERT
   14. `lib/supabase.ts`: URL + Anon Key ändern (2 Zeilen)
 
@@ -95,6 +96,17 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
 ---
 
 ## FORTSCHRITTS-LOG
+
+### 2026-04-13 — E-Mail-Vorlagen aus DB (Admin-verwaltbar)
+**Integration Admin-Templates in emailService:**
+- Neue Spalte `template_key` in `message_templates` (systeminterner Schluessel)
+- 7 Default E-Mail-Vorlagen geseeded (welcome_mentor, rejection, interview_invitation, webinar_invitation, feedback_request, mentorship_cancelled, mentor_assigned)
+- Neue Funktion `getEmailTemplate()` in emailService.ts: Laedt Template aus DB, parsed "Betreff: ...\n---\n..." Format, ersetzt Platzhalter
+- 7 Send-Funktionen aktualisiert: DB-Template zuerst, Fallback auf hardcoded HTML
+- Admin-UI: template_key als Badge angezeigt (read-only, zeigt welche Systemfunktion das Template nutzt)
+- types/index.ts: `template_key?: string` zu MessageTemplate hinzugefuegt
+- DataContext: template_key wird jetzt gemapped
+- SQL-Migration: `supabase/email-templates.sql`
 
 ### 2026-04-10 — Feedback-Umsetzung (21 Punkte aus User-Tests)
 

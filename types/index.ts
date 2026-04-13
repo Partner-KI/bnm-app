@@ -100,6 +100,7 @@ export interface MessageTemplate {
   body: string;
   sort_order: number;
   is_active: boolean;
+  template_key?: string;
 }
 
 export type ResourceVisibility = "all" | "mentors" | "mentees" | "male" | "female";

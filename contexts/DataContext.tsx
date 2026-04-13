@@ -833,6 +833,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           body: row.body,
           sort_order: row.sort_order ?? 0,
           is_active: row.is_active ?? true,
+          template_key: row.template_key ?? undefined,
         })));
       }
 

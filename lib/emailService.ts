@@ -68,6 +68,50 @@ function sanitizeSubject(str: string): string {
   return str.replace(/[\r\n\t]/g, " ").trim().slice(0, 200);
 }
 
+// ─── DB-Template-Lookup ─────────────────────────────────────────────────────
+// Lädt eine E-Mail-Vorlage aus der DB (message_templates) anhand template_key.
+// Format in DB: "Betreff: ...\n---\n..." — Admin kann Text im UI ändern.
+// Gibt null zurück wenn kein Template gefunden → Fallback auf hardcoded HTML.
+
+async function getEmailTemplate(
+  templateKey: string,
+  placeholders: Record<string, string>
+): Promise<{ subject: string; body: string } | null> {
+  try {
+    const { data } = await supabase
+      .from("message_templates")
+      .select("body")
+      .eq("template_key", templateKey)
+      .eq("is_active", true)
+      .maybeSingle();
+
+    if (!data?.body) return null;
+
+    // Parse: "Betreff: ...\n---\n..." format
+    const parts = data.body.split("\n---\n");
+    const subjectLine = parts[0]?.replace(/^Betreff:\s*/, "").trim() || "";
+    const bodyText = parts.slice(1).join("\n---\n").trim() || "";
+
+    // Replace placeholders
+    let subject = subjectLine;
+    let body = bodyText;
+    for (const [key, value] of Object.entries(placeholders)) {
+      const escaped = escapeHtml(value);
+      subject = subject.replace(new RegExp(`\\{${key}\\}`, "g"), value);
+      body = body.replace(new RegExp(`\\{${key}\\}`, "g"), escaped);
+    }
+
+    // Convert newlines to HTML + add BNM footer
+    const htmlBody = body.replace(/\n/g, "<br>") +
+      `<br><hr><p style="color:#98A2B3;font-size:12px">BNM – Betreuung neuer Muslime</p>`;
+
+    return { subject: sanitizeSubject(subject), body: htmlBody };
+  } catch (err) {
+    console.warn("[emailService] getEmailTemplate failed for key:", templateKey, err);
+    return null;
+  }
+}
+
 export async function sendEmail(
   to: string,
   subject: string,
@@ -110,6 +154,13 @@ export async function sendCredentialsEmail(
   name: string,
   tempPassword: string
 ): Promise<boolean> {
+  // Try DB template first
+  const template = await getEmailTemplate("welcome_mentor", {
+    name, email, password: tempPassword,
+  });
+  if (template) return sendEmail(email, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = "[BNM] Deine Zugangsdaten";
   const body = `
 <p>Salam Aleikum ${escapeHtml(name)},</p>
@@ -197,6 +248,13 @@ export async function sendMenteeAssignedNotification(
   menteeName: string,
   menteeCity: string
 ) {
+  // Try DB template first
+  const template = await getEmailTemplate("mentor_assigned", {
+    name: mentorName, mentee_name: menteeName, mentee_city: menteeCity,
+  });
+  if (template) return sendEmail(mentorEmail, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = sanitizeSubject(`[BNM] Dir wurde ein Mentee zugewiesen: ${menteeName}`);
   const body = `
 <p>Salam Aleikum ${escapeHtml(mentorName)},</p>
@@ -242,6 +300,13 @@ export async function sendApplicationRejectionEmail(
   type: "mentor" | "mentee",
   reason?: string
 ): Promise<boolean> {
+  // Try DB template first
+  const template = await getEmailTemplate("rejection", {
+    name: applicantName, reason: reason || "Keine Angabe",
+  });
+  if (template) return sendEmail(applicantEmail, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject =
     type === "mentor"
       ? "[BNM] Deine Mentor-Bewerbung"
@@ -284,6 +349,13 @@ export async function sendFeedbackRequestEmail(
   mentorName: string,
   mentorshipId: string
 ) {
+  // Try DB template first
+  const template = await getEmailTemplate("feedback_request", {
+    name: menteeName, mentor_name: mentorName,
+  });
+  if (template) return sendEmail(menteeEmail, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = `[BNM] Bitte gib Feedback zu deiner Betreuung`;
   const body = `
 <p>Salam Aleikum ${escapeHtml(menteeName)},</p>
@@ -302,6 +374,11 @@ export async function sendInterviewInvitationEmail(
   email: string,
   name: string
 ): Promise<boolean> {
+  // Try DB template first
+  const template = await getEmailTemplate("interview_invitation", { name });
+  if (template) return sendEmail(email, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = "[BNM] Einladung zum Gespräch";
   const body = `
 <p>Salam Aleikum ${escapeHtml(name)},</p>
@@ -322,6 +399,11 @@ export async function sendWebinarInvitationEmail(
   email: string,
   name: string
 ): Promise<boolean> {
+  // Try DB template first
+  const template = await getEmailTemplate("webinar_invitation", { name });
+  if (template) return sendEmail(email, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = "[BNM] Einladung zum Einführungswebinar";
   const body = `
 <p>Salam Aleikum ${escapeHtml(name)},</p>
@@ -343,6 +425,13 @@ export async function sendMentorshipCancelledToMenteeEmail(
   menteeName: string,
   mentorName: string
 ): Promise<boolean> {
+  // Try DB template first
+  const template = await getEmailTemplate("mentorship_cancelled", {
+    name: menteeName, mentor_name: mentorName,
+  });
+  if (template) return sendEmail(email, template.subject, template.body);
+
+  // Fallback: hardcoded
   const subject = "[BNM] Deine Betreuung wurde beendet";
   const body = `
 <p>Salam Aleikum ${escapeHtml(menteeName)},</p>

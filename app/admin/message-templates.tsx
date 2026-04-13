@@ -294,6 +294,12 @@ export default function MessageTemplatesScreen() {
                     {activeTab === "email" && emailSubject ? (
                       <Text style={[styles.templateCategory, { color: COLORS.gold }]}>Betreff: {emailSubject}</Text>
                     ) : null}
+                    {activeTab === "email" && tmpl.template_key ? (
+                      <View style={styles.templateKeyBadge}>
+                        <Ionicons name="link" size={10} color={COLORS.gradientStart} />
+                        <Text style={styles.templateKeyText}>{tmpl.template_key}</Text>
+                      </View>
+                    ) : null}
                     <Text style={[styles.templateCategory, { color: themeColors.textTertiary }]}>{tmpl.category}</Text>
                   </View>
                   <View style={styles.templateActions}>
@@ -407,6 +413,18 @@ const styles = StyleSheet.create({
   templateHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 },
   templateTitle: { fontWeight: "700", fontSize: 14 },
   templateCategory: { fontSize: 11, marginTop: 2, textTransform: "capitalize" },
+  templateKeyBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginTop: 3,
+    backgroundColor: COLORS.gradientStart + "15",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: RADIUS.full,
+    alignSelf: "flex-start",
+  },
+  templateKeyText: { fontSize: 10, color: COLORS.gradientStart, fontWeight: "600", fontFamily: Platform.OS === "web" ? "monospace" : undefined },
   templateActions: { flexDirection: "row", gap: 8 },
   iconBtn: { width: 36, height: 36, alignItems: "center", justifyContent: "center" },
   templatePreview: { fontSize: 12, lineHeight: 18 },
