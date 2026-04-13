@@ -89,7 +89,20 @@ export default function ToolsTabScreen() {
               </BNMPressable>
             )}
 
-            {/* Nachrichtenvorlagen vorerst ausgeblendet */}
+            {showSystemSettings && (
+              <BNMPressable
+                style={[styles.toolItem, { backgroundColor: themeColors.card, width: itemWidth }]}
+                onPress={() => router.push("/admin/message-templates" as never)}
+                accessibilityRole="link"
+                accessibilityLabel="Nachrichtenvorlagen verwalten"
+              >
+                <View style={[styles.toolIconBg, { backgroundColor: "#FEF3C7" }]}>
+                  <Ionicons name="mail-outline" size={24} color={COLORS.gold} />
+                </View>
+                <Text style={[styles.toolLabel, { color: themeColors.text }]}>Nachrichtenvorlagen</Text>
+                <Text style={[styles.toolSubLabel, { color: themeColors.textSecondary }]}>Chat- und E-Mail-Vorlagen</Text>
+              </BNMPressable>
+            )}
 
             {showSystemSettings && (
               <BNMPressable
