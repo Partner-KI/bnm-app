@@ -831,6 +831,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           is_active: row.is_active ?? true,
           visible_to: row.visible_to ?? "all",
           visible_until: row.visible_until ?? null,
+          visible_after_session_type_id: row.visible_after_session_type_id ?? null,
           created_at: row.created_at,
         })));
       }
@@ -2863,6 +2864,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         is_active: data.is_active ?? true,
         visible_to: data.visible_to ?? "all",
         visible_until: data.visible_until ?? null,
+        visible_after_session_type_id: data.visible_after_session_type_id ?? null,
         created_at: data.created_at,
       };
       setResources((prev) => {

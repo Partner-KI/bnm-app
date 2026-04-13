@@ -1296,16 +1296,25 @@ function MentorDashboard() {
         {/* ── Ressourcen ── */}
         {(() => {
           const now = new Date();
+          const myMentorshipIds = new Set(myMentorships.map((m) => m.id));
+          const mySessions = sessions.filter((s) => myMentorshipIds.has(s.mentorship_id));
+          const myCompletedSessionTypeIds = new Set(mySessions.map((s) => s.session_type_id));
+
           const visibleResources = resources.filter((r) => {
             if (!r.is_active) return false;
             // Zeitsteuerung
             if (r.visible_until && new Date(r.visible_until) < now) return false;
             // Zielgruppe
-            if (r.visible_to === "all") return true;
-            if (r.visible_to === "mentors") return user?.role === "mentor";
-            if (r.visible_to === "mentees") return user?.role === "mentee";
-            if (r.visible_to === "male") return user?.gender === "male";
-            if (r.visible_to === "female") return user?.gender === "female";
+            if (r.visible_to !== "all") {
+              if (r.visible_to === "mentors" && user?.role !== "mentor") return false;
+              if (r.visible_to === "mentees" && user?.role !== "mentee") return false;
+              if (r.visible_to === "male" && user?.gender !== "male") return false;
+              if (r.visible_to === "female" && user?.gender !== "female") return false;
+            }
+            // Session-Phase: nur sichtbar wenn diese Phase bereits dokumentiert wurde
+            if (r.visible_after_session_type_id) {
+              if (!myCompletedSessionTypeIds.has(r.visible_after_session_type_id)) return false;
+            }
             return true;
           });
           return visibleResources.length > 0 ? (

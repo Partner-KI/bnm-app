@@ -30,7 +30,7 @@ export default function ResourcesScreen() {
   const { t } = useLanguage();
   const themeColors = useThemeColors();
   const { isDark } = useTheme();
-  const { resources, addResource, updateResource, deleteResource, getEventParticipationsByResourceId, getResourceCompletionCount, users } = useData();
+  const { resources, addResource, updateResource, deleteResource, getEventParticipationsByResourceId, getResourceCompletionCount, users, sessionTypes } = useData();
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -40,6 +40,7 @@ export default function ResourcesScreen() {
   const [newCategory, setNewCategory] = useState("general");
   const [newVisibleTo, setNewVisibleTo] = useState<string>("all");
   const [newVisibleUntil, setNewVisibleUntil] = useState("");
+  const [newVisibleAfterSession, setNewVisibleAfterSession] = useState<string | null>(null);
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -50,6 +51,7 @@ export default function ResourcesScreen() {
   const [editCategory, setEditCategory] = useState("");
   const [editVisibleTo, setEditVisibleTo] = useState<string>("all");
   const [editVisibleUntil, setEditVisibleUntil] = useState("");
+  const [editVisibleAfterSession, setEditVisibleAfterSession] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const isSavingRef = React.useRef(false);
 
@@ -108,6 +110,7 @@ export default function ResourcesScreen() {
     setEditCategory(res.category);
     setEditVisibleTo(res.visible_to ?? "all");
     setEditVisibleUntil(res.visible_until ? res.visible_until.slice(0, 10) : "");
+    setEditVisibleAfterSession(res.visible_after_session_type_id ?? null);
   }
 
   async function handleSaveEdit() {
@@ -125,6 +128,7 @@ export default function ResourcesScreen() {
         category: editCategory,
         visible_to: editVisibleTo as any,
         visible_until: editVisibleUntil ? new Date(editVisibleUntil).toISOString() : null,
+        visible_after_session_type_id: editVisibleAfterSession,
       });
       setEditingId(null);
       showSuccess("Gespeichert");
@@ -155,6 +159,7 @@ export default function ResourcesScreen() {
         is_active: true,
         visible_to: newVisibleTo as any,
         visible_until: newVisibleUntil ? new Date(newVisibleUntil).toISOString() : null,
+        visible_after_session_type_id: newVisibleAfterSession,
       });
       setNewTitle("");
       setNewUrl("");
@@ -163,6 +168,7 @@ export default function ResourcesScreen() {
       setNewCategory("general");
       setNewVisibleTo("all");
       setNewVisibleUntil("");
+      setNewVisibleAfterSession(null);
       setShowAddForm(false);
       showSuccess("Ressource hinzugefuegt");
     } catch (err) {
@@ -319,6 +325,35 @@ export default function ResourcesScreen() {
                           placeholder="Sichtbar bis: JJJJ-MM-TT (leer = unbegrenzt)"
                           placeholderTextColor={themeColors.textTertiary}
                         />
+                        {/* Sichtbar ab Phase */}
+                        <Text style={{ fontSize: 12, fontWeight: "500", color: themeColors.textSecondary, marginTop: 6, marginBottom: 4 }}>Ab Phase</Text>
+                        <View style={styles.chipRow}>
+                          <BNMPressable
+                            style={[styles.catChip, {
+                              borderColor: !editVisibleAfterSession ? COLORS.cta : themeColors.border,
+                              backgroundColor: !editVisibleAfterSession ? COLORS.cta + "15" : themeColors.background,
+                            }]}
+                            onPress={() => setEditVisibleAfterSession(null)}
+                            accessibilityRole="radio"
+                            accessibilityLabel="Immer"
+                          >
+                            <Text style={[styles.catChipText, { color: !editVisibleAfterSession ? COLORS.cta : themeColors.textSecondary }]}>Immer</Text>
+                          </BNMPressable>
+                          {[...sessionTypes].sort((a, b) => a.sort_order - b.sort_order).map((st) => (
+                            <BNMPressable
+                              key={st.id}
+                              style={[styles.catChip, {
+                                borderColor: editVisibleAfterSession === st.id ? COLORS.cta : themeColors.border,
+                                backgroundColor: editVisibleAfterSession === st.id ? COLORS.cta + "15" : themeColors.background,
+                              }]}
+                              onPress={() => setEditVisibleAfterSession(st.id)}
+                              accessibilityRole="radio"
+                              accessibilityLabel={st.name}
+                            >
+                              <Text style={[styles.catChipText, { color: editVisibleAfterSession === st.id ? COLORS.cta : themeColors.textSecondary }]} numberOfLines={1}>{st.name}</Text>
+                            </BNMPressable>
+                          ))}
+                        </View>
                         <View style={{ flexDirection: "row", gap: 8, marginTop: 6 }}>
                           <BNMPressable
                             style={[styles.arrowButton, { backgroundColor: themeColors.background, flex: 1 }]}
@@ -371,6 +406,16 @@ export default function ResourcesScreen() {
                               </Text>
                             </View>
                           )}
+                          {res.visible_after_session_type_id && (() => {
+                            const st = sessionTypes.find((s) => s.id === res.visible_after_session_type_id);
+                            return st ? (
+                              <View style={[styles.categoryBadge, { backgroundColor: COLORS.cta + "15" }]}>
+                                <Text style={[styles.categoryBadgeText, { color: COLORS.cta }]}>
+                                  ab {st.name}
+                                </Text>
+                              </View>
+                            ) : null;
+                          })()}
                         </View>
                         {/* Completion-Statistik */}
                         {res.category !== "event" && (() => {
@@ -573,6 +618,36 @@ export default function ResourcesScreen() {
                   placeholder="JJJJ-MM-TT (leer = unbegrenzt)"
                   placeholderTextColor={themeColors.textTertiary}
                 />
+
+                {/* Sichtbar ab Session-Phase */}
+                <Text style={[styles.formLabel, { color: themeColors.textSecondary }]}>Sichtbar ab Phase (optional)</Text>
+                <View style={styles.chipRow}>
+                  <BNMPressable
+                    style={[styles.catChip, {
+                      borderColor: !newVisibleAfterSession ? COLORS.cta : themeColors.border,
+                      backgroundColor: !newVisibleAfterSession ? COLORS.cta + "15" : themeColors.background,
+                    }]}
+                    onPress={() => setNewVisibleAfterSession(null)}
+                    accessibilityRole="radio"
+                    accessibilityLabel="Immer"
+                  >
+                    <Text style={[styles.catChipText, { color: !newVisibleAfterSession ? COLORS.cta : themeColors.textSecondary }]}>Immer</Text>
+                  </BNMPressable>
+                  {[...sessionTypes].sort((a, b) => a.sort_order - b.sort_order).map((st) => (
+                    <BNMPressable
+                      key={st.id}
+                      style={[styles.catChip, {
+                        borderColor: newVisibleAfterSession === st.id ? COLORS.cta : themeColors.border,
+                        backgroundColor: newVisibleAfterSession === st.id ? COLORS.cta + "15" : themeColors.background,
+                      }]}
+                      onPress={() => setNewVisibleAfterSession(st.id)}
+                      accessibilityRole="radio"
+                      accessibilityLabel={st.name}
+                    >
+                      <Text style={[styles.catChipText, { color: newVisibleAfterSession === st.id ? COLORS.cta : themeColors.textSecondary }]} numberOfLines={1}>{st.name}</Text>
+                    </BNMPressable>
+                  ))}
+                </View>
 
                 <View style={styles.formButtonRow}>
                   <BNMPressable

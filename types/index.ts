@@ -115,6 +115,7 @@ export interface Resource {
   is_active: boolean;
   visible_to: ResourceVisibility;
   visible_until: string | null;
+  visible_after_session_type_id: string | null;
   created_at: string;
 }
 

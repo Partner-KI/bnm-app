@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS resources (
   is_active BOOLEAN DEFAULT true,
   visible_to TEXT NOT NULL DEFAULT 'all' CHECK (visible_to IN ('all', 'mentors', 'mentees', 'male', 'female')),
   visible_until TIMESTAMPTZ DEFAULT NULL,
+  visible_after_session_type_id UUID DEFAULT NULL REFERENCES session_types(id) ON DELETE SET NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
