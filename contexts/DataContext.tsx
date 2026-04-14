@@ -163,7 +163,7 @@ export interface DataContextValue {
   submitApplication: (data: Omit<MentorApplication, "id" | "status" | "submitted_at">) => Promise<void>;
 
   // User actions
-  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng">>) => Promise<void>;
+  updateUser: (userId: string, data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng" | "admin_notes">>) => Promise<void>;
   setUserActive: (userId: string, isActive: boolean) => Promise<void>;
   deleteUser: (userId: string) => Promise<boolean>;
   bulkDeleteUsers: (userIds: string[]) => Promise<{ success: number; failed: number }>;
@@ -257,6 +257,7 @@ function mapProfile(row: Record<string, unknown>): User {
     lat: (row.lat as number) ?? undefined,
     lng: (row.lng as number) ?? undefined,
     force_password_change: (row.force_password_change as boolean) ?? false,
+    admin_notes: (row.admin_notes as string) ?? "",
   };
 }
 
@@ -2527,7 +2528,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(
     async (
       userId: string,
-      data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng">>
+      data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng" | "admin_notes">>
     ) => {
       const { error } = await supabase
         .from("profiles")

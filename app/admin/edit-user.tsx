@@ -86,6 +86,7 @@ function EditUserForm({ userId }: { userId: string }) {
   const [showResetModal, setShowResetModal] = useState(false);
   const [customPassword, setCustomPassword] = useState("");
   const [forceChange, setForceChange] = useState(true);
+  const [adminNotes, setAdminNotes] = useState(target.admin_notes ?? "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Hard-Delete State (nur Admin)
@@ -119,6 +120,7 @@ function EditUserForm({ userId }: { userId: string }) {
         age: parseInt(age, 10),
         phone: phone.trim() || undefined,
         gender,
+        ...(isAdmin ? { admin_notes: adminNotes } : {}),
       });
       showSuccess(t("editUser.successMsg"), () => router.back());
     } catch {
@@ -271,6 +273,32 @@ function EditUserForm({ userId }: { userId: string }) {
               </BNMPressable>
             ))}
           </View>
+
+          {/* Admin-Notizen (nur für Admin sichtbar) */}
+          {isAdmin && (
+            <>
+              <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>ADMIN-NOTIZEN</Text>
+              <TextInput
+                style={[
+                  styles.pwInput,
+                  {
+                    color: themeColors.text,
+                    borderColor: themeColors.border,
+                    backgroundColor: themeColors.elevated,
+                    minHeight: 100,
+                    textAlignVertical: "top",
+                    marginBottom: 8,
+                  },
+                ]}
+                value={adminNotes}
+                onChangeText={setAdminNotes}
+                placeholder="Interne Notizen (nur für Admin sichtbar)"
+                placeholderTextColor={themeColors.textTertiary}
+                multiline
+                numberOfLines={4}
+              />
+            </>
+          )}
 
           {/* Speichern */}
           <BNMPressable

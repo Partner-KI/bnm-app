@@ -289,6 +289,26 @@ export function MentorDetailPanel({ id }: MentorDetailPanelProps) {
         </View>
       )}
 
+      {/* Admin-Notizen */}
+      {isAdminOrOffice && (
+        <>
+          <Text style={[styles.sectionLabel, { color: themeColors.textTertiary }]}>ADMIN-NOTIZEN</Text>
+          <View style={[styles.card, { backgroundColor: themeColors.card, borderColor: themeColors.border }]}>
+            <View style={{ padding: 14 }}>
+              <Text style={{ fontSize: 13, color: mentor.admin_notes ? themeColors.text : themeColors.textTertiary, lineHeight: 19 }}>
+                {mentor.admin_notes || "Keine Notizen"}
+              </Text>
+            </View>
+            <BNMPressable
+              style={{ borderTopWidth: 1, borderTopColor: themeColors.border, paddingVertical: 10, alignItems: "center" }}
+              onPress={() => router.push({ pathname: "/admin/edit-user", params: { id: mentor.id, from: "mentors" } })}
+            >
+              <Text style={{ fontSize: 13, fontWeight: "600", color: COLORS.gradientStart }}>Notizen bearbeiten</Text>
+            </BNMPressable>
+          </View>
+        </>
+      )}
+
       {/* Admin-Aktionen */}
       {isAdminOrOffice && (
         <BNMPressable

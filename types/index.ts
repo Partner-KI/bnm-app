@@ -23,6 +23,7 @@ export interface User {
   lat?: number;
   lng?: number;
   force_password_change?: boolean;
+  admin_notes?: string;
 }
 
 export interface Mentorship {
