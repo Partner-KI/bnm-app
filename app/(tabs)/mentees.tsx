@@ -203,6 +203,10 @@ function AdminMenteesView() {
       if (mentee.is_active === false) return false;
 
       const mentorship = mentorships.find((m) => m.mentee_id === mentee.id);
+      // Aktive/pending Betreuung = "zugewiesen"
+      const activeMentorship = mentorships.find(
+        (m) => m.mentee_id === mentee.id && (m.status === "active" || m.status === "pending_approval")
+      );
       const matchesSearch =
         mentee.name.toLowerCase().includes(search.toLowerCase()) ||
         mentee.city.toLowerCase().includes(search.toLowerCase());
@@ -210,8 +214,8 @@ function AdminMenteesView() {
         assignFilter === "all"
           ? true
           : assignFilter === "assigned"
-          ? !!mentorship
-          : !mentorship;
+          ? !!activeMentorship
+          : !activeMentorship;
       const matchesStatus =
         statusFilter === "all"
           ? true
