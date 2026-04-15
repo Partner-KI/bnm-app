@@ -3456,7 +3456,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const getUnassignedMentees = useCallback(() => {
     return users.filter(
-      (u) => u.role === "mentee" && !mentorships.find((m) => m.mentee_id === u.id)
+      (u) =>
+        u.role === "mentee" &&
+        u.is_active !== false &&
+        !mentorships.find(
+          (m) =>
+            m.mentee_id === u.id &&
+            (m.status === "active" || m.status === "pending_approval")
+        )
     );
   }, [users, mentorships]);
 
