@@ -2521,13 +2521,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
             }
           }
 
-          // Zugangsdaten per E-Mail senden
-          const emailSent = await sendCredentialsEmail(app.email, app.name, tempPassword);
-          if (emailSent) {
-            showSuccess("Account erstellt. Zugangsdaten per E-Mail gesendet.");
-          } else {
-            showSuccess(`Account erstellt. E-Mail an ${app.email} konnte NICHT gesendet werden — Passwort: ${tempPassword}`);
-          }
+          // Zugangsdaten per E-Mail senden (non-blocking — darf Approval nicht aufhalten)
+          sendCredentialsEmail(app.email, app.name, tempPassword).catch(() => {});
 
           // Notification an neuen Mentor (fire-and-forget)
           if (signUpData?.user) {

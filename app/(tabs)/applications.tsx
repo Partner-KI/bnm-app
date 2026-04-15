@@ -113,7 +113,9 @@ export default function ApplicationsTabScreen() {
     isApprovingRef.current = true;
     try {
       await approveApplication(app.id);
-      await refreshData();
+      showSuccess(t("applications.statusApproved"));
+      // refreshData im Hintergrund (nicht blockierend)
+      refreshData().catch(() => {});
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
       showError(`Genehmigung fehlgeschlagen: ${msg}`);
