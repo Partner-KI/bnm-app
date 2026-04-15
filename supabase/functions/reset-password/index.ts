@@ -45,7 +45,7 @@ serve(async (req) => {
   }
 
   // Reset-Link über Supabase Admin API generieren
-  const appUrl = "https://bnm-app.vercel.app";
+  const appUrl = "https://bnm.iman.ngo";
   const supabase = createClient(supabaseUrl, serviceRoleKey);
   const { data, error } = await supabase.auth.admin.generateLink({
     type: "recovery",
