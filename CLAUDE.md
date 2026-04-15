@@ -98,6 +98,26 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
 
 ## FORTSCHRITTS-LOG
 
+### 2026-04-15 — Race Condition Fix + PLZ + Passwort-Reset
+**Race Condition bei Navigation (8 Stellen gefixt):**
+- `showSuccess(msg, () => router.back())` Pattern entfernt — verursachte Haenger
+- Problem: Toast-Pfad rief `router.back()` sofort, Komponente unmountete vor `finally`-Block
+- Fix: Navigation immer NACH `finally`-Block, Loading-State wird sauber zurueckgesetzt
+- Betroffene Dateien: edit-user.tsx (2x), mentorship/[id].tsx (2x), edit-profile.tsx, document-session.tsx (2x), notification-settings.tsx, reset-password.tsx
+
+**PLZ-Feld bei Mentor-Registrierung (register-mentor.tsx):**
+- Label "PLZ" → "PLZ *" (Stern fuer Pflichtfeld)
+- Placeholder "z.B. 10115" hinzugefuegt
+- Container breiter: `width: 120` → `minWidth: 130, maxWidth: 160`
+
+**Passwort-Reset Link "abgelaufen" (Edge Function + reset-password.tsx):**
+- Edge Function: action_link direkt verwenden statt Token manuell extrahieren
+- Problem: `verifyOtp()` mit extrahiertem Token war unzuverlaessig
+- Fix: Supabase verifiziert Token serverseitig und redirected mit Session-Hash
+- Neuer "Neuen Link anfordern"-Button bei abgelaufenem Link
+- Translation-Key `resetPassword.requestNewLink` in 4 Sprachen
+- **WICHTIG: Edge Function muss neu deployed werden!**
+
 ### 2026-04-14 — Mentor-Statistiken + Admin-Notizen
 **Feature N4: Mentor Self-Statistiken (index.tsx - MentorDashboard):**
 - Neue "Meine Statistiken"-Sektion mit 3x2 Stat-Grid (nach Gamification, vor Termine)
