@@ -272,6 +272,7 @@ export function AdminSidebar() {
         ...(!isOffice
           ? [{ key: "chats", label: t("tabs.chats"), iconName: "chatbubbles-outline", iconNameActive: "chatbubbles", href: "/(tabs)/chats", badge: chatUnread }]
           : []),
+        { key: "leaderboard", label: t("tabs.ranking"), iconName: "trophy-outline", iconNameActive: "trophy", href: "/(tabs)/leaderboard" },
         { key: "reports", label: t("tabs.reports"), iconName: "stats-chart-outline", iconNameActive: "stats-chart", href: "/(tabs)/reports" },
       ];
 

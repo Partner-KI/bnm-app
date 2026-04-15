@@ -93,6 +93,7 @@ export function AdminMobileDrawer({ open, onClose }: Props) {
         calendarNavItem,
         { key: "/reports", label: t("tabs.reports"), icon: "stats-chart-outline" as const, iconActive: "stats-chart" as const, href: "/(tabs)/reports" },
         { key: "/feedback", label: t("tabs.feedback"), icon: "star-outline" as const, iconActive: "star" as const, href: "/(tabs)/feedback" },
+        { key: "/leaderboard", label: t("tabs.ranking"), icon: "trophy-outline" as const, iconActive: "trophy" as const, href: "/(tabs)/leaderboard" },
         { key: "/profile", label: t("tabs.profile"), icon: "person-circle-outline" as const, iconActive: "person-circle" as const, href: "/(tabs)/profile" },
       ];
 
