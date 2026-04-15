@@ -2542,7 +2542,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const updateUser = useCallback(
     async (
       userId: string,
-      data: Partial<Pick<User, "name" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng" | "admin_notes">>
+      data: Partial<Pick<User, "name" | "email" | "city" | "plz" | "age" | "phone" | "contact_preference" | "avatar_url" | "role" | "gender" | "lat" | "lng" | "admin_notes">>
     ) => {
       const { error } = await supabase
         .from("profiles")

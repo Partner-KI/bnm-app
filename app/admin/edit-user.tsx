@@ -76,6 +76,8 @@ function EditUserForm({ userId }: { userId: string }) {
   const target = getUserById(userId)!;
 
   const [name, setName] = useState(target.name);
+  const [email, setEmail] = useState(target.email ?? "");
+  const [plz, setPlz] = useState(target.plz ?? "");
   const [city, setCity] = useState(target.city);
   const [age, setAge] = useState(String(target.age));
   const [phone, setPhone] = useState(target.phone ?? "");
@@ -119,6 +121,8 @@ function EditUserForm({ userId }: { userId: string }) {
     try {
       await updateUser(userId, {
         name: name.trim(),
+        email: email.trim() || undefined,
+        plz: plz.trim() || undefined,
         city: city.trim(),
         age: parseInt(age, 10),
         phone: phone.trim() || undefined,
@@ -252,7 +256,12 @@ function EditUserForm({ userId }: { userId: string }) {
 
           <BNMInput label={t("editUser.name")} value={name} onChangeText={setName} error={errors.name} />
 
-          <BNMInput label={t("editUser.city")} value={city} onChangeText={setCity} error={errors.city} />
+          <BNMInput label="E-Mail" value={email} onChangeText={setEmail} keyboardType="email-address" autoCapitalize="none" />
+
+          <View style={styles.rowInputs}>
+            <BNMInput label="PLZ" value={plz} onChangeText={setPlz} keyboardType="number-pad" maxLength={5} containerStyle={{ minWidth: 130, maxWidth: 160, flex: 0 }} />
+            <BNMInput label={t("editUser.city")} value={city} onChangeText={setCity} error={errors.city} containerStyle={{ flex: 1 }} />
+          </View>
 
           <BNMInput label={t("editUser.age")} value={age} onChangeText={setAge} keyboardType="numeric" error={errors.age} />
 
@@ -524,6 +533,7 @@ function EditUserForm({ userId }: { userId: string }) {
 
 const styles = StyleSheet.create({
   flex1: { flex: 1 },
+  rowInputs: { flexDirection: "row", gap: 8, alignItems: "flex-start" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", padding: 32 },
   denied: { textAlign: "center", fontSize: 14 },
   header: {
