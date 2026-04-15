@@ -2304,7 +2304,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const approveApplication = useCallback(
     async (applicationId: string) => {
       const app = applications.find((a) => a.id === applicationId);
-      if (!app) return;
+      if (!app) throw new Error("Bewerbung nicht gefunden");
 
       // Erst User via Supabase Auth signUp anlegen (nur bei Mentor-Bewerbungen)
       // Bei Mentee-Anmeldungen übernimmt handleAcceptMenteeRegistration in applications.tsx den signUp
@@ -2352,8 +2352,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
           }
 
           if (signUpError) {
-            showError(`Fehler beim Erstellen des Accounts: ${signUpError.message}`);
-            return;
+            throw new Error(`Account-Erstellung fehlgeschlagen: ${signUpError.message}`);
           }
 
           // Neuer Account: Profil nachladen (mit Verzögerung, damit der DB-Trigger Zeit hat)
@@ -2411,8 +2410,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .eq("id", applicationId);
 
       if (error) {
-        showError("Fehler beim Aktualisieren der Bewerbung.");
-        return;
+        throw new Error(`Bewerbungs-Status konnte nicht aktualisiert werden: ${error.message}`);
       }
 
       setApplications((prev) =>

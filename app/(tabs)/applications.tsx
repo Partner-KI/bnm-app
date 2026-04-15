@@ -105,16 +105,16 @@ export default function ApplicationsTabScreen() {
   async function handleApproveMentor(app: MentorApplication) {
     if (isApprovingRef.current) return;
     const ok = await showConfirm(t("applications.approveTitle"), t("applications.confirmApprove").replace("{0}", app.name));
-    if (ok) {
-      isApprovingRef.current = true;
-      try {
-        await approveApplication(app.id);
-        await refreshData();
-      } catch {
-        // Fehler wird bereits in approveApplication angezeigt
-      } finally {
-        isApprovingRef.current = false;
-      }
+    if (!ok) return;
+    isApprovingRef.current = true;
+    try {
+      await approveApplication(app.id);
+      await refreshData();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Unbekannter Fehler";
+      showError(`Genehmigung fehlgeschlagen: ${msg}`);
+    } finally {
+      isApprovingRef.current = false;
     }
   }
 
