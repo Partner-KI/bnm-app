@@ -2368,13 +2368,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
             throw new Error(`Account-Erstellung fehlgeschlagen: ${signUpError.message}`);
           }
 
-          // Neuer Account: Profil nachladen (mit Verzögerung, damit der DB-Trigger Zeit hat)
+          // Neuer Account: Profil anlegen lassen + Rolle setzen
           if (signUpData?.user) {
-            await new Promise((r) => setTimeout(r, 1000));
+            // Warten bis DB-Trigger handle_new_user() das Profil erstellt hat
+            await new Promise((r) => setTimeout(r, 1500));
+
+            // Session nochmal refreshen (setSession oben könnte stale sein)
+            await supabase.auth.getSession();
 
             // handle_new_user() Trigger setzt Rolle immer auf 'mentee' (Security-Fix).
             // Deshalb hier explizit auf 'mentor' + Bewerbungsdaten setzen.
-            await supabase
+            const { error: roleError } = await supabase
               .from("profiles")
               .update({
                 role: "mentor",
@@ -2386,6 +2390,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 contact_preference: app.contact_preference ?? null,
               })
               .eq("id", signUpData.user.id);
+
+            if (roleError) {
+              throw new Error(`Profil konnte nicht auf Mentor gesetzt werden: ${roleError.message}`);
+            }
 
             const { data: newProfile } = await supabase
               .from("profiles")
