@@ -2358,6 +2358,22 @@ export function DataProvider({ children }: { children: ReactNode }) {
           // Neuer Account: Profil nachladen (mit Verzögerung, damit der DB-Trigger Zeit hat)
           if (signUpData?.user) {
             await new Promise((r) => setTimeout(r, 1000));
+
+            // handle_new_user() Trigger setzt Rolle immer auf 'mentee' (Security-Fix).
+            // Deshalb hier explizit auf 'mentor' + Bewerbungsdaten setzen.
+            await supabase
+              .from("profiles")
+              .update({
+                role: "mentor",
+                gender: app.gender,
+                city: app.city,
+                plz: app.plz ?? null,
+                age: app.age,
+                phone: app.phone ?? null,
+                contact_preference: app.contact_preference ?? null,
+              })
+              .eq("id", signUpData.user.id);
+
             const { data: newProfile } = await supabase
               .from("profiles")
               .select("*")
