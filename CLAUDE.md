@@ -98,6 +98,16 @@ iman.ngo-Stil. Dunkelblau (#0A3A5A) + Gold (#EEA71B). `constants/Colors.ts`.
 
 ## FORTSCHRITTS-LOG
 
+### 2026-04-15 — Umfassendes Audit: 9 weitere Stale-Closure-Bugs + Doku-URLs
+**Systematische Pruefung aller useCallback-Funktionen im Projekt:**
+- `cancelMentorship`: Mentorship + Mentor/Mentee + Admins jetzt aus DB statt Closure
+- `addFeedback`: Mentorship + Submitter aus DB
+- `confirmStepAsMentee` / `unconfirmStepAsMentee`: confirmed_steps aus DB
+- `toggleEventParticipation` / `toggleResourceCompletion`: Existing-Check via DB-Query
+- `sendAdminDirectMessage` / `sendAdminMessage` / `replyToAdmin`: authUser direkt statt users.find()
+- `applications.tsx`: isApprovingRef zeigt jetzt Feedback statt silent return
+- CLAUDE.md + deploy-edge-function.md + Release-Anleitung: Supabase-URL von altem Projekt auf aktives korrigiert
+
 ### 2026-04-15 — Stale-Closure-Bugs bei Bewerbungs-/Mentorship-Genehmigung
 **Kern-Problem:** `approveApplication`, `approveMentorship`, `rejectMentorship` lasen Daten aus veralteten useCallback-Closures. Beim ersten Klick auf "Annehmen" passierte nichts (kein Account, keine E-Mail), erst nach Seiten-Refresh funktionierte es.
 **Root Cause:** `useCallback` Dependencies enthielten `applications`/`mentorships` Arrays — diese Closures waren beim ersten Klick oft leer oder veraltet.
