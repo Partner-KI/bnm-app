@@ -2306,6 +2306,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const app = applications.find((a) => a.id === applicationId);
       if (!app) throw new Error("Bewerbung nicht gefunden");
 
+      // Session sicherstellen (verhindert Hänger wenn Token abgelaufen)
+      await supabase.auth.getSession();
+
       // Erst User via Supabase Auth signUp anlegen (nur bei Mentor-Bewerbungen)
       // Bei Mentee-Anmeldungen übernimmt handleAcceptMenteeRegistration in applications.tsx den signUp
       const isMenteeRegistration = app.motivation === "Anmeldung als neuer Muslim (öffentliches Formular)";
@@ -2586,17 +2589,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         .filter((m) => m.mentor_id === userId || m.mentee_id === userId)
         .map((m) => m.id);
 
+      // Session sicherstellen (verhindert Hänger wenn Token abgelaufen)
+      await supabase.auth.getSession();
+
       // Serverseitige Funktion: löscht Auth-User + Profil + CASCADE-Daten
-      // 15s Timeout damit der Button nie ewig hängt
-      const rpcPromise = supabase.rpc("delete_user_completely", {
+      const { data, error } = await supabase.rpc("delete_user_completely", {
         target_user_id: userId,
       });
-      const { data, error } = await Promise.race([
-        rpcPromise,
-        new Promise<{ data: null; error: { message: string } }>((resolve) =>
-          setTimeout(() => resolve({ data: null, error: { message: "Zeitüberschreitung (15s). Bitte Seite neu laden und erneut versuchen." } }), 15_000)
-        ),
-      ]);
 
       if (error) {
         showError(`Löschen fehlgeschlagen: ${error.message}`);
