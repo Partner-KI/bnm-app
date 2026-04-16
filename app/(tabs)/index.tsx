@@ -409,7 +409,7 @@ function AdminDashboard({ showSystemSettings = true }: { showSystemSettings?: bo
           </View>
           <BNMPressable
             style={[styles.refreshButton, { backgroundColor: "transparent", borderColor: isDark ? themeColors.accent : themeColors.border }]}
-            onPress={() => refreshData(true)}
+            onPress={() => refreshData()}
             accessibilityRole="button"
             accessibilityLabel="Daten aktualisieren"
                      >

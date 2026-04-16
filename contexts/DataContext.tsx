@@ -229,7 +229,7 @@ export interface DataContextValue {
   markAdminChatAsRead: (userId: string) => Promise<void>;
 
   // Refresh
-  refreshData: (force?: boolean) => Promise<void>;
+  refreshData: () => Promise<void>;
 
   // Loading
   isLoading: boolean;
@@ -551,13 +551,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }, [authUser?.id]);
 
   async function loadAllData(background = false) {
-    // ── Concurrent-Load-Guard ──
     if (!background) {
-      if (isActiveLoadRef.current) {
-        const stale = Date.now() - loadStartTimeRef.current > 5_000;
-        if (!stale) return;
-        console.warn("[DataContext] Stale load lock (>5s), forcing reset");
-      }
       isActiveLoadRef.current = true;
       loadStartTimeRef.current = Date.now();
       setIsLoading(true);
@@ -3425,13 +3419,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // Throttled refresh: nur wenn letzte Ladung > 10s her ist
   const lastLoadRef = React.useRef<number>(0);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const refreshData = useCallback(async (force?: boolean) => {
+  const refreshData = useCallback(async () => {
     if (!authUser) return;
-    const now = Date.now();
-    if (!force && now - lastLoadRef.current < 3000) return; // 3s Throttle (vorher 10s — zu aggressiv)
-    lastLoadRef.current = now;
-    // Wenn bereits einmal geladen → Background-Load (kein Skeleton-Blinken bei Tab-Wechsel)
-    // Nur beim allerersten Load → Foreground mit Skeleton
+    // Kein Throttle — jeder Aufruf laedt sofort. Doppel-Aufrufe werden
+    // durch isActiveLoadRef in loadAllData abgefangen.
     await loadAllData(hasLoadedOnceRef.current);
   }, [authUser?.id]); // intentionally only depends on authUser to avoid infinite re-creation
 

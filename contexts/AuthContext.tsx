@@ -140,11 +140,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       supabase.auth.signOut().catch(() => {});
       window.location.href = "/";
     } else {
-      // Native: signOut mit 2s Timeout, dann trotzdem weiter
-      await Promise.race([
-        supabase.auth.signOut().catch(() => {}),
-        new Promise((r) => setTimeout(r, 2000)),
-      ]);
+      // Native: signOut fire-and-forget, nicht blockieren
+      supabase.auth.signOut().catch(() => {});
     }
   }, [user?.id]);
 
