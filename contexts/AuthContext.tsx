@@ -125,16 +125,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(async () => {
-    // Sofort User-State löschen → Navigation reagiert unmittelbar
+    // Sofort User-State löschen → UI reagiert unmittelbar
     setUser(null);
     const userId = user?.id;
     if (userId) unregisterPushToken(userId).catch(() => {});
-    // signOut MUSS vor dem Redirect abgeschlossen sein, sonst findet der
-    // neue Page-Load eine aktive Session und loggt sofort wieder ein.
-    await supabase.auth.signOut().catch(() => {});
-    // Auf Web: Hard-Reload damit DataContext, Subscriptions, etc. sauber zurückgesetzt werden.
+
     if (Platform.OS === "web") {
+      // Web: Session-Daten sofort aus localStorage entfernen, dann redirect.
+      // signOut fire-and-forget — darf den Redirect NICHT blockieren.
+      try {
+        const keys = Object.keys(localStorage).filter((k) => k.startsWith("sb-"));
+        keys.forEach((k) => localStorage.removeItem(k));
+      } catch {}
+      supabase.auth.signOut().catch(() => {});
       window.location.href = "/";
+    } else {
+      // Native: signOut mit 2s Timeout, dann trotzdem weiter
+      await Promise.race([
+        supabase.auth.signOut().catch(() => {}),
+        new Promise((r) => setTimeout(r, 2000)),
+      ]);
     }
   }, [user?.id]);
 

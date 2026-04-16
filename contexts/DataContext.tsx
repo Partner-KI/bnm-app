@@ -554,9 +554,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     // ── Concurrent-Load-Guard ──
     if (!background) {
       if (isActiveLoadRef.current) {
-        const stale = Date.now() - loadStartTimeRef.current > 10_000;
+        const stale = Date.now() - loadStartTimeRef.current > 5_000;
         if (!stale) return;
-        console.warn("[DataContext] Stale load lock (>10s), forcing reset");
+        console.warn("[DataContext] Stale load lock (>5s), forcing reset");
       }
       isActiveLoadRef.current = true;
       loadStartTimeRef.current = Date.now();
@@ -3428,7 +3428,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const refreshData = useCallback(async (force?: boolean) => {
     if (!authUser) return;
     const now = Date.now();
-    if (!force && now - lastLoadRef.current < 10000) return; // 10s Throttle
+    if (!force && now - lastLoadRef.current < 3000) return; // 3s Throttle (vorher 10s — zu aggressiv)
     lastLoadRef.current = now;
     // Wenn bereits einmal geladen → Background-Load (kein Skeleton-Blinken bei Tab-Wechsel)
     // Nur beim allerersten Load → Foreground mit Skeleton
@@ -3662,6 +3662,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
     getAdminChatPartners,
     approveApplication,
     rejectApplication,
+    deleteApplication,
     submitApplication,
     updateUser,
     setUserActive,
