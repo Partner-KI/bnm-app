@@ -389,6 +389,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const [users, setUsers] = useState<User[]>([]);
   const [mentorships, setMentorships] = useState<Mentorship[]>([]);
+  const [assignedMenteeIds, setAssignedMenteeIds] = useState<Set<string>>(new Set());
   const [sessions, setSessions] = useState<Session[]>([]);
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
@@ -677,6 +678,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
           mentee_confirmed_steps: (row.mentee_confirmed_steps as string[]) ?? [],
         }));
         setMentorships(ms);
+      }
+
+      // Zugewiesene Mentee-IDs laden (RPC umgeht RLS — auch Mentoren sehen alle)
+      const { data: assignedIds } = await supabase.rpc("get_assigned_mentee_ids");
+      if (assignedIds) {
+        setAssignedMenteeIds(new Set(assignedIds as string[]));
       }
 
       // Eigene Mentorship-IDs ermitteln (für Message-Filter)
@@ -1544,6 +1551,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         mentee,
       };
       setMentorships((prev) => [...prev, newMentorship]);
+      // assignedMenteeIds sofort aktualisieren
+      if (status === "active" || status === "pending_approval") {
+        setAssignedMenteeIds((prev) => new Set([...prev, menteeId]));
+      }
 
       // Notification an Mentee: Mentor wurde zugewiesen
       if (status === "active" && mentee) {
@@ -1664,6 +1675,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
           m.id === mentorshipId ? { ...m, status: "active" as MentorshipStatus } : m
         )
       );
+
+      // assignedMenteeIds aktualisieren
+      const { data: freshIds } = await supabase.rpc("get_assigned_mentee_ids");
+      if (freshIds) setAssignedMenteeIds(new Set(freshIds as string[]));
 
       // Mentorship-Daten direkt aus DB laden (nicht aus stale Closure!)
       const { data: msRow } = await supabase
@@ -1849,6 +1864,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
         )
       );
 
+      // assignedMenteeIds neu laden nach Status-Aenderung
+      if (status === "completed" || status === "cancelled") {
+        supabase.rpc("get_assigned_mentee_ids").then(({ data }) => {
+          if (data) setAssignedMenteeIds(new Set(data as string[]));
+        });
+      }
+
       // E-Mail an Admin bei Abschluss oder Abbruch (außerhalb des setState-Updaters)
       if (status === "completed" || status === "cancelled") {
         const m = mentorships.find((ms) => ms.id === mentorshipId);
@@ -2008,6 +2030,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (error) {
         throw new Error(error.message);
       }
+
+      // assignedMenteeIds neu laden nach Cancel
+      supabase.rpc("get_assigned_mentee_ids").then(({ data }) => {
+        if (data) setAssignedMenteeIds(new Set(data as string[]));
+      });
 
       setMentorships((prev) =>
         prev.map((m) =>
@@ -3455,17 +3482,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
   );
 
   const getUnassignedMentees = useCallback(() => {
+    // assignedMenteeIds kommt via RPC (SECURITY DEFINER) und umgeht RLS.
+    // Damit sehen auch Mentoren korrekt, welche Mentees schon vergeben sind.
     return users.filter(
       (u) =>
         u.role === "mentee" &&
         u.is_active !== false &&
-        !mentorships.find(
-          (m) =>
-            m.mentee_id === u.id &&
-            (m.status === "active" || m.status === "pending_approval")
-        )
+        !assignedMenteeIds.has(u.id)
     );
-  }, [users, mentorships]);
+  }, [users, assignedMenteeIds]);
 
   const getUnreadMessagesCount = useCallback(
     (mentorshipId: string) => {
