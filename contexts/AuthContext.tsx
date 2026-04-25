@@ -63,40 +63,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Auth-State-Listener beim Mount registrieren
   useEffect(() => {
-    // Initiale Session prüfen — mit 2.5s Hard-Cutoff. getSession + loadProfile
-    // sollten zusammen in <1s durch sein. Wenn nicht (korrupte Tokens, RLS-Probleme,
-    // Supabase langsam) → Auto-Recovery: localStorage leeren + Page-Reload auf Web.
-    // Endlos-Reload-Guard via sessionStorage-Flag.
+    // Initiale Session prüfen — mit 2.5s Hard-Cutoff als Safety-Net.
+    // Normal ist der Session-Check in <1s durch. Wenn nicht, Login-Screen.
     let settled = false;
     const cutoff = setTimeout(() => {
       if (settled) return;
       settled = true;
-      console.warn("[AuthContext] Init timeout — clearing session + reload");
-
-      // localStorage saubermachen (kaputte Tokens)
-      try {
-        if (Platform.OS === "web" && typeof localStorage !== "undefined") {
-          const keys = Object.keys(localStorage).filter((k) => k.startsWith("sb-"));
-          keys.forEach((k) => localStorage.removeItem(k));
-        }
-      } catch {}
-
-      // Auf Web: Automatischer Hard-Reload damit Supabase-Client komplett
-      // zurueckgesetzt wird. Der Endlos-Reload-Guard verhindert Infinite-Loop:
-      // Wenn wir schon mal gereloaded haben, zeigen wir stattdessen Login.
-      if (Platform.OS === "web" && typeof window !== "undefined") {
-        try {
-          const alreadyReloaded = sessionStorage.getItem("bnm_auth_reload_done");
-          if (!alreadyReloaded) {
-            sessionStorage.setItem("bnm_auth_reload_done", String(Date.now()));
-            window.location.reload();
-            return;
-          }
-          // Reload hat nicht geholfen → Flag loeschen damit naechster Versuch wieder reloaden darf
-          sessionStorage.removeItem("bnm_auth_reload_done");
-        } catch {}
-      }
-
+      console.warn("[AuthContext] Init timeout — showing login");
       setUser(null);
       setIsLoading(false);
     }, 2500);
@@ -115,13 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       settled = true;
       clearTimeout(cutoff);
-      // Erfolgreicher Init → Reload-Flag entfernen damit bei einem
-      // zukuenftigen Problem wieder ein Auto-Reload moeglich ist.
-      try {
-        if (Platform.OS === "web" && typeof sessionStorage !== "undefined") {
-          sessionStorage.removeItem("bnm_auth_reload_done");
-        }
-      } catch {}
       setIsLoading(false);
     }).catch(() => {
       if (settled) return;
@@ -131,9 +97,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(false);
     });
 
-    // Auf Auth-Änderungen reagieren — beeinflusst isLoading NICHT mehr
-    // (isLoading ist nur fuer den initialen Mount). Verhindert dass eine
-    // haengende loadProfile den "Wird geladen..." Screen wieder zeigt.
+    // Auf Auth-Änderungen reagieren — beeinflusst isLoading NICHT
+    // (isLoading ist nur fuer den initialen Mount).
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (session?.user) {
@@ -145,12 +110,58 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
           }
         } else {
+          // SIGNED_OUT, USER_DELETED, oder Refresh-Fehler → User ausloggen
           setUser(null);
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Tab-Visibility-Handler: Wenn der User nach laengerer Abwesenheit
+    // zurueckkehrt, proaktiv Session pruefen. Browser drosselt Timer in
+    // Background-Tabs, deshalb kann Supabase's Auto-Refresh versagen.
+    // Mit dieser proaktiven Pruefung faengt die App das sauber ab.
+    let lastVisibilityCheck = Date.now();
+    const handleVisibilityChange = async () => {
+      if (Platform.OS !== "web") return;
+      if (typeof document === "undefined" || document.visibilityState !== "visible") return;
+
+      // Nur pruefen wenn Tab laenger als 60s im Hintergrund war
+      const timeSinceLastCheck = Date.now() - lastVisibilityCheck;
+      lastVisibilityCheck = Date.now();
+      if (timeSinceLastCheck < 60_000) return;
+
+      // Session pruefen mit 2s Timeout — wenn hangt, gehen wir von
+      // abgelaufener Session aus
+      const sessionCheck = Promise.race<{ valid: boolean }>([
+        supabase.auth.getSession().then(({ data }) => ({ valid: !!data.session?.user })),
+        new Promise<{ valid: boolean }>((resolve) =>
+          setTimeout(() => resolve({ valid: false }), 2000)
+        ),
+      ]);
+
+      const { valid } = await sessionCheck;
+      if (!valid) {
+        console.warn("[AuthContext] Session expired after tab inactive — logging out cleanly");
+        // Sauberes Logout ohne Hard-Reload:
+        // 1. Supabase-Client lokal zuruecksetzen (kein Server-Call)
+        try {
+          await supabase.auth.signOut({ scope: "local" });
+        } catch {}
+        // 2. React-State zuruecksetzen → User landet auf Login-Screen
+        setUser(null);
+      }
+    };
+
+    if (Platform.OS === "web" && typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
+
+    return () => {
+      subscription.unsubscribe();
+      if (Platform.OS === "web" && typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
+    };
   }, []);
 
   const login = useCallback(
