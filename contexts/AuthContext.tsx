@@ -65,19 +65,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initiale Session prüfen — mit 2.5s Hard-Cutoff. getSession + loadProfile
     // sollten zusammen in <1s durch sein. Wenn nicht (korrupte Tokens, RLS-Probleme,
-    // Supabase langsam) → sauberer Fall auf Login-Screen statt endlosem Spinner.
+    // Supabase langsam) → Auto-Recovery: localStorage leeren + Page-Reload auf Web.
+    // Endlos-Reload-Guard via sessionStorage-Flag.
     let settled = false;
     const cutoff = setTimeout(() => {
       if (settled) return;
       settled = true;
-      console.warn("[AuthContext] Init timeout — clearing session");
-      // Session-Daten aus localStorage loeschen (kaputte Tokens)
+      console.warn("[AuthContext] Init timeout — clearing session + reload");
+
+      // localStorage saubermachen (kaputte Tokens)
       try {
         if (Platform.OS === "web" && typeof localStorage !== "undefined") {
           const keys = Object.keys(localStorage).filter((k) => k.startsWith("sb-"));
           keys.forEach((k) => localStorage.removeItem(k));
         }
       } catch {}
+
+      // Auf Web: Automatischer Hard-Reload damit Supabase-Client komplett
+      // zurueckgesetzt wird. Der Endlos-Reload-Guard verhindert Infinite-Loop:
+      // Wenn wir schon mal gereloaded haben, zeigen wir stattdessen Login.
+      if (Platform.OS === "web" && typeof window !== "undefined") {
+        try {
+          const alreadyReloaded = sessionStorage.getItem("bnm_auth_reload_done");
+          if (!alreadyReloaded) {
+            sessionStorage.setItem("bnm_auth_reload_done", String(Date.now()));
+            window.location.reload();
+            return;
+          }
+          // Reload hat nicht geholfen → Flag loeschen damit naechster Versuch wieder reloaden darf
+          sessionStorage.removeItem("bnm_auth_reload_done");
+        } catch {}
+      }
+
       setUser(null);
       setIsLoading(false);
     }, 2500);
@@ -96,6 +115,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       settled = true;
       clearTimeout(cutoff);
+      // Erfolgreicher Init → Reload-Flag entfernen damit bei einem
+      // zukuenftigen Problem wieder ein Auto-Reload moeglich ist.
+      try {
+        if (Platform.OS === "web" && typeof sessionStorage !== "undefined") {
+          sessionStorage.removeItem("bnm_auth_reload_done");
+        }
+      } catch {}
       setIsLoading(false);
     }).catch(() => {
       if (settled) return;
